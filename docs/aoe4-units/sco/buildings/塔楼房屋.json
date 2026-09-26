@@ -1,0 +1,9 @@
+{
+  "civilization": "sco",
+  "kind": "building",
+  "section": "黑暗时代建筑",
+  "name": "塔楼房屋",
+  "image_name": "塔楼房屋",
+  "source_url": "https://seicing.com/html/aoe2/buildingsaoe4/塔楼房屋.html?civ=sco",
+  "detail_error": "Source page returned HTTP 404"
+}

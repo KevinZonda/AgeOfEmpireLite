@@ -1,0 +1,362 @@
+{
+  "civilization": "goh",
+  "kind": "building",
+  "section": "黑暗时代建筑",
+  "name": "敖包",
+  "image_name": "敖包",
+  "source_url": "https://seicing.com/html/aoe2/buildingsaoe4/敖包.html?civ=goh",
+  "detail": {
+    "title": "敖包(Ovoo)",
+    "sections": [
+      {
+        "title": "建造信息",
+        "fields": [
+          {
+            "label": "成本",
+            "values": [
+              {
+                "text": "150",
+                "parts": [
+                  {
+                    "icon": "木"
+                  },
+                  {
+                    "text": "150"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "成本"
+              }
+            ]
+          },
+          {
+            "label": "建造时间",
+            "values": [
+              {
+                "text": "15秒",
+                "parts": [
+                  {
+                    "text": "15秒"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "time"
+              },
+              {
+                "text": "建造时间"
+              }
+            ]
+          },
+          {
+            "label": "视野",
+            "values": [
+              {
+                "text": "5.56",
+                "parts": [
+                  {
+                    "text": "5.56"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "sight"
+              },
+              {
+                "text": "视野"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "状态数据",
+        "fields": [
+          {
+            "label": "生命值",
+            "values": [
+              {
+                "text": "1750",
+                "parts": [
+                  {
+                    "text": "1750"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "hp"
+              },
+              {
+                "text": "生命值"
+              }
+            ]
+          },
+          {
+            "label": "火焰护甲",
+            "values": [
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorf"
+              },
+              {
+                "text": "火焰护甲"
+              }
+            ]
+          },
+          {
+            "label": "远程护甲",
+            "values": [
+              {
+                "text": "50",
+                "parts": [
+                  {
+                    "text": "50"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorr"
+              },
+              {
+                "text": "远程护甲"
+              }
+            ]
+          },
+          {
+            "label": "尺寸",
+            "values": [
+              {
+                "text": "3×3",
+                "parts": [
+                  {
+                    "text": "3×3"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "size"
+              },
+              {
+                "text": "尺寸"
+              }
+            ]
+          },
+          {
+            "label": "建筑标签",
+            "values": [
+              {
+                "text": "经济和科技建筑",
+                "parts": [
+                  {
+                    "text": "经济和科技建筑"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "allb"
+              },
+              {
+                "text": "建筑标签"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "bonuses": [
+      {
+        "civilization": "goh",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "生命值",
+                "parts": [
+                  {
+                    "icon": "hp"
+                  },
+                  {
+                    "text": "生命值"
+                  }
+                ]
+              },
+              {
+                "text": "宫廷建筑师(+30%)",
+                "parts": [
+                  {
+                    "icon": "宫廷建筑师"
+                  },
+                  {
+                    "text": "宫廷建筑师(+30%)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "采集效率",
+                "parts": [
+                  {
+                    "text": "采集效率"
+                  }
+                ]
+              },
+              {
+                "text": "圣物敖包(+20%) 敖包祭品(+20%) 敖包仪式(+20%)",
+                "parts": [
+                  {
+                    "icon": "圣物敖包"
+                  },
+                  {
+                    "text": "圣物敖包(+20%)"
+                  },
+                  {
+                    "icon": "敖包祭品"
+                  },
+                  {
+                    "text": "敖包祭品(+20%)"
+                  },
+                  {
+                    "icon": "敖包仪式"
+                  },
+                  {
+                    "text": "敖包仪式(+20%)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "其他",
+                "parts": [
+                  {
+                    "text": "其他"
+                  }
+                ]
+              },
+              {
+                "text": "敖包什一税(敖包每分钟可提供60食物、60木材和10黄金收入)",
+                "parts": [
+                  {
+                    "icon": "敖包什一税"
+                  },
+                  {
+                    "text": "敖包什一税(敖包每分钟可提供60食物、60木材和10黄金收入)"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gallery_captions": [
+      "敖包"
+    ]
+  }
+}

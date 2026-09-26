@@ -1,0 +1,658 @@
+{
+  "civilization": "sen",
+  "kind": "unit",
+  "section": "军事单位",
+  "name": "大筒兵",
+  "image_name": "大筒兵",
+  "source_url": "https://seicing.com/html/aoe2/unitaoe4/大筒兵.html?civ=sen",
+  "detail": {
+    "title": "大筒兵(Ozutsu)",
+    "sections": [
+      {
+        "title": "训练信息",
+        "fields": [
+          {
+            "label": "产地",
+            "values": [
+              {
+                "text": "种子岛枪匠(日本) 靶场(战国大名)",
+                "parts": [
+                  {
+                    "text": "种子岛枪匠(日本)"
+                  },
+                  {
+                    "text": "靶场(战国大名)"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "产地"
+              }
+            ]
+          },
+          {
+            "label": "成本",
+            "values": [
+              {
+                "text": "85 155",
+                "parts": [
+                  {
+                    "icon": "肉"
+                  },
+                  {
+                    "text": "85"
+                  },
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "155"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "成本"
+              }
+            ]
+          },
+          {
+            "label": "训练时间",
+            "values": [
+              {
+                "text": "35秒",
+                "parts": [
+                  {
+                    "text": "35秒"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "time"
+              },
+              {
+                "text": "训练时间"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "状态数据",
+        "fields": [
+          {
+            "label": "生命值",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "130",
+                "parts": [
+                  {
+                    "text": "130"
+                  }
+                ]
+              },
+              {
+                "text": "160",
+                "parts": [
+                  {
+                    "text": "160"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "hp"
+              },
+              {
+                "text": "生命值"
+              }
+            ]
+          },
+          {
+            "label": "近战护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              },
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorm"
+              },
+              {
+                "text": "近战护甲"
+              }
+            ]
+          },
+          {
+            "label": "远程护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "2",
+                "parts": [
+                  {
+                    "text": "2"
+                  }
+                ]
+              },
+              {
+                "text": "4",
+                "parts": [
+                  {
+                    "text": "4"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorr"
+              },
+              {
+                "text": "远程护甲"
+              }
+            ]
+          },
+          {
+            "label": "移动速度",
+            "values": [
+              {
+                "text": "1.00",
+                "parts": [
+                  {
+                    "text": "1.00"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "speed"
+              },
+              {
+                "text": "移动速度"
+              }
+            ]
+          },
+          {
+            "label": "视野",
+            "values": [
+              {
+                "text": "7.11",
+                "parts": [
+                  {
+                    "text": "7.11"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "sight"
+              },
+              {
+                "text": "视野"
+              }
+            ]
+          },
+          {
+            "label": "单位标签",
+            "values": [
+              {
+                "text": "重型、远程、步兵、火药",
+                "parts": [
+                  {
+                    "text": "重型、远程、步兵、火药"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "alle"
+              },
+              {
+                "text": "单位标签"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "攻击属性",
+        "fields": [
+          {
+            "label": "远程伤害",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "22",
+                "parts": [
+                  {
+                    "text": "22"
+                  }
+                ]
+              },
+              {
+                "text": "28",
+                "parts": [
+                  {
+                    "text": "28"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "damageranged"
+              },
+              {
+                "text": "远程伤害"
+              }
+            ]
+          },
+          {
+            "label": "攻击范围",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "5.50",
+                "parts": [
+                  {
+                    "text": "5.50"
+                  }
+                ]
+              },
+              {
+                "text": "6.50",
+                "parts": [
+                  {
+                    "text": "6.50"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "range"
+              },
+              {
+                "text": "攻击范围"
+              }
+            ]
+          },
+          {
+            "label": "伤害区域",
+            "values": [
+              {
+                "text": "0.5 100%-10%-10%衰减",
+                "parts": [
+                  {
+                    "text": "0.5"
+                  },
+                  {
+                    "text": "100%-10%-10%衰减"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "aoearea"
+              },
+              {
+                "text": "伤害区域"
+              }
+            ]
+          },
+          {
+            "label": "攻击间隔",
+            "values": [
+              {
+                "text": "4.75",
+                "parts": [
+                  {
+                    "text": "4.75"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "attackspeed"
+              },
+              {
+                "text": "攻击间隔"
+              }
+            ]
+          },
+          {
+            "label": "对[建筑]加成",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "+70",
+                "parts": [
+                  {
+                    "text": "+70"
+                  }
+                ]
+              },
+              {
+                "text": "+130",
+                "parts": [
+                  {
+                    "text": "+130"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "对[建筑]加成"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "升级费用",
+        "fields": [
+          {
+            "label": "通常(Ⅳ)",
+            "values": [
+              {
+                "text": "150 350 60",
+                "parts": [
+                  {
+                    "icon": "肉"
+                  },
+                  {
+                    "text": "150"
+                  },
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "350"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "60"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "升级到大筒兵"
+              },
+              {
+                "text": "通常(Ⅳ)"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "bonuses": [
+      {
+        "civilization": "sen",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "近战护甲",
+                "parts": [
+                  {
+                    "icon": "armorm"
+                  },
+                  {
+                    "text": "近战护甲"
+                  }
+                ]
+              },
+              {
+                "text": "合身皮具(+1) 绝缘头盔(+1) 铁匠大师(+1)",
+                "parts": [
+                  {
+                    "icon": "合身皮具"
+                  },
+                  {
+                    "text": "合身皮具(+1)"
+                  },
+                  {
+                    "icon": "绝缘头盔"
+                  },
+                  {
+                    "text": "绝缘头盔(+1)"
+                  },
+                  {
+                    "icon": "铁匠大师"
+                  },
+                  {
+                    "text": "铁匠大师(+1)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "远程护甲",
+                "parts": [
+                  {
+                    "icon": "armorr"
+                  },
+                  {
+                    "text": "远程护甲"
+                  }
+                ]
+              },
+              {
+                "text": "铁制底网(+1) 楔形铆钉(+1) 斜面(+1)",
+                "parts": [
+                  {
+                    "icon": "铁制底网"
+                  },
+                  {
+                    "text": "铁制底网(+1)"
+                  },
+                  {
+                    "icon": "楔形铆钉"
+                  },
+                  {
+                    "text": "楔形铆钉(+1)"
+                  },
+                  {
+                    "icon": "斜面"
+                  },
+                  {
+                    "text": "斜面(+1)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "训练效率",
+                "parts": [
+                  {
+                    "icon": "time"
+                  },
+                  {
+                    "text": "训练效率"
+                  }
+                ]
+              },
+              {
+                "text": "军事学院(+33%)",
+                "parts": [
+                  {
+                    "icon": "军事学院"
+                  },
+                  {
+                    "text": "军事学院(+33%)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "其它",
+                "parts": [
+                  {
+                    "text": "其它"
+                  }
+                ]
+              },
+              {
+                "text": "攻城工程学(可以建造冲车和攻城塔)",
+                "parts": [
+                  {
+                    "icon": "攻城工程学"
+                  },
+                  {
+                    "text": "攻城工程学(可以建造冲车和攻城塔)"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gallery_captions": [
+      "早期大筒兵",
+      "大筒兵"
+    ]
+  }
+}

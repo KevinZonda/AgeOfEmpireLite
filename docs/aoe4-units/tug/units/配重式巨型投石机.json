@@ -1,0 +1,678 @@
+{
+  "civilization": "tug",
+  "kind": "unit",
+  "section": "攻城武器",
+  "name": "配重式巨型投石机",
+  "image_name": "配重式巨型投石机",
+  "source_url": "https://seicing.com/html/aoe2/unitaoe4/配重式巨型投石机.html?civ=tug",
+  "detail": {
+    "title": "配重式巨型投石机 (Counterweight Trebuchet)",
+    "sections": [
+      {
+        "title": "训练信息",
+        "fields": [
+          {
+            "label": "产地",
+            "values": [
+              {
+                "text": "攻城武器厂",
+                "parts": [
+                  {
+                    "text": "攻城武器厂"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "产地"
+              }
+            ]
+          },
+          {
+            "label": "成本",
+            "values": [
+              {
+                "text": "400 150",
+                "parts": [
+                  {
+                    "icon": "木"
+                  },
+                  {
+                    "text": "400"
+                  },
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "150"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "成本"
+              }
+            ]
+          },
+          {
+            "label": "训练时间",
+            "values": [
+              {
+                "text": "30秒",
+                "parts": [
+                  {
+                    "text": "30秒"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "time"
+              },
+              {
+                "text": "训练时间"
+              }
+            ]
+          },
+          {
+            "label": "人口占用",
+            "values": [
+              {
+                "text": "2",
+                "parts": [
+                  {
+                    "text": "2"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "pop2"
+              },
+              {
+                "text": "人口占用"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "状态数据",
+        "fields": [
+          {
+            "label": "生命值",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "140",
+                "parts": [
+                  {
+                    "text": "140"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "hp"
+              },
+              {
+                "text": "生命值"
+              }
+            ]
+          },
+          {
+            "label": "近战护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorm"
+              },
+              {
+                "text": "近战护甲"
+              }
+            ]
+          },
+          {
+            "label": "火焰护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorf"
+              },
+              {
+                "text": "火焰护甲"
+              }
+            ]
+          },
+          {
+            "label": "远程护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "80%",
+                "parts": [
+                  {
+                    "text": "80%"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorr"
+              },
+              {
+                "text": "远程护甲"
+              }
+            ]
+          },
+          {
+            "label": "移动速度",
+            "values": [
+              {
+                "text": "0.62",
+                "parts": [
+                  {
+                    "text": "0.62"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "speed"
+              },
+              {
+                "text": "移动速度"
+              }
+            ]
+          },
+          {
+            "label": "视野",
+            "values": [
+              {
+                "text": "17.78",
+                "parts": [
+                  {
+                    "text": "17.78"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "sight"
+              },
+              {
+                "text": "视野"
+              }
+            ]
+          },
+          {
+            "label": "单位标签",
+            "values": [
+              {
+                "text": "攻城器",
+                "parts": [
+                  {
+                    "text": "攻城器"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "alle"
+              },
+              {
+                "text": "单位标签"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "攻击属性",
+        "fields": [
+          {
+            "label": "攻城伤害",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "40",
+                "parts": [
+                  {
+                    "text": "40"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "damagesiege"
+              },
+              {
+                "text": "攻城伤害"
+              }
+            ]
+          },
+          {
+            "label": "攻击范围",
+            "values": [
+              {
+                "text": "2.75 - 16.0",
+                "parts": [
+                  {
+                    "text": "2.75 - 16.0"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "range"
+              },
+              {
+                "text": "攻击范围"
+              }
+            ]
+          },
+          {
+            "label": "伤害区域",
+            "values": [
+              {
+                "text": "0.375 100%-25%-10%衰减",
+                "parts": [
+                  {
+                    "text": "0.375"
+                  },
+                  {
+                    "text": "100%-25%-10%衰减"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "aoearea"
+              },
+              {
+                "text": "伤害区域"
+              }
+            ]
+          },
+          {
+            "label": "攻击间隔",
+            "values": [
+              {
+                "text": "11.375",
+                "parts": [
+                  {
+                    "text": "11.375"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "attackspeed"
+              },
+              {
+                "text": "攻击间隔"
+              }
+            ]
+          },
+          {
+            "label": "对[建筑]加成",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "+350",
+                "parts": [
+                  {
+                    "text": "+350"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "对[建筑]加成"
+              }
+            ]
+          },
+          {
+            "label": "对[船]加成",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "+200",
+                "parts": [
+                  {
+                    "text": "+200"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "对[船]加成"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "bonuses": [
+      {
+        "civilization": "tug",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "生命值",
+                "parts": [
+                  {
+                    "icon": "hp"
+                  },
+                  {
+                    "text": "生命值"
+                  }
+                ]
+              },
+              {
+                "text": "攻城武器(+20%)",
+                "parts": [
+                  {
+                    "icon": "攻城武器"
+                  },
+                  {
+                    "text": "攻城武器(+20%)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "攻城伤害",
+                "parts": [
+                  {
+                    "icon": "damagesiege"
+                  },
+                  {
+                    "text": "攻城伤害"
+                  }
+                ]
+              },
+              {
+                "text": "几何学(+20%)",
+                "parts": [
+                  {
+                    "icon": "几何学"
+                  },
+                  {
+                    "text": "几何学(+20%)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "移动速度",
+                "parts": [
+                  {
+                    "icon": "speed"
+                  },
+                  {
+                    "text": "移动速度"
+                  }
+                ]
+              },
+              {
+                "text": "润滑轮轴(+15%)",
+                "parts": [
+                  {
+                    "icon": "润滑轮轴"
+                  },
+                  {
+                    "text": "润滑轮轴(+15%)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "训练效率",
+                "parts": [
+                  {
+                    "icon": "time"
+                  },
+                  {
+                    "text": "训练效率"
+                  }
+                ]
+              },
+              {
+                "text": "军事学院(+33%)",
+                "parts": [
+                  {
+                    "icon": "军事学院"
+                  },
+                  {
+                    "text": "军事学院(+33%)"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gallery_captions": [
+      "配重式巨型投石机",
+      "战狼号巨型投石机"
+    ]
+  }
+}

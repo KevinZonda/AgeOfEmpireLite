@@ -1,0 +1,705 @@
+{
+  "civilization": "byz",
+  "kind": "unit",
+  "section": "船只",
+  "name": "德罗蒙战舰",
+  "image_name": "德罗蒙战舰",
+  "source_url": "https://seicing.com/html/aoe2/unitaoe4/德罗蒙战舰.html?civ=byz",
+  "detail": {
+    "title": "德罗蒙战舰(Dromon)",
+    "sections": [
+      {
+        "title": "训练信息",
+        "fields": [
+          {
+            "label": "产地",
+            "values": [
+              {
+                "text": "码头",
+                "parts": [
+                  {
+                    "text": "码头"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "产地"
+              }
+            ]
+          },
+          {
+            "label": "成本",
+            "values": [
+              {
+                "text": "100 200 60",
+                "parts": [
+                  {
+                    "icon": "肉"
+                  },
+                  {
+                    "text": "100"
+                  },
+                  {
+                    "icon": "木"
+                  },
+                  {
+                    "text": "200"
+                  },
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "60"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "成本"
+              }
+            ]
+          },
+          {
+            "label": "训练时间",
+            "values": [
+              {
+                "text": "30秒",
+                "parts": [
+                  {
+                    "text": "30秒"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "time"
+              },
+              {
+                "text": "训练时间"
+              }
+            ]
+          },
+          {
+            "label": "人口占用",
+            "values": [
+              {
+                "text": "3",
+                "parts": [
+                  {
+                    "text": "3"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "pop2"
+              },
+              {
+                "text": "人口占用"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "状态数据",
+        "fields": [
+          {
+            "label": "生命值",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "500",
+                "parts": [
+                  {
+                    "text": "500"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "hp"
+              },
+              {
+                "text": "生命值"
+              }
+            ]
+          },
+          {
+            "label": "近战护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorm"
+              },
+              {
+                "text": "近战护甲"
+              }
+            ]
+          },
+          {
+            "label": "远程护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "4",
+                "parts": [
+                  {
+                    "text": "4"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorr"
+              },
+              {
+                "text": "远程护甲"
+              }
+            ]
+          },
+          {
+            "label": "移动速度",
+            "values": [
+              {
+                "text": "1.625",
+                "parts": [
+                  {
+                    "text": "1.625"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "speed"
+              },
+              {
+                "text": "移动速度"
+              }
+            ]
+          },
+          {
+            "label": "视野",
+            "values": [
+              {
+                "text": "10.00",
+                "parts": [
+                  {
+                    "text": "10.00"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "sight"
+              },
+              {
+                "text": "视野"
+              }
+            ]
+          },
+          {
+            "label": "单位标签",
+            "values": [
+              {
+                "text": "扭力弩炮船、大型船",
+                "parts": [
+                  {
+                    "text": "扭力弩炮船、大型船"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "alle"
+              },
+              {
+                "text": "单位标签"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "攻击属性",
+        "fields": [
+          {
+            "label": "攻城伤害",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "7",
+                "parts": [
+                  {
+                    "text": "7"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "damagesiege"
+              },
+              {
+                "text": "攻城伤害"
+              }
+            ]
+          },
+          {
+            "label": "多段攻击",
+            "values": [
+              {
+                "text": "6",
+                "parts": [
+                  {
+                    "text": "6"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "brust"
+              },
+              {
+                "text": "多段攻击"
+              }
+            ]
+          },
+          {
+            "label": "攻击范围",
+            "values": [
+              {
+                "text": "4.0",
+                "parts": [
+                  {
+                    "text": "4.0"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "range"
+              },
+              {
+                "text": "攻击范围"
+              }
+            ]
+          },
+          {
+            "label": "攻击间隔",
+            "values": [
+              {
+                "text": "3.0",
+                "parts": [
+                  {
+                    "text": "3.0"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "attackspeed"
+              },
+              {
+                "text": "攻击间隔"
+              }
+            ]
+          },
+          {
+            "label": "对[步弓手船]加成",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "+8",
+                "parts": [
+                  {
+                    "text": "+8"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "对[步弓手船]加成"
+              }
+            ]
+          },
+          {
+            "label": "对[燃烧船]加成",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "+3",
+                "parts": [
+                  {
+                    "text": "+3"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "对[燃烧船]加成"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "特殊能力",
+        "fields": []
+      },
+      {
+        "title": "掌舵人：10秒内提高移动速度40%，进入战斗马上失效",
+        "fields": []
+      }
+    ],
+    "bonuses": [
+      {
+        "civilization": "byz",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "生命值",
+                "parts": [
+                  {
+                    "icon": "hp"
+                  },
+                  {
+                    "text": "生命值"
+                  }
+                ]
+              },
+              {
+                "text": "装甲船身(+20%) 造船工(+20%)",
+                "parts": [
+                  {
+                    "icon": "装甲船身"
+                  },
+                  {
+                    "text": "装甲船身(+20%)"
+                  },
+                  {
+                    "icon": "造船工"
+                  },
+                  {
+                    "text": "造船工(+20%)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "远程伤害",
+                "parts": [
+                  {
+                    "icon": "damageranged"
+                  },
+                  {
+                    "text": "远程伤害"
+                  }
+                ]
+              },
+              {
+                "text": "钢制箭头(+1) 平衡炮弹(+1) 箭头穿孔板甲(+1) 重型德罗蒙战舰(+1) 重型德罗蒙战舰(点燃海面)",
+                "parts": [
+                  {
+                    "icon": "钢制箭头"
+                  },
+                  {
+                    "text": "钢制箭头(+1)"
+                  },
+                  {
+                    "icon": "平衡炮弹"
+                  },
+                  {
+                    "text": "平衡炮弹(+1)"
+                  },
+                  {
+                    "icon": "箭头穿孔板甲"
+                  },
+                  {
+                    "text": "箭头穿孔板甲(+1)"
+                  },
+                  {
+                    "icon": "重型德罗蒙战舰"
+                  },
+                  {
+                    "text": "重型德罗蒙战舰(+1)"
+                  },
+                  {
+                    "icon": "重型德罗蒙战舰"
+                  },
+                  {
+                    "text": "重型德罗蒙战舰(点燃海面)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "攻击范围",
+                "parts": [
+                  {
+                    "icon": "range"
+                  },
+                  {
+                    "text": "攻击范围"
+                  }
+                ]
+              },
+              {
+                "text": "重型德罗蒙战舰(+0.5)",
+                "parts": [
+                  {
+                    "icon": "重型德罗蒙战舰"
+                  },
+                  {
+                    "text": "重型德罗蒙战舰(+0.5)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "远程护甲",
+                "parts": [
+                  {
+                    "icon": "armorr"
+                  },
+                  {
+                    "text": "远程护甲"
+                  }
+                ]
+              },
+              {
+                "text": "装甲船身(+1) 造船工(+1)",
+                "parts": [
+                  {
+                    "icon": "装甲船身"
+                  },
+                  {
+                    "text": "装甲船身(+1)"
+                  },
+                  {
+                    "icon": "造船工"
+                  },
+                  {
+                    "text": "造船工(+1)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "训练效率",
+                "parts": [
+                  {
+                    "icon": "time"
+                  },
+                  {
+                    "text": "训练效率"
+                  }
+                ]
+              },
+              {
+                "text": "军事学院(+33%)",
+                "parts": [
+                  {
+                    "icon": "军事学院"
+                  },
+                  {
+                    "text": "军事学院(+33%)"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gallery_captions": [
+      "德罗蒙战舰"
+    ]
+  }
+}

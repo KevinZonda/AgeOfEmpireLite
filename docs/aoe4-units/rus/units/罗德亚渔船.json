@@ -1,0 +1,734 @@
+{
+  "civilization": "rus",
+  "kind": "unit",
+  "section": "船只",
+  "name": "罗德亚渔船",
+  "image_name": "罗德亚渔船",
+  "source_url": "https://seicing.com/html/aoe2/unitaoe4/罗德亚渔船.html?civ=rus",
+  "detail": {
+    "title": "罗德亚渔船(Lodya Fishing Boat)",
+    "sections": [
+      {
+        "title": "训练信息",
+        "fields": [
+          {
+            "label": "产地",
+            "values": [
+              {
+                "text": "码头",
+                "parts": [
+                  {
+                    "text": "码头"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "产地"
+              }
+            ]
+          },
+          {
+            "label": "成本",
+            "values": [
+              {
+                "text": "150",
+                "parts": [
+                  {
+                    "icon": "木"
+                  },
+                  {
+                    "text": "150"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "成本"
+              }
+            ]
+          },
+          {
+            "label": "训练时间",
+            "values": [
+              {
+                "text": "46秒",
+                "parts": [
+                  {
+                    "text": "46秒"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "time"
+              },
+              {
+                "text": "训练时间"
+              }
+            ]
+          },
+          {
+            "label": "人口占用",
+            "values": [
+              {
+                "text": "2",
+                "parts": [
+                  {
+                    "text": "2"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "pop2"
+              },
+              {
+                "text": "人口占用"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "状态数据",
+        "fields": [
+          {
+            "label": "生命值",
+            "values": [
+              {
+                "text": "200",
+                "parts": [
+                  {
+                    "text": "200"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "hp"
+              },
+              {
+                "text": "生命值"
+              }
+            ]
+          },
+          {
+            "label": "火焰护甲",
+            "values": [
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorf"
+              },
+              {
+                "text": "火焰护甲"
+              }
+            ]
+          },
+          {
+            "label": "远程护甲",
+            "values": [
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorr"
+              },
+              {
+                "text": "远程护甲"
+              }
+            ]
+          },
+          {
+            "label": "移动速度",
+            "values": [
+              {
+                "text": "1.5",
+                "parts": [
+                  {
+                    "text": "1.5"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "speed"
+              },
+              {
+                "text": "移动速度"
+              }
+            ]
+          },
+          {
+            "label": "视野",
+            "values": [
+              {
+                "text": "7.33",
+                "parts": [
+                  {
+                    "text": "7.33"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "sight"
+              },
+              {
+                "text": "视野"
+              }
+            ]
+          },
+          {
+            "label": "单位标签",
+            "values": [
+              {
+                "text": "工人、船只",
+                "parts": [
+                  {
+                    "text": "工人、船只"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "alle"
+              },
+              {
+                "text": "单位标签"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "变形费用",
+        "fields": [
+          {
+            "label": "渔船",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "罗德亚渔船"
+              },
+              {
+                "text": "渔船"
+              }
+            ]
+          },
+          {
+            "label": "爆破船",
+            "values": [
+              {
+                "text": "25 80 20",
+                "parts": [
+                  {
+                    "icon": "木"
+                  },
+                  {
+                    "text": "25"
+                  },
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "80"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "20"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "罗德亚爆破船"
+              },
+              {
+                "text": "爆破船"
+              }
+            ]
+          },
+          {
+            "label": "攻击船",
+            "values": [
+              {
+                "text": "120 75 30 20",
+                "parts": [
+                  {
+                    "icon": "肉"
+                  },
+                  {
+                    "text": "120"
+                  },
+                  {
+                    "icon": "木"
+                  },
+                  {
+                    "text": "75"
+                  },
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "30"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "20"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "罗德亚攻击船"
+              },
+              {
+                "text": "攻击船"
+              }
+            ]
+          },
+          {
+            "label": "战舰",
+            "values": [
+              {
+                "text": "90 25 20",
+                "parts": [
+                  {
+                    "icon": "肉"
+                  },
+                  {
+                    "text": "90"
+                  },
+                  {
+                    "icon": "木"
+                  },
+                  {
+                    "text": "25"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "20"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "罗德亚战舰"
+              },
+              {
+                "text": "战舰"
+              }
+            ]
+          },
+          {
+            "label": "运输船",
+            "values": [
+              {
+                "text": "25 20",
+                "parts": [
+                  {
+                    "icon": "木"
+                  },
+                  {
+                    "text": "25"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "20"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "罗德亚运输船"
+              },
+              {
+                "text": "运输船"
+              }
+            ]
+          },
+          {
+            "label": "商船",
+            "values": [
+              {
+                "text": "25 100 20",
+                "parts": [
+                  {
+                    "icon": "木"
+                  },
+                  {
+                    "text": "25"
+                  },
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "100"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "20"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "罗德亚商船"
+              },
+              {
+                "text": "商船"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "bonuses": [
+      {
+        "civilization": null,
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": ""
+              },
+              {
+                "text": "工作效率",
+                "parts": [
+                  {
+                    "text": "工作效率"
+                  }
+                ]
+              },
+              {
+                "text": "运载量",
+                "parts": [
+                  {
+                    "text": "运载量"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "近海鱼群",
+                "parts": [
+                  {
+                    "icon": "gather7"
+                  },
+                  {
+                    "text": "近海鱼群"
+                  }
+                ]
+              },
+              {
+                "text": "1.2825",
+                "parts": [
+                  {
+                    "text": "1.2825"
+                  }
+                ]
+              },
+              {
+                "text": "40",
+                "parts": [
+                  {
+                    "text": "40"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "深海鱼群",
+                "parts": [
+                  {
+                    "icon": "gather21"
+                  },
+                  {
+                    "text": "深海鱼群"
+                  }
+                ]
+              },
+              {
+                "text": "1.42",
+                "parts": [
+                  {
+                    "text": "1.42"
+                  }
+                ]
+              },
+              {
+                "text": "40",
+                "parts": [
+                  {
+                    "text": "40"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "civilization": "rus",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "采集效率(食物)",
+                "parts": [
+                  {
+                    "icon": "gather11"
+                  },
+                  {
+                    "text": "采集效率(食物)"
+                  }
+                ]
+              },
+              {
+                "text": "延绳钓(+15%) 流刺网(+10%)",
+                "parts": [
+                  {
+                    "icon": "延绳钓"
+                  },
+                  {
+                    "text": "延绳钓(+15%)"
+                  },
+                  {
+                    "icon": "流刺网"
+                  },
+                  {
+                    "text": "流刺网(+10%)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "运载量",
+                "parts": [
+                  {
+                    "icon": "cap"
+                  },
+                  {
+                    "text": "运载量"
+                  }
+                ]
+              },
+              {
+                "text": "延绳钓(+10) 流刺网(+20)",
+                "parts": [
+                  {
+                    "icon": "延绳钓"
+                  },
+                  {
+                    "text": "延绳钓(+10)"
+                  },
+                  {
+                    "icon": "流刺网"
+                  },
+                  {
+                    "text": "流刺网(+20)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "其他",
+                "parts": [
+                  {
+                    "text": "其他"
+                  }
+                ]
+              },
+              {
+                "text": "适应性强的船身(+50%变形速度)",
+                "parts": [
+                  {
+                    "icon": "适应性强的船身"
+                  },
+                  {
+                    "text": "适应性强的船身(+50%变形速度)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "移动速度",
+                "parts": [
+                  {
+                    "icon": "speed"
+                  },
+                  {
+                    "text": "移动速度"
+                  }
+                ]
+              },
+              {
+                "text": "流刺网(+10%)",
+                "parts": [
+                  {
+                    "icon": "流刺网"
+                  },
+                  {
+                    "text": "流刺网(+10%)"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gallery_captions": [
+      "罗德亚渔船"
+    ]
+  }
+}

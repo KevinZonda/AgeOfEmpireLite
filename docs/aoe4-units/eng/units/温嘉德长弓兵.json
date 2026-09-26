@@ -1,0 +1,803 @@
+{
+  "civilization": "eng",
+  "kind": "unit",
+  "section": "军事单位",
+  "name": "温嘉德长弓兵",
+  "image_name": "温嘉德长弓兵",
+  "source_url": "https://seicing.com/html/aoe2/unitaoe4/温嘉德长弓兵.html?civ=eng",
+  "detail": {
+    "title": "温嘉德长弓兵(Wynguard Rangers)",
+    "sections": [
+      {
+        "title": "训练信息",
+        "fields": [
+          {
+            "label": "产地",
+            "values": [
+              {
+                "text": "温嘉德宫殿",
+                "parts": [
+                  {
+                    "text": "温嘉德宫殿"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "产地"
+              }
+            ]
+          },
+          {
+            "label": "成本",
+            "values": [
+              {
+                "text": "450 300",
+                "parts": [
+                  {
+                    "icon": "木"
+                  },
+                  {
+                    "text": "450"
+                  },
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "300"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "成本"
+              }
+            ]
+          },
+          {
+            "label": "训练时间",
+            "values": [
+              {
+                "text": "50秒",
+                "parts": [
+                  {
+                    "text": "50秒"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "time"
+              },
+              {
+                "text": "训练时间"
+              }
+            ]
+          },
+          {
+            "label": "捆绑训练数量",
+            "values": [
+              {
+                "text": "6人",
+                "parts": [
+                  {
+                    "text": "6人"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "捆绑训练数量"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "状态数据",
+        "fields": [
+          {
+            "label": "生命值",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "125",
+                "parts": [
+                  {
+                    "text": "125"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "hp"
+              },
+              {
+                "text": "生命值"
+              }
+            ]
+          },
+          {
+            "label": "近战护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorm"
+              },
+              {
+                "text": "近战护甲"
+              }
+            ]
+          },
+          {
+            "label": "远程护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorr"
+              },
+              {
+                "text": "远程护甲"
+              }
+            ]
+          },
+          {
+            "label": "移动速度",
+            "values": [
+              {
+                "text": "1.125",
+                "parts": [
+                  {
+                    "text": "1.125"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "speed"
+              },
+              {
+                "text": "移动速度"
+              }
+            ]
+          },
+          {
+            "label": "视野",
+            "values": [
+              {
+                "text": "9.78",
+                "parts": [
+                  {
+                    "text": "9.78"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "sight"
+              },
+              {
+                "text": "视野"
+              }
+            ]
+          },
+          {
+            "label": "单位标签",
+            "values": [
+              {
+                "text": "轻型、远程、步兵",
+                "parts": [
+                  {
+                    "text": "轻型、远程、步兵"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "alle"
+              },
+              {
+                "text": "单位标签"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "攻击属性",
+        "fields": [
+          {
+            "label": "远程伤害",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "12",
+                "parts": [
+                  {
+                    "text": "12"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "damageranged"
+              },
+              {
+                "text": "远程伤害"
+              }
+            ]
+          },
+          {
+            "label": "攻击范围",
+            "values": [
+              {
+                "text": "8.00",
+                "parts": [
+                  {
+                    "text": "8.00"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "range"
+              },
+              {
+                "text": "攻击范围"
+              }
+            ]
+          },
+          {
+            "label": "攻击间隔",
+            "values": [
+              {
+                "text": "1.625",
+                "parts": [
+                  {
+                    "text": "1.625"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "attackspeed"
+              },
+              {
+                "text": "攻击间隔"
+              }
+            ]
+          },
+          {
+            "label": "对[轻型近战步兵]加成",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "+8",
+                "parts": [
+                  {
+                    "text": "+8"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "对[轻型近战步兵]加成"
+              }
+            ]
+          },
+          {
+            "label": "对[轻型火药步兵]加成",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "+8",
+                "parts": [
+                  {
+                    "text": "+8"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "对[轻型火药步兵]加成"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "攻击属性(对建筑攻击)",
+        "fields": [
+          {
+            "label": "攻城伤害",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "3",
+                "parts": [
+                  {
+                    "text": "3"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "damagesiege"
+              },
+              {
+                "text": "攻城伤害"
+              }
+            ]
+          },
+          {
+            "label": "攻击范围",
+            "values": [
+              {
+                "text": "8.00",
+                "parts": [
+                  {
+                    "text": "8.00"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "range"
+              },
+              {
+                "text": "攻击范围"
+              }
+            ]
+          },
+          {
+            "label": "攻击间隔",
+            "values": [
+              {
+                "text": "1.625",
+                "parts": [
+                  {
+                    "text": "1.625"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "attackspeed"
+              },
+              {
+                "text": "攻击间隔"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "特殊能力",
+        "fields": []
+      },
+      {
+        "title": "拒马：架设拒马抵挡骑兵",
+        "fields": []
+      }
+    ],
+    "bonuses": [
+      {
+        "civilization": "eng",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "远程伤害",
+                "parts": [
+                  {
+                    "icon": "damageranged"
+                  },
+                  {
+                    "text": "远程伤害"
+                  }
+                ]
+              },
+              {
+                "text": "钢制箭头(+1) 平衡炮弹(+1) 箭头穿孔板甲(+1) 燃烧箭(+20%) 燃烧箭(解锁对建筑攻击)",
+                "parts": [
+                  {
+                    "icon": "钢制箭头"
+                  },
+                  {
+                    "text": "钢制箭头(+1)"
+                  },
+                  {
+                    "icon": "平衡炮弹"
+                  },
+                  {
+                    "text": "平衡炮弹(+1)"
+                  },
+                  {
+                    "icon": "箭头穿孔板甲"
+                  },
+                  {
+                    "text": "箭头穿孔板甲(+1)"
+                  },
+                  {
+                    "icon": "燃烧箭"
+                  },
+                  {
+                    "text": "燃烧箭(+20%)"
+                  },
+                  {
+                    "icon": "燃烧箭"
+                  },
+                  {
+                    "text": "燃烧箭(解锁对建筑攻击)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "攻击速度",
+                "parts": [
+                  {
+                    "icon": "attackspeed"
+                  },
+                  {
+                    "text": "攻击速度"
+                  }
+                ]
+              },
+              {
+                "text": "万箭齐发(短时间攻击间隔时间-1秒)",
+                "parts": [
+                  {
+                    "icon": "万箭齐发"
+                  },
+                  {
+                    "text": "万箭齐发(短时间攻击间隔时间-1秒)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "近战护甲",
+                "parts": [
+                  {
+                    "icon": "armorm"
+                  },
+                  {
+                    "text": "近战护甲"
+                  }
+                ]
+              },
+              {
+                "text": "合身皮具(+1) 绝缘头盔(+1) 铁匠大师(+1)",
+                "parts": [
+                  {
+                    "icon": "合身皮具"
+                  },
+                  {
+                    "text": "合身皮具(+1)"
+                  },
+                  {
+                    "icon": "绝缘头盔"
+                  },
+                  {
+                    "text": "绝缘头盔(+1)"
+                  },
+                  {
+                    "icon": "铁匠大师"
+                  },
+                  {
+                    "text": "铁匠大师(+1)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "远程护甲",
+                "parts": [
+                  {
+                    "icon": "armorr"
+                  },
+                  {
+                    "text": "远程护甲"
+                  }
+                ]
+              },
+              {
+                "text": "铁制底网(+1) 楔形铆钉(+1) 斜面(+1)",
+                "parts": [
+                  {
+                    "icon": "铁制底网"
+                  },
+                  {
+                    "text": "铁制底网(+1)"
+                  },
+                  {
+                    "icon": "楔形铆钉"
+                  },
+                  {
+                    "text": "楔形铆钉(+1)"
+                  },
+                  {
+                    "icon": "斜面"
+                  },
+                  {
+                    "text": "斜面(+1)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "攻击范围",
+                "parts": [
+                  {
+                    "icon": "range"
+                  },
+                  {
+                    "text": "攻击范围"
+                  }
+                ]
+              },
+              {
+                "text": "蚕丝弓弦(+1.5)",
+                "parts": [
+                  {
+                    "icon": "蚕丝弓弦"
+                  },
+                  {
+                    "text": "蚕丝弓弦(+1.5)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "其它",
+                "parts": [
+                  {
+                    "text": "其它"
+                  }
+                ]
+              },
+              {
+                "text": "攻城工程学(可以建造冲车和攻城塔)",
+                "parts": [
+                  {
+                    "icon": "攻城工程学"
+                  },
+                  {
+                    "text": "攻城工程学(可以建造冲车和攻城塔)"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gallery_captions": [
+      "温嘉德长弓兵"
+    ]
+  }
+}

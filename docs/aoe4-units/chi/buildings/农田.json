@@ -1,0 +1,305 @@
+{
+  "civilization": "chi",
+  "kind": "building",
+  "section": "黑暗时代建筑",
+  "name": "农田",
+  "image_name": "农田",
+  "source_url": "https://seicing.com/html/aoe2/buildingsaoe4/农田.html?civ=chi",
+  "detail": {
+    "title": "农田(Farm)",
+    "sections": [
+      {
+        "title": "建造信息",
+        "fields": [
+          {
+            "label": "成本",
+            "values": [
+              {
+                "text": "75",
+                "parts": [
+                  {
+                    "icon": "木"
+                  },
+                  {
+                    "text": "75"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "成本"
+              }
+            ]
+          },
+          {
+            "label": "建造时间",
+            "values": [
+              {
+                "text": "6秒",
+                "parts": [
+                  {
+                    "text": "6秒"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "time"
+              },
+              {
+                "text": "建造时间"
+              }
+            ]
+          },
+          {
+            "label": "视野",
+            "values": [
+              {
+                "text": "0.00",
+                "parts": [
+                  {
+                    "text": "0.00"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "sight"
+              },
+              {
+                "text": "视野"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "状态数据",
+        "fields": [
+          {
+            "label": "生命值",
+            "values": [
+              {
+                "text": "300",
+                "parts": [
+                  {
+                    "text": "300"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "hp"
+              },
+              {
+                "text": "生命值"
+              }
+            ]
+          },
+          {
+            "label": "火焰护甲",
+            "values": [
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorf"
+              },
+              {
+                "text": "火焰护甲"
+              }
+            ]
+          },
+          {
+            "label": "远程护甲",
+            "values": [
+              {
+                "text": "50",
+                "parts": [
+                  {
+                    "text": "50"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorr"
+              },
+              {
+                "text": "远程护甲"
+              }
+            ]
+          },
+          {
+            "label": "尺寸",
+            "values": [
+              {
+                "text": "2×2",
+                "parts": [
+                  {
+                    "text": "2×2"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "size"
+              },
+              {
+                "text": "尺寸"
+              }
+            ]
+          },
+          {
+            "label": "建筑标签",
+            "values": [
+              {
+                "text": "经济建筑",
+                "parts": [
+                  {
+                    "text": "经济建筑"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "allb"
+              },
+              {
+                "text": "建筑标签"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "bonuses": [
+      {
+        "civilization": "chi",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "生命值",
+                "parts": [
+                  {
+                    "icon": "hp"
+                  },
+                  {
+                    "text": "生命值"
+                  }
+                ]
+              },
+              {
+                "text": "宫廷建筑师(+30%)",
+                "parts": [
+                  {
+                    "icon": "宫廷建筑师"
+                  },
+                  {
+                    "text": "宫廷建筑师(+30%)"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gallery_captions": [
+      "东亚农田",
+      "农田"
+    ]
+  }
+}

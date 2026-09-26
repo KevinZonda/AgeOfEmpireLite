@@ -1,0 +1,730 @@
+{
+  "civilization": "tug",
+  "kind": "unit",
+  "section": "攻城武器",
+  "name": "弩炮大象",
+  "image_name": "弩炮大象",
+  "source_url": "https://seicing.com/html/aoe2/unitaoe4/弩炮大象.html?civ=tug",
+  "detail": {
+    "title": "弩炮大象(Ballista Elephant)",
+    "sections": [
+      {
+        "title": "训练信息",
+        "fields": [
+          {
+            "label": "产地",
+            "values": [
+              {
+                "text": "攻城武器厂",
+                "parts": [
+                  {
+                    "text": "攻城武器厂"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "产地"
+              }
+            ]
+          },
+          {
+            "label": "成本",
+            "values": [
+              {
+                "text": "250 350",
+                "parts": [
+                  {
+                    "icon": "肉"
+                  },
+                  {
+                    "text": "250"
+                  },
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "350"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "成本"
+              }
+            ]
+          },
+          {
+            "label": "训练时间",
+            "values": [
+              {
+                "text": "40秒",
+                "parts": [
+                  {
+                    "text": "40秒"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "time"
+              },
+              {
+                "text": "训练时间"
+              }
+            ]
+          },
+          {
+            "label": "人口占用",
+            "values": [
+              {
+                "text": "4",
+                "parts": [
+                  {
+                    "text": "4"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "pop2"
+              },
+              {
+                "text": "人口占用"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "状态数据",
+        "fields": [
+          {
+            "label": "生命值",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "400",
+                "parts": [
+                  {
+                    "text": "400"
+                  }
+                ]
+              },
+              {
+                "text": "475",
+                "parts": [
+                  {
+                    "text": "475"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "hp"
+              },
+              {
+                "text": "生命值"
+              }
+            ]
+          },
+          {
+            "label": "近战护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "2",
+                "parts": [
+                  {
+                    "text": "2"
+                  }
+                ]
+              },
+              {
+                "text": "3",
+                "parts": [
+                  {
+                    "text": "3"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorm"
+              },
+              {
+                "text": "近战护甲"
+              }
+            ]
+          },
+          {
+            "label": "远程护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "2",
+                "parts": [
+                  {
+                    "text": "2"
+                  }
+                ]
+              },
+              {
+                "text": "3",
+                "parts": [
+                  {
+                    "text": "3"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorr"
+              },
+              {
+                "text": "远程护甲"
+              }
+            ]
+          },
+          {
+            "label": "移动速度",
+            "values": [
+              {
+                "text": "1.00",
+                "parts": [
+                  {
+                    "text": "1.00"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "speed"
+              },
+              {
+                "text": "移动速度"
+              }
+            ]
+          },
+          {
+            "label": "视野",
+            "values": [
+              {
+                "text": "8.00",
+                "parts": [
+                  {
+                    "text": "8.00"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "sight"
+              },
+              {
+                "text": "视野"
+              }
+            ]
+          },
+          {
+            "label": "单位标签",
+            "values": [
+              {
+                "text": "重型、骑兵、大象、攻城器",
+                "parts": [
+                  {
+                    "text": "重型、骑兵、大象、攻城器"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "alle"
+              },
+              {
+                "text": "单位标签"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "攻击属性",
+        "fields": [
+          {
+            "label": "远程伤害",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "18",
+                "parts": [
+                  {
+                    "text": "18"
+                  }
+                ]
+              },
+              {
+                "text": "20",
+                "parts": [
+                  {
+                    "text": "20"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "damageranged"
+              },
+              {
+                "text": "远程伤害"
+              }
+            ]
+          },
+          {
+            "label": "攻击范围",
+            "values": [
+              {
+                "text": "7.5",
+                "parts": [
+                  {
+                    "text": "7.5"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "range"
+              },
+              {
+                "text": "攻击范围"
+              }
+            ]
+          },
+          {
+            "label": "攻击间隔",
+            "values": [
+              {
+                "text": "3.125",
+                "parts": [
+                  {
+                    "text": "3.125"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "attackspeed"
+              },
+              {
+                "text": "攻击间隔"
+              }
+            ]
+          },
+          {
+            "label": "对[近战步兵]加成",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "+14",
+                "parts": [
+                  {
+                    "text": "+14"
+                  }
+                ]
+              },
+              {
+                "text": "+18",
+                "parts": [
+                  {
+                    "text": "+18"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "对[近战步兵]加成"
+              }
+            ]
+          },
+          {
+            "label": "对[船]加成",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "+65",
+                "parts": [
+                  {
+                    "text": "+65"
+                  }
+                ]
+              },
+              {
+                "text": "+70",
+                "parts": [
+                  {
+                    "text": "+70"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "对[船]加成"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "bonuses": [
+      {
+        "civilization": "tug",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "生命值",
+                "parts": [
+                  {
+                    "icon": "hp"
+                  },
+                  {
+                    "text": "生命值"
+                  }
+                ]
+              },
+              {
+                "text": "生物学(+25%)",
+                "parts": [
+                  {
+                    "icon": "生物学"
+                  },
+                  {
+                    "text": "生物学(+25%)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "生命恢复",
+                "parts": [
+                  {
+                    "text": "生命恢复"
+                  }
+                ]
+              },
+              {
+                "text": "大象看护人(+1/秒)",
+                "parts": [
+                  {
+                    "icon": "大象看护人"
+                  },
+                  {
+                    "text": "大象看护人(+1/秒)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "远程伤害",
+                "parts": [
+                  {
+                    "icon": "damageranged"
+                  },
+                  {
+                    "text": "远程伤害"
+                  }
+                ]
+              },
+              {
+                "text": "附带损坏(+30%额外伤害)",
+                "parts": [
+                  {
+                    "icon": "附带损坏"
+                  },
+                  {
+                    "text": "附带损坏(+30%额外伤害)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "近战护甲",
+                "parts": [
+                  {
+                    "icon": "armorm"
+                  },
+                  {
+                    "text": "近战护甲"
+                  }
+                ]
+              },
+              {
+                "text": "合身皮具(+1) 绝缘头盔(+1) 铁匠大师(+1)",
+                "parts": [
+                  {
+                    "icon": "合身皮具"
+                  },
+                  {
+                    "text": "合身皮具(+1)"
+                  },
+                  {
+                    "icon": "绝缘头盔"
+                  },
+                  {
+                    "text": "绝缘头盔(+1)"
+                  },
+                  {
+                    "icon": "铁匠大师"
+                  },
+                  {
+                    "text": "铁匠大师(+1)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "远程护甲",
+                "parts": [
+                  {
+                    "icon": "armorr"
+                  },
+                  {
+                    "text": "远程护甲"
+                  }
+                ]
+              },
+              {
+                "text": "铁制底网(+1) 楔形铆钉(+1) 斜面(+1)",
+                "parts": [
+                  {
+                    "icon": "铁制底网"
+                  },
+                  {
+                    "text": "铁制底网(+1)"
+                  },
+                  {
+                    "icon": "楔形铆钉"
+                  },
+                  {
+                    "text": "楔形铆钉(+1)"
+                  },
+                  {
+                    "icon": "斜面"
+                  },
+                  {
+                    "text": "斜面(+1)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "移动速度",
+                "parts": [
+                  {
+                    "icon": "speed"
+                  },
+                  {
+                    "text": "移动速度"
+                  }
+                ]
+              },
+              {
+                "text": "象夫(+10%)",
+                "parts": [
+                  {
+                    "icon": "象夫"
+                  },
+                  {
+                    "text": "象夫(+10%)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "训练效率",
+                "parts": [
+                  {
+                    "icon": "time"
+                  },
+                  {
+                    "text": "训练效率"
+                  }
+                ]
+              },
+              {
+                "text": "军事学院(+33%)",
+                "parts": [
+                  {
+                    "icon": "军事学院"
+                  },
+                  {
+                    "text": "军事学院(+33%)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "其他",
+                "parts": [
+                  {
+                    "text": "其他"
+                  }
+                ]
+              },
+              {
+                "text": "强化武装弩炮(升级为精锐弩炮大象)",
+                "parts": [
+                  {
+                    "icon": "强化武装弩炮"
+                  },
+                  {
+                    "text": "强化武装弩炮(升级为精锐弩炮大象)"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gallery_captions": [
+      "弩炮大象",
+      "精锐弩炮大象"
+    ]
+  }
+}

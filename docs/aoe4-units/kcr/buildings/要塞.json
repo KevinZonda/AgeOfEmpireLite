@@ -1,0 +1,1647 @@
+{
+  "civilization": "kcr",
+  "kind": "building",
+  "section": "封建时代建筑",
+  "name": "要塞",
+  "image_name": "要塞",
+  "source_url": "https://seicing.com/html/aoe2/buildingsaoe4/要塞.html?civ=kcr",
+  "detail": {
+    "title": "要塞(Fortress)",
+    "sections": [
+      {
+        "title": "建造信息",
+        "fields": [
+          {
+            "label": "成本",
+            "values": [
+              {
+                "text": "300 600",
+                "parts": [
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "300"
+                  },
+                  {
+                    "icon": "石"
+                  },
+                  {
+                    "text": "600"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "成本"
+              }
+            ]
+          },
+          {
+            "label": "建造时间",
+            "values": [
+              {
+                "text": "180秒",
+                "parts": [
+                  {
+                    "text": "180秒"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "time"
+              },
+              {
+                "text": "建造时间"
+              }
+            ]
+          },
+          {
+            "label": "视野",
+            "values": [
+              {
+                "text": "12.89",
+                "parts": [
+                  {
+                    "text": "12.89"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "sight"
+              },
+              {
+                "text": "视野"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "状态数据",
+        "fields": [
+          {
+            "label": "生命值",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "4000",
+                "parts": [
+                  {
+                    "text": "4000"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "hp"
+              },
+              {
+                "text": "生命值"
+              }
+            ]
+          },
+          {
+            "label": "火焰护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "6",
+                "parts": [
+                  {
+                    "text": "6"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorf"
+              },
+              {
+                "text": "火焰护甲"
+              }
+            ]
+          },
+          {
+            "label": "远程护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "50",
+                "parts": [
+                  {
+                    "text": "50"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorr"
+              },
+              {
+                "text": "远程护甲"
+              }
+            ]
+          },
+          {
+            "label": "尺寸",
+            "values": [
+              {
+                "text": "4×4",
+                "parts": [
+                  {
+                    "text": "4×4"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "size"
+              },
+              {
+                "text": "尺寸"
+              }
+            ]
+          },
+          {
+            "label": "建筑标签",
+            "values": [
+              {
+                "text": "防御建筑、地标",
+                "parts": [
+                  {
+                    "text": "防御建筑、地标"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "allb"
+              },
+              {
+                "text": "建筑标签"
+              }
+            ]
+          },
+          {
+            "label": "驻扎数量",
+            "values": [
+              {
+                "text": "15",
+                "parts": [
+                  {
+                    "text": "15"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "garrison"
+              },
+              {
+                "text": "驻扎数量"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "攻击属性(射箭)",
+        "fields": [
+          {
+            "label": "远程伤害",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "12",
+                "parts": [
+                  {
+                    "text": "12"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "damageranged"
+              },
+              {
+                "text": "远程伤害"
+              }
+            ]
+          },
+          {
+            "label": "武器数",
+            "values": [
+              {
+                "text": "3队弓箭手",
+                "parts": [
+                  {
+                    "text": "3队弓箭手"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "brust"
+              },
+              {
+                "text": "武器数"
+              }
+            ]
+          },
+          {
+            "label": "攻击范围",
+            "values": [
+              {
+                "text": "8.00",
+                "parts": [
+                  {
+                    "text": "8.00"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "range"
+              },
+              {
+                "text": "攻击范围"
+              }
+            ]
+          },
+          {
+            "label": "攻击间隔",
+            "values": [
+              {
+                "text": "0.5",
+                "parts": [
+                  {
+                    "text": "0.5"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "attackspeed"
+              },
+              {
+                "text": "攻击间隔"
+              }
+            ]
+          },
+          {
+            "label": "对[船只]加成",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "+10",
+                "parts": [
+                  {
+                    "text": "+10"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "对[船只]加成"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "攻击属性(沸油)",
+        "fields": [
+          {
+            "label": "攻城伤害",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "30",
+                "parts": [
+                  {
+                    "text": "30"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "damagesiege"
+              },
+              {
+                "text": "攻城伤害"
+              }
+            ]
+          },
+          {
+            "label": "攻击范围",
+            "values": [
+              {
+                "text": "1.5",
+                "parts": [
+                  {
+                    "text": "1.5"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "range"
+              },
+              {
+                "text": "攻击范围"
+              }
+            ]
+          },
+          {
+            "label": "伤害区域",
+            "values": [
+              {
+                "text": "1.0",
+                "parts": [
+                  {
+                    "text": "1.0"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "aoearea"
+              },
+              {
+                "text": "伤害区域"
+              }
+            ]
+          },
+          {
+            "label": "攻击间隔",
+            "values": [
+              {
+                "text": "9.62",
+                "parts": [
+                  {
+                    "text": "9.62"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "attackspeed"
+              },
+              {
+                "text": "攻击间隔"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "攻击属性(扭力弩炮)",
+        "fields": [
+          {
+            "label": "远程伤害",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "40",
+                "parts": [
+                  {
+                    "text": "40"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "damageranged"
+              },
+              {
+                "text": "远程伤害"
+              }
+            ]
+          },
+          {
+            "label": "攻击范围",
+            "values": [
+              {
+                "text": "9.00",
+                "parts": [
+                  {
+                    "text": "9.00"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "range"
+              },
+              {
+                "text": "攻击范围"
+              }
+            ]
+          },
+          {
+            "label": "攻击间隔",
+            "values": [
+              {
+                "text": "3.88",
+                "parts": [
+                  {
+                    "text": "3.88"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "attackspeed"
+              },
+              {
+                "text": "攻击间隔"
+              }
+            ]
+          },
+          {
+            "label": "对[船只]加成",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "+40",
+                "parts": [
+                  {
+                    "text": "+40"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "对[船只]加成"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "攻击属性(巨型投石机)",
+        "fields": [
+          {
+            "label": "攻城伤害",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "25",
+                "parts": [
+                  {
+                    "text": "25"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "damagesiege"
+              },
+              {
+                "text": "攻城伤害"
+              }
+            ]
+          },
+          {
+            "label": "多段攻击",
+            "values": [
+              {
+                "text": "2",
+                "parts": [
+                  {
+                    "text": "2"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "brust"
+              },
+              {
+                "text": "多段攻击"
+              }
+            ]
+          },
+          {
+            "label": "攻击范围",
+            "values": [
+              {
+                "text": "18",
+                "parts": [
+                  {
+                    "text": "18"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "range"
+              },
+              {
+                "text": "攻击范围"
+              }
+            ]
+          },
+          {
+            "label": "攻击间隔",
+            "values": [
+              {
+                "text": "12.12",
+                "parts": [
+                  {
+                    "text": "12.12"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "attackspeed"
+              },
+              {
+                "text": "攻击间隔"
+              }
+            ]
+          },
+          {
+            "label": "对[船只]加成",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "+100",
+                "parts": [
+                  {
+                    "text": "+100"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "对[船只]加成"
+              }
+            ]
+          },
+          {
+            "label": "对[建筑]加成",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "+200",
+                "parts": [
+                  {
+                    "text": "+200"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "对[建筑]加成"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "攻击属性(副箭)",
+        "fields": [
+          {
+            "label": "远程伤害",
+            "values": [
+              {
+                "text": "10",
+                "parts": [
+                  {
+                    "text": "10"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "damageranged"
+              },
+              {
+                "text": "远程伤害"
+              }
+            ]
+          },
+          {
+            "label": "攻击范围",
+            "values": [
+              {
+                "text": "8.00",
+                "parts": [
+                  {
+                    "text": "8.00"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "range"
+              },
+              {
+                "text": "攻击范围"
+              }
+            ]
+          },
+          {
+            "label": "攻击间隔",
+            "values": [
+              {
+                "text": "2.62",
+                "parts": [
+                  {
+                    "text": "2.62"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "attackspeed"
+              },
+              {
+                "text": "攻击间隔"
+              }
+            ]
+          },
+          {
+            "label": "对[船只]加成",
+            "values": [
+              {
+                "text": "+10",
+                "parts": [
+                  {
+                    "text": "+10"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "对[船只]加成"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "特殊能力",
+        "fields": []
+      },
+      {
+        "title": "沙漠城堡：提升附近的友军部队15%的攻击范围",
+        "fields": []
+      }
+    ],
+    "bonuses": [
+      {
+        "civilization": "kcr",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "图标",
+                "parts": [
+                  {
+                    "text": "图标"
+                  }
+                ]
+              },
+              {
+                "text": "名称",
+                "parts": [
+                  {
+                    "text": "名称"
+                  }
+                ]
+              },
+              {
+                "text": "时代",
+                "parts": [
+                  {
+                    "text": "时代"
+                  }
+                ]
+              },
+              {
+                "text": "成本",
+                "parts": [
+                  {
+                    "text": "成本"
+                  }
+                ]
+              },
+              {
+                "text": "效果",
+                "parts": [
+                  {
+                    "text": "效果"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "",
+                "parts": [
+                  {
+                    "icon": "扭力弩炮炮台"
+                  }
+                ]
+              },
+              {
+                "text": "扭力弩炮炮台",
+                "parts": [
+                  {
+                    "text": "扭力弩炮炮台"
+                  }
+                ]
+              },
+              {
+                "text": "Ⅲ",
+                "parts": [
+                  {
+                    "text": "Ⅲ"
+                  }
+                ]
+              },
+              {
+                "text": "50 125 30",
+                "parts": [
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "50"
+                  },
+                  {
+                    "icon": "石"
+                  },
+                  {
+                    "text": "125"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "30"
+                  }
+                ]
+              },
+              {
+                "text": "为此建筑添加一座防御型扭力弩炮炮台",
+                "parts": [
+                  {
+                    "text": "为此建筑添加一座防御型扭力弩炮炮台"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "",
+                "parts": [
+                  {
+                    "icon": "巨型投石机炮台"
+                  }
+                ]
+              },
+              {
+                "text": "巨型投石机炮台",
+                "parts": [
+                  {
+                    "text": "巨型投石机炮台"
+                  }
+                ]
+              },
+              {
+                "text": "Ⅳ",
+                "parts": [
+                  {
+                    "text": "Ⅳ"
+                  }
+                ]
+              },
+              {
+                "text": "275 150 30",
+                "parts": [
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "275"
+                  },
+                  {
+                    "icon": "石"
+                  },
+                  {
+                    "text": "150"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "30"
+                  }
+                ]
+              },
+              {
+                "text": "为单个要塞部署一台巨型投石机炮台",
+                "parts": [
+                  {
+                    "text": "为单个要塞部署一台巨型投石机炮台"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "",
+                "parts": [
+                  {
+                    "icon": "沸油"
+                  }
+                ]
+              },
+              {
+                "text": "沸油",
+                "parts": [
+                  {
+                    "text": "沸油"
+                  }
+                ]
+              },
+              {
+                "text": "Ⅲ",
+                "parts": [
+                  {
+                    "text": "Ⅲ"
+                  }
+                ]
+              },
+              {
+                "text": "500 200 90",
+                "parts": [
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "500"
+                  },
+                  {
+                    "icon": "石"
+                  },
+                  {
+                    "text": "200"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "90"
+                  }
+                ]
+              },
+              {
+                "text": "箭塔和城堡能对附近敌方单位倾倒沸油，对其造成 30 伤害",
+                "parts": [
+                  {
+                    "text": "箭塔和城堡能对附近敌方单位倾倒沸油，对其造成 30 伤害"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "",
+                "parts": [
+                  {
+                    "icon": "沙漠城堡"
+                  }
+                ]
+              },
+              {
+                "text": "沙漠城堡",
+                "parts": [
+                  {
+                    "text": "沙漠城堡"
+                  }
+                ]
+              },
+              {
+                "text": "Ⅲ",
+                "parts": [
+                  {
+                    "text": "Ⅲ"
+                  }
+                ]
+              },
+              {
+                "text": "250 100 25",
+                "parts": [
+                  {
+                    "icon": "木"
+                  },
+                  {
+                    "text": "250"
+                  },
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "100"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "25"
+                  }
+                ]
+              },
+              {
+                "text": "强化要塞光环，附近部队+1护甲",
+                "parts": [
+                  {
+                    "text": "强化要塞光环，附近部队+1护甲"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "",
+                "parts": [
+                  {
+                    "icon": "藏宝塔"
+                  }
+                ]
+              },
+              {
+                "text": "藏宝塔",
+                "parts": [
+                  {
+                    "text": "藏宝塔"
+                  }
+                ]
+              },
+              {
+                "text": "Ⅲ",
+                "parts": [
+                  {
+                    "text": "Ⅲ"
+                  }
+                ]
+              },
+              {
+                "text": "150 350 40",
+                "parts": [
+                  {
+                    "icon": "木"
+                  },
+                  {
+                    "text": "150"
+                  },
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "350"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "40"
+                  }
+                ]
+              },
+              {
+                "text": "要塞附近的修道院、圣地和朝圣者+20%黄金收入",
+                "parts": [
+                  {
+                    "text": "要塞附近的修道院、圣地和朝圣者+20%黄金收入"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "",
+                "parts": [
+                  {
+                    "icon": "铁钳"
+                  }
+                ]
+              },
+              {
+                "text": "铁钳",
+                "parts": [
+                  {
+                    "text": "铁钳"
+                  }
+                ]
+              },
+              {
+                "text": "Ⅳ",
+                "parts": [
+                  {
+                    "text": "Ⅳ"
+                  }
+                ]
+              },
+              {
+                "text": "350 100 30",
+                "parts": [
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "350"
+                  },
+                  {
+                    "icon": "石"
+                  },
+                  {
+                    "text": "100"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "30"
+                  }
+                ]
+              },
+              {
+                "text": "使用铁钳强化城墙，使石墙和要塞受到来自火药部队的伤害-20%",
+                "parts": [
+                  {
+                    "text": "使用铁钳强化城墙，使石墙和要塞受到来自火药部队的伤害-20%"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "civilization": "kcr",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "生命值",
+                "parts": [
+                  {
+                    "icon": "hp"
+                  },
+                  {
+                    "text": "生命值"
+                  }
+                ]
+              },
+              {
+                "text": "城堡时代属性修正(+1000) 帝王时代属性修正(+1000) 宫廷建筑师(+30%)",
+                "parts": [
+                  {
+                    "icon": "属性升级3"
+                  },
+                  {
+                    "text": "城堡时代属性修正(+1000)"
+                  },
+                  {
+                    "icon": "属性升级4"
+                  },
+                  {
+                    "text": "帝王时代属性修正(+1000)"
+                  },
+                  {
+                    "icon": "宫廷建筑师"
+                  },
+                  {
+                    "text": "宫廷建筑师(+30%)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "远程伤害(射弹)",
+                "parts": [
+                  {
+                    "icon": "damageranged"
+                  },
+                  {
+                    "text": "远程伤害(射弹)"
+                  }
+                ]
+              },
+              {
+                "text": "钢制箭头(+1) 平衡炮弹(+1) 箭头穿孔板甲(+1)",
+                "parts": [
+                  {
+                    "icon": "钢制箭头"
+                  },
+                  {
+                    "text": "钢制箭头(+1)"
+                  },
+                  {
+                    "icon": "平衡炮弹"
+                  },
+                  {
+                    "text": "平衡炮弹(+1)"
+                  },
+                  {
+                    "icon": "箭头穿孔板甲"
+                  },
+                  {
+                    "text": "箭头穿孔板甲(+1)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "攻城伤害(巨投)",
+                "parts": [
+                  {
+                    "icon": "damagesiege"
+                  },
+                  {
+                    "text": "攻城伤害(巨投)"
+                  }
+                ]
+              },
+              {
+                "text": "钢制箭头(+1) 平衡炮弹(+1) 箭头穿孔板甲(+1) 配重式防御(+1多段攻击次数) 几何学(+20%)",
+                "parts": [
+                  {
+                    "icon": "钢制箭头"
+                  },
+                  {
+                    "text": "钢制箭头(+1)"
+                  },
+                  {
+                    "icon": "平衡炮弹"
+                  },
+                  {
+                    "text": "平衡炮弹(+1)"
+                  },
+                  {
+                    "icon": "箭头穿孔板甲"
+                  },
+                  {
+                    "text": "箭头穿孔板甲(+1)"
+                  },
+                  {
+                    "icon": "配重式防御"
+                  },
+                  {
+                    "text": "配重式防御(+1多段攻击次数)"
+                  },
+                  {
+                    "icon": "几何学"
+                  },
+                  {
+                    "text": "几何学(+20%)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "减伤",
+                "parts": [
+                  {
+                    "icon": "armor"
+                  },
+                  {
+                    "text": "减伤"
+                  }
+                ]
+              },
+              {
+                "text": "铁钳(-20%来自火药的伤害)",
+                "parts": [
+                  {
+                    "icon": "铁钳"
+                  },
+                  {
+                    "text": "铁钳(-20%来自火药的伤害)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "其他",
+                "parts": [
+                  {
+                    "text": "其他"
+                  }
+                ]
+              },
+              {
+                "text": "沙漠城堡(强化光环，附近部队+1护甲) 藏宝塔(强化光环，附近的朝圣者、圣物、圣地收入+20%)",
+                "parts": [
+                  {
+                    "icon": "沙漠城堡"
+                  },
+                  {
+                    "text": "沙漠城堡(强化光环，附近部队+1护甲)"
+                  },
+                  {
+                    "icon": "藏宝塔"
+                  },
+                  {
+                    "text": "藏宝塔(强化光环，附近的朝圣者、圣物、圣地收入+20%)"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gallery_captions": [
+      "封建时代要塞",
+      "城堡时代要塞",
+      "帝王时代要塞",
+      "要塞设定图"
+    ]
+  }
+}

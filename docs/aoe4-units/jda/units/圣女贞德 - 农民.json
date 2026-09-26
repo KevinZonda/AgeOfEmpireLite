@@ -1,0 +1,1368 @@
+{
+  "civilization": "jda",
+  "kind": "unit",
+  "section": "圣女贞德",
+  "name": "圣女贞德 - 农民",
+  "image_name": "圣女贞德农民",
+  "source_url": "https://seicing.com/html/aoe2/unitaoe4/圣女贞德农民.html?civ=jda",
+  "detail": {
+    "title": "圣女贞德 - 农民(Jeanne d'Arc - Peasant)",
+    "sections": [
+      {
+        "title": "训练信息",
+        "fields": [
+          {
+            "label": "产地",
+            "values": [
+              {
+                "text": "城镇中心",
+                "parts": [
+                  {
+                    "text": "城镇中心"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "产地"
+              }
+            ]
+          },
+          {
+            "label": "复活成本",
+            "values": [
+              {
+                "text": "100",
+                "parts": [
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "100"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "复活成本"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "状态数据",
+        "fields": [
+          {
+            "label": "生命值",
+            "values": [
+              {
+                "text": "150",
+                "parts": [
+                  {
+                    "text": "150"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "hp"
+              },
+              {
+                "text": "生命值"
+              }
+            ]
+          },
+          {
+            "label": "近战护甲",
+            "values": [
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorm"
+              },
+              {
+                "text": "近战护甲"
+              }
+            ]
+          },
+          {
+            "label": "远程护甲",
+            "values": [
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorr"
+              },
+              {
+                "text": "远程护甲"
+              }
+            ]
+          },
+          {
+            "label": "移动速度",
+            "values": [
+              {
+                "text": "1.125",
+                "parts": [
+                  {
+                    "text": "1.125"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "speed"
+              },
+              {
+                "text": "移动速度"
+              }
+            ]
+          },
+          {
+            "label": "视野",
+            "values": [
+              {
+                "text": "6.22",
+                "parts": [
+                  {
+                    "text": "6.22"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "sight"
+              },
+              {
+                "text": "视野"
+              }
+            ]
+          },
+          {
+            "label": "单位标签",
+            "values": [
+              {
+                "text": "工人、英雄",
+                "parts": [
+                  {
+                    "text": "工人、英雄"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "alle"
+              },
+              {
+                "text": "单位标签"
+              }
+            ]
+          },
+          {
+            "label": "近战伤害",
+            "values": [
+              {
+                "text": "6",
+                "parts": [
+                  {
+                    "text": "6"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "damagemelee"
+              },
+              {
+                "text": "近战伤害"
+              }
+            ]
+          },
+          {
+            "label": "攻击范围",
+            "values": [
+              {
+                "text": "0.29",
+                "parts": [
+                  {
+                    "text": "0.29"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "range"
+              },
+              {
+                "text": "攻击范围"
+              }
+            ]
+          },
+          {
+            "label": "攻击间隔",
+            "values": [
+              {
+                "text": "3.88",
+                "parts": [
+                  {
+                    "text": "3.88"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "attackspeed"
+              },
+              {
+                "text": "攻击间隔"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "攻击属性(近战狩猎)",
+        "fields": [
+          {
+            "label": "近战伤害",
+            "values": [
+              {
+                "text": "12",
+                "parts": [
+                  {
+                    "text": "12"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "damagemelee"
+              },
+              {
+                "text": "近战伤害"
+              }
+            ]
+          },
+          {
+            "label": "攻击范围",
+            "values": [
+              {
+                "text": "0.29",
+                "parts": [
+                  {
+                    "text": "0.29"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "range"
+              },
+              {
+                "text": "攻击范围"
+              }
+            ]
+          },
+          {
+            "label": "攻击间隔",
+            "values": [
+              {
+                "text": "3.88",
+                "parts": [
+                  {
+                    "text": "3.88"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "attackspeed"
+              },
+              {
+                "text": "攻击间隔"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "攻击属性(远程狩猎)",
+        "fields": [
+          {
+            "label": "远程伤害",
+            "values": [
+              {
+                "text": "3",
+                "parts": [
+                  {
+                    "text": "3"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "damageranged"
+              },
+              {
+                "text": "远程伤害"
+              }
+            ]
+          },
+          {
+            "label": "攻击范围",
+            "values": [
+              {
+                "text": "2.88",
+                "parts": [
+                  {
+                    "text": "2.88"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "range"
+              },
+              {
+                "text": "攻击范围"
+              }
+            ]
+          },
+          {
+            "label": "攻击间隔",
+            "values": [
+              {
+                "text": "2.88",
+                "parts": [
+                  {
+                    "text": "2.88"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "attackspeed"
+              },
+              {
+                "text": "攻击间隔"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "攻击属性(火炬)",
+        "fields": [
+          {
+            "label": "火焰伤害",
+            "values": [
+              {
+                "text": "10",
+                "parts": [
+                  {
+                    "text": "10"
+                  }
+                ]
+              },
+              {
+                "text": "10",
+                "parts": [
+                  {
+                    "text": "10"
+                  }
+                ]
+              },
+              {
+                "text": "10",
+                "parts": [
+                  {
+                    "text": "10"
+                  }
+                ]
+              },
+              {
+                "text": "10",
+                "parts": [
+                  {
+                    "text": "10"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "damagefire"
+              },
+              {
+                "text": "火焰伤害"
+              }
+            ]
+          },
+          {
+            "label": "攻击范围",
+            "values": [
+              {
+                "text": "1.00",
+                "parts": [
+                  {
+                    "text": "1.00"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "range"
+              },
+              {
+                "text": "攻击范围"
+              }
+            ]
+          },
+          {
+            "label": "攻击间隔",
+            "values": [
+              {
+                "text": "2.125",
+                "parts": [
+                  {
+                    "text": "2.125"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "attackspeed"
+              },
+              {
+                "text": "攻击间隔"
+              }
+            ]
+          },
+          {
+            "label": "对[攻城器]加成",
+            "values": [
+              {
+                "text": "+2",
+                "parts": [
+                  {
+                    "text": "+2"
+                  }
+                ]
+              },
+              {
+                "text": "+2",
+                "parts": [
+                  {
+                    "text": "+2"
+                  }
+                ]
+              },
+              {
+                "text": "+2",
+                "parts": [
+                  {
+                    "text": "+2"
+                  }
+                ]
+              },
+              {
+                "text": "+2",
+                "parts": [
+                  {
+                    "text": "+2"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "对[攻城器]加成"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "特殊能力",
+        "fields": []
+      },
+      {
+        "title": "光荣之心：脱离战斗的贞德在不同等级时每秒恢复1/1.5/2/2.5生命值，到达等级3/4后贞德从远程攻击中受到的伤害-45%/-60%",
+        "fields": []
+      },
+      {
+        "title": "建筑天才：贞德建造建筑物速度+33%，到达等级2后，贞德失去建造能力，但可以影响附近的村民获得加成",
+        "fields": []
+      }
+    ],
+    "bonuses": [
+      {
+        "civilization": null,
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": ""
+              },
+              {
+                "text": "工作效率",
+                "parts": [
+                  {
+                    "text": "工作效率"
+                  }
+                ]
+              },
+              {
+                "text": "运载量",
+                "parts": [
+                  {
+                    "text": "运载量"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "果丛",
+                "parts": [
+                  {
+                    "icon": "gather1"
+                  },
+                  {
+                    "text": "果丛"
+                  }
+                ]
+              },
+              {
+                "text": "0.69",
+                "parts": [
+                  {
+                    "text": "0.69"
+                  }
+                ]
+              },
+              {
+                "text": "10",
+                "parts": [
+                  {
+                    "text": "10"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "农田",
+                "parts": [
+                  {
+                    "icon": "gather2"
+                  },
+                  {
+                    "text": "农田"
+                  }
+                ]
+              },
+              {
+                "text": "0.75",
+                "parts": [
+                  {
+                    "text": "0.75"
+                  }
+                ]
+              },
+              {
+                "text": "10",
+                "parts": [
+                  {
+                    "text": "10"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "畜牧(绵羊)",
+                "parts": [
+                  {
+                    "icon": "gather3"
+                  },
+                  {
+                    "text": "畜牧(绵羊)"
+                  }
+                ]
+              },
+              {
+                "text": "0.75",
+                "parts": [
+                  {
+                    "text": "0.75"
+                  }
+                ]
+              },
+              {
+                "text": "10",
+                "parts": [
+                  {
+                    "text": "10"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "狩猎(鹿)",
+                "parts": [
+                  {
+                    "icon": "gather5"
+                  },
+                  {
+                    "text": "狩猎(鹿)"
+                  }
+                ]
+              },
+              {
+                "text": "0.825",
+                "parts": [
+                  {
+                    "text": "0.825"
+                  }
+                ]
+              },
+              {
+                "text": "25",
+                "parts": [
+                  {
+                    "text": "25"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "狩猎(野猪)",
+                "parts": [
+                  {
+                    "icon": "gather6"
+                  },
+                  {
+                    "text": "狩猎(野猪)"
+                  }
+                ]
+              },
+              {
+                "text": "0.90",
+                "parts": [
+                  {
+                    "text": "0.90"
+                  }
+                ]
+              },
+              {
+                "text": "25",
+                "parts": [
+                  {
+                    "text": "25"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "近海鱼群",
+                "parts": [
+                  {
+                    "icon": "gather7"
+                  },
+                  {
+                    "text": "近海鱼群"
+                  }
+                ]
+              },
+              {
+                "text": "1.00",
+                "parts": [
+                  {
+                    "text": "1.00"
+                  }
+                ]
+              },
+              {
+                "text": "10",
+                "parts": [
+                  {
+                    "text": "10"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "木材",
+                "parts": [
+                  {
+                    "icon": "gather8"
+                  },
+                  {
+                    "text": "木材"
+                  }
+                ]
+              },
+              {
+                "text": "0.75",
+                "parts": [
+                  {
+                    "text": "0.75"
+                  }
+                ]
+              },
+              {
+                "text": "10",
+                "parts": [
+                  {
+                    "text": "10"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "黄金",
+                "parts": [
+                  {
+                    "icon": "gather9"
+                  },
+                  {
+                    "text": "黄金"
+                  }
+                ]
+              },
+              {
+                "text": "0.75",
+                "parts": [
+                  {
+                    "text": "0.75"
+                  }
+                ]
+              },
+              {
+                "text": "10",
+                "parts": [
+                  {
+                    "text": "10"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "石材",
+                "parts": [
+                  {
+                    "icon": "gather10"
+                  },
+                  {
+                    "text": "石材"
+                  }
+                ]
+              },
+              {
+                "text": "0.75",
+                "parts": [
+                  {
+                    "text": "0.75"
+                  }
+                ]
+              },
+              {
+                "text": "10",
+                "parts": [
+                  {
+                    "text": "10"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "陨石",
+                "parts": [
+                  {
+                    "icon": "gather16"
+                  },
+                  {
+                    "text": "陨石"
+                  }
+                ]
+              },
+              {
+                "text": "0.75",
+                "parts": [
+                  {
+                    "text": "0.75"
+                  }
+                ]
+              },
+              {
+                "text": "10",
+                "parts": [
+                  {
+                    "text": "10"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "civilization": "jda",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "近战伤害",
+                "parts": [
+                  {
+                    "icon": "damagemelee"
+                  },
+                  {
+                    "text": "近战伤害"
+                  }
+                ]
+              },
+              {
+                "text": "熟铁块吹炼法(+1) 脱碳(+1) 大马士革钢(+1)",
+                "parts": [
+                  {
+                    "icon": "熟铁块吹炼法"
+                  },
+                  {
+                    "text": "熟铁块吹炼法(+1)"
+                  },
+                  {
+                    "icon": "脱碳"
+                  },
+                  {
+                    "text": "脱碳(+1)"
+                  },
+                  {
+                    "icon": "大马士革钢"
+                  },
+                  {
+                    "text": "大马士革钢(+1)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "远程伤害",
+                "parts": [
+                  {
+                    "icon": "damageranged"
+                  },
+                  {
+                    "text": "远程伤害"
+                  }
+                ]
+              },
+              {
+                "text": "钢制箭头(+1) 平衡炮弹(+1) 箭头穿孔板甲(+1)",
+                "parts": [
+                  {
+                    "icon": "钢制箭头"
+                  },
+                  {
+                    "text": "钢制箭头(+1)"
+                  },
+                  {
+                    "icon": "平衡炮弹"
+                  },
+                  {
+                    "text": "平衡炮弹(+1)"
+                  },
+                  {
+                    "icon": "箭头穿孔板甲"
+                  },
+                  {
+                    "text": "箭头穿孔板甲(+1)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "近战护甲",
+                "parts": [
+                  {
+                    "icon": "armorm"
+                  },
+                  {
+                    "text": "近战护甲"
+                  }
+                ]
+              },
+              {
+                "text": "合身皮具(+1) 绝缘头盔(+1) 铁匠大师(+1)",
+                "parts": [
+                  {
+                    "icon": "合身皮具"
+                  },
+                  {
+                    "text": "合身皮具(+1)"
+                  },
+                  {
+                    "icon": "绝缘头盔"
+                  },
+                  {
+                    "text": "绝缘头盔(+1)"
+                  },
+                  {
+                    "icon": "铁匠大师"
+                  },
+                  {
+                    "text": "铁匠大师(+1)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "远程护甲",
+                "parts": [
+                  {
+                    "icon": "armorr"
+                  },
+                  {
+                    "text": "远程护甲"
+                  }
+                ]
+              },
+              {
+                "text": "铁制底网(+1) 楔形铆钉(+1) 斜面(+1)",
+                "parts": [
+                  {
+                    "icon": "铁制底网"
+                  },
+                  {
+                    "text": "铁制底网(+1)"
+                  },
+                  {
+                    "icon": "楔形铆钉"
+                  },
+                  {
+                    "text": "楔形铆钉(+1)"
+                  },
+                  {
+                    "icon": "斜面"
+                  },
+                  {
+                    "text": "斜面(+1)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "移动速度",
+                "parts": [
+                  {
+                    "icon": "speed"
+                  },
+                  {
+                    "text": "移动速度"
+                  }
+                ]
+              },
+              {
+                "text": "独轮推车(+15%)",
+                "parts": [
+                  {
+                    "icon": "独轮推车"
+                  },
+                  {
+                    "text": "独轮推车(+15%)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "运载量",
+                "parts": [
+                  {
+                    "icon": "cap"
+                  },
+                  {
+                    "text": "运载量"
+                  }
+                ]
+              },
+              {
+                "text": "独轮推车(+5)",
+                "parts": [
+                  {
+                    "icon": "独轮推车"
+                  },
+                  {
+                    "text": "独轮推车(+5)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "采集效率(食物)",
+                "parts": [
+                  {
+                    "icon": "gather11"
+                  },
+                  {
+                    "text": "采集效率(食物)"
+                  }
+                ]
+              },
+              {
+                "text": "园艺学(+15%) 施肥(+15%) 精准杂交育种(+15%) 生存技术(+15%，仅狩猎)",
+                "parts": [
+                  {
+                    "icon": "园艺学"
+                  },
+                  {
+                    "text": "园艺学(+15%)"
+                  },
+                  {
+                    "icon": "施肥"
+                  },
+                  {
+                    "text": "施肥(+15%)"
+                  },
+                  {
+                    "icon": "精准杂交育种"
+                  },
+                  {
+                    "text": "精准杂交育种(+15%)"
+                  },
+                  {
+                    "icon": "生存技术"
+                  },
+                  {
+                    "text": "生存技术(+15%，仅狩猎)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "采集效率(木材)",
+                "parts": [
+                  {
+                    "icon": "gather8"
+                  },
+                  {
+                    "text": "采集效率(木材)"
+                  }
+                ]
+              },
+              {
+                "text": "林业(+100%砍倒树木速度) 双阔斧(+15%) 木材保存(+15%) 横切锯(+15%)",
+                "parts": [
+                  {
+                    "icon": "林业"
+                  },
+                  {
+                    "text": "林业(+100%砍倒树木速度)"
+                  },
+                  {
+                    "icon": "双阔斧"
+                  },
+                  {
+                    "text": "双阔斧(+15%)"
+                  },
+                  {
+                    "icon": "木材保存"
+                  },
+                  {
+                    "text": "木材保存(+15%)"
+                  },
+                  {
+                    "icon": "横切锯"
+                  },
+                  {
+                    "text": "横切锯(+15%)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "采集效率(矿物)",
+                "parts": [
+                  {
+                    "icon": "gather20"
+                  },
+                  {
+                    "text": "采集效率(矿物)"
+                  }
+                ]
+              },
+              {
+                "text": "特制矿锄(+15%) 竖井开采(+15%) 灰吹法(+15%)",
+                "parts": [
+                  {
+                    "icon": "特制矿锄"
+                  },
+                  {
+                    "text": "特制矿锄(+15%)"
+                  },
+                  {
+                    "icon": "竖井开采"
+                  },
+                  {
+                    "text": "竖井开采(+15%)"
+                  },
+                  {
+                    "icon": "灰吹法"
+                  },
+                  {
+                    "text": "灰吹法(+15%)"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gallery_captions": [
+      "圣女贞德 - 农民"
+    ]
+  }
+}

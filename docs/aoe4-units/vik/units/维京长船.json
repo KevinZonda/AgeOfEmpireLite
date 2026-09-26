@@ -1,0 +1,9 @@
+{
+  "civilization": "vik",
+  "kind": "unit",
+  "section": "船只",
+  "name": "维京长船",
+  "image_name": "维京长船",
+  "source_url": "https://seicing.com/html/aoe2/unitaoe4/维京长船.html?civ=vik",
+  "detail_error": "Source page returned HTTP 404"
+}

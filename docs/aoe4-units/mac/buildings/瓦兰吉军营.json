@@ -1,0 +1,428 @@
+{
+  "civilization": "mac",
+  "kind": "building",
+  "section": "黑暗时代建筑",
+  "name": "瓦兰吉军营",
+  "image_name": "瓦兰吉军营",
+  "source_url": "https://seicing.com/html/aoe2/buildingsaoe4/瓦兰吉军营.html?civ=mac",
+  "detail": {
+    "title": "瓦兰吉军营(Varangian Warcamp)",
+    "sections": [
+      {
+        "title": "建造信息",
+        "fields": [
+          {
+            "label": "成本",
+            "values": [
+              {
+                "text": "50",
+                "parts": [
+                  {
+                    "icon": "木"
+                  },
+                  {
+                    "text": "50"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "成本"
+              }
+            ]
+          },
+          {
+            "label": "建造时间",
+            "values": [
+              {
+                "text": "20秒",
+                "parts": [
+                  {
+                    "text": "20秒"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "time"
+              },
+              {
+                "text": "建造时间"
+              }
+            ]
+          },
+          {
+            "label": "视野",
+            "values": [
+              {
+                "text": "5.56",
+                "parts": [
+                  {
+                    "text": "5.56"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "sight"
+              },
+              {
+                "text": "视野"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "状态数据",
+        "fields": [
+          {
+            "label": "生命值",
+            "values": [
+              {
+                "text": "1500",
+                "parts": [
+                  {
+                    "text": "1500"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "hp"
+              },
+              {
+                "text": "生命值"
+              }
+            ]
+          },
+          {
+            "label": "火焰护甲",
+            "values": [
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorf"
+              },
+              {
+                "text": "火焰护甲"
+              }
+            ]
+          },
+          {
+            "label": "远程护甲",
+            "values": [
+              {
+                "text": "50",
+                "parts": [
+                  {
+                    "text": "50"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorr"
+              },
+              {
+                "text": "远程护甲"
+              }
+            ]
+          },
+          {
+            "label": "尺寸",
+            "values": [
+              {
+                "text": "3×3",
+                "parts": [
+                  {
+                    "text": "3×3"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "size"
+              },
+              {
+                "text": "尺寸"
+              }
+            ]
+          },
+          {
+            "label": "建筑标签",
+            "values": [
+              {
+                "text": "军事建筑",
+                "parts": [
+                  {
+                    "text": "军事建筑"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "allb"
+              },
+              {
+                "text": "建筑标签"
+              }
+            ]
+          },
+          {
+            "label": "提供人口",
+            "values": [
+              {
+                "text": "10",
+                "parts": [
+                  {
+                    "text": "10"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "pop"
+              },
+              {
+                "text": "提供人口"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "bonuses": [
+      {
+        "civilization": "mac",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "图标",
+                "parts": [
+                  {
+                    "text": "图标"
+                  }
+                ]
+              },
+              {
+                "text": "名称",
+                "parts": [
+                  {
+                    "text": "名称"
+                  }
+                ]
+              },
+              {
+                "text": "时代",
+                "parts": [
+                  {
+                    "text": "时代"
+                  }
+                ]
+              },
+              {
+                "text": "成本",
+                "parts": [
+                  {
+                    "text": "成本"
+                  }
+                ]
+              },
+              {
+                "text": "效果",
+                "parts": [
+                  {
+                    "text": "效果"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "",
+                "parts": [
+                  {
+                    "icon": "宫殿掠夺"
+                  }
+                ]
+              },
+              {
+                "text": "宫殿掠夺",
+                "parts": [
+                  {
+                    "text": "宫殿掠夺"
+                  }
+                ]
+              },
+              {
+                "text": "Ⅳ",
+                "parts": [
+                  {
+                    "text": "Ⅳ"
+                  }
+                ]
+              },
+              {
+                "text": "500 30",
+                "parts": [
+                  {
+                    "icon": "银"
+                  },
+                  {
+                    "text": "500"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "30"
+                  }
+                ]
+              },
+              {
+                "text": "每个参与摧毁城镇中心或地标的瓦兰吉系列单位会在建筑倒塌时获得20白银",
+                "parts": [
+                  {
+                    "text": "每个参与摧毁城镇中心或地标的瓦兰吉系列单位会在建筑倒塌时获得20白银"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "civilization": "mac",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "生命值",
+                "parts": [
+                  {
+                    "icon": "hp"
+                  },
+                  {
+                    "text": "生命值"
+                  }
+                ]
+              },
+              {
+                "text": "防御工事(每级+10%，共60%)",
+                "parts": [
+                  {
+                    "icon": "防御工事"
+                  },
+                  {
+                    "text": "防御工事(每级+10%，共60%)"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gallery_captions": [
+      "瓦兰吉军营"
+    ]
+  }
+}

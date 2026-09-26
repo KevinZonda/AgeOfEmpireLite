@@ -1,0 +1,420 @@
+{
+  "civilization": "chi",
+  "kind": "landmark",
+  "section": "地标建筑",
+  "name": "皇陵",
+  "image_name": "皇陵",
+  "source_url": "https://seicing.com/html/aoe2/buildingsaoe4/landmark/皇陵.html?civ=chi",
+  "detail": {
+    "title": "皇陵(Spirit Way)",
+    "sections": [
+      {
+        "title": "建造信息",
+        "fields": [
+          {
+            "label": "成本",
+            "values": [
+              {
+                "text": "2400 1200",
+                "parts": [
+                  {
+                    "icon": "肉"
+                  },
+                  {
+                    "text": "2400"
+                  },
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "1200"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "成本"
+              }
+            ]
+          },
+          {
+            "label": "建造时间",
+            "values": [
+              {
+                "text": "250秒",
+                "parts": [
+                  {
+                    "text": "250秒"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "time"
+              },
+              {
+                "text": "建造时间"
+              }
+            ]
+          },
+          {
+            "label": "视野",
+            "values": [
+              {
+                "text": "5.56",
+                "parts": [
+                  {
+                    "text": "5.56"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "sight"
+              },
+              {
+                "text": "视野"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "状态数据",
+        "fields": [
+          {
+            "label": "生命值",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "5000",
+                "parts": [
+                  {
+                    "text": "5000"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "hp"
+              },
+              {
+                "text": "生命值"
+              }
+            ]
+          },
+          {
+            "label": "火焰护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorf"
+              },
+              {
+                "text": "火焰护甲"
+              }
+            ]
+          },
+          {
+            "label": "远程护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "50",
+                "parts": [
+                  {
+                    "text": "50"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorr"
+              },
+              {
+                "text": "远程护甲"
+              }
+            ]
+          },
+          {
+            "label": "尺寸",
+            "values": [
+              {
+                "text": "4×4",
+                "parts": [
+                  {
+                    "text": "4×4"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "size"
+              },
+              {
+                "text": "尺寸"
+              }
+            ]
+          },
+          {
+            "label": "建筑标签",
+            "values": [
+              {
+                "text": "第四时代 : 军事与科技地标",
+                "parts": [
+                  {
+                    "text": "第四时代 : 军事与科技地标"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "allb"
+              },
+              {
+                "text": "建筑标签"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "bonuses": [
+      {
+        "civilization": "chi",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "图标",
+                "parts": [
+                  {
+                    "text": "图标"
+                  }
+                ]
+              },
+              {
+                "text": "名称",
+                "parts": [
+                  {
+                    "text": "名称"
+                  }
+                ]
+              },
+              {
+                "text": "时代",
+                "parts": [
+                  {
+                    "text": "时代"
+                  }
+                ]
+              },
+              {
+                "text": "成本",
+                "parts": [
+                  {
+                    "text": "成本"
+                  }
+                ]
+              },
+              {
+                "text": "效果",
+                "parts": [
+                  {
+                    "text": "效果"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "",
+                "parts": [
+                  {
+                    "icon": "古代技术"
+                  }
+                ]
+              },
+              {
+                "text": "古代技术",
+                "parts": [
+                  {
+                    "text": "古代技术"
+                  }
+                ]
+              },
+              {
+                "text": "Ⅳ",
+                "parts": [
+                  {
+                    "text": "Ⅳ"
+                  }
+                ]
+              },
+              {
+                "text": "200 500 90",
+                "parts": [
+                  {
+                    "icon": "木"
+                  },
+                  {
+                    "text": "200"
+                  },
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "500"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "90"
+                  }
+                ]
+              },
+              {
+                "text": "每达到一个王朝时村民的采集速率 +5%",
+                "parts": [
+                  {
+                    "text": "每达到一个王朝时村民的采集速率 +5%"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "civilization": "chi",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "生命值",
+                "parts": [
+                  {
+                    "icon": "hp"
+                  },
+                  {
+                    "text": "生命值"
+                  }
+                ]
+              },
+              {
+                "text": "宫廷建筑师(+30%)",
+                "parts": [
+                  {
+                    "icon": "宫廷建筑师"
+                  },
+                  {
+                    "text": "宫廷建筑师(+30%)"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gallery_captions": [
+      "皇陵",
+      "乾陵神道",
+      "皇陵设定图"
+    ]
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "civilization": "sco",
+  "source_url": "https://seicing.com/js/aoe4civ/aoe4list_sco.js",
+  "entries": [
+    {
+      "kind": "units",
+      "section": "平民与宗教单位",
+      "name": "村民",
+      "path": "units/村民.json"
+    },
+    {
+      "kind": "units",
+      "section": "平民与宗教单位",
+      "name": "僧侣",
+      "path": "units/僧侣.json"
+    },
+    {
+      "kind": "units",
+      "section": "平民与宗教单位",
+      "name": "君主",
+      "path": "units/君主.json"
+    },
+    {
+      "kind": "units",
+      "section": "军事单位",
+      "name": "长矛兵",
+      "path": "units/长矛兵.json"
+    },
+    {
+      "kind": "units",
+      "section": "军事单位",
+      "name": "武士",
+      "path": "units/武士.json"
+    },
+    {
+      "kind": "units",
+      "section": "军事单位",
+      "name": "氏族战士",
+      "path": "units/氏族战士.json"
+    },
+    {
+      "kind": "units",
+      "section": "军事单位",
+      "name": "加洛格拉什",
+      "path": "units/加洛格拉什.json"
+    },
+    {
+      "kind": "units",
+      "section": "军事单位",
+      "name": "侦察兵",
+      "path": "units/侦察兵.json"
+    },
+    {
+      "kind": "units",
+      "section": "军事单位",
+      "name": "骑手",
+      "path": "units/骑手.json"
+    },
+    {
+      "kind": "units",
+      "section": "军事单位",
+      "name": "边境突袭者",
+      "path": "units/边境突袭者.json"
+    },
+    {
+      "kind": "units",
+      "section": "军事单位",
+      "name": "步弓手",
+      "path": "units/步弓手.json"
+    },
+    {
+      "kind": "units",
+      "section": "军事单位",
+      "name": "弩手",
+      "path": "units/弩手.json"
+    },
+    {
+      "kind": "units",
+      "section": "军事单位",
+      "name": "火枪兵",
+      "path": "units/火枪兵.json"
+    },
+    {
+      "kind": "buildings",
+      "section": "黑暗时代建筑",
+      "name": "塔楼房屋",
+      "path": "buildings/塔楼房屋.json"
+    },
+    {
+      "kind": "buildings",
+      "section": "黑暗时代建筑",
+      "name": "集结大厅",
+      "path": "buildings/集结大厅.json"
+    },
+    {
+      "kind": "buildings",
+      "section": "城堡时代建筑",
+      "name": "城堡",
+      "path": "buildings/城堡.json"
+    }
+  ]
+}

@@ -1,0 +1,665 @@
+{
+  "civilization": "abb",
+  "kind": "unit",
+  "section": "船只",
+  "name": "阿拉伯帆船",
+  "image_name": "阿拉伯帆船",
+  "source_url": "https://seicing.com/html/aoe2/unitaoe4/步弓手船.html?civ=abb",
+  "detail": {
+    "title": "阿拉伯帆船(Dhow)",
+    "sections": [
+      {
+        "title": "训练信息",
+        "fields": [
+          {
+            "label": "产地",
+            "values": [
+              {
+                "text": "码头",
+                "parts": [
+                  {
+                    "text": "码头"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "产地"
+              }
+            ]
+          },
+          {
+            "label": "成本",
+            "values": [
+              {
+                "text": "80 150",
+                "parts": [
+                  {
+                    "icon": "肉"
+                  },
+                  {
+                    "text": "80"
+                  },
+                  {
+                    "icon": "木"
+                  },
+                  {
+                    "text": "150"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "成本"
+              }
+            ]
+          },
+          {
+            "label": "训练时间",
+            "values": [
+              {
+                "text": "25秒",
+                "parts": [
+                  {
+                    "text": "25秒"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "time"
+              },
+              {
+                "text": "训练时间"
+              }
+            ]
+          },
+          {
+            "label": "人口占用",
+            "values": [
+              {
+                "text": "3",
+                "parts": [
+                  {
+                    "text": "3"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "pop2"
+              },
+              {
+                "text": "人口占用"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "状态数据",
+        "fields": [
+          {
+            "label": "生命值",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "300",
+                "parts": [
+                  {
+                    "text": "300"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "hp"
+              },
+              {
+                "text": "生命值"
+              }
+            ]
+          },
+          {
+            "label": "火焰护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorf"
+              },
+              {
+                "text": "火焰护甲"
+              }
+            ]
+          },
+          {
+            "label": "远程护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "1",
+                "parts": [
+                  {
+                    "text": "1"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorr"
+              },
+              {
+                "text": "远程护甲"
+              }
+            ]
+          },
+          {
+            "label": "移动速度",
+            "values": [
+              {
+                "text": "1.75",
+                "parts": [
+                  {
+                    "text": "1.75"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "speed"
+              },
+              {
+                "text": "移动速度"
+              }
+            ]
+          },
+          {
+            "label": "视野",
+            "values": [
+              {
+                "text": "10.67",
+                "parts": [
+                  {
+                    "text": "10.67"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "sight"
+              },
+              {
+                "text": "视野"
+              }
+            ]
+          },
+          {
+            "label": "单位标签",
+            "values": [
+              {
+                "text": "步弓手船",
+                "parts": [
+                  {
+                    "text": "步弓手船"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "alle"
+              },
+              {
+                "text": "单位标签"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "攻击属性(射箭)",
+        "fields": [
+          {
+            "label": "远程伤害",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "6",
+                "parts": [
+                  {
+                    "text": "6"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "damageranged"
+              },
+              {
+                "text": "远程伤害"
+              }
+            ]
+          },
+          {
+            "label": "多段攻击",
+            "values": [
+              {
+                "text": "5",
+                "parts": [
+                  {
+                    "text": "5"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "brust"
+              },
+              {
+                "text": "多段攻击"
+              }
+            ]
+          },
+          {
+            "label": "攻击范围",
+            "values": [
+              {
+                "text": "6.50",
+                "parts": [
+                  {
+                    "text": "6.50"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "range"
+              },
+              {
+                "text": "攻击范围"
+              }
+            ]
+          },
+          {
+            "label": "伤害区域",
+            "values": [
+              {
+                "text": "0.25",
+                "parts": [
+                  {
+                    "text": "0.25"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "aoearea"
+              },
+              {
+                "text": "伤害区域"
+              }
+            ]
+          },
+          {
+            "label": "攻击间隔",
+            "values": [
+              {
+                "text": "1.50",
+                "parts": [
+                  {
+                    "text": "1.50"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "attackspeed"
+              },
+              {
+                "text": "攻击间隔"
+              }
+            ]
+          },
+          {
+            "label": "对[燃烧船]加成",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "+18",
+                "parts": [
+                  {
+                    "text": "+18"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "对[燃烧船]加成"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "bonuses": [
+      {
+        "civilization": "abb",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "生命值",
+                "parts": [
+                  {
+                    "icon": "hp"
+                  },
+                  {
+                    "text": "生命值"
+                  }
+                ]
+              },
+              {
+                "text": "装甲船身(+20%) 造船工(+20%) 柚木桅杆(+10%)",
+                "parts": [
+                  {
+                    "icon": "装甲船身"
+                  },
+                  {
+                    "text": "装甲船身(+20%)"
+                  },
+                  {
+                    "icon": "造船工"
+                  },
+                  {
+                    "text": "造船工(+20%)"
+                  },
+                  {
+                    "icon": "柚木桅杆"
+                  },
+                  {
+                    "text": "柚木桅杆(+10%)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "远程伤害",
+                "parts": [
+                  {
+                    "icon": "damageranged"
+                  },
+                  {
+                    "text": "远程伤害"
+                  }
+                ]
+              },
+              {
+                "text": "钢制箭头(+1) 平衡炮弹(+1) 箭头穿孔板甲(+1) 额外吊床(多段攻击次数+1) 加热射击(造成燃烧伤害)",
+                "parts": [
+                  {
+                    "icon": "钢制箭头"
+                  },
+                  {
+                    "text": "钢制箭头(+1)"
+                  },
+                  {
+                    "icon": "平衡炮弹"
+                  },
+                  {
+                    "text": "平衡炮弹(+1)"
+                  },
+                  {
+                    "icon": "箭头穿孔板甲"
+                  },
+                  {
+                    "text": "箭头穿孔板甲(+1)"
+                  },
+                  {
+                    "icon": "额外吊床"
+                  },
+                  {
+                    "text": "额外吊床(多段攻击次数+1)"
+                  },
+                  {
+                    "icon": "加热射击"
+                  },
+                  {
+                    "text": "加热射击(造成燃烧伤害)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "远程护甲",
+                "parts": [
+                  {
+                    "icon": "armorr"
+                  },
+                  {
+                    "text": "远程护甲"
+                  }
+                ]
+              },
+              {
+                "text": "装甲船身(+1) 造船工(+1)",
+                "parts": [
+                  {
+                    "icon": "装甲船身"
+                  },
+                  {
+                    "text": "装甲船身(+1)"
+                  },
+                  {
+                    "icon": "造船工"
+                  },
+                  {
+                    "text": "造船工(+1)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "训练效率",
+                "parts": [
+                  {
+                    "icon": "time"
+                  },
+                  {
+                    "text": "训练效率"
+                  }
+                ]
+              },
+              {
+                "text": "军事学院(+33%)",
+                "parts": [
+                  {
+                    "icon": "军事学院"
+                  },
+                  {
+                    "text": "军事学院(+33%)"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gallery_captions": [
+      "英格兰箭船",
+      "神圣罗马帝国箭船",
+      "法兰西箭船",
+      "拜占庭箭船",
+      "圣殿骑士团箭船",
+      "黑衣大食王朝阿拉伯帆船",
+      "德里苏丹国阿拉伯帆船",
+      "奥斯曼阿拉伯帆船",
+      "中国戎克船",
+      "日本戎克船",
+      "马里狩猎独木舟",
+      "金朝戎克船",
+      "苏格兰箭船",
+      "维京箭船",
+      "马里狩猎独木舟渲染图"
+    ]
+  }
+}

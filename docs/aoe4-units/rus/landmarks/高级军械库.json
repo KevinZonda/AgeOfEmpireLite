@@ -1,0 +1,596 @@
+{
+  "civilization": "rus",
+  "kind": "landmark",
+  "section": "地标建筑",
+  "name": "高级军械库",
+  "image_name": "高级军械库",
+  "source_url": "https://seicing.com/html/aoe2/buildingsaoe4/landmark/高级军械库.html?civ=rus",
+  "detail": {
+    "title": "高级军械库(High Armory)",
+    "sections": [
+      {
+        "title": "建造信息",
+        "fields": [
+          {
+            "label": "成本",
+            "values": [
+              {
+                "text": "2400 1200",
+                "parts": [
+                  {
+                    "icon": "肉"
+                  },
+                  {
+                    "text": "2400"
+                  },
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "1200"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "成本"
+              }
+            ]
+          },
+          {
+            "label": "建造时间",
+            "values": [
+              {
+                "text": "250秒",
+                "parts": [
+                  {
+                    "text": "250秒"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "time"
+              },
+              {
+                "text": "建造时间"
+              }
+            ]
+          },
+          {
+            "label": "视野",
+            "values": [
+              {
+                "text": "5.56",
+                "parts": [
+                  {
+                    "text": "5.56"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "sight"
+              },
+              {
+                "text": "视野"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "状态数据",
+        "fields": [
+          {
+            "label": "生命值",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "5000",
+                "parts": [
+                  {
+                    "text": "5000"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "hp"
+              },
+              {
+                "text": "生命值"
+              }
+            ]
+          },
+          {
+            "label": "火焰护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "5",
+                "parts": [
+                  {
+                    "text": "5"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorf"
+              },
+              {
+                "text": "火焰护甲"
+              }
+            ]
+          },
+          {
+            "label": "远程护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "50",
+                "parts": [
+                  {
+                    "text": "50"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorr"
+              },
+              {
+                "text": "远程护甲"
+              }
+            ]
+          },
+          {
+            "label": "尺寸",
+            "values": [
+              {
+                "text": "4×4",
+                "parts": [
+                  {
+                    "text": "4×4"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "size"
+              },
+              {
+                "text": "尺寸"
+              }
+            ]
+          },
+          {
+            "label": "建筑标签",
+            "values": [
+              {
+                "text": "第四时代 : 军事地标",
+                "parts": [
+                  {
+                    "text": "第四时代 : 军事地标"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "allb"
+              },
+              {
+                "text": "建筑标签"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "bonuses": [
+      {
+        "civilization": "rus",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "图标",
+                "parts": [
+                  {
+                    "text": "图标"
+                  }
+                ]
+              },
+              {
+                "text": "名称",
+                "parts": [
+                  {
+                    "text": "名称"
+                  }
+                ]
+              },
+              {
+                "text": "时代",
+                "parts": [
+                  {
+                    "text": "时代"
+                  }
+                ]
+              },
+              {
+                "text": "成本",
+                "parts": [
+                  {
+                    "text": "成本"
+                  }
+                ]
+              },
+              {
+                "text": "效果",
+                "parts": [
+                  {
+                    "text": "效果"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "",
+                "parts": [
+                  {
+                    "icon": "漂泊城镇"
+                  }
+                ]
+              },
+              {
+                "text": "漂泊城镇",
+                "parts": [
+                  {
+                    "text": "漂泊城镇"
+                  }
+                ]
+              },
+              {
+                "text": "Ⅳ",
+                "parts": [
+                  {
+                    "text": "Ⅳ"
+                  }
+                ]
+              },
+              {
+                "text": "100 225 45",
+                "parts": [
+                  {
+                    "icon": "肉"
+                  },
+                  {
+                    "text": "100"
+                  },
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "225"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "45"
+                  }
+                ]
+              },
+              {
+                "text": "冲车伤害增加 +25%。冲车每 1 秒恢复 2 生命值",
+                "parts": [
+                  {
+                    "text": "冲车伤害增加 +25%。冲车每 1 秒恢复 2 生命值"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "",
+                "parts": [
+                  {
+                    "icon": "攻城人员训练"
+                  }
+                ]
+              },
+              {
+                "text": "攻城人员训练",
+                "parts": [
+                  {
+                    "text": "攻城人员训练"
+                  }
+                ]
+              },
+              {
+                "text": "Ⅳ",
+                "parts": [
+                  {
+                    "text": "Ⅳ"
+                  }
+                ]
+              },
+              {
+                "text": "100 225 45",
+                "parts": [
+                  {
+                    "icon": "肉"
+                  },
+                  {
+                    "text": "100"
+                  },
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "225"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "45"
+                  }
+                ]
+              },
+              {
+                "text": "轻型投石车、巨型投石机和手推炮的架设及拆解速度都是即时的",
+                "parts": [
+                  {
+                    "text": "轻型投石车、巨型投石机和手推炮的架设及拆解速度都是即时的"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "",
+                "parts": [
+                  {
+                    "icon": "精密枪械"
+                  }
+                ]
+              },
+              {
+                "text": "精密枪械",
+                "parts": [
+                  {
+                    "text": "精密枪械"
+                  }
+                ]
+              },
+              {
+                "text": "Ⅳ",
+                "parts": [
+                  {
+                    "text": "Ⅳ"
+                  }
+                ]
+              },
+              {
+                "text": "200 500 60",
+                "parts": [
+                  {
+                    "icon": "木"
+                  },
+                  {
+                    "text": "200"
+                  },
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "500"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "60"
+                  }
+                ]
+              },
+              {
+                "text": "手推炮伤害增加 +20%。手推炮对步兵的伤害增加 +50%",
+                "parts": [
+                  {
+                    "text": "手推炮伤害增加 +20%。手推炮对步兵的伤害增加 +50%"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "",
+                "parts": [
+                  {
+                    "icon": "钢带臂"
+                  }
+                ]
+              },
+              {
+                "text": "钢带臂",
+                "parts": [
+                  {
+                    "text": "钢带臂"
+                  }
+                ]
+              },
+              {
+                "text": "Ⅳ",
+                "parts": [
+                  {
+                    "text": "Ⅳ"
+                  }
+                ]
+              },
+              {
+                "text": "150 225 45",
+                "parts": [
+                  {
+                    "icon": "木"
+                  },
+                  {
+                    "text": "150"
+                  },
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "225"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "45"
+                  }
+                ]
+              },
+              {
+                "text": "扭力弩炮的攻击范围 +1 格",
+                "parts": [
+                  {
+                    "text": "扭力弩炮的攻击范围 +1 格"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "civilization": "rus",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "生命值",
+                "parts": [
+                  {
+                    "icon": "hp"
+                  },
+                  {
+                    "text": "生命值"
+                  }
+                ]
+              },
+              {
+                "text": "宫廷建筑师(+30%)",
+                "parts": [
+                  {
+                    "icon": "宫廷建筑师"
+                  },
+                  {
+                    "text": "宫廷建筑师(+30%)"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gallery_captions": [
+      "高级军械库",
+      "克里姆林宫"
+    ]
+  }
+}

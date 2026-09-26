@@ -1,0 +1,456 @@
+{
+  "civilization": "ott",
+  "kind": "landmark",
+  "section": "地标建筑",
+  "name": "穆罕默德帝国军械库",
+  "image_name": "穆罕默德帝国军械库",
+  "source_url": "https://seicing.com/html/aoe2/buildingsaoe4/landmark/穆罕默德帝国军械库.html?civ=ott",
+  "detail": {
+    "title": "穆罕默德帝国军械库(Mehmed Imperial Armory)",
+    "sections": [
+      {
+        "title": "建造信息",
+        "fields": [
+          {
+            "label": "成本",
+            "values": [
+              {
+                "text": "1200 600",
+                "parts": [
+                  {
+                    "icon": "肉"
+                  },
+                  {
+                    "text": "1200"
+                  },
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "600"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "成本"
+              }
+            ]
+          },
+          {
+            "label": "建造时间",
+            "values": [
+              {
+                "text": "220秒",
+                "parts": [
+                  {
+                    "text": "220秒"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "time"
+              },
+              {
+                "text": "建造时间"
+              }
+            ]
+          },
+          {
+            "label": "视野",
+            "values": [
+              {
+                "text": "5.56",
+                "parts": [
+                  {
+                    "text": "5.56"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "sight"
+              },
+              {
+                "text": "视野"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "状态数据",
+        "fields": [
+          {
+            "label": "生命值",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "5000",
+                "parts": [
+                  {
+                    "text": "5000"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "hp"
+              },
+              {
+                "text": "生命值"
+              }
+            ]
+          },
+          {
+            "label": "火焰护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorf"
+              },
+              {
+                "text": "火焰护甲"
+              }
+            ]
+          },
+          {
+            "label": "远程护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "50",
+                "parts": [
+                  {
+                    "text": "50"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorr"
+              },
+              {
+                "text": "远程护甲"
+              }
+            ]
+          },
+          {
+            "label": "尺寸",
+            "values": [
+              {
+                "text": "4×4",
+                "parts": [
+                  {
+                    "text": "4×4"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "size"
+              },
+              {
+                "text": "尺寸"
+              }
+            ]
+          },
+          {
+            "label": "建筑标签",
+            "values": [
+              {
+                "text": "第三时代 : 军事地标",
+                "parts": [
+                  {
+                    "text": "第三时代 : 军事地标"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "allb"
+              },
+              {
+                "text": "建筑标签"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "bonuses": [
+      {
+        "civilization": null,
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "扭力弩炮",
+                "parts": [
+                  {
+                    "icon": "扭力弩炮"
+                  },
+                  {
+                    "text": "扭力弩炮"
+                  }
+                ]
+              },
+              {
+                "text": "75秒",
+                "parts": [
+                  {
+                    "text": "75秒"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "轻型投石车",
+                "parts": [
+                  {
+                    "icon": "轻型投石车"
+                  },
+                  {
+                    "text": "轻型投石车"
+                  }
+                ]
+              },
+              {
+                "text": "180秒",
+                "parts": [
+                  {
+                    "text": "180秒"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "配重式巨型投石机",
+                "parts": [
+                  {
+                    "icon": "配重式巨型投石机"
+                  },
+                  {
+                    "text": "配重式巨型投石机"
+                  }
+                ]
+              },
+              {
+                "text": "165秒",
+                "parts": [
+                  {
+                    "text": "165秒"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "风琴炮",
+                "parts": [
+                  {
+                    "icon": "风琴炮"
+                  },
+                  {
+                    "text": "风琴炮"
+                  }
+                ]
+              },
+              {
+                "text": "216秒",
+                "parts": [
+                  {
+                    "text": "216秒"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "重型火炮",
+                "parts": [
+                  {
+                    "icon": "重型火炮"
+                  },
+                  {
+                    "text": "重型火炮"
+                  }
+                ]
+              },
+              {
+                "text": "324秒",
+                "parts": [
+                  {
+                    "text": "324秒"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "攻城锤",
+                "parts": [
+                  {
+                    "icon": "攻城锤"
+                  },
+                  {
+                    "text": "攻城锤"
+                  }
+                ]
+              },
+              {
+                "text": "87秒",
+                "parts": [
+                  {
+                    "text": "87秒"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "civilization": "ott",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "生命值",
+                "parts": [
+                  {
+                    "icon": "hp"
+                  },
+                  {
+                    "text": "生命值"
+                  }
+                ]
+              },
+              {
+                "text": "宫廷建筑师(+30%)",
+                "parts": [
+                  {
+                    "icon": "宫廷建筑师"
+                  },
+                  {
+                    "text": "宫廷建筑师(+30%)"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gallery_captions": [
+      "穆罕默德帝国军械库",
+      "托法尼军械库",
+      "穆罕默德帝国军械库渲染图",
+      "穆罕默德帝国军械库设计图"
+    ]
+  }
+}

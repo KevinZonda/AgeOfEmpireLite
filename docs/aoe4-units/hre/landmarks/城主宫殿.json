@@ -1,0 +1,530 @@
+{
+  "civilization": "hre",
+  "kind": "landmark",
+  "section": "地标建筑",
+  "name": "城主宫殿",
+  "image_name": "城主宫殿",
+  "source_url": "https://seicing.com/html/aoe2/buildingsaoe4/landmark/城主宫殿.html?civ=hre",
+  "detail": {
+    "title": "城主宫殿(Burgrave Palace)",
+    "sections": [
+      {
+        "title": "建造信息",
+        "fields": [
+          {
+            "label": "成本",
+            "values": [
+              {
+                "text": "1200 600",
+                "parts": [
+                  {
+                    "icon": "肉"
+                  },
+                  {
+                    "text": "1200"
+                  },
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "600"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "成本"
+              }
+            ]
+          },
+          {
+            "label": "建造时间",
+            "values": [
+              {
+                "text": "220秒",
+                "parts": [
+                  {
+                    "text": "220秒"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "time"
+              },
+              {
+                "text": "建造时间"
+              }
+            ]
+          },
+          {
+            "label": "视野",
+            "values": [
+              {
+                "text": "5.56",
+                "parts": [
+                  {
+                    "text": "5.56"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "sight"
+              },
+              {
+                "text": "视野"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "状态数据",
+        "fields": [
+          {
+            "label": "生命值",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "5000",
+                "parts": [
+                  {
+                    "text": "5000"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "hp"
+              },
+              {
+                "text": "生命值"
+              }
+            ]
+          },
+          {
+            "label": "火焰护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorf"
+              },
+              {
+                "text": "火焰护甲"
+              }
+            ]
+          },
+          {
+            "label": "远程护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "50",
+                "parts": [
+                  {
+                    "text": "50"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorr"
+              },
+              {
+                "text": "远程护甲"
+              }
+            ]
+          },
+          {
+            "label": "尺寸",
+            "values": [
+              {
+                "text": "4×4",
+                "parts": [
+                  {
+                    "text": "4×4"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "size"
+              },
+              {
+                "text": "尺寸"
+              }
+            ]
+          },
+          {
+            "label": "建筑标签",
+            "values": [
+              {
+                "text": "第三时代 : 军事地标",
+                "parts": [
+                  {
+                    "text": "第三时代 : 军事地标"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "allb"
+              },
+              {
+                "text": "建筑标签"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "bonuses": [
+      {
+        "civilization": "hre",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "图标",
+                "parts": [
+                  {
+                    "text": "图标"
+                  }
+                ]
+              },
+              {
+                "text": "名称",
+                "parts": [
+                  {
+                    "text": "名称"
+                  }
+                ]
+              },
+              {
+                "text": "时代",
+                "parts": [
+                  {
+                    "text": "时代"
+                  }
+                ]
+              },
+              {
+                "text": "成本",
+                "parts": [
+                  {
+                    "text": "成本"
+                  }
+                ]
+              },
+              {
+                "text": "效果",
+                "parts": [
+                  {
+                    "text": "效果"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "",
+                "parts": [
+                  {
+                    "icon": "重锤"
+                  }
+                ]
+              },
+              {
+                "text": "重锤",
+                "parts": [
+                  {
+                    "text": "重锤"
+                  }
+                ]
+              },
+              {
+                "text": "Ⅲ",
+                "parts": [
+                  {
+                    "text": "Ⅲ"
+                  }
+                ]
+              },
+              {
+                "text": "100 250 60",
+                "parts": [
+                  {
+                    "icon": "肉"
+                  },
+                  {
+                    "text": "100"
+                  },
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "250"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "60"
+                  }
+                ]
+              },
+              {
+                "text": "武士手持锤子，使其对装甲目标的伤害加成 +6",
+                "parts": [
+                  {
+                    "text": "武士手持锤子，使其对装甲目标的伤害加成 +6"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "",
+                "parts": [
+                  {
+                    "icon": "双手武器"
+                  }
+                ]
+              },
+              {
+                "text": "双手武器",
+                "parts": [
+                  {
+                    "text": "双手武器"
+                  }
+                ]
+              },
+              {
+                "text": "Ⅲ",
+                "parts": [
+                  {
+                    "text": "Ⅲ"
+                  }
+                ]
+              },
+              {
+                "text": "100 250 60",
+                "parts": [
+                  {
+                    "icon": "肉"
+                  },
+                  {
+                    "text": "100"
+                  },
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "250"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "60"
+                  }
+                ]
+              },
+              {
+                "text": "武士手持双手武器，使其伤害 +2",
+                "parts": [
+                  {
+                    "text": "武士手持双手武器，使其伤害 +2"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "civilization": "hre",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "生命值",
+                "parts": [
+                  {
+                    "icon": "hp"
+                  },
+                  {
+                    "text": "生命值"
+                  }
+                ]
+              },
+              {
+                "text": "宫廷建筑师(+30%)",
+                "parts": [
+                  {
+                    "icon": "宫廷建筑师"
+                  },
+                  {
+                    "text": "宫廷建筑师(+30%)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "火焰护甲",
+                "parts": [
+                  {
+                    "icon": "armorf"
+                  },
+                  {
+                    "text": "火焰护甲"
+                  }
+                ]
+              },
+              {
+                "text": "石板和石造建筑(+5)",
+                "parts": [
+                  {
+                    "icon": "石板和石造建筑"
+                  },
+                  {
+                    "text": "石板和石造建筑(+5)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "工作效率",
+                "parts": [
+                  {
+                    "icon": "time"
+                  },
+                  {
+                    "text": "工作效率"
+                  }
+                ]
+              },
+              {
+                "text": "军事学院(-25%)",
+                "parts": [
+                  {
+                    "icon": "军事学院"
+                  },
+                  {
+                    "text": "军事学院(-25%)"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gallery_captions": [
+      "城主宫殿",
+      "纽伦堡城堡"
+    ]
+  }
+}

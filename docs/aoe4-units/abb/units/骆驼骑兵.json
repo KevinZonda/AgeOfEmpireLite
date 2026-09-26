@@ -1,0 +1,866 @@
+{
+  "civilization": "abb",
+  "kind": "unit",
+  "section": "军事单位",
+  "name": "骆驼骑兵",
+  "image_name": "骆驼骑兵",
+  "source_url": "https://seicing.com/html/aoe2/unitaoe4/骆驼骑兵.html?civ=abb",
+  "detail": {
+    "title": "骆驼骑兵(Camel Rider)",
+    "sections": [
+      {
+        "title": "训练信息",
+        "fields": [
+          {
+            "label": "产地",
+            "values": [
+              {
+                "text": "马厩",
+                "parts": [
+                  {
+                    "text": "马厩"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "产地"
+              }
+            ]
+          },
+          {
+            "label": "成本",
+            "values": [
+              {
+                "text": "130 45 45",
+                "parts": [
+                  {
+                    "icon": "肉"
+                  },
+                  {
+                    "text": "130"
+                  },
+                  {
+                    "icon": "木"
+                  },
+                  {
+                    "text": "45"
+                  },
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "45"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "成本"
+              }
+            ]
+          },
+          {
+            "label": "训练时间",
+            "values": [
+              {
+                "text": "35秒",
+                "parts": [
+                  {
+                    "text": "35秒"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "time"
+              },
+              {
+                "text": "训练时间"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "状态数据",
+        "fields": [
+          {
+            "label": "生命值",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "270",
+                "parts": [
+                  {
+                    "text": "270"
+                  }
+                ]
+              },
+              {
+                "text": "320",
+                "parts": [
+                  {
+                    "text": "320"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "hp"
+              },
+              {
+                "text": "生命值"
+              }
+            ]
+          },
+          {
+            "label": "近战护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              },
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorm"
+              },
+              {
+                "text": "近战护甲"
+              }
+            ]
+          },
+          {
+            "label": "远程护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              },
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorr"
+              },
+              {
+                "text": "远程护甲"
+              }
+            ]
+          },
+          {
+            "label": "移动速度",
+            "values": [
+              {
+                "text": "1.625",
+                "parts": [
+                  {
+                    "text": "1.625"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "speed"
+              },
+              {
+                "text": "移动速度"
+              }
+            ]
+          },
+          {
+            "label": "视野",
+            "values": [
+              {
+                "text": "6.22",
+                "parts": [
+                  {
+                    "text": "6.22"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "sight"
+              },
+              {
+                "text": "视野"
+              }
+            ]
+          },
+          {
+            "label": "单位标签",
+            "values": [
+              {
+                "text": "轻型、近战、骑兵、骆驼",
+                "parts": [
+                  {
+                    "text": "轻型、近战、骑兵、骆驼"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "alle"
+              },
+              {
+                "text": "单位标签"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "攻击属性(混战)",
+        "fields": [
+          {
+            "label": "近战伤害",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "14",
+                "parts": [
+                  {
+                    "text": "14"
+                  }
+                ]
+              },
+              {
+                "text": "16",
+                "parts": [
+                  {
+                    "text": "16"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "damagemelee"
+              },
+              {
+                "text": "近战伤害"
+              }
+            ]
+          },
+          {
+            "label": "攻击范围",
+            "values": [
+              {
+                "text": "0.42",
+                "parts": [
+                  {
+                    "text": "0.42"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "range"
+              },
+              {
+                "text": "攻击范围"
+              }
+            ]
+          },
+          {
+            "label": "攻击间隔",
+            "values": [
+              {
+                "text": "1.12",
+                "parts": [
+                  {
+                    "text": "1.12"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "attackspeed"
+              },
+              {
+                "text": "攻击间隔"
+              }
+            ]
+          },
+          {
+            "label": "对[骑兵]加成",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "+14",
+                "parts": [
+                  {
+                    "text": "+14"
+                  }
+                ]
+              },
+              {
+                "text": "+16",
+                "parts": [
+                  {
+                    "text": "+16"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "对[骑兵]加成"
+              }
+            ]
+          },
+          {
+            "label": "对[攻城器]加成",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "+10",
+                "parts": [
+                  {
+                    "text": "+10"
+                  }
+                ]
+              },
+              {
+                "text": "+10",
+                "parts": [
+                  {
+                    "text": "+10"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "对[攻城器]加成"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "攻击属性(火炬)",
+        "fields": [
+          {
+            "label": "火焰伤害",
+            "values": [
+              {
+                "text": "10",
+                "parts": [
+                  {
+                    "text": "10"
+                  }
+                ]
+              },
+              {
+                "text": "13",
+                "parts": [
+                  {
+                    "text": "13"
+                  }
+                ]
+              },
+              {
+                "text": "17",
+                "parts": [
+                  {
+                    "text": "17"
+                  }
+                ]
+              },
+              {
+                "text": "21",
+                "parts": [
+                  {
+                    "text": "21"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "damagefire"
+              },
+              {
+                "text": "火焰伤害"
+              }
+            ]
+          },
+          {
+            "label": "攻击范围",
+            "values": [
+              {
+                "text": "1.25",
+                "parts": [
+                  {
+                    "text": "1.25"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "range"
+              },
+              {
+                "text": "攻击范围"
+              }
+            ]
+          },
+          {
+            "label": "攻击间隔",
+            "values": [
+              {
+                "text": "2.125",
+                "parts": [
+                  {
+                    "text": "2.125"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "attackspeed"
+              },
+              {
+                "text": "攻击间隔"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "特殊能力",
+        "fields": []
+      },
+      {
+        "title": "骆驼惊吓：降低5格范围内骑兵部队(骆驼、大象部队除外)20%的攻击力",
+        "fields": []
+      },
+      {
+        "title": "升级费用",
+        "fields": [
+          {
+            "label": "精锐(Ⅳ)",
+            "values": [
+              {
+                "text": "300 700 60",
+                "parts": [
+                  {
+                    "icon": "肉"
+                  },
+                  {
+                    "text": "300"
+                  },
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "700"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "60"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "升级到精锐骆驼骑兵"
+              },
+              {
+                "text": "精锐(Ⅳ)"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "bonuses": [
+      {
+        "civilization": "abb",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "生命值",
+                "parts": [
+                  {
+                    "icon": "hp"
+                  },
+                  {
+                    "text": "生命值"
+                  }
+                ]
+              },
+              {
+                "text": "生物学(+25%)",
+                "parts": [
+                  {
+                    "icon": "生物学"
+                  },
+                  {
+                    "text": "生物学(+25%)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "移动速度",
+                "parts": [
+                  {
+                    "icon": "speed"
+                  },
+                  {
+                    "text": "移动速度"
+                  }
+                ]
+              },
+              {
+                "text": "骆驼操纵(+15%)",
+                "parts": [
+                  {
+                    "icon": "骆驼操纵"
+                  },
+                  {
+                    "text": "骆驼操纵(+15%)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "近战伤害",
+                "parts": [
+                  {
+                    "icon": "damagemelee"
+                  },
+                  {
+                    "text": "近战伤害"
+                  }
+                ]
+              },
+              {
+                "text": "熟铁块吹炼法(+1) 脱碳(+1) 大马士革钢(+1)",
+                "parts": [
+                  {
+                    "icon": "熟铁块吹炼法"
+                  },
+                  {
+                    "text": "熟铁块吹炼法(+1)"
+                  },
+                  {
+                    "icon": "脱碳"
+                  },
+                  {
+                    "text": "脱碳(+1)"
+                  },
+                  {
+                    "icon": "大马士革钢"
+                  },
+                  {
+                    "text": "大马士革钢(+1)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "近战护甲",
+                "parts": [
+                  {
+                    "icon": "armorm"
+                  },
+                  {
+                    "text": "近战护甲"
+                  }
+                ]
+              },
+              {
+                "text": "合身皮具(+1) 绝缘头盔(+1) 铁匠大师(+1) 骆驼骑兵皮甲(+2) 骆驼骑兵护盾(+3)",
+                "parts": [
+                  {
+                    "icon": "合身皮具"
+                  },
+                  {
+                    "text": "合身皮具(+1)"
+                  },
+                  {
+                    "icon": "绝缘头盔"
+                  },
+                  {
+                    "text": "绝缘头盔(+1)"
+                  },
+                  {
+                    "icon": "铁匠大师"
+                  },
+                  {
+                    "text": "铁匠大师(+1)"
+                  },
+                  {
+                    "icon": "骆驼骑兵皮甲"
+                  },
+                  {
+                    "text": "骆驼骑兵皮甲(+2)"
+                  },
+                  {
+                    "icon": "骆驼骑兵护盾"
+                  },
+                  {
+                    "text": "骆驼骑兵护盾(+3)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "远程护甲",
+                "parts": [
+                  {
+                    "icon": "armorr"
+                  },
+                  {
+                    "text": "远程护甲"
+                  }
+                ]
+              },
+              {
+                "text": "铁制底网(+1) 楔形铆钉(+1) 斜面(+1) 骆驼骑兵皮甲(+2)",
+                "parts": [
+                  {
+                    "icon": "铁制底网"
+                  },
+                  {
+                    "text": "铁制底网(+1)"
+                  },
+                  {
+                    "icon": "楔形铆钉"
+                  },
+                  {
+                    "text": "楔形铆钉(+1)"
+                  },
+                  {
+                    "icon": "斜面"
+                  },
+                  {
+                    "text": "斜面(+1)"
+                  },
+                  {
+                    "icon": "骆驼骑兵皮甲"
+                  },
+                  {
+                    "text": "骆驼骑兵皮甲(+2)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "训练效率",
+                "parts": [
+                  {
+                    "icon": "time"
+                  },
+                  {
+                    "text": "训练效率"
+                  }
+                ]
+              },
+              {
+                "text": "军事学院(+33%)",
+                "parts": [
+                  {
+                    "icon": "军事学院"
+                  },
+                  {
+                    "text": "军事学院(+33%)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "支援能力",
+                "parts": [
+                  {
+                    "text": "支援能力"
+                  }
+                ]
+              },
+              {
+                "text": "骆驼支援(提升附近步兵护甲+2)",
+                "parts": [
+                  {
+                    "icon": "骆驼支援"
+                  },
+                  {
+                    "text": "骆驼支援(提升附近步兵护甲+2)"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gallery_captions": [
+      "骆驼骑兵",
+      "精锐骆驼骑兵",
+      "研发骆驼骑兵皮甲后的骆驼骑兵"
+    ]
+  }
+}

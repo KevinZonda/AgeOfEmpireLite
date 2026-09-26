@@ -1,0 +1,781 @@
+{
+  "civilization": "jda",
+  "kind": "unit",
+  "section": "圣女贞德",
+  "name": "圣女贞德 - 猎人",
+  "image_name": "圣女贞德猎人",
+  "source_url": "https://seicing.com/html/aoe2/unitaoe4/圣女贞德猎人.html?civ=jda",
+  "detail": {
+    "title": "圣女贞德 - 猎人(Jeanne d'Arc - Hunter)",
+    "sections": [
+      {
+        "title": "训练信息",
+        "fields": [
+          {
+            "label": "产地",
+            "values": [
+              {
+                "text": "城镇中心",
+                "parts": [
+                  {
+                    "text": "城镇中心"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "产地"
+              }
+            ]
+          },
+          {
+            "label": "复活成本",
+            "values": [
+              {
+                "text": "250",
+                "parts": [
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "250"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "复活成本"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "状态数据",
+        "fields": [
+          {
+            "label": "生命值",
+            "values": [
+              {
+                "text": "225",
+                "parts": [
+                  {
+                    "text": "225"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "hp"
+              },
+              {
+                "text": "生命值"
+              }
+            ]
+          },
+          {
+            "label": "近战护甲",
+            "values": [
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorm"
+              },
+              {
+                "text": "近战护甲"
+              }
+            ]
+          },
+          {
+            "label": "远程护甲",
+            "values": [
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorr"
+              },
+              {
+                "text": "远程护甲"
+              }
+            ]
+          },
+          {
+            "label": "移动速度",
+            "values": [
+              {
+                "text": "1.375",
+                "parts": [
+                  {
+                    "text": "1.375"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "speed"
+              },
+              {
+                "text": "移动速度"
+              }
+            ]
+          },
+          {
+            "label": "视野",
+            "values": [
+              {
+                "text": "8.00",
+                "parts": [
+                  {
+                    "text": "8.00"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "sight"
+              },
+              {
+                "text": "视野"
+              }
+            ]
+          },
+          {
+            "label": "单位标签",
+            "values": [
+              {
+                "text": "轻型、远程、步兵、英雄",
+                "parts": [
+                  {
+                    "text": "轻型、远程、步兵、英雄"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "alle"
+              },
+              {
+                "text": "单位标签"
+              }
+            ]
+          },
+          {
+            "label": "远程伤害",
+            "values": [
+              {
+                "text": "8",
+                "parts": [
+                  {
+                    "text": "8"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "damageranged"
+              },
+              {
+                "text": "远程伤害"
+              }
+            ]
+          },
+          {
+            "label": "攻击范围",
+            "values": [
+              {
+                "text": "5.00",
+                "parts": [
+                  {
+                    "text": "5.00"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "range"
+              },
+              {
+                "text": "攻击范围"
+              }
+            ]
+          },
+          {
+            "label": "攻击间隔",
+            "values": [
+              {
+                "text": "1.625",
+                "parts": [
+                  {
+                    "text": "1.625"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "attackspeed"
+              },
+              {
+                "text": "攻击间隔"
+              }
+            ]
+          },
+          {
+            "label": "对[轻型近战步兵]加成",
+            "values": [
+              {
+                "text": "+8",
+                "parts": [
+                  {
+                    "text": "+8"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "对[轻型近战步兵]加成"
+              }
+            ]
+          },
+          {
+            "label": "对[猎物]加成",
+            "values": [
+              {
+                "text": "+14",
+                "parts": [
+                  {
+                    "text": "+14"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "对[猎物]加成"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "攻击属性(对建筑攻击)",
+        "fields": [
+          {
+            "label": "攻城伤害",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "3",
+                "parts": [
+                  {
+                    "text": "3"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "damagesiege"
+              },
+              {
+                "text": "攻城伤害"
+              }
+            ]
+          },
+          {
+            "label": "攻击范围",
+            "values": [
+              {
+                "text": "5.00",
+                "parts": [
+                  {
+                    "text": "5.00"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "range"
+              },
+              {
+                "text": "攻击范围"
+              }
+            ]
+          },
+          {
+            "label": "攻击间隔",
+            "values": [
+              {
+                "text": "1.625",
+                "parts": [
+                  {
+                    "text": "1.625"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "attackspeed"
+              },
+              {
+                "text": "攻击间隔"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "特殊能力",
+        "fields": []
+      },
+      {
+        "title": "光荣之心：脱离战斗的贞德在不同等级时每秒恢复1/1.5/2/2.5生命值，到达等级3/4后贞德从远程攻击中受到的伤害-45%/-60%",
+        "fields": []
+      },
+      {
+        "title": "神圣恢复：贞德鼓励她附近的友军，马上恢复30%已失去的生命值，120秒冷却时间",
+        "fields": []
+      },
+      {
+        "title": "神圣之弓：贞德锁定一个目标发射神圣之箭造成40伤害，8秒冷却时间，60秒充能1次，最多保存4次充能",
+        "fields": []
+      },
+      {
+        "title": "圣化：贞德圣化一个生产建筑，建造-25%的生产成本，120秒充能1次，最多保存4次充能",
+        "fields": []
+      }
+    ],
+    "bonuses": [
+      {
+        "civilization": "jda",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "生命值",
+                "parts": [
+                  {
+                    "icon": "hp"
+                  },
+                  {
+                    "text": "生命值"
+                  }
+                ]
+              },
+              {
+                "text": "同伴装备(+25%)",
+                "parts": [
+                  {
+                    "icon": "同伴装备"
+                  },
+                  {
+                    "text": "同伴装备(+25%)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "远程伤害",
+                "parts": [
+                  {
+                    "icon": "damageranged"
+                  },
+                  {
+                    "text": "远程伤害"
+                  }
+                ]
+              },
+              {
+                "text": "钢制箭头(+1) 平衡炮弹(+1) 箭头穿孔板甲(+1) 燃烧箭(+20%) 燃烧箭(解锁对建筑攻击) 同伴装备(+25%)",
+                "parts": [
+                  {
+                    "icon": "钢制箭头"
+                  },
+                  {
+                    "text": "钢制箭头(+1)"
+                  },
+                  {
+                    "icon": "平衡炮弹"
+                  },
+                  {
+                    "text": "平衡炮弹(+1)"
+                  },
+                  {
+                    "icon": "箭头穿孔板甲"
+                  },
+                  {
+                    "text": "箭头穿孔板甲(+1)"
+                  },
+                  {
+                    "icon": "燃烧箭"
+                  },
+                  {
+                    "text": "燃烧箭(+20%)"
+                  },
+                  {
+                    "icon": "燃烧箭"
+                  },
+                  {
+                    "text": "燃烧箭(解锁对建筑攻击)"
+                  },
+                  {
+                    "icon": "同伴装备"
+                  },
+                  {
+                    "text": "同伴装备(+25%)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "近战护甲",
+                "parts": [
+                  {
+                    "icon": "armorm"
+                  },
+                  {
+                    "text": "近战护甲"
+                  }
+                ]
+              },
+              {
+                "text": "合身皮具(+1) 绝缘头盔(+1) 铁匠大师(+1) 同伴装备(+1)",
+                "parts": [
+                  {
+                    "icon": "合身皮具"
+                  },
+                  {
+                    "text": "合身皮具(+1)"
+                  },
+                  {
+                    "icon": "绝缘头盔"
+                  },
+                  {
+                    "text": "绝缘头盔(+1)"
+                  },
+                  {
+                    "icon": "铁匠大师"
+                  },
+                  {
+                    "text": "铁匠大师(+1)"
+                  },
+                  {
+                    "icon": "同伴装备"
+                  },
+                  {
+                    "text": "同伴装备(+1)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "远程护甲",
+                "parts": [
+                  {
+                    "icon": "armorr"
+                  },
+                  {
+                    "text": "远程护甲"
+                  }
+                ]
+              },
+              {
+                "text": "铁制底网(+1) 楔形铆钉(+1) 斜面(+1) 同伴装备(+1)",
+                "parts": [
+                  {
+                    "icon": "铁制底网"
+                  },
+                  {
+                    "text": "铁制底网(+1)"
+                  },
+                  {
+                    "icon": "楔形铆钉"
+                  },
+                  {
+                    "text": "楔形铆钉(+1)"
+                  },
+                  {
+                    "icon": "斜面"
+                  },
+                  {
+                    "text": "斜面(+1)"
+                  },
+                  {
+                    "icon": "同伴装备"
+                  },
+                  {
+                    "text": "同伴装备(+1)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "攻击范围",
+                "parts": [
+                  {
+                    "icon": "range"
+                  },
+                  {
+                    "text": "攻击范围"
+                  }
+                ]
+              },
+              {
+                "text": "蚕丝弓弦(+1.5)",
+                "parts": [
+                  {
+                    "icon": "蚕丝弓弦"
+                  },
+                  {
+                    "text": "蚕丝弓弦(+1.5)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "其它",
+                "parts": [
+                  {
+                    "text": "其它"
+                  }
+                ]
+              },
+              {
+                "text": "攻城工程学(可以建造冲车和攻城塔)",
+                "parts": [
+                  {
+                    "icon": "攻城工程学"
+                  },
+                  {
+                    "text": "攻城工程学(可以建造冲车和攻城塔)"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gallery_captions": [
+      "圣女贞德 - 猎人"
+    ]
+  }
+}

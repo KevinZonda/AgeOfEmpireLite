@@ -1,0 +1,490 @@
+{
+  "civilization": "mac",
+  "kind": "unit",
+  "section": "船只",
+  "name": "渔船",
+  "image_name": "渔船",
+  "source_url": "https://seicing.com/html/aoe2/unitaoe4/渔船.html?civ=mac",
+  "detail": {
+    "title": "渔船(Fishing Boat)",
+    "sections": [
+      {
+        "title": "训练信息",
+        "fields": [
+          {
+            "label": "产地",
+            "values": [
+              {
+                "text": "码头",
+                "parts": [
+                  {
+                    "text": "码头"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "产地"
+              }
+            ]
+          },
+          {
+            "label": "成本",
+            "values": [
+              {
+                "text": "75",
+                "parts": [
+                  {
+                    "icon": "木"
+                  },
+                  {
+                    "text": "75"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "成本"
+              }
+            ]
+          },
+          {
+            "label": "训练时间",
+            "values": [
+              {
+                "text": "30秒",
+                "parts": [
+                  {
+                    "text": "30秒"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "time"
+              },
+              {
+                "text": "训练时间"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "状态数据",
+        "fields": [
+          {
+            "label": "生命值",
+            "values": [
+              {
+                "text": "100",
+                "parts": [
+                  {
+                    "text": "100"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "hp"
+              },
+              {
+                "text": "生命值"
+              }
+            ]
+          },
+          {
+            "label": "火焰护甲",
+            "values": [
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorf"
+              },
+              {
+                "text": "火焰护甲"
+              }
+            ]
+          },
+          {
+            "label": "远程护甲",
+            "values": [
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorr"
+              },
+              {
+                "text": "远程护甲"
+              }
+            ]
+          },
+          {
+            "label": "移动速度",
+            "values": [
+              {
+                "text": "1.5",
+                "parts": [
+                  {
+                    "text": "1.5"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "speed"
+              },
+              {
+                "text": "移动速度"
+              }
+            ]
+          },
+          {
+            "label": "视野",
+            "values": [
+              {
+                "text": "7.33",
+                "parts": [
+                  {
+                    "text": "7.33"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "sight"
+              },
+              {
+                "text": "视野"
+              }
+            ]
+          },
+          {
+            "label": "单位标签",
+            "values": [
+              {
+                "text": "工人、船只",
+                "parts": [
+                  {
+                    "text": "工人、船只"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "alle"
+              },
+              {
+                "text": "单位标签"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "bonuses": [
+      {
+        "civilization": null,
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": ""
+              },
+              {
+                "text": "工作效率",
+                "parts": [
+                  {
+                    "text": "工作效率"
+                  }
+                ]
+              },
+              {
+                "text": "运载量",
+                "parts": [
+                  {
+                    "text": "运载量"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "近海鱼群",
+                "parts": [
+                  {
+                    "icon": "gather7"
+                  },
+                  {
+                    "text": "近海鱼群"
+                  }
+                ]
+              },
+              {
+                "text": "0.675",
+                "parts": [
+                  {
+                    "text": "0.675"
+                  }
+                ]
+              },
+              {
+                "text": "40",
+                "parts": [
+                  {
+                    "text": "40"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "深海鱼群",
+                "parts": [
+                  {
+                    "icon": "gather21"
+                  },
+                  {
+                    "text": "深海鱼群"
+                  }
+                ]
+              },
+              {
+                "text": "0.75",
+                "parts": [
+                  {
+                    "text": "0.75"
+                  }
+                ]
+              },
+              {
+                "text": "40",
+                "parts": [
+                  {
+                    "text": "40"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "civilization": "mac",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "采集效率(食物)",
+                "parts": [
+                  {
+                    "icon": "gather11"
+                  },
+                  {
+                    "text": "采集效率(食物)"
+                  }
+                ]
+              },
+              {
+                "text": "延绳钓(+15%) 流刺网(+10%)",
+                "parts": [
+                  {
+                    "icon": "延绳钓"
+                  },
+                  {
+                    "text": "延绳钓(+15%)"
+                  },
+                  {
+                    "icon": "流刺网"
+                  },
+                  {
+                    "text": "流刺网(+10%)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "运载量",
+                "parts": [
+                  {
+                    "icon": "cap"
+                  },
+                  {
+                    "text": "运载量"
+                  }
+                ]
+              },
+              {
+                "text": "延绳钓(+10) 流刺网(+20)",
+                "parts": [
+                  {
+                    "icon": "延绳钓"
+                  },
+                  {
+                    "text": "延绳钓(+10)"
+                  },
+                  {
+                    "icon": "流刺网"
+                  },
+                  {
+                    "text": "流刺网(+20)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "移动速度",
+                "parts": [
+                  {
+                    "icon": "speed"
+                  },
+                  {
+                    "text": "移动速度"
+                  }
+                ]
+              },
+              {
+                "text": "流刺网(+10%)",
+                "parts": [
+                  {
+                    "icon": "流刺网"
+                  },
+                  {
+                    "text": "流刺网(+10%)"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gallery_captions": [
+      "中国渔船",
+      "英格兰渔船",
+      "德里苏丹国渔船",
+      "神圣罗马帝国渔船",
+      "法兰西渔船",
+      "黑衣大食王朝渔船",
+      "蒙古渔船",
+      "奥斯曼渔船",
+      "马里渔船",
+      "拜占庭渔船",
+      "日本渔船",
+      "金朝渔船",
+      "苏格兰渔船",
+      "维京渔船"
+    ]
+  }
+}

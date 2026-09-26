@@ -1,0 +1,9 @@
+{
+  "civilization": "sco",
+  "kind": "building",
+  "section": "黑暗时代建筑",
+  "name": "集结大厅",
+  "image_name": "集结大厅",
+  "source_url": "https://seicing.com/html/aoe2/buildingsaoe4/集结大厅.html?civ=sco",
+  "detail_error": "Source page returned HTTP 404"
+}

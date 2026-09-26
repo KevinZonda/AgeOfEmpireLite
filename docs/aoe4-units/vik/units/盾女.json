@@ -1,0 +1,9 @@
+{
+  "civilization": "vik",
+  "kind": "unit",
+  "section": "军事单位",
+  "name": "盾女",
+  "image_name": "盾女",
+  "source_url": "https://seicing.com/html/aoe2/unitaoe4/盾女.html?civ=vik",
+  "detail_error": "Source page returned HTTP 404"
+}

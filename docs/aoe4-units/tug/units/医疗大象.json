@@ -1,0 +1,745 @@
+{
+  "civilization": "tug",
+  "kind": "unit",
+  "section": "平民与宗教单位",
+  "name": "医疗大象",
+  "image_name": "医疗大象",
+  "source_url": "https://seicing.com/html/aoe2/unitaoe4/医疗大象.html?civ=tug",
+  "detail": {
+    "title": "医疗大象(Healer Elephant)",
+    "sections": [
+      {
+        "title": "训练信息",
+        "fields": [
+          {
+            "label": "产地",
+            "values": [
+              {
+                "text": "清真寺",
+                "parts": [
+                  {
+                    "text": "清真寺"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "产地"
+              }
+            ]
+          },
+          {
+            "label": "成本",
+            "values": [
+              {
+                "text": "150 220",
+                "parts": [
+                  {
+                    "icon": "肉"
+                  },
+                  {
+                    "text": "150"
+                  },
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "220"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "成本"
+              }
+            ]
+          },
+          {
+            "label": "训练时间",
+            "values": [
+              {
+                "text": "40秒",
+                "parts": [
+                  {
+                    "text": "40秒"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "time"
+              },
+              {
+                "text": "训练时间"
+              }
+            ]
+          },
+          {
+            "label": "人口占用",
+            "values": [
+              {
+                "text": "3",
+                "parts": [
+                  {
+                    "text": "3"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "pop2"
+              },
+              {
+                "text": "人口占用"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "状态数据",
+        "fields": [
+          {
+            "label": "生命值",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "400",
+                "parts": [
+                  {
+                    "text": "400"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "hp"
+              },
+              {
+                "text": "生命值"
+              }
+            ]
+          },
+          {
+            "label": "近战护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "3",
+                "parts": [
+                  {
+                    "text": "3"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorm"
+              },
+              {
+                "text": "近战护甲"
+              }
+            ]
+          },
+          {
+            "label": "远程护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "1",
+                "parts": [
+                  {
+                    "text": "1"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorr"
+              },
+              {
+                "text": "远程护甲"
+              }
+            ]
+          },
+          {
+            "label": "移动速度",
+            "values": [
+              {
+                "text": "1.00",
+                "parts": [
+                  {
+                    "text": "1.00"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "speed"
+              },
+              {
+                "text": "移动速度"
+              }
+            ]
+          },
+          {
+            "label": "视野",
+            "values": [
+              {
+                "text": "8.00",
+                "parts": [
+                  {
+                    "text": "8.00"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "sight"
+              },
+              {
+                "text": "视野"
+              }
+            ]
+          },
+          {
+            "label": "单位标签",
+            "values": [
+              {
+                "text": "重装、近战、骑兵、宗教、大象",
+                "parts": [
+                  {
+                    "text": "重装、近战、骑兵、宗教、大象"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "alle"
+              },
+              {
+                "text": "单位标签"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "攻击属性",
+        "fields": [
+          {
+            "label": "近战伤害",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "15",
+                "parts": [
+                  {
+                    "text": "15"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "damagemelee"
+              },
+              {
+                "text": "近战伤害"
+              }
+            ]
+          },
+          {
+            "label": "攻击范围",
+            "values": [
+              {
+                "text": "0.75",
+                "parts": [
+                  {
+                    "text": "0.75"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "range"
+              },
+              {
+                "text": "攻击范围"
+              }
+            ]
+          },
+          {
+            "label": "攻击间隔",
+            "values": [
+              {
+                "text": "3.00",
+                "parts": [
+                  {
+                    "text": "3.00"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "attackspeed"
+              },
+              {
+                "text": "攻击间隔"
+              }
+            ]
+          },
+          {
+            "label": "对[建筑]加成",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "+15",
+                "parts": [
+                  {
+                    "text": "+15"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "对[建筑]加成"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "特殊能力",
+        "fields": []
+      },
+      {
+        "title": "治疗：每秒治疗单个单位7生命值，战斗时效率会下降50%，医疗大象承载2个伊玛目，可同时治疗两个目标",
+        "fields": []
+      },
+      {
+        "title": "医疗大象伤害：医疗大象附近每存在1个步兵，近战攻击力+1",
+        "fields": []
+      }
+    ],
+    "bonuses": [
+      {
+        "civilization": "tug",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "生命值",
+                "parts": [
+                  {
+                    "icon": "hp"
+                  },
+                  {
+                    "text": "生命值"
+                  }
+                ]
+              },
+              {
+                "text": "虔诚(+10%) 生物学(+25%) 精锐医疗大象(+25%)",
+                "parts": [
+                  {
+                    "icon": "虔诚"
+                  },
+                  {
+                    "text": "虔诚(+10%)"
+                  },
+                  {
+                    "icon": "生物学"
+                  },
+                  {
+                    "text": "生物学(+25%)"
+                  },
+                  {
+                    "icon": "精锐医疗大象"
+                  },
+                  {
+                    "text": "精锐医疗大象(+25%)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "生命恢复",
+                "parts": [
+                  {
+                    "text": "生命恢复"
+                  }
+                ]
+              },
+              {
+                "text": "大象看护人(+1/秒)",
+                "parts": [
+                  {
+                    "icon": "大象看护人"
+                  },
+                  {
+                    "text": "大象看护人(+1/秒)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "治疗速度",
+                "parts": [
+                  {
+                    "icon": "healspeed"
+                  },
+                  {
+                    "text": "治疗速度"
+                  }
+                ]
+              },
+              {
+                "text": "草药(+60%)",
+                "parts": [
+                  {
+                    "icon": "草药"
+                  },
+                  {
+                    "text": "草药(+60%)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "近战伤害",
+                "parts": [
+                  {
+                    "icon": "damagemelee"
+                  },
+                  {
+                    "text": "近战伤害"
+                  }
+                ]
+              },
+              {
+                "text": "熟铁块吹炼法(+1) 脱碳(+1) 大马士革钢(+1) 附带损坏(+30%额外伤害)",
+                "parts": [
+                  {
+                    "icon": "熟铁块吹炼法"
+                  },
+                  {
+                    "text": "熟铁块吹炼法(+1)"
+                  },
+                  {
+                    "icon": "脱碳"
+                  },
+                  {
+                    "text": "脱碳(+1)"
+                  },
+                  {
+                    "icon": "大马士革钢"
+                  },
+                  {
+                    "text": "大马士革钢(+1)"
+                  },
+                  {
+                    "icon": "附带损坏"
+                  },
+                  {
+                    "text": "附带损坏(+30%额外伤害)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "近战护甲",
+                "parts": [
+                  {
+                    "icon": "armorm"
+                  },
+                  {
+                    "text": "近战护甲"
+                  }
+                ]
+              },
+              {
+                "text": "合身皮具(+1) 绝缘头盔(+1) 铁匠大师(+1) 精锐医疗大象(+2)",
+                "parts": [
+                  {
+                    "icon": "合身皮具"
+                  },
+                  {
+                    "text": "合身皮具(+1)"
+                  },
+                  {
+                    "icon": "绝缘头盔"
+                  },
+                  {
+                    "text": "绝缘头盔(+1)"
+                  },
+                  {
+                    "icon": "铁匠大师"
+                  },
+                  {
+                    "text": "铁匠大师(+1)"
+                  },
+                  {
+                    "icon": "精锐医疗大象"
+                  },
+                  {
+                    "text": "精锐医疗大象(+2)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "远程护甲",
+                "parts": [
+                  {
+                    "icon": "armorr"
+                  },
+                  {
+                    "text": "远程护甲"
+                  }
+                ]
+              },
+              {
+                "text": "铁制底网(+1) 楔形铆钉(+1) 斜面(+1) 精锐医疗大象(+3)",
+                "parts": [
+                  {
+                    "icon": "铁制底网"
+                  },
+                  {
+                    "text": "铁制底网(+1)"
+                  },
+                  {
+                    "icon": "楔形铆钉"
+                  },
+                  {
+                    "text": "楔形铆钉(+1)"
+                  },
+                  {
+                    "icon": "斜面"
+                  },
+                  {
+                    "text": "斜面(+1)"
+                  },
+                  {
+                    "icon": "精锐医疗大象"
+                  },
+                  {
+                    "text": "精锐医疗大象(+3)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "训练效率",
+                "parts": [
+                  {
+                    "icon": "time"
+                  },
+                  {
+                    "text": "训练效率"
+                  }
+                ]
+              },
+              {
+                "text": "军事学院(+33%)",
+                "parts": [
+                  {
+                    "icon": "军事学院"
+                  },
+                  {
+                    "text": "军事学院(+33%)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "移动速度",
+                "parts": [
+                  {
+                    "icon": "speed"
+                  },
+                  {
+                    "text": "移动速度"
+                  }
+                ]
+              },
+              {
+                "text": "象夫(+10%)",
+                "parts": [
+                  {
+                    "icon": "象夫"
+                  },
+                  {
+                    "text": "象夫(+10%)"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gallery_captions": [
+      "医疗大象",
+      "精锐医疗大象"
+    ]
+  }
+}

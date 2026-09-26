@@ -1,0 +1,622 @@
+{
+  "civilization": "otd",
+  "kind": "building",
+  "section": "城堡时代建筑",
+  "name": "修道院",
+  "image_name": "修道院",
+  "source_url": "https://seicing.com/html/aoe2/buildingsaoe4/修道院.html?civ=otd",
+  "detail": {
+    "title": "修道院(Monastery)",
+    "sections": [
+      {
+        "title": "建造信息",
+        "fields": [
+          {
+            "label": "成本",
+            "values": [
+              {
+                "text": "200",
+                "parts": [
+                  {
+                    "icon": "木"
+                  },
+                  {
+                    "text": "200"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "成本"
+              }
+            ]
+          },
+          {
+            "label": "建造时间",
+            "values": [
+              {
+                "text": "25秒",
+                "parts": [
+                  {
+                    "text": "25秒"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "time"
+              },
+              {
+                "text": "建造时间"
+              }
+            ]
+          },
+          {
+            "label": "视野",
+            "values": [
+              {
+                "text": "5.56",
+                "parts": [
+                  {
+                    "text": "5.56"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "sight"
+              },
+              {
+                "text": "视野"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "状态数据",
+        "fields": [
+          {
+            "label": "生命值",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "2100",
+                "parts": [
+                  {
+                    "text": "2100"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "hp"
+              },
+              {
+                "text": "生命值"
+              }
+            ]
+          },
+          {
+            "label": "火焰护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorf"
+              },
+              {
+                "text": "火焰护甲"
+              }
+            ]
+          },
+          {
+            "label": "远程护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "50",
+                "parts": [
+                  {
+                    "text": "50"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorr"
+              },
+              {
+                "text": "远程护甲"
+              }
+            ]
+          },
+          {
+            "label": "尺寸",
+            "values": [
+              {
+                "text": "4×4",
+                "parts": [
+                  {
+                    "text": "4×4"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "size"
+              },
+              {
+                "text": "尺寸"
+              }
+            ]
+          },
+          {
+            "label": "建筑标签",
+            "values": [
+              {
+                "text": "宗教建筑",
+                "parts": [
+                  {
+                    "text": "宗教建筑"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "allb"
+              },
+              {
+                "text": "建筑标签"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "bonuses": [
+      {
+        "civilization": "otd",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "图标",
+                "parts": [
+                  {
+                    "text": "图标"
+                  }
+                ]
+              },
+              {
+                "text": "名称",
+                "parts": [
+                  {
+                    "text": "名称"
+                  }
+                ]
+              },
+              {
+                "text": "时代",
+                "parts": [
+                  {
+                    "text": "时代"
+                  }
+                ]
+              },
+              {
+                "text": "成本",
+                "parts": [
+                  {
+                    "text": "成本"
+                  }
+                ]
+              },
+              {
+                "text": "效果",
+                "parts": [
+                  {
+                    "text": "效果"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "",
+                "parts": [
+                  {
+                    "icon": "草药"
+                  }
+                ]
+              },
+              {
+                "text": "草药",
+                "parts": [
+                  {
+                    "text": "草药"
+                  }
+                ]
+              },
+              {
+                "text": "Ⅲ",
+                "parts": [
+                  {
+                    "text": "Ⅲ"
+                  }
+                ]
+              },
+              {
+                "text": "275 45",
+                "parts": [
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "275"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "45"
+                  }
+                ]
+              },
+              {
+                "text": "宗教单位的治疗速率 +60%",
+                "parts": [
+                  {
+                    "text": "宗教单位的治疗速率 +60%"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "",
+                "parts": [
+                  {
+                    "icon": "战意激昂"
+                  }
+                ]
+              },
+              {
+                "text": "战意激昂",
+                "parts": [
+                  {
+                    "text": "战意激昂"
+                  }
+                ]
+              },
+              {
+                "text": "Ⅲ",
+                "parts": [
+                  {
+                    "text": "Ⅲ"
+                  }
+                ]
+              },
+              {
+                "text": "100 250 60",
+                "parts": [
+                  {
+                    "icon": "肉"
+                  },
+                  {
+                    "text": "100"
+                  },
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "250"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "60"
+                  }
+                ]
+              },
+              {
+                "text": "高级教士的移动速度提高 10%，可鼓舞军事单位，使他们的护甲 +1 和伤害 +10%",
+                "parts": [
+                  {
+                    "text": "高级教士的移动速度提高 10%，可鼓舞军事单位，使他们的护甲 +1 和伤害 +10%"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "",
+                "parts": [
+                  {
+                    "icon": "虔诚"
+                  }
+                ]
+              },
+              {
+                "text": "虔诚",
+                "parts": [
+                  {
+                    "text": "虔诚"
+                  }
+                ]
+              },
+              {
+                "text": "Ⅳ",
+                "parts": [
+                  {
+                    "text": "Ⅳ"
+                  }
+                ]
+              },
+              {
+                "text": "325 45",
+                "parts": [
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "325"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "45"
+                  }
+                ]
+              },
+              {
+                "text": "宗教单位的生命值 +40",
+                "parts": [
+                  {
+                    "text": "宗教单位的生命值 +40"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "",
+                "parts": [
+                  {
+                    "icon": "什一税仓库"
+                  }
+                ]
+              },
+              {
+                "text": "什一税仓库",
+                "parts": [
+                  {
+                    "text": "什一税仓库"
+                  }
+                ]
+              },
+              {
+                "text": "Ⅳ",
+                "parts": [
+                  {
+                    "text": "Ⅳ"
+                  }
+                ]
+              },
+              {
+                "text": "500 60",
+                "parts": [
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "500"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "60"
+                  }
+                ]
+              },
+              {
+                "text": "放置在修道院的圣物每分钟都会提供 40 食物、40 木材和 10 石料收入",
+                "parts": [
+                  {
+                    "text": "放置在修道院的圣物每分钟都会提供 40 食物、40 木材和 10 石料收入"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "civilization": "otd",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "生命值",
+                "parts": [
+                  {
+                    "icon": "hp"
+                  },
+                  {
+                    "text": "生命值"
+                  }
+                ]
+              },
+              {
+                "text": "宫廷建筑师(+30%)",
+                "parts": [
+                  {
+                    "icon": "宫廷建筑师"
+                  },
+                  {
+                    "text": "宫廷建筑师(+30%)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "火焰护甲",
+                "parts": [
+                  {
+                    "icon": "armorf"
+                  },
+                  {
+                    "text": "火焰护甲"
+                  }
+                ]
+              },
+              {
+                "text": "石板和石造建筑(+5)",
+                "parts": [
+                  {
+                    "icon": "石板和石造建筑"
+                  },
+                  {
+                    "text": "石板和石造建筑(+5)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "圣物收入",
+                "parts": [
+                  {
+                    "text": "圣物收入"
+                  }
+                ]
+              },
+              {
+                "text": "什一税仓库(每分钟提供40食物、木材和10石头)",
+                "parts": [
+                  {
+                    "icon": "什一税仓库"
+                  },
+                  {
+                    "text": "什一税仓库(每分钟提供40食物、木材和10石头)"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gallery_captions": [
+      "城堡时代修道院",
+      "帝王时代修道院",
+      "神圣罗马帝国修道院渲染图"
+    ]
+  }
+}

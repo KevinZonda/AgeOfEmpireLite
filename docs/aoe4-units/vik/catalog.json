@@ -1,0 +1,132 @@
+{
+  "civilization": "vik",
+  "source_url": "https://seicing.com/js/aoe4civ/aoe4list_vik.js",
+  "entries": [
+    {
+      "kind": "units",
+      "section": "平民与宗教单位",
+      "name": "村民",
+      "path": "units/村民.json"
+    },
+    {
+      "kind": "units",
+      "section": "平民与宗教单位",
+      "name": "君主",
+      "path": "units/君主.json"
+    },
+    {
+      "kind": "units",
+      "section": "军事单位",
+      "name": "侍从",
+      "path": "units/侍从.json"
+    },
+    {
+      "kind": "units",
+      "section": "军事单位",
+      "name": "亲随战士",
+      "path": "units/亲随战士.json"
+    },
+    {
+      "kind": "units",
+      "section": "军事单位",
+      "name": "狂战士",
+      "path": "units/狂战士.json"
+    },
+    {
+      "kind": "units",
+      "section": "军事单位",
+      "name": "盾女",
+      "path": "units/盾女.json"
+    },
+    {
+      "kind": "units",
+      "section": "军事单位",
+      "name": "骑士",
+      "path": "units/骑士.json"
+    },
+    {
+      "kind": "units",
+      "section": "军事单位",
+      "name": "民兵弩手",
+      "path": "units/民兵弩手.json"
+    },
+    {
+      "kind": "units",
+      "section": "攻城武器",
+      "name": "配重式巨型投石机",
+      "path": "units/配重式巨型投石机.json"
+    },
+    {
+      "kind": "units",
+      "section": "攻城武器",
+      "name": "攻城锤",
+      "path": "units/攻城锤.json"
+    },
+    {
+      "kind": "units",
+      "section": "船只",
+      "name": "运输船",
+      "path": "units/运输船.json"
+    },
+    {
+      "kind": "units",
+      "section": "船只",
+      "name": "维京长船",
+      "path": "units/维京长船.json"
+    },
+    {
+      "kind": "buildings",
+      "section": "黑暗时代建筑",
+      "name": "长屋",
+      "path": "buildings/长屋.json"
+    },
+    {
+      "kind": "buildings",
+      "section": "黑暗时代建筑",
+      "name": "磨坊",
+      "path": "buildings/磨坊.json"
+    },
+    {
+      "kind": "buildings",
+      "section": "黑暗时代建筑",
+      "name": "伐木场",
+      "path": "buildings/伐木场.json"
+    },
+    {
+      "kind": "buildings",
+      "section": "黑暗时代建筑",
+      "name": "采矿场",
+      "path": "buildings/采矿场.json"
+    },
+    {
+      "kind": "buildings",
+      "section": "黑暗时代建筑",
+      "name": "农田",
+      "path": "buildings/农田.json"
+    },
+    {
+      "kind": "buildings",
+      "section": "黑暗时代建筑",
+      "name": "木栅栏",
+      "path": "buildings/木栅栏.json"
+    },
+    {
+      "kind": "buildings",
+      "section": "黑暗时代建筑",
+      "name": "木城门",
+      "path": "buildings/木城门.json"
+    },
+    {
+      "kind": "landmarks",
+      "section": "地标建筑",
+      "name": "‌木板教堂",
+      "path": "landmarks/‌木板教堂.json"
+    },
+    {
+      "kind": "landmarks",
+      "section": "地标建筑",
+      "name": "环形要塞",
+      "path": "landmarks/环形要塞.json"
+    }
+  ]
+}

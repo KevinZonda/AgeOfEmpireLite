@@ -1,0 +1,9 @@
+{
+  "civilization": "vik",
+  "kind": "building",
+  "section": "黑暗时代建筑",
+  "name": "长屋",
+  "image_name": "长屋",
+  "source_url": "https://seicing.com/html/aoe2/buildingsaoe4/长屋.html?civ=vik",
+  "detail_error": "Source page returned HTTP 404"
+}

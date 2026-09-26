@@ -1,0 +1,805 @@
+{
+  "civilization": "mac",
+  "kind": "unit",
+  "section": "军事单位",
+  "name": "瑞塔利",
+  "image_name": "瑞塔利",
+  "source_url": "https://seicing.com/html/aoe2/unitaoe4/瑞塔利.html?civ=mac",
+  "detail": {
+    "title": "瑞塔利(Riddari)",
+    "sections": [
+      {
+        "title": "训练信息",
+        "fields": [
+          {
+            "label": "产地",
+            "values": [
+              {
+                "text": "瓦兰吉堡垒 马厩",
+                "parts": [
+                  {
+                    "text": "瓦兰吉堡垒"
+                  },
+                  {
+                    "text": "马厩"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "产地"
+              }
+            ]
+          },
+          {
+            "label": "成本",
+            "values": [
+              {
+                "text": "130 110",
+                "parts": [
+                  {
+                    "icon": "肉"
+                  },
+                  {
+                    "text": "130"
+                  },
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "110"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "成本"
+              }
+            ]
+          },
+          {
+            "label": "训练时间",
+            "values": [
+              {
+                "text": "35秒",
+                "parts": [
+                  {
+                    "text": "35秒"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "time"
+              },
+              {
+                "text": "训练时间"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "状态数据",
+        "fields": [
+          {
+            "label": "生命值",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "230",
+                "parts": [
+                  {
+                    "text": "230"
+                  }
+                ]
+              },
+              {
+                "text": "270",
+                "parts": [
+                  {
+                    "text": "270"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "hp"
+              },
+              {
+                "text": "生命值"
+              }
+            ]
+          },
+          {
+            "label": "近战护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "4",
+                "parts": [
+                  {
+                    "text": "4"
+                  }
+                ]
+              },
+              {
+                "text": "5",
+                "parts": [
+                  {
+                    "text": "5"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorm"
+              },
+              {
+                "text": "近战护甲"
+              }
+            ]
+          },
+          {
+            "label": "远程护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "4",
+                "parts": [
+                  {
+                    "text": "4"
+                  }
+                ]
+              },
+              {
+                "text": "5",
+                "parts": [
+                  {
+                    "text": "5"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorr"
+              },
+              {
+                "text": "远程护甲"
+              }
+            ]
+          },
+          {
+            "label": "移动速度",
+            "values": [
+              {
+                "text": "1.7",
+                "parts": [
+                  {
+                    "text": "1.7"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "speed"
+              },
+              {
+                "text": "移动速度"
+              }
+            ]
+          },
+          {
+            "label": "视野",
+            "values": [
+              {
+                "text": "6.22",
+                "parts": [
+                  {
+                    "text": "6.22"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "sight"
+              },
+              {
+                "text": "视野"
+              }
+            ]
+          },
+          {
+            "label": "单位标签",
+            "values": [
+              {
+                "text": "重型、近战、骑兵",
+                "parts": [
+                  {
+                    "text": "重型、近战、骑兵"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "alle"
+              },
+              {
+                "text": "单位标签"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "攻击属性(混战)",
+        "fields": [
+          {
+            "label": "近战伤害",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "24",
+                "parts": [
+                  {
+                    "text": "24"
+                  }
+                ]
+              },
+              {
+                "text": "29",
+                "parts": [
+                  {
+                    "text": "29"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "damagemelee"
+              },
+              {
+                "text": "近战伤害"
+              }
+            ]
+          },
+          {
+            "label": "攻击范围",
+            "values": [
+              {
+                "text": "0.29",
+                "parts": [
+                  {
+                    "text": "0.29"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "range"
+              },
+              {
+                "text": "攻击范围"
+              }
+            ]
+          },
+          {
+            "label": "攻击间隔",
+            "values": [
+              {
+                "text": "1.375",
+                "parts": [
+                  {
+                    "text": "1.375"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "attackspeed"
+              },
+              {
+                "text": "攻击间隔"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "攻击属性(火炬)",
+        "fields": [
+          {
+            "label": "火焰伤害",
+            "values": [
+              {
+                "text": "10",
+                "parts": [
+                  {
+                    "text": "10"
+                  }
+                ]
+              },
+              {
+                "text": "13",
+                "parts": [
+                  {
+                    "text": "13"
+                  }
+                ]
+              },
+              {
+                "text": "17",
+                "parts": [
+                  {
+                    "text": "17"
+                  }
+                ]
+              },
+              {
+                "text": "21",
+                "parts": [
+                  {
+                    "text": "21"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "damagefire"
+              },
+              {
+                "text": "火焰伤害"
+              }
+            ]
+          },
+          {
+            "label": "攻击范围",
+            "values": [
+              {
+                "text": "1.25",
+                "parts": [
+                  {
+                    "text": "1.25"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "range"
+              },
+              {
+                "text": "攻击范围"
+              }
+            ]
+          },
+          {
+            "label": "攻击间隔",
+            "values": [
+              {
+                "text": "2.125",
+                "parts": [
+                  {
+                    "text": "2.125"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "attackspeed"
+              },
+              {
+                "text": "攻击间隔"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "攻击属性(飞斧)",
+        "fields": [
+          {
+            "label": "近战伤害",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "15",
+                "parts": [
+                  {
+                    "text": "15"
+                  }
+                ]
+              },
+              {
+                "text": "18",
+                "parts": [
+                  {
+                    "text": "18"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "damagemelee"
+              },
+              {
+                "text": "近战伤害"
+              }
+            ]
+          },
+          {
+            "label": "攻击范围",
+            "values": [
+              {
+                "text": "3.25",
+                "parts": [
+                  {
+                    "text": "3.25"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "range"
+              },
+              {
+                "text": "攻击范围"
+              }
+            ]
+          },
+          {
+            "label": "攻击间隔",
+            "values": [
+              {
+                "text": "1.75",
+                "parts": [
+                  {
+                    "text": "1.75"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "attackspeed"
+              },
+              {
+                "text": "攻击间隔"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "升级费用",
+        "fields": [
+          {
+            "label": "精锐(Ⅳ)",
+            "values": [
+              {
+                "text": "300 700 60",
+                "parts": [
+                  {
+                    "icon": "肉"
+                  },
+                  {
+                    "text": "300"
+                  },
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "700"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "60"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "升级到精锐瑞塔利"
+              },
+              {
+                "text": "精锐(Ⅳ)"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "特殊能力",
+        "fields": []
+      },
+      {
+        "title": "飞斧：激活后，10秒内瑞塔利切换到飞斧投掷模式，冷却时间30秒",
+        "fields": []
+      },
+      {
+        "title": "符文石：在击杀10个敌人后，可以设置符文石，瓦兰吉系列部队攻击范围 +1 格，伤害 +1，移动速度 +15%，持续150秒",
+        "fields": []
+      }
+    ],
+    "bonuses": [
+      {
+        "civilization": "mac",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "生命值",
+                "parts": [
+                  {
+                    "icon": "hp"
+                  },
+                  {
+                    "text": "生命值"
+                  }
+                ]
+              },
+              {
+                "text": "鳞纹马铠(每级+5%，共30%)",
+                "parts": [
+                  {
+                    "icon": "鳞纹马铠"
+                  },
+                  {
+                    "text": "鳞纹马铠(每级+5%，共30%)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "近战伤害",
+                "parts": [
+                  {
+                    "icon": "damagemelee"
+                  },
+                  {
+                    "text": "近战伤害"
+                  }
+                ]
+              },
+              {
+                "text": "刀片嵌饰(每级+1，共6) 长柄逆刃刀(+3)",
+                "parts": [
+                  {
+                    "icon": "刀片嵌饰"
+                  },
+                  {
+                    "text": "刀片嵌饰(每级+1，共6)"
+                  },
+                  {
+                    "icon": "长柄逆刃刀"
+                  },
+                  {
+                    "text": "长柄逆刃刀(+3)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "近战护甲",
+                "parts": [
+                  {
+                    "icon": "armorm"
+                  },
+                  {
+                    "text": "近战护甲"
+                  }
+                ]
+              },
+              {
+                "text": "鳞纹马铠(每级+1，共6)",
+                "parts": [
+                  {
+                    "icon": "鳞纹马铠"
+                  },
+                  {
+                    "text": "鳞纹马铠(每级+1，共6)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "远程护甲",
+                "parts": [
+                  {
+                    "icon": "armorr"
+                  },
+                  {
+                    "text": "远程护甲"
+                  }
+                ]
+              },
+              {
+                "text": "鳞纹马铠(每级+1，共6)",
+                "parts": [
+                  {
+                    "icon": "鳞纹马铠"
+                  },
+                  {
+                    "text": "鳞纹马铠(每级+1，共6)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "训练效率",
+                "parts": [
+                  {
+                    "icon": "time"
+                  },
+                  {
+                    "text": "训练效率"
+                  }
+                ]
+              },
+              {
+                "text": "军事学院(+33%)",
+                "parts": [
+                  {
+                    "icon": "军事学院"
+                  },
+                  {
+                    "text": "军事学院(+33%)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "其它",
+                "parts": [
+                  {
+                    "text": "其它"
+                  }
+                ]
+              },
+              {
+                "text": "宫殿掠夺(参与摧毁地标和城镇中心时获得20白银)",
+                "parts": [
+                  {
+                    "icon": "宫殿掠夺"
+                  },
+                  {
+                    "text": "宫殿掠夺(参与摧毁地标和城镇中心时获得20白银)"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gallery_captions": [
+      "瑞塔利",
+      "精锐瑞塔利",
+      "投掷战斧的瑞塔利",
+      "投掷战斧的精锐瑞塔利",
+      "研发了长柄逆刃刀的瑞塔利"
+    ]
+  }
+}

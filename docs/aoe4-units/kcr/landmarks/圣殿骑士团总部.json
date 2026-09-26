@@ -1,0 +1,884 @@
+{
+  "civilization": "kcr",
+  "kind": "landmark",
+  "section": "地标建筑",
+  "name": "圣殿骑士团总部",
+  "image_name": "圣殿骑士团总部",
+  "source_url": "https://seicing.com/html/aoe2/buildingsaoe4/landmark/圣殿骑士团总部.html?civ=kcr",
+  "detail": {
+    "title": "圣殿骑士团总部(Templar Headquarters)",
+    "sections": [
+      {
+        "title": "建造信息",
+        "fields": [
+          {
+            "label": "成本",
+            "values": [
+              {
+                "text": "无",
+                "parts": [
+                  {
+                    "text": "无"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "成本"
+              }
+            ]
+          },
+          {
+            "label": "建造时间",
+            "values": [
+              {
+                "text": "150秒",
+                "parts": [
+                  {
+                    "text": "150秒"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "time"
+              },
+              {
+                "text": "建造时间"
+              }
+            ]
+          },
+          {
+            "label": "视野",
+            "values": [
+              {
+                "text": "11.56",
+                "parts": [
+                  {
+                    "text": "11.56"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "sight"
+              },
+              {
+                "text": "视野"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "状态数据",
+        "fields": [
+          {
+            "label": "生命值",
+            "values": [
+              {
+                "text": "8000",
+                "parts": [
+                  {
+                    "text": "8000"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "hp"
+              },
+              {
+                "text": "生命值"
+              }
+            ]
+          },
+          {
+            "label": "火焰护甲",
+            "values": [
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorf"
+              },
+              {
+                "text": "火焰护甲"
+              }
+            ]
+          },
+          {
+            "label": "远程护甲",
+            "values": [
+              {
+                "text": "50",
+                "parts": [
+                  {
+                    "text": "50"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorr"
+              },
+              {
+                "text": "远程护甲"
+              }
+            ]
+          },
+          {
+            "label": "尺寸",
+            "values": [
+              {
+                "text": "4×4",
+                "parts": [
+                  {
+                    "text": "4×4"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "size"
+              },
+              {
+                "text": "尺寸"
+              }
+            ]
+          },
+          {
+            "label": "建筑标签",
+            "values": [
+              {
+                "text": "经济和人口建筑，地标",
+                "parts": [
+                  {
+                    "text": "经济和人口建筑，地标"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "allb"
+              },
+              {
+                "text": "建筑标签"
+              }
+            ]
+          },
+          {
+            "label": "提供人口",
+            "values": [
+              {
+                "text": "10",
+                "parts": [
+                  {
+                    "text": "10"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "pop"
+              },
+              {
+                "text": "提供人口"
+              }
+            ]
+          },
+          {
+            "label": "驻扎数量",
+            "values": [
+              {
+                "text": "15",
+                "parts": [
+                  {
+                    "text": "15"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "garrison"
+              },
+              {
+                "text": "驻扎数量"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "攻击属性(弓箭)",
+        "fields": [
+          {
+            "label": "远程伤害",
+            "values": [
+              {
+                "text": "8",
+                "parts": [
+                  {
+                    "text": "8"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "damageranged"
+              },
+              {
+                "text": "远程伤害"
+              }
+            ]
+          },
+          {
+            "label": "攻击范围",
+            "values": [
+              {
+                "text": "8.00",
+                "parts": [
+                  {
+                    "text": "8.00"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "range"
+              },
+              {
+                "text": "攻击范围"
+              }
+            ]
+          },
+          {
+            "label": "攻击间隔",
+            "values": [
+              {
+                "text": "1.88",
+                "parts": [
+                  {
+                    "text": "1.88"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "attackspeed"
+              },
+              {
+                "text": "攻击间隔"
+              }
+            ]
+          },
+          {
+            "label": "对[船只]加成",
+            "values": [
+              {
+                "text": "+10",
+                "parts": [
+                  {
+                    "text": "+10"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "对[船只]加成"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "攻击属性(副箭)",
+        "fields": [
+          {
+            "label": "远程伤害",
+            "values": [
+              {
+                "text": "6",
+                "parts": [
+                  {
+                    "text": "6"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "damageranged"
+              },
+              {
+                "text": "远程伤害"
+              }
+            ]
+          },
+          {
+            "label": "攻击范围",
+            "values": [
+              {
+                "text": "6.00",
+                "parts": [
+                  {
+                    "text": "6.00"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "range"
+              },
+              {
+                "text": "攻击范围"
+              }
+            ]
+          },
+          {
+            "label": "攻击间隔",
+            "values": [
+              {
+                "text": "3.88",
+                "parts": [
+                  {
+                    "text": "3.88"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "attackspeed"
+              },
+              {
+                "text": "攻击间隔"
+              }
+            ]
+          },
+          {
+            "label": "对[船只]加成",
+            "values": [
+              {
+                "text": "+10",
+                "parts": [
+                  {
+                    "text": "+10"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "对[船只]加成"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "bonuses": [
+      {
+        "civilization": "kcr",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "图标",
+                "parts": [
+                  {
+                    "text": "图标"
+                  }
+                ]
+              },
+              {
+                "text": "名称",
+                "parts": [
+                  {
+                    "text": "名称"
+                  }
+                ]
+              },
+              {
+                "text": "时代",
+                "parts": [
+                  {
+                    "text": "时代"
+                  }
+                ]
+              },
+              {
+                "text": "成本",
+                "parts": [
+                  {
+                    "text": "成本"
+                  }
+                ]
+              },
+              {
+                "text": "效果",
+                "parts": [
+                  {
+                    "text": "效果"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "",
+                "parts": [
+                  {
+                    "icon": "纺织品"
+                  }
+                ]
+              },
+              {
+                "text": "纺织品",
+                "parts": [
+                  {
+                    "text": "纺织品"
+                  }
+                ]
+              },
+              {
+                "text": "Ⅰ",
+                "parts": [
+                  {
+                    "text": "Ⅰ"
+                  }
+                ]
+              },
+              {
+                "text": "50 100 20",
+                "parts": [
+                  {
+                    "icon": "肉"
+                  },
+                  {
+                    "text": "50"
+                  },
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "100"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "20"
+                  }
+                ]
+              },
+              {
+                "text": "村民生命值 +50%",
+                "parts": [
+                  {
+                    "text": "村民生命值 +50%"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "",
+                "parts": [
+                  {
+                    "icon": "安全通道"
+                  }
+                ]
+              },
+              {
+                "text": "安全通道",
+                "parts": [
+                  {
+                    "text": "安全通道"
+                  }
+                ]
+              },
+              {
+                "text": "Ⅱ",
+                "parts": [
+                  {
+                    "text": "Ⅱ"
+                  }
+                ]
+              },
+              {
+                "text": "50 200 10",
+                "parts": [
+                  {
+                    "icon": "肉"
+                  },
+                  {
+                    "text": "50"
+                  },
+                  {
+                    "icon": "木"
+                  },
+                  {
+                    "text": "200"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "10"
+                  }
+                ]
+              },
+              {
+                "text": "解锁朝圣者，每60秒派遣一次朝圣者，朝圣者默认生成数量为1，每个要塞可以提供额外的1个朝圣者(最多10个)",
+                "parts": [
+                  {
+                    "text": "解锁朝圣者，每60秒派遣一次朝圣者，朝圣者默认生成数量为1，每个要塞可以提供额外的1个朝圣者(最多10个)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "",
+                "parts": [
+                  {
+                    "icon": "庇护所"
+                  }
+                ]
+              },
+              {
+                "text": "庇护所",
+                "parts": [
+                  {
+                    "text": "庇护所"
+                  }
+                ]
+              },
+              {
+                "text": "Ⅱ",
+                "parts": [
+                  {
+                    "text": "Ⅱ"
+                  }
+                ]
+              },
+              {
+                "text": "150 250 15",
+                "parts": [
+                  {
+                    "icon": "肉"
+                  },
+                  {
+                    "text": "150"
+                  },
+                  {
+                    "icon": "木"
+                  },
+                  {
+                    "text": "250"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "15"
+                  }
+                ]
+              },
+              {
+                "text": "庇护所的保证可使朝圣者人数+1",
+                "parts": [
+                  {
+                    "text": "庇护所的保证可使朝圣者人数+1"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "civilization": "kcr",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "生命值",
+                "parts": [
+                  {
+                    "icon": "hp"
+                  },
+                  {
+                    "text": "生命值"
+                  }
+                ]
+              },
+              {
+                "text": "宫廷建筑师(+30%)",
+                "parts": [
+                  {
+                    "icon": "宫廷建筑师"
+                  },
+                  {
+                    "text": "宫廷建筑师(+30%)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "远程伤害(射箭)",
+                "parts": [
+                  {
+                    "icon": "damageranged"
+                  },
+                  {
+                    "text": "远程伤害(射箭)"
+                  }
+                ]
+              },
+              {
+                "text": "钢制箭头(+1) 平衡炮弹(+1) 箭头穿孔板甲(+1)",
+                "parts": [
+                  {
+                    "icon": "钢制箭头"
+                  },
+                  {
+                    "text": "钢制箭头(+1)"
+                  },
+                  {
+                    "icon": "平衡炮弹"
+                  },
+                  {
+                    "text": "平衡炮弹(+1)"
+                  },
+                  {
+                    "icon": "箭头穿孔板甲"
+                  },
+                  {
+                    "text": "箭头穿孔板甲(+1)"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gallery_captions": [
+      "黑暗时代圣殿骑士团总部",
+      "封建时代圣殿骑士团总部",
+      "城堡时代圣殿骑士团总部",
+      "帝王时代圣殿骑士团总部"
+    ]
+  }
+}

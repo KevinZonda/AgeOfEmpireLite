@@ -1,0 +1,649 @@
+{
+  "civilization": "sen",
+  "kind": "landmark",
+  "section": "地标建筑",
+  "name": "平等院",
+  "image_name": "平等院",
+  "source_url": "https://seicing.com/html/aoe2/buildingsaoe4/landmark/平等院.html?civ=sen",
+  "detail": {
+    "title": "平等院(Temple of Equality)",
+    "sections": [
+      {
+        "title": "建造信息",
+        "fields": [
+          {
+            "label": "成本",
+            "values": [
+              {
+                "text": "1200 600",
+                "parts": [
+                  {
+                    "icon": "肉"
+                  },
+                  {
+                    "text": "1200"
+                  },
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "600"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "成本"
+              }
+            ]
+          },
+          {
+            "label": "建造时间",
+            "values": [
+              {
+                "text": "220秒",
+                "parts": [
+                  {
+                    "text": "220秒"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "time"
+              },
+              {
+                "text": "建造时间"
+              }
+            ]
+          },
+          {
+            "label": "视野",
+            "values": [
+              {
+                "text": "5.56",
+                "parts": [
+                  {
+                    "text": "5.56"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "sight"
+              },
+              {
+                "text": "视野"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "状态数据",
+        "fields": [
+          {
+            "label": "生命值",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "5000",
+                "parts": [
+                  {
+                    "text": "5000"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "hp"
+              },
+              {
+                "text": "生命值"
+              }
+            ]
+          },
+          {
+            "label": "火焰护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorf"
+              },
+              {
+                "text": "火焰护甲"
+              }
+            ]
+          },
+          {
+            "label": "远程护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "50",
+                "parts": [
+                  {
+                    "text": "50"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorr"
+              },
+              {
+                "text": "远程护甲"
+              }
+            ]
+          },
+          {
+            "label": "尺寸",
+            "values": [
+              {
+                "text": "4×4",
+                "parts": [
+                  {
+                    "text": "4×4"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "size"
+              },
+              {
+                "text": "尺寸"
+              }
+            ]
+          },
+          {
+            "label": "建筑标签",
+            "values": [
+              {
+                "text": "第三时代 : 宗教地标",
+                "parts": [
+                  {
+                    "text": "第三时代 : 宗教地标"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "allb"
+              },
+              {
+                "text": "建筑标签"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "bonuses": [
+      {
+        "civilization": "sen",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "图标",
+                "parts": [
+                  {
+                    "text": "图标"
+                  }
+                ]
+              },
+              {
+                "text": "名称",
+                "parts": [
+                  {
+                    "text": "名称"
+                  }
+                ]
+              },
+              {
+                "text": "时代",
+                "parts": [
+                  {
+                    "text": "时代"
+                  }
+                ]
+              },
+              {
+                "text": "成本",
+                "parts": [
+                  {
+                    "text": "成本"
+                  }
+                ]
+              },
+              {
+                "text": "效果",
+                "parts": [
+                  {
+                    "text": "效果"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "",
+                "parts": [
+                  {
+                    "icon": "虔诚"
+                  }
+                ]
+              },
+              {
+                "text": "虔诚",
+                "parts": [
+                  {
+                    "text": "虔诚"
+                  }
+                ]
+              },
+              {
+                "text": "Ⅳ",
+                "parts": [
+                  {
+                    "text": "Ⅳ"
+                  }
+                ]
+              },
+              {
+                "text": "325 45",
+                "parts": [
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "325"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "45"
+                  }
+                ]
+              },
+              {
+                "text": "宗教单位的生命值 +40",
+                "parts": [
+                  {
+                    "text": "宗教单位的生命值 +40"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "",
+                "parts": [
+                  {
+                    "icon": "什一税仓库"
+                  }
+                ]
+              },
+              {
+                "text": "什一税仓库",
+                "parts": [
+                  {
+                    "text": "什一税仓库"
+                  }
+                ]
+              },
+              {
+                "text": "Ⅳ",
+                "parts": [
+                  {
+                    "text": "Ⅳ"
+                  }
+                ]
+              },
+              {
+                "text": "500 60",
+                "parts": [
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "500"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "60"
+                  }
+                ]
+              },
+              {
+                "text": "放置在修道院的圣物每分钟都会提供 40 食物、40 木材和 10 石料收入",
+                "parts": [
+                  {
+                    "text": "放置在修道院的圣物每分钟都会提供 40 食物、40 木材和 10 石料收入"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "",
+                "parts": [
+                  {
+                    "icon": "念佛"
+                  }
+                ]
+              },
+              {
+                "text": "念佛",
+                "parts": [
+                  {
+                    "text": "念佛"
+                  }
+                ]
+              },
+              {
+                "text": "Ⅲ",
+                "parts": [
+                  {
+                    "text": "Ⅲ"
+                  }
+                ]
+              },
+              {
+                "text": "300 30",
+                "parts": [
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "300"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "30"
+                  }
+                ]
+              },
+              {
+                "text": "一向一揆僧侣生命值+60，近战伤害+2",
+                "parts": [
+                  {
+                    "text": "一向一揆僧侣生命值+60，近战伤害+2"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "",
+                "parts": [
+                  {
+                    "icon": "汉方医学"
+                  }
+                ]
+              },
+              {
+                "text": "汉方医学",
+                "parts": [
+                  {
+                    "text": "汉方医学"
+                  }
+                ]
+              },
+              {
+                "text": "Ⅲ",
+                "parts": [
+                  {
+                    "text": "Ⅲ"
+                  }
+                ]
+              },
+              {
+                "text": "300 30",
+                "parts": [
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "300"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "30"
+                  }
+                ]
+              },
+              {
+                "text": "一向一揆僧侣攻击光环治疗效果+1",
+                "parts": [
+                  {
+                    "text": "一向一揆僧侣攻击光环治疗效果+1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "",
+                "parts": [
+                  {
+                    "icon": "山顶训练"
+                  }
+                ]
+              },
+              {
+                "text": "山顶训练",
+                "parts": [
+                  {
+                    "text": "山顶训练"
+                  }
+                ]
+              },
+              {
+                "text": "Ⅲ",
+                "parts": [
+                  {
+                    "text": "Ⅲ"
+                  }
+                ]
+              },
+              {
+                "text": "300 30",
+                "parts": [
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "300"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "30"
+                  }
+                ]
+              },
+              {
+                "text": "一向一揆僧侣移动速度+33%",
+                "parts": [
+                  {
+                    "text": "一向一揆僧侣移动速度+33%"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "civilization": "sen",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "生命值",
+                "parts": [
+                  {
+                    "icon": "hp"
+                  },
+                  {
+                    "text": "生命值"
+                  }
+                ]
+              },
+              {
+                "text": "宫廷建筑师(+30%)",
+                "parts": [
+                  {
+                    "icon": "宫廷建筑师"
+                  },
+                  {
+                    "text": "宫廷建筑师(+30%)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "圣物收入",
+                "parts": [
+                  {
+                    "text": "圣物收入"
+                  }
+                ]
+              },
+              {
+                "text": "什一税仓库(每分钟提供40食物、木材和10石头)",
+                "parts": [
+                  {
+                    "icon": "什一税仓库"
+                  },
+                  {
+                    "text": "什一税仓库(每分钟提供40食物、木材和10石头)"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gallery_captions": [
+      "平等院",
+      "平等院渲染图",
+      "平等院设计图"
+    ]
+  }
+}

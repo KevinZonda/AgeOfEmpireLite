@@ -1,0 +1,643 @@
+{
+  "civilization": "sul",
+  "kind": "landmark",
+  "section": "地标建筑",
+  "name": "学苑",
+  "image_name": "学苑",
+  "source_url": "https://seicing.com/html/aoe2/buildingsaoe4/landmark/学苑.html?civ=sul",
+  "detail": {
+    "title": "学苑(House of Learning)",
+    "sections": [
+      {
+        "title": "建造信息",
+        "fields": [
+          {
+            "label": "成本",
+            "values": [
+              {
+                "text": "1200 600",
+                "parts": [
+                  {
+                    "icon": "肉"
+                  },
+                  {
+                    "text": "1200"
+                  },
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "600"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "成本"
+              }
+            ]
+          },
+          {
+            "label": "建造时间",
+            "values": [
+              {
+                "text": "220秒",
+                "parts": [
+                  {
+                    "text": "220秒"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "time"
+              },
+              {
+                "text": "建造时间"
+              }
+            ]
+          },
+          {
+            "label": "视野",
+            "values": [
+              {
+                "text": "5.56",
+                "parts": [
+                  {
+                    "text": "5.56"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "sight"
+              },
+              {
+                "text": "视野"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "状态数据",
+        "fields": [
+          {
+            "label": "生命值",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "5000",
+                "parts": [
+                  {
+                    "text": "5000"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "hp"
+              },
+              {
+                "text": "生命值"
+              }
+            ]
+          },
+          {
+            "label": "火焰护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorf"
+              },
+              {
+                "text": "火焰护甲"
+              }
+            ]
+          },
+          {
+            "label": "远程护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "50",
+                "parts": [
+                  {
+                    "text": "50"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorr"
+              },
+              {
+                "text": "远程护甲"
+              }
+            ]
+          },
+          {
+            "label": "尺寸",
+            "values": [
+              {
+                "text": "4×4",
+                "parts": [
+                  {
+                    "text": "4×4"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "size"
+              },
+              {
+                "text": "尺寸"
+              }
+            ]
+          },
+          {
+            "label": "建筑标签",
+            "values": [
+              {
+                "text": "第三时代 : 科技地标",
+                "parts": [
+                  {
+                    "text": "第三时代 : 科技地标"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "allb"
+              },
+              {
+                "text": "建筑标签"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "bonuses": [
+      {
+        "civilization": "sul",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "图标",
+                "parts": [
+                  {
+                    "text": "图标"
+                  }
+                ]
+              },
+              {
+                "text": "名称",
+                "parts": [
+                  {
+                    "text": "名称"
+                  }
+                ]
+              },
+              {
+                "text": "时代",
+                "parts": [
+                  {
+                    "text": "时代"
+                  }
+                ]
+              },
+              {
+                "text": "成本",
+                "parts": [
+                  {
+                    "text": "成本"
+                  }
+                ]
+              },
+              {
+                "text": "效果",
+                "parts": [
+                  {
+                    "text": "效果"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "",
+                "parts": [
+                  {
+                    "icon": "强化地基"
+                  }
+                ]
+              },
+              {
+                "text": "强化地基",
+                "parts": [
+                  {
+                    "text": "强化地基"
+                  }
+                ]
+              },
+              {
+                "text": "Ⅲ",
+                "parts": [
+                  {
+                    "text": "Ⅲ"
+                  }
+                ]
+              },
+              {
+                "text": "90",
+                "parts": [
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "90"
+                  }
+                ]
+              },
+              {
+                "text": "为了获得保护，村民和步兵可以驻扎在房屋内。房屋获得驻军弓箭和 +50% 生命值",
+                "parts": [
+                  {
+                    "text": "为了获得保护，村民和步兵可以驻扎在房屋内。房屋获得驻军弓箭和 +50% 生命值"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "",
+                "parts": [
+                  {
+                    "icon": "宁静之地"
+                  }
+                ]
+              },
+              {
+                "text": "宁静之地",
+                "parts": [
+                  {
+                    "text": "宁静之地"
+                  }
+                ]
+              },
+              {
+                "text": "Ⅲ",
+                "parts": [
+                  {
+                    "text": "Ⅲ"
+                  }
+                ]
+              },
+              {
+                "text": "180",
+                "parts": [
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "180"
+                  }
+                ]
+              },
+              {
+                "text": "清真寺可以使脱离战斗的单位每秒回复 +4 生命值",
+                "parts": [
+                  {
+                    "text": "清真寺可以使脱离战斗的单位每秒回复 +4 生命值"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "",
+                "parts": [
+                  {
+                    "icon": "派"
+                  }
+                ]
+              },
+              {
+                "text": "派",
+                "parts": [
+                  {
+                    "text": "派"
+                  }
+                ]
+              },
+              {
+                "text": "Ⅲ",
+                "parts": [
+                  {
+                    "text": "Ⅲ"
+                  }
+                ]
+              },
+              {
+                "text": "240",
+                "parts": [
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "240"
+                  }
+                ]
+              },
+              {
+                "text": "弓箭手和弩手攻击范围+0.5格",
+                "parts": [
+                  {
+                    "text": "弓箭手和弩手攻击范围+0.5格"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "",
+                "parts": [
+                  {
+                    "icon": "象夫"
+                  }
+                ]
+              },
+              {
+                "text": "象夫",
+                "parts": [
+                  {
+                    "text": "象夫"
+                  }
+                ]
+              },
+              {
+                "text": "Ⅲ",
+                "parts": [
+                  {
+                    "text": "Ⅲ"
+                  }
+                ]
+              },
+              {
+                "text": "180",
+                "parts": [
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "180"
+                  }
+                ]
+              },
+              {
+                "text": "大象移动速度+10%",
+                "parts": [
+                  {
+                    "text": "大象移动速度+10%"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "",
+                "parts": [
+                  {
+                    "icon": "珩磨剑刃"
+                  }
+                ]
+              },
+              {
+                "text": "珩磨剑刃",
+                "parts": [
+                  {
+                    "text": "珩磨剑刃"
+                  }
+                ]
+              },
+              {
+                "text": "Ⅲ",
+                "parts": [
+                  {
+                    "text": "Ⅲ"
+                  }
+                ]
+              },
+              {
+                "text": "240",
+                "parts": [
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "240"
+                  }
+                ]
+              },
+              {
+                "text": "武士和长矛骑兵装备土耳其弯刀，使其伤害 +3",
+                "parts": [
+                  {
+                    "text": "武士和长矛骑兵装备土耳其弯刀，使其伤害 +3"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "",
+                "parts": [
+                  {
+                    "icon": "丰衣足食"
+                  }
+                ]
+              },
+              {
+                "text": "丰衣足食",
+                "parts": [
+                  {
+                    "text": "丰衣足食"
+                  }
+                ]
+              },
+              {
+                "text": "Ⅲ",
+                "parts": [
+                  {
+                    "text": "Ⅲ"
+                  }
+                ]
+              },
+              {
+                "text": "180",
+                "parts": [
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "180"
+                  }
+                ]
+              },
+              {
+                "text": "村民的运载量 +10",
+                "parts": [
+                  {
+                    "text": "村民的运载量 +10"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "civilization": "sul",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "生命值",
+                "parts": [
+                  {
+                    "icon": "hp"
+                  },
+                  {
+                    "text": "生命值"
+                  }
+                ]
+              },
+              {
+                "text": "宫廷建筑师(+30%)",
+                "parts": [
+                  {
+                    "icon": "宫廷建筑师"
+                  },
+                  {
+                    "text": "宫廷建筑师(+30%)"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gallery_captions": [
+      "学苑",
+      "希尔基清真寺",
+      "学苑概念图"
+    ]
+  }
+}

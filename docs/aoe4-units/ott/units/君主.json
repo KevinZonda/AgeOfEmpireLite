@@ -1,0 +1,248 @@
+{
+  "civilization": "ott",
+  "kind": "unit",
+  "section": "平民与宗教单位",
+  "name": "君主",
+  "image_name": "君主",
+  "source_url": "https://seicing.com/html/aoe2/unitaoe4/君主.html?civ=ott",
+  "detail": {
+    "title": "君主(Monarch)",
+    "sections": [
+      {
+        "title": "状态数据",
+        "fields": [
+          {
+            "label": "生命值",
+            "values": [
+              {
+                "text": "200",
+                "parts": [
+                  {
+                    "text": "200"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "hp"
+              },
+              {
+                "text": "生命值"
+              }
+            ]
+          },
+          {
+            "label": "近战护甲",
+            "values": [
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorm"
+              },
+              {
+                "text": "近战护甲"
+              }
+            ]
+          },
+          {
+            "label": "远程护甲",
+            "values": [
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorr"
+              },
+              {
+                "text": "远程护甲"
+              }
+            ]
+          },
+          {
+            "label": "移动速度",
+            "values": [
+              {
+                "text": "0.88",
+                "parts": [
+                  {
+                    "text": "0.88"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "speed"
+              },
+              {
+                "text": "移动速度"
+              }
+            ]
+          },
+          {
+            "label": "视野",
+            "values": [
+              {
+                "text": "8.89",
+                "parts": [
+                  {
+                    "text": "8.89"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "sight"
+              },
+              {
+                "text": "视野"
+              }
+            ]
+          },
+          {
+            "label": "单位标签",
+            "values": [
+              {
+                "text": "君主",
+                "parts": [
+                  {
+                    "text": "君主"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "alle"
+              },
+              {
+                "text": "单位标签"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "特殊能力",
+        "fields": []
+      },
+      {
+        "title": "冲刺：提升60%的移动速度，持续5秒，冷却时间60秒",
+        "fields": []
+      },
+      {
+        "title": "叛徒：暂时显示敌方君主位置，持续10秒，冷却时间60秒",
+        "fields": []
+      }
+    ],
+    "bonuses": [],
+    "gallery_captions": [
+      "中国君主",
+      "英格兰君主",
+      "德里苏丹国君主",
+      "神圣罗马帝国君主",
+      "法兰西君主",
+      "罗斯君主",
+      "黑衣大食王朝君主",
+      "蒙古君主",
+      "拜占庭君主",
+      "日本君主",
+      "马里君主",
+      "奥斯曼君主",
+      "圣殿骑士团君主",
+      "金朝君主"
+    ]
+  }
+}

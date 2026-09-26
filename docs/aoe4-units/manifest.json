@@ -1,0 +1,226 @@
+{
+  "source_index": "https://seicing.com/html/aoe2/index-aoe4units.html?civ=chi",
+  "source_roster_template": "https://seicing.com/js/aoe4civ/aoe4list_{civ}.js",
+  "source_technology_data": "https://seicing.com/js/tech.js",
+  "retrieved_on": "2026-09-27",
+  "civilizations": [
+    {
+      "code": "abb",
+      "counts": {
+        "units": 27,
+        "buildings": 23,
+        "landmarks": 1
+      }
+    },
+    {
+      "code": "chi",
+      "counts": {
+        "units": 29,
+        "buildings": 26,
+        "landmarks": 6
+      }
+    },
+    {
+      "code": "eng",
+      "counts": {
+        "units": 29,
+        "buildings": 23,
+        "landmarks": 6
+      }
+    },
+    {
+      "code": "fre",
+      "counts": {
+        "units": 27,
+        "buildings": 23,
+        "landmarks": 6
+      }
+    },
+    {
+      "code": "rus",
+      "counts": {
+        "units": 27,
+        "buildings": 23,
+        "landmarks": 6
+      }
+    },
+    {
+      "code": "hre",
+      "counts": {
+        "units": 27,
+        "buildings": 23,
+        "landmarks": 6
+      }
+    },
+    {
+      "code": "mon",
+      "counts": {
+        "units": 29,
+        "buildings": 14,
+        "landmarks": 6
+      }
+    },
+    {
+      "code": "sul",
+      "counts": {
+        "units": 28,
+        "buildings": 23,
+        "landmarks": 6
+      }
+    },
+    {
+      "code": "ott",
+      "counts": {
+        "units": 29,
+        "buildings": 24,
+        "landmarks": 6
+      }
+    },
+    {
+      "code": "mal",
+      "counts": {
+        "units": 26,
+        "buildings": 25,
+        "landmarks": 6
+      }
+    },
+    {
+      "code": "jpn",
+      "counts": {
+        "units": 34,
+        "buildings": 22,
+        "landmarks": 6
+      }
+    },
+    {
+      "code": "byz",
+      "counts": {
+        "units": 25,
+        "buildings": 26,
+        "landmarks": 6
+      }
+    },
+    {
+      "code": "vik",
+      "counts": {
+        "units": 12,
+        "buildings": 7,
+        "landmarks": 2
+      }
+    },
+    {
+      "code": "sco",
+      "counts": {
+        "units": 13,
+        "buildings": 3,
+        "landmarks": 0
+      }
+    },
+    {
+      "code": "kcr",
+      "counts": {
+        "units": 32,
+        "buildings": 22,
+        "landmarks": 1
+      }
+    },
+    {
+      "code": "jin",
+      "counts": {
+        "units": 31,
+        "buildings": 24,
+        "landmarks": 6
+      }
+    },
+    {
+      "code": "ayy",
+      "counts": {
+        "units": 30,
+        "buildings": 23,
+        "landmarks": 1
+      }
+    },
+    {
+      "code": "zxl",
+      "counts": {
+        "units": 29,
+        "buildings": 26,
+        "landmarks": 6
+      }
+    },
+    {
+      "code": "hol",
+      "counts": {
+        "units": 28,
+        "buildings": 24,
+        "landmarks": 6
+      }
+    },
+    {
+      "code": "jda",
+      "counts": {
+        "units": 36,
+        "buildings": 23,
+        "landmarks": 6
+      }
+    },
+    {
+      "code": "otd",
+      "counts": {
+        "units": 26,
+        "buildings": 23,
+        "landmarks": 6
+      }
+    },
+    {
+      "code": "goh",
+      "counts": {
+        "units": 30,
+        "buildings": 16,
+        "landmarks": 1
+      }
+    },
+    {
+      "code": "tug",
+      "counts": {
+        "units": 29,
+        "buildings": 20,
+        "landmarks": 6
+      }
+    },
+    {
+      "code": "sen",
+      "counts": {
+        "units": 29,
+        "buildings": 24,
+        "landmarks": 6
+      }
+    },
+    {
+      "code": "mac",
+      "counts": {
+        "units": 30,
+        "buildings": 23,
+        "landmarks": 6
+      }
+    }
+  ],
+  "unique_detail_pages": 348,
+  "missing_source_pages": [
+    "https://seicing.com/html/aoe2/buildingsaoe4/landmark/‌木板教堂.html",
+    "https://seicing.com/html/aoe2/buildingsaoe4/landmark/环形要塞.html",
+    "https://seicing.com/html/aoe2/buildingsaoe4/塔楼房屋.html",
+    "https://seicing.com/html/aoe2/buildingsaoe4/长屋.html",
+    "https://seicing.com/html/aoe2/buildingsaoe4/集结大厅.html",
+    "https://seicing.com/html/aoe2/unitaoe4/亲随战士.html",
+    "https://seicing.com/html/aoe2/unitaoe4/侍从.html",
+    "https://seicing.com/html/aoe2/unitaoe4/加洛格拉什.html",
+    "https://seicing.com/html/aoe2/unitaoe4/氏族战士.html",
+    "https://seicing.com/html/aoe2/unitaoe4/民兵弩手.html",
+    "https://seicing.com/html/aoe2/unitaoe4/狂战士.html",
+    "https://seicing.com/html/aoe2/unitaoe4/盾女.html",
+    "https://seicing.com/html/aoe2/unitaoe4/维京长船.html",
+    "https://seicing.com/html/aoe2/unitaoe4/边境突袭者.html"
+  ],
+  "errors": []
+}

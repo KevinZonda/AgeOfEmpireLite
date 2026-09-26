@@ -1,0 +1,372 @@
+{
+  "civilization": "jin",
+  "source_url": "https://seicing.com/js/aoe4civ/aoe4list_jin.js",
+  "entries": [
+    {
+      "kind": "units",
+      "section": "平民与宗教单位",
+      "name": "村民",
+      "path": "units/村民.json"
+    },
+    {
+      "kind": "units",
+      "section": "平民与宗教单位",
+      "name": "乡骑",
+      "path": "units/乡骑.json"
+    },
+    {
+      "kind": "units",
+      "section": "平民与宗教单位",
+      "name": "使者",
+      "path": "units/使者.json"
+    },
+    {
+      "kind": "units",
+      "section": "平民与宗教单位",
+      "name": "僧侣",
+      "path": "units/僧侣.json"
+    },
+    {
+      "kind": "units",
+      "section": "平民与宗教单位",
+      "name": "商人",
+      "path": "units/商人.json"
+    },
+    {
+      "kind": "units",
+      "section": "平民与宗教单位",
+      "name": "驯鹿商人",
+      "path": "units/驯鹿商人.json"
+    },
+    {
+      "kind": "units",
+      "section": "平民与宗教单位",
+      "name": "君主",
+      "path": "units/君主.json"
+    },
+    {
+      "kind": "units",
+      "section": "军事单位",
+      "name": "长矛兵",
+      "path": "units/长矛兵.json"
+    },
+    {
+      "kind": "units",
+      "section": "军事单位",
+      "name": "武士",
+      "path": "units/武士.json"
+    },
+    {
+      "kind": "units",
+      "section": "军事单位",
+      "name": "斩马刀",
+      "path": "units/斩马刀.json"
+    },
+    {
+      "kind": "units",
+      "section": "军事单位",
+      "name": "侦察兵",
+      "path": "units/侦察兵.json"
+    },
+    {
+      "kind": "units",
+      "section": "军事单位",
+      "name": "骑手",
+      "path": "units/骑手.json"
+    },
+    {
+      "kind": "units",
+      "section": "军事单位",
+      "name": "铁浮屠",
+      "path": "units/铁浮屠.json"
+    },
+    {
+      "kind": "units",
+      "section": "军事单位",
+      "name": "猛安谋克守军",
+      "path": "units/猛安谋克守军.json"
+    },
+    {
+      "kind": "units",
+      "section": "军事单位",
+      "name": "靺鞨族人",
+      "path": "units/靺鞨族人.json"
+    },
+    {
+      "kind": "units",
+      "section": "军事单位",
+      "name": "弩手",
+      "path": "units/弩手.json"
+    },
+    {
+      "kind": "units",
+      "section": "军事单位",
+      "name": "爆破手",
+      "path": "units/爆破手.json"
+    },
+    {
+      "kind": "units",
+      "section": "军事单位",
+      "name": "骑马掷弹兵",
+      "path": "units/骑马掷弹兵.json"
+    },
+    {
+      "kind": "units",
+      "section": "攻城武器",
+      "name": "弓床弩",
+      "path": "units/弓床弩.json"
+    },
+    {
+      "kind": "units",
+      "section": "攻城武器",
+      "name": "一窝蜂",
+      "path": "units/一窝蜂.json"
+    },
+    {
+      "kind": "units",
+      "section": "攻城武器",
+      "name": "牵引式巨型投石机",
+      "path": "units/牵引式巨型投石机.json"
+    },
+    {
+      "kind": "units",
+      "section": "攻城武器",
+      "name": "手推炮",
+      "path": "units/手推炮.json"
+    },
+    {
+      "kind": "units",
+      "section": "攻城武器",
+      "name": "攻城塔",
+      "path": "units/攻城塔.json"
+    },
+    {
+      "kind": "units",
+      "section": "攻城武器",
+      "name": "攻城锤",
+      "path": "units/攻城锤.json"
+    },
+    {
+      "kind": "units",
+      "section": "船只",
+      "name": "渔船",
+      "path": "units/渔船.json"
+    },
+    {
+      "kind": "units",
+      "section": "船只",
+      "name": "商船",
+      "path": "units/商船.json"
+    },
+    {
+      "kind": "units",
+      "section": "船只",
+      "name": "运输船",
+      "path": "units/运输船.json"
+    },
+    {
+      "kind": "units",
+      "section": "船只",
+      "name": "戎克船",
+      "path": "units/戎克船.json"
+    },
+    {
+      "kind": "units",
+      "section": "船只",
+      "name": "戎克战船",
+      "path": "units/戎克战船.json"
+    },
+    {
+      "kind": "units",
+      "section": "船只",
+      "name": "爆破型戎克船",
+      "path": "units/爆破型戎克船.json"
+    },
+    {
+      "kind": "units",
+      "section": "船只",
+      "name": "宝船",
+      "path": "units/宝船.json"
+    },
+    {
+      "kind": "buildings",
+      "section": "黑暗时代建筑",
+      "name": "房屋",
+      "path": "buildings/房屋.json"
+    },
+    {
+      "kind": "buildings",
+      "section": "黑暗时代建筑",
+      "name": "磨坊",
+      "path": "buildings/磨坊.json"
+    },
+    {
+      "kind": "buildings",
+      "section": "黑暗时代建筑",
+      "name": "伐木场",
+      "path": "buildings/伐木场.json"
+    },
+    {
+      "kind": "buildings",
+      "section": "黑暗时代建筑",
+      "name": "采矿场",
+      "path": "buildings/采矿场.json"
+    },
+    {
+      "kind": "buildings",
+      "section": "黑暗时代建筑",
+      "name": "农田",
+      "path": "buildings/农田.json"
+    },
+    {
+      "kind": "buildings",
+      "section": "黑暗时代建筑",
+      "name": "兵营",
+      "path": "buildings/兵营.json"
+    },
+    {
+      "kind": "buildings",
+      "section": "黑暗时代建筑",
+      "name": "码头",
+      "path": "buildings/码头.json"
+    },
+    {
+      "kind": "buildings",
+      "section": "黑暗时代建筑",
+      "name": "哨站",
+      "path": "buildings/哨站.json"
+    },
+    {
+      "kind": "buildings",
+      "section": "黑暗时代建筑",
+      "name": "木栅栏",
+      "path": "buildings/木栅栏.json"
+    },
+    {
+      "kind": "buildings",
+      "section": "黑暗时代建筑",
+      "name": "木城门",
+      "path": "buildings/木城门.json"
+    },
+    {
+      "kind": "buildings",
+      "section": "封建时代建筑",
+      "name": "铁匠铺",
+      "path": "buildings/铁匠铺.json"
+    },
+    {
+      "kind": "buildings",
+      "section": "封建时代建筑",
+      "name": "市场",
+      "path": "buildings/市场.json"
+    },
+    {
+      "kind": "buildings",
+      "section": "封建时代建筑",
+      "name": "城镇中心",
+      "path": "buildings/城镇中心.json"
+    },
+    {
+      "kind": "buildings",
+      "section": "封建时代建筑",
+      "name": "机械车间",
+      "path": "buildings/机械车间.json"
+    },
+    {
+      "kind": "buildings",
+      "section": "封建时代建筑",
+      "name": "战争马厩",
+      "path": "buildings/战争马厩.json"
+    },
+    {
+      "kind": "buildings",
+      "section": "封建时代建筑",
+      "name": "草原",
+      "path": "buildings/草原.json"
+    },
+    {
+      "kind": "buildings",
+      "section": "封建时代建筑",
+      "name": "石墙塔",
+      "path": "buildings/石墙塔.json"
+    },
+    {
+      "kind": "buildings",
+      "section": "封建时代建筑",
+      "name": "石墙",
+      "path": "buildings/石墙.json"
+    },
+    {
+      "kind": "buildings",
+      "section": "封建时代建筑",
+      "name": "石墙城门",
+      "path": "buildings/石墙城门.json"
+    },
+    {
+      "kind": "buildings",
+      "section": "城堡时代建筑",
+      "name": "修道院",
+      "path": "buildings/修道院.json"
+    },
+    {
+      "kind": "buildings",
+      "section": "城堡时代建筑",
+      "name": "城堡",
+      "path": "buildings/城堡.json"
+    },
+    {
+      "kind": "buildings",
+      "section": "城堡时代建筑",
+      "name": "进贡国",
+      "path": "buildings/进贡国.json"
+    },
+    {
+      "kind": "buildings",
+      "section": "帝王时代建筑",
+      "name": "大学",
+      "path": "buildings/大学.json"
+    },
+    {
+      "kind": "buildings",
+      "section": "帝王时代建筑",
+      "name": "帝王飞地",
+      "path": "buildings/帝王飞地.json"
+    },
+    {
+      "kind": "landmarks",
+      "section": "地标建筑",
+      "name": "花塔",
+      "path": "landmarks/花塔.json"
+    },
+    {
+      "kind": "landmarks",
+      "section": "地标建筑",
+      "name": "大牧场",
+      "path": "landmarks/大牧场.json"
+    },
+    {
+      "kind": "landmarks",
+      "section": "地标建筑",
+      "name": "龙亭",
+      "path": "landmarks/龙亭.json"
+    },
+    {
+      "kind": "landmarks",
+      "section": "地标建筑",
+      "name": "山门殿",
+      "path": "landmarks/山门殿.json"
+    },
+    {
+      "kind": "landmarks",
+      "section": "地标建筑",
+      "name": "长城堡垒",
+      "path": "landmarks/长城堡垒.json"
+    },
+    {
+      "kind": "landmarks",
+      "section": "地标建筑",
+      "name": "银山塔林",
+      "path": "landmarks/银山塔林.json"
+    }
+  ]
+}

@@ -1,0 +1,836 @@
+{
+  "civilization": "mac",
+  "kind": "unit",
+  "section": "军事单位",
+  "name": "波莫",
+  "image_name": "波莫",
+  "source_url": "https://seicing.com/html/aoe2/unitaoe4/波莫.html?civ=mac",
+  "detail": {
+    "title": "波莫(Bogmaðr)",
+    "sections": [
+      {
+        "title": "训练信息",
+        "fields": [
+          {
+            "label": "产地",
+            "values": [
+              {
+                "text": "瓦兰吉堡垒 靶场",
+                "parts": [
+                  {
+                    "text": "瓦兰吉堡垒"
+                  },
+                  {
+                    "text": "靶场"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "产地"
+              }
+            ]
+          },
+          {
+            "label": "成本",
+            "values": [
+              {
+                "text": "40 50",
+                "parts": [
+                  {
+                    "icon": "肉"
+                  },
+                  {
+                    "text": "40"
+                  },
+                  {
+                    "icon": "木"
+                  },
+                  {
+                    "text": "50"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "成本"
+              }
+            ]
+          },
+          {
+            "label": "训练时间",
+            "values": [
+              {
+                "text": "15秒",
+                "parts": [
+                  {
+                    "text": "15秒"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "time"
+              },
+              {
+                "text": "训练时间"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "状态数据",
+        "fields": [
+          {
+            "label": "生命值",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "80",
+                "parts": [
+                  {
+                    "text": "80"
+                  }
+                ]
+              },
+              {
+                "text": "90",
+                "parts": [
+                  {
+                    "text": "90"
+                  }
+                ]
+              },
+              {
+                "text": "110",
+                "parts": [
+                  {
+                    "text": "110"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "hp"
+              },
+              {
+                "text": "生命值"
+              }
+            ]
+          },
+          {
+            "label": "近战护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              },
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              },
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorm"
+              },
+              {
+                "text": "近战护甲"
+              }
+            ]
+          },
+          {
+            "label": "远程护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              },
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              },
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorr"
+              },
+              {
+                "text": "远程护甲"
+              }
+            ]
+          },
+          {
+            "label": "移动速度",
+            "values": [
+              {
+                "text": "1.25",
+                "parts": [
+                  {
+                    "text": "1.25"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "speed"
+              },
+              {
+                "text": "移动速度"
+              }
+            ]
+          },
+          {
+            "label": "视野",
+            "values": [
+              {
+                "text": "8.00",
+                "parts": [
+                  {
+                    "text": "8.00"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "sight"
+              },
+              {
+                "text": "视野"
+              }
+            ]
+          },
+          {
+            "label": "单位标签",
+            "values": [
+              {
+                "text": "轻型、远程、步兵",
+                "parts": [
+                  {
+                    "text": "轻型、远程、步兵"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "alle"
+              },
+              {
+                "text": "单位标签"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "攻击属性",
+        "fields": [
+          {
+            "label": "远程伤害",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "5",
+                "parts": [
+                  {
+                    "text": "5"
+                  }
+                ]
+              },
+              {
+                "text": "7",
+                "parts": [
+                  {
+                    "text": "7"
+                  }
+                ]
+              },
+              {
+                "text": "8",
+                "parts": [
+                  {
+                    "text": "8"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "damageranged"
+              },
+              {
+                "text": "远程伤害"
+              }
+            ]
+          },
+          {
+            "label": "攻击范围",
+            "values": [
+              {
+                "text": "5.00",
+                "parts": [
+                  {
+                    "text": "5.00"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "range"
+              },
+              {
+                "text": "攻击范围"
+              }
+            ]
+          },
+          {
+            "label": "攻击间隔",
+            "values": [
+              {
+                "text": "1.625",
+                "parts": [
+                  {
+                    "text": "1.625"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "attackspeed"
+              },
+              {
+                "text": "攻击间隔"
+              }
+            ]
+          },
+          {
+            "label": "对[轻型近战步兵]加成",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "+5",
+                "parts": [
+                  {
+                    "text": "+5"
+                  }
+                ]
+              },
+              {
+                "text": "+7",
+                "parts": [
+                  {
+                    "text": "+7"
+                  }
+                ]
+              },
+              {
+                "text": "+8",
+                "parts": [
+                  {
+                    "text": "+8"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "对[轻型近战步兵]加成"
+              }
+            ]
+          },
+          {
+            "label": "对[轻型火药步兵]加成",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "+5",
+                "parts": [
+                  {
+                    "text": "+5"
+                  }
+                ]
+              },
+              {
+                "text": "+7",
+                "parts": [
+                  {
+                    "text": "+7"
+                  }
+                ]
+              },
+              {
+                "text": "+8",
+                "parts": [
+                  {
+                    "text": "+8"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "对[轻型火药步兵]加成"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "攻击属性(对建筑攻击)",
+        "fields": [
+          {
+            "label": "攻城伤害",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "3",
+                "parts": [
+                  {
+                    "text": "3"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "damagesiege"
+              },
+              {
+                "text": "攻城伤害"
+              }
+            ]
+          },
+          {
+            "label": "攻击范围",
+            "values": [
+              {
+                "text": "5.00",
+                "parts": [
+                  {
+                    "text": "5.00"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "range"
+              },
+              {
+                "text": "攻击范围"
+              }
+            ]
+          },
+          {
+            "label": "攻击间隔",
+            "values": [
+              {
+                "text": "1.625",
+                "parts": [
+                  {
+                    "text": "1.625"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "attackspeed"
+              },
+              {
+                "text": "攻击间隔"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "升级费用",
+        "fields": [
+          {
+            "label": "老练(Ⅲ)",
+            "values": [
+              {
+                "text": "100 250 60",
+                "parts": [
+                  {
+                    "icon": "肉"
+                  },
+                  {
+                    "text": "100"
+                  },
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "250"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "60"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "升级到老练波莫"
+              },
+              {
+                "text": "老练(Ⅲ)"
+              }
+            ]
+          },
+          {
+            "label": "精锐(Ⅳ)",
+            "values": [
+              {
+                "text": "300 700 60",
+                "parts": [
+                  {
+                    "icon": "肉"
+                  },
+                  {
+                    "text": "300"
+                  },
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "700"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "60"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "升级到精锐波莫"
+              },
+              {
+                "text": "精锐(Ⅳ)"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "特殊能力",
+        "fields": []
+      },
+      {
+        "title": "坚定不移的专注：攻击无视2护甲，移动速度-50%，持续10秒，30秒冷却时间",
+        "fields": []
+      },
+      {
+        "title": "符文石：在击杀10个敌人后，可以设置符文石，瓦兰吉系列部队攻击范围 +1 格，伤害 +1，移动速度 +15%，持续150秒",
+        "fields": []
+      }
+    ],
+    "bonuses": [
+      {
+        "civilization": "mac",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "生命值",
+                "parts": [
+                  {
+                    "icon": "hp"
+                  },
+                  {
+                    "text": "生命值"
+                  }
+                ]
+              },
+              {
+                "text": "札甲(每级+5%，共30%)",
+                "parts": [
+                  {
+                    "icon": "札甲"
+                  },
+                  {
+                    "text": "札甲(每级+5%，共30%)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "远程伤害",
+                "parts": [
+                  {
+                    "icon": "damageranged"
+                  },
+                  {
+                    "text": "远程伤害"
+                  }
+                ]
+              },
+              {
+                "text": "磨刀石(每级+1，共6)",
+                "parts": [
+                  {
+                    "icon": "磨刀石"
+                  },
+                  {
+                    "text": "磨刀石(每级+1，共6)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "近战护甲",
+                "parts": [
+                  {
+                    "icon": "armorm"
+                  },
+                  {
+                    "text": "近战护甲"
+                  }
+                ]
+              },
+              {
+                "text": "札甲(每级+1，共6)",
+                "parts": [
+                  {
+                    "icon": "札甲"
+                  },
+                  {
+                    "text": "札甲(每级+1，共6)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "远程护甲",
+                "parts": [
+                  {
+                    "icon": "armorr"
+                  },
+                  {
+                    "text": "远程护甲"
+                  }
+                ]
+              },
+              {
+                "text": "札甲(每级+1，共6)",
+                "parts": [
+                  {
+                    "icon": "札甲"
+                  },
+                  {
+                    "text": "札甲(每级+1，共6)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "训练效率",
+                "parts": [
+                  {
+                    "icon": "time"
+                  },
+                  {
+                    "text": "训练效率"
+                  }
+                ]
+              },
+              {
+                "text": "军事学院(+33%)",
+                "parts": [
+                  {
+                    "icon": "军事学院"
+                  },
+                  {
+                    "text": "军事学院(+33%)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "其它",
+                "parts": [
+                  {
+                    "text": "其它"
+                  }
+                ]
+              },
+              {
+                "text": "攻城工程学(可以建造冲车和攻城塔) 宫殿掠夺(参与摧毁地标和城镇中心时获得20白银) 毁灭致盲(攻击可使敌人伤害-20%，持续5秒)",
+                "parts": [
+                  {
+                    "icon": "攻城工程学"
+                  },
+                  {
+                    "text": "攻城工程学(可以建造冲车和攻城塔)"
+                  },
+                  {
+                    "icon": "宫殿掠夺"
+                  },
+                  {
+                    "text": "宫殿掠夺(参与摧毁地标和城镇中心时获得20白银)"
+                  },
+                  {
+                    "icon": "毁灭致盲"
+                  },
+                  {
+                    "text": "毁灭致盲(攻击可使敌人伤害-20%，持续5秒)"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gallery_captions": [
+      "波莫",
+      "老练波莫",
+      "精锐波莫"
+    ]
+  }
+}

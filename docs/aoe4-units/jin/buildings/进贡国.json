@@ -1,0 +1,397 @@
+{
+  "civilization": "jin",
+  "kind": "building",
+  "section": "城堡时代建筑",
+  "name": "进贡国",
+  "image_name": "进贡国",
+  "source_url": "https://seicing.com/html/aoe2/buildingsaoe4/进贡国.html?civ=jin",
+  "detail": {
+    "title": "进贡国(Tributary State)",
+    "sections": [
+      {
+        "title": "",
+        "fields": [
+          {
+            "label": "视野",
+            "values": [
+              {
+                "text": "0.00",
+                "parts": [
+                  {
+                    "text": "0.00"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "sight"
+              },
+              {
+                "text": "视野"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "状态数据",
+        "fields": [
+          {
+            "label": "生命值",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "1750",
+                "parts": [
+                  {
+                    "text": "1750"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "hp"
+              },
+              {
+                "text": "生命值"
+              }
+            ]
+          },
+          {
+            "label": "火焰护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "2",
+                "parts": [
+                  {
+                    "text": "2"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorf"
+              },
+              {
+                "text": "火焰护甲"
+              }
+            ]
+          },
+          {
+            "label": "远程护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "50",
+                "parts": [
+                  {
+                    "text": "50"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorr"
+              },
+              {
+                "text": "远程护甲"
+              }
+            ]
+          },
+          {
+            "label": "尺寸",
+            "values": [
+              {
+                "text": "3×3",
+                "parts": [
+                  {
+                    "text": "3×3"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "size"
+              },
+              {
+                "text": "尺寸"
+              }
+            ]
+          },
+          {
+            "label": "建筑标签",
+            "values": [
+              {
+                "text": "进贡属国",
+                "parts": [
+                  {
+                    "text": "进贡属国"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "allb"
+              },
+              {
+                "text": "建筑标签"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "bonuses": [
+      {
+        "civilization": "jin",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "图标",
+                "parts": [
+                  {
+                    "text": "图标"
+                  }
+                ]
+              },
+              {
+                "text": "名称",
+                "parts": [
+                  {
+                    "text": "名称"
+                  }
+                ]
+              },
+              {
+                "text": "时代",
+                "parts": [
+                  {
+                    "text": "时代"
+                  }
+                ]
+              },
+              {
+                "text": "成本",
+                "parts": [
+                  {
+                    "text": "成本"
+                  }
+                ]
+              },
+              {
+                "text": "效果",
+                "parts": [
+                  {
+                    "text": "效果"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "",
+                "parts": [
+                  {
+                    "icon": "猛安谋克据点"
+                  }
+                ]
+              },
+              {
+                "text": "猛安谋克据点",
+                "parts": [
+                  {
+                    "text": "猛安谋克据点"
+                  }
+                ]
+              },
+              {
+                "text": "Ⅲ",
+                "parts": [
+                  {
+                    "text": "Ⅲ"
+                  }
+                ]
+              },
+              {
+                "text": "100 200 35",
+                "parts": [
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "100"
+                  },
+                  {
+                    "icon": "石"
+                  },
+                  {
+                    "text": "200"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "35"
+                  }
+                ]
+              },
+              {
+                "text": "为这座建筑增加一处猛安谋克据点，当据点7.5格半径附近出现敌人时，生成 3 名自动守军。每隔 120 秒产生 1 名全局猛安谋克守军，最大20",
+                "parts": [
+                  {
+                    "text": "为这座建筑增加一处猛安谋克据点，当据点7.5格半径附近出现敌人时，生成 3 名自动守军。每隔 120 秒产生 1 名全局猛安谋克守军，最大20"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "civilization": "jin",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "生命值",
+                "parts": [
+                  {
+                    "icon": "hp"
+                  },
+                  {
+                    "text": "生命值"
+                  }
+                ]
+              },
+              {
+                "text": "宫廷建筑师(+30%)",
+                "parts": [
+                  {
+                    "icon": "宫廷建筑师"
+                  },
+                  {
+                    "text": "宫廷建筑师(+30%)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "其他",
+                "parts": [
+                  {
+                    "text": "其他"
+                  }
+                ]
+              },
+              {
+                "text": "猛安谋克据点(使该建筑触发猛安谋克守军，生成3个猛安谋克守军) 飞火营(触发猛安谋克守军，额外生成2个骑马掷弹兵)",
+                "parts": [
+                  {
+                    "icon": "猛安谋克据点"
+                  },
+                  {
+                    "text": "猛安谋克据点(使该建筑触发猛安谋克守军，生成3个猛安谋克守军)"
+                  },
+                  {
+                    "icon": "飞火营"
+                  },
+                  {
+                    "text": "飞火营(触发猛安谋克守军，额外生成2个骑马掷弹兵)"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gallery_captions": [
+      "进贡国"
+    ]
+  }
+}

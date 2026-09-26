@@ -1,0 +1,606 @@
+{
+  "civilization": "ott",
+  "kind": "building",
+  "section": "黑暗时代建筑",
+  "name": "军事学校",
+  "image_name": "军事学校",
+  "source_url": "https://seicing.com/html/aoe2/buildingsaoe4/军事学校.html?civ=ott",
+  "detail": {
+    "title": "军事学校(Military Schools)",
+    "sections": [
+      {
+        "title": "建造信息",
+        "fields": [
+          {
+            "label": "成本",
+            "values": [
+              {
+                "text": "150 100",
+                "parts": [
+                  {
+                    "icon": "木"
+                  },
+                  {
+                    "text": "150"
+                  },
+                  {
+                    "icon": "石"
+                  },
+                  {
+                    "text": "100"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "成本"
+              }
+            ]
+          },
+          {
+            "label": "建造时间",
+            "values": [
+              {
+                "text": "30秒",
+                "parts": [
+                  {
+                    "text": "30秒"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "time"
+              },
+              {
+                "text": "建造时间"
+              }
+            ]
+          },
+          {
+            "label": "视野",
+            "values": [
+              {
+                "text": "5.56",
+                "parts": [
+                  {
+                    "text": "5.56"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "sight"
+              },
+              {
+                "text": "视野"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "状态数据",
+        "fields": [
+          {
+            "label": "生命值",
+            "values": [
+              {
+                "text": "2000",
+                "parts": [
+                  {
+                    "text": "2000"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "hp"
+              },
+              {
+                "text": "生命值"
+              }
+            ]
+          },
+          {
+            "label": "火焰护甲",
+            "values": [
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorf"
+              },
+              {
+                "text": "火焰护甲"
+              }
+            ]
+          },
+          {
+            "label": "远程护甲",
+            "values": [
+              {
+                "text": "50",
+                "parts": [
+                  {
+                    "text": "50"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorr"
+              },
+              {
+                "text": "远程护甲"
+              }
+            ]
+          },
+          {
+            "label": "尺寸",
+            "values": [
+              {
+                "text": "4×4",
+                "parts": [
+                  {
+                    "text": "4×4"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "size"
+              },
+              {
+                "text": "尺寸"
+              }
+            ]
+          },
+          {
+            "label": "建筑标签",
+            "values": [
+              {
+                "text": "军事建筑",
+                "parts": [
+                  {
+                    "text": "军事建筑"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "allb"
+              },
+              {
+                "text": "建筑标签"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "bonuses": [
+      {
+        "civilization": "ott",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "长矛兵",
+                "parts": [
+                  {
+                    "icon": "长矛兵"
+                  },
+                  {
+                    "text": "长矛兵"
+                  }
+                ]
+              },
+              {
+                "text": "71秒",
+                "parts": [
+                  {
+                    "text": "71秒"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "步弓手",
+                "parts": [
+                  {
+                    "icon": "步弓手"
+                  },
+                  {
+                    "text": "步弓手"
+                  }
+                ]
+              },
+              {
+                "text": "71秒",
+                "parts": [
+                  {
+                    "text": "71秒"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "武士",
+                "parts": [
+                  {
+                    "icon": "武士"
+                  },
+                  {
+                    "text": "武士"
+                  }
+                ]
+              },
+              {
+                "text": "105秒",
+                "parts": [
+                  {
+                    "text": "105秒"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "西帕希骑兵",
+                "parts": [
+                  {
+                    "icon": "西帕希骑兵"
+                  },
+                  {
+                    "text": "西帕希骑兵"
+                  }
+                ]
+              },
+              {
+                "text": "147秒",
+                "parts": [
+                  {
+                    "text": "147秒"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "奥斯曼军乐队",
+                "parts": [
+                  {
+                    "icon": "奥斯曼军乐队"
+                  },
+                  {
+                    "text": "奥斯曼军乐队"
+                  }
+                ]
+              },
+              {
+                "text": "133秒",
+                "parts": [
+                  {
+                    "text": "133秒"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "弩手",
+                "parts": [
+                  {
+                    "icon": "弩手"
+                  },
+                  {
+                    "text": "弩手"
+                  }
+                ]
+              },
+              {
+                "text": "105秒",
+                "parts": [
+                  {
+                    "text": "105秒"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "阿金基轻骑兵",
+                "parts": [
+                  {
+                    "icon": "阿金基轻骑兵"
+                  },
+                  {
+                    "text": "阿金基轻骑兵"
+                  }
+                ]
+              },
+              {
+                "text": "119秒",
+                "parts": [
+                  {
+                    "text": "119秒"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "长矛骑兵",
+                "parts": [
+                  {
+                    "icon": "骑士"
+                  },
+                  {
+                    "text": "长矛骑兵"
+                  }
+                ]
+              },
+              {
+                "text": "170秒",
+                "parts": [
+                  {
+                    "text": "170秒"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "苏丹亲兵",
+                "parts": [
+                  {
+                    "icon": "苏丹亲兵"
+                  },
+                  {
+                    "text": "苏丹亲兵"
+                  }
+                ]
+              },
+              {
+                "text": "114秒",
+                "parts": [
+                  {
+                    "text": "114秒"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "civilization": "ott",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "生命值",
+                "parts": [
+                  {
+                    "icon": "hp"
+                  },
+                  {
+                    "text": "生命值"
+                  }
+                ]
+              },
+              {
+                "text": "宫廷建筑师(+30%)",
+                "parts": [
+                  {
+                    "icon": "宫廷建筑师"
+                  },
+                  {
+                    "text": "宫廷建筑师(+30%)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "工作效率",
+                "parts": [
+                  {
+                    "icon": "time"
+                  },
+                  {
+                    "text": "工作效率"
+                  }
+                ]
+              },
+              {
+                "text": "高级学院(+25%)",
+                "parts": [
+                  {
+                    "icon": "高级学院"
+                  },
+                  {
+                    "text": "高级学院(+25%)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "建造限制",
+                "parts": [
+                  {
+                    "text": "建造限制"
+                  }
+                ]
+              },
+              {
+                "text": "军事学校(+1)",
+                "parts": [
+                  {
+                    "icon": "军事学校2"
+                  },
+                  {
+                    "text": "军事学校(+1)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "生产限制",
+                "parts": [
+                  {
+                    "text": "生产限制"
+                  }
+                ]
+              },
+              {
+                "text": "高级学院(解锁生产骑士和苏丹亲兵的能力) 阿金基轻骑兵系统(解锁阿金基轻骑兵训练)",
+                "parts": [
+                  {
+                    "icon": "高级学院"
+                  },
+                  {
+                    "text": "高级学院(解锁生产骑士和苏丹亲兵的能力)"
+                  },
+                  {
+                    "icon": "阿金基轻骑兵系统"
+                  },
+                  {
+                    "text": "阿金基轻骑兵系统(解锁阿金基轻骑兵训练)"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gallery_captions": [
+      "黑暗时代军事学校",
+      "封建时代军事学校",
+      "城堡时代军事学校",
+      "帝王时代军事学校",
+      "黑暗时代军事学校渲染图",
+      "封建时代军事学校渲染图",
+      "帝王时代军事学校渲染图"
+    ]
+  }
+}

@@ -1,0 +1,785 @@
+{
+  "civilization": "hol",
+  "kind": "building",
+  "section": "封建时代建筑",
+  "name": "庄园",
+  "image_name": "庄园",
+  "source_url": "https://seicing.com/html/aoe2/buildingsaoe4/庄园.html?civ=hol",
+  "detail": {
+    "title": "庄园(Manor)",
+    "sections": [
+      {
+        "title": "建造信息",
+        "fields": [
+          {
+            "label": "成本",
+            "values": [
+              {
+                "text": "175 100",
+                "parts": [
+                  {
+                    "icon": "木"
+                  },
+                  {
+                    "text": "175"
+                  },
+                  {
+                    "icon": "石"
+                  },
+                  {
+                    "text": "100"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "成本"
+              }
+            ]
+          },
+          {
+            "label": "建造时间",
+            "values": [
+              {
+                "text": "45秒",
+                "parts": [
+                  {
+                    "text": "45秒"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "time"
+              },
+              {
+                "text": "建造时间"
+              }
+            ]
+          },
+          {
+            "label": "建造限制",
+            "values": [
+              {
+                "text": "3",
+                "parts": [
+                  {
+                    "text": "3"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "text": "建造限制"
+              }
+            ]
+          },
+          {
+            "label": "视野",
+            "values": [
+              {
+                "text": "3.33",
+                "parts": [
+                  {
+                    "text": "3.33"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "sight"
+              },
+              {
+                "text": "视野"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "状态数据",
+        "fields": [
+          {
+            "label": "生命值",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "750",
+                "parts": [
+                  {
+                    "text": "750"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "hp"
+              },
+              {
+                "text": "生命值"
+              }
+            ]
+          },
+          {
+            "label": "火焰护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "0",
+                "parts": [
+                  {
+                    "text": "0"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorf"
+              },
+              {
+                "text": "火焰护甲"
+              }
+            ]
+          },
+          {
+            "label": "远程护甲",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "50",
+                "parts": [
+                  {
+                    "text": "50"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "armorr"
+              },
+              {
+                "text": "远程护甲"
+              }
+            ]
+          },
+          {
+            "label": "尺寸",
+            "values": [
+              {
+                "text": "3×3",
+                "parts": [
+                  {
+                    "text": "3×3"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "size"
+              },
+              {
+                "text": "尺寸"
+              }
+            ]
+          },
+          {
+            "label": "建筑标签",
+            "values": [
+              {
+                "text": "人口建筑",
+                "parts": [
+                  {
+                    "text": "人口建筑"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "allb"
+              },
+              {
+                "text": "建筑标签"
+              }
+            ]
+          },
+          {
+            "label": "提供人口",
+            "values": [
+              {
+                "text": "10",
+                "parts": [
+                  {
+                    "text": "10"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "pop"
+              },
+              {
+                "text": "提供人口"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "攻击属性(兰开斯特城堡射箭槽)",
+        "fields": [
+          {
+            "label": "远程伤害",
+            "values": [
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "8",
+                "parts": [
+                  {
+                    "text": "8"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              },
+              {
+                "text": "-",
+                "parts": [
+                  {
+                    "text": "-"
+                  }
+                ]
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "damageranged"
+              },
+              {
+                "text": "远程伤害"
+              }
+            ]
+          },
+          {
+            "label": "攻击范围",
+            "values": [
+              {
+                "text": "6.00",
+                "parts": [
+                  {
+                    "text": "6.00"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "range"
+              },
+              {
+                "text": "攻击范围"
+              }
+            ]
+          },
+          {
+            "label": "攻击间隔",
+            "values": [
+              {
+                "text": "3.125",
+                "parts": [
+                  {
+                    "text": "3.125"
+                  }
+                ],
+                "colspan": 4
+              }
+            ],
+            "label_parts": [
+              {
+                "icon": "attackspeed"
+              },
+              {
+                "text": "攻击间隔"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "特殊能力",
+        "fields": []
+      },
+      {
+        "title": "庄园经济：每分钟生产30食物，10木材，提供直径15格的光环，在光环内的村民额外提供4食物和2木材",
+        "fields": []
+      }
+    ],
+    "bonuses": [
+      {
+        "civilization": "hol",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "图标",
+                "parts": [
+                  {
+                    "text": "图标"
+                  }
+                ]
+              },
+              {
+                "text": "名称",
+                "parts": [
+                  {
+                    "text": "名称"
+                  }
+                ]
+              },
+              {
+                "text": "时代",
+                "parts": [
+                  {
+                    "text": "时代"
+                  }
+                ]
+              },
+              {
+                "text": "成本",
+                "parts": [
+                  {
+                    "text": "成本"
+                  }
+                ]
+              },
+              {
+                "text": "效果",
+                "parts": [
+                  {
+                    "text": "效果"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "",
+                "parts": [
+                  {
+                    "icon": "土地集中管理制"
+                  }
+                ]
+              },
+              {
+                "text": "土地集中管理制",
+                "parts": [
+                  {
+                    "text": "土地集中管理制"
+                  }
+                ]
+              },
+              {
+                "text": "Ⅱ",
+                "parts": [
+                  {
+                    "text": "Ⅱ"
+                  }
+                ]
+              },
+              {
+                "text": "75 175 30",
+                "parts": [
+                  {
+                    "icon": "木"
+                  },
+                  {
+                    "text": "75"
+                  },
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "175"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "30"
+                  }
+                ]
+              },
+              {
+                "text": "庄园+100生命值，+4建造上限",
+                "parts": [
+                  {
+                    "text": "庄园+100生命值，+4建造上限"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "",
+                "parts": [
+                  {
+                    "icon": "敞田制"
+                  }
+                ]
+              },
+              {
+                "text": "敞田制",
+                "parts": [
+                  {
+                    "text": "敞田制"
+                  }
+                ]
+              },
+              {
+                "text": "Ⅱ",
+                "parts": [
+                  {
+                    "text": "Ⅱ"
+                  }
+                ]
+              },
+              {
+                "text": "150 250 45",
+                "parts": [
+                  {
+                    "icon": "木"
+                  },
+                  {
+                    "text": "150"
+                  },
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "250"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "45"
+                  }
+                ]
+              },
+              {
+                "text": "庄园+200生命值，+4建造上限",
+                "parts": [
+                  {
+                    "text": "庄园+200生命值，+4建造上限"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "",
+                "parts": [
+                  {
+                    "icon": "免役税"
+                  }
+                ]
+              },
+              {
+                "text": "免役税",
+                "parts": [
+                  {
+                    "text": "免役税"
+                  }
+                ]
+              },
+              {
+                "text": "Ⅱ",
+                "parts": [
+                  {
+                    "text": "Ⅱ"
+                  }
+                ]
+              },
+              {
+                "text": "200 500 60",
+                "parts": [
+                  {
+                    "icon": "木"
+                  },
+                  {
+                    "text": "200"
+                  },
+                  {
+                    "icon": "金"
+                  },
+                  {
+                    "text": "500"
+                  },
+                  {
+                    "icon": "时间"
+                  },
+                  {
+                    "text": "60"
+                  }
+                ]
+              },
+              {
+                "text": "庄园每分钟生产30黄金",
+                "parts": [
+                  {
+                    "text": "庄园每分钟生产30黄金"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "civilization": "hol",
+        "rows": [
+          {
+            "cells": [
+              {
+                "text": "生命值",
+                "parts": [
+                  {
+                    "icon": "hp"
+                  },
+                  {
+                    "text": "生命值"
+                  }
+                ]
+              },
+              {
+                "text": "宫廷建筑师(+30%) 土地集中管理制(+100) 敞田制(+200)",
+                "parts": [
+                  {
+                    "icon": "宫廷建筑师"
+                  },
+                  {
+                    "text": "宫廷建筑师(+30%)"
+                  },
+                  {
+                    "icon": "土地集中管理制"
+                  },
+                  {
+                    "text": "土地集中管理制(+100)"
+                  },
+                  {
+                    "icon": "敞田制"
+                  },
+                  {
+                    "text": "敞田制(+200)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "远程伤害",
+                "parts": [
+                  {
+                    "icon": "damageranged"
+                  },
+                  {
+                    "text": "远程伤害"
+                  }
+                ]
+              },
+              {
+                "text": "钢制箭头(+1) 平衡炮弹(+1) 箭头穿孔板甲(+1)",
+                "parts": [
+                  {
+                    "icon": "钢制箭头"
+                  },
+                  {
+                    "text": "钢制箭头(+1)"
+                  },
+                  {
+                    "icon": "平衡炮弹"
+                  },
+                  {
+                    "text": "平衡炮弹(+1)"
+                  },
+                  {
+                    "icon": "箭头穿孔板甲"
+                  },
+                  {
+                    "text": "箭头穿孔板甲(+1)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "建造限制",
+                "parts": [
+                  {
+                    "text": "建造限制"
+                  }
+                ]
+              },
+              {
+                "text": "土地集中管理制(+4) 敞田制(+4)",
+                "parts": [
+                  {
+                    "icon": "土地集中管理制"
+                  },
+                  {
+                    "text": "土地集中管理制(+4)"
+                  },
+                  {
+                    "icon": "敞田制"
+                  },
+                  {
+                    "text": "敞田制(+4)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "text": "其他",
+                "parts": [
+                  {
+                    "text": "其他"
+                  }
+                ]
+              },
+              {
+                "text": "免役税(+30黄金生产)",
+                "parts": [
+                  {
+                    "icon": "免役税"
+                  },
+                  {
+                    "text": "免役税(+30黄金生产)"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gallery_captions": [
+      "未被使用的黑暗时代庄园",
+      "封建时代庄园",
+      "城堡时代庄园",
+      "帝王时代庄园",
+      "庄园设定图"
+    ]
+  }
+}
