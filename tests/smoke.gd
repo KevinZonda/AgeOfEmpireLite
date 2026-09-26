@@ -46,9 +46,20 @@ func _run() -> void:
 	map_click.position = game.minimap.size * 0.5
 	game.minimap._gui_input(map_click)
 	assert(game.camera.position.distance_to(game.world_size * 0.5) < 1.0)
+	var worker: RtsUnit = game.units[0]
+	var attempted_builders: Array[RtsUnit] = [worker]
+	var wood_at_age_one: int = game.players[0]["wood"]
+	assert(not game.place_building(0, "barracks", Vector2(570, 800), attempted_builders))
+	assert(game.players[0]["wood"] == wood_at_age_one, "locked buildings should not charge resources")
 	assert(game.advance_age(0))
 	assert(game.players[0]["age"] == 2)
-	var worker: RtsUnit = game.units[0]
+	assert(RtsTechTree.buildable_buildings("English", 1) == ["house", "farm"])
+	assert(RtsTechTree.buildable_buildings("English", 2).has("barracks"))
+	assert(RtsTechTree.trainable_units("English", 2, "archery_range") == ["archer", "longbow"])
+	assert(RtsTechTree.trainable_units("French", 2, "archery_range") == ["archer"])
+	assert(not RtsTechTree.can_train("English", 2, "barracks", "archer"))
+	assert(not RtsTechTree.can_train("English", 1, "barracks", "spearman"))
+	assert(not RtsTechTree.can_advance(4))
 	game.selected.append(worker)
 	game._rebuild_actions()
 	assert(game.command_buttons.size() == 5, "villager should see all unlocked construction commands")
@@ -90,6 +101,7 @@ func _run() -> void:
 	assert(is_equal_approx(barracks.build_remaining, saved_progress - 2.0))
 	barracks.advance_construction(100.0)
 	assert(barracks.is_complete())
+	assert(not game.train_unit(barracks, "archer"), "a producer cannot train another building's units")
 	assert(game.train_unit(barracks, "spearman"))
 	game.start_game("French")
 	var unfinished_ai_building: RtsBuilding = game.spawn_building(1, "house", Vector2(1750, 850), true)
@@ -97,8 +109,8 @@ func _run() -> void:
 	game.ai.tick()
 	assert(game.count_builders(unfinished_ai_building) > 0, "AI should resume an abandoned building")
 	assert(game.civilizations[0] == "French")
-	assert(not GameData.can_use_unit("French", "longbow"))
-	assert(GameData.can_use_unit("French", "knight"))
+	assert(not RtsTechTree.can_train("French", 2, "archery_range", "longbow"))
+	assert(RtsTechTree.can_train("French", 2, "stable", "knight"))
 	assert(GameData.gathered_amount("English", "food", true) > GameData.gathered_amount("French", "food", true))
 	assert(GameData.training_time("French", "stable", "knight") < GameData.UNITS["knight"]["time"])
 	for i in 20:

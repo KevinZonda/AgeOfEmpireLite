@@ -446,8 +446,7 @@ func population_cap(owner_id: int) -> int:
 
 func train_unit(building: RtsBuilding, unit_kind: String) -> bool:
 	if game_over or not is_instance_valid(building) or not building.is_complete(): return false
-	if not GameData.can_use_unit(civilizations[building.owner_id], unit_kind): return false
-	if players[building.owner_id]["age"] < GameData.UNITS[unit_kind]["age"]: return false
+	if not RtsTechTree.can_train(civilizations[building.owner_id], players[building.owner_id]["age"], building.kind, unit_kind): return false
 	if population_used(building.owner_id) >= population_cap(building.owner_id):
 		if building.owner_id == 0: notify_player("人口已满，请建造房屋")
 		return false
@@ -461,8 +460,8 @@ func train_unit(building: RtsBuilding, unit_kind: String) -> bool:
 
 func advance_age(owner_id: int) -> bool:
 	var age: int = players[owner_id]["age"]
-	if age >= 4: return false
-	if not spend(owner_id, GameData.age_cost(age)):
+	if not RtsTechTree.can_advance(age): return false
+	if not spend(owner_id, RtsTechTree.age_cost(age)):
 		if owner_id == 0: notify_player("升级时代所需资源不足")
 		return false
 	players[owner_id]["age"] = age + 1
@@ -486,6 +485,7 @@ func can_place(kind: String, world_point: Vector2) -> bool:
 	return true
 
 func place_building(owner_id: int, kind: String, world_point: Vector2, workers: Array[RtsUnit]) -> bool:
+	if not RtsTechTree.can_build(civilizations[owner_id], players[owner_id]["age"], kind): return false
 	var builders: Array[RtsUnit] = []
 	for worker in workers:
 		if is_instance_valid(worker) and worker.owner_id == owner_id and worker.kind == "villager":
@@ -805,8 +805,7 @@ func _rebuild_actions() -> void:
 			if is_instance_valid(unit) and unit is RtsUnit and unit.kind == "villager": any_worker = true
 		if any_worker:
 			command_title.text = "村民 · 建造"
-			for kind in ["house", "farm", "barracks", "archery_range", "stable"]:
-				if players[0]["age"] < GameData.BUILDINGS[kind]["age"]: continue
+			for kind in RtsTechTree.buildable_buildings(civilizations[0], players[0]["age"]):
 				var cost: Dictionary = GameData.BUILDINGS[kind]["cost"]
 				_add_action(kind, GameData.BUILDINGS[kind]["label"], cost, keys[action_index], "build", func() -> void:
 					build_mode = kind
@@ -817,15 +816,13 @@ func _rebuild_actions() -> void:
 			command_title.text = "部队 · 右键下令"
 	elif item is RtsBuilding and item.is_complete():
 		command_title.text = "%s · 训练" % GameData.BUILDINGS[item.kind]["label"]
-		for kind in GameData.BUILDINGS[item.kind]["trains"]:
-			if not GameData.can_use_unit(civilizations[0], kind): continue
-			if players[0]["age"] < GameData.UNITS[kind]["age"]: continue
+		for kind in RtsTechTree.trainable_units(civilizations[0], players[0]["age"], item.kind):
 			var cost: Dictionary = GameData.UNITS[kind]["cost"]
 			_add_action(kind, GameData.UNITS[kind]["label"], cost, keys[action_index], "train", func() -> void: train_unit(item, kind))
 			action_index += 1
-		if item.kind == "town_center" and players[0]["age"] < 4:
+		if item.kind == "town_center" and RtsTechTree.can_advance(players[0]["age"]):
 			var age: int = players[0]["age"]
-			_add_action("age", "升级", GameData.age_cost(age), keys[action_index], "age", func() -> void: advance_age(0))
+			_add_action("age", "升级", RtsTechTree.age_cost(age), keys[action_index], "age", func() -> void: advance_age(0))
 	_refresh_action_buttons()
 
 func _add_action(icon_kind: String, label_text: String, cost: Dictionary, keycode: int, action_type: String, callback: Callable) -> void:
