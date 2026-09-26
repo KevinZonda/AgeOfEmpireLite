@@ -5,8 +5,8 @@ extends RefCounted
 # The shared unit definitions and combat rules remain in GameData.
 const REPLACEMENTS := {
 	"English": {"archer": "longbow"},
-	"French": {"crossbowman": "arbaletrier", "knight": "royal_knight"},
-	"Chinese": {"man_at_arms": "palace_guard"},
+	"French": {"crossbowman": "arbaletrier", "knight": "royal_knight", "bombard": "cannon"},
+	"Chinese": {"man_at_arms": "palace_guard", "mangonel": "nest_of_bees"},
 }
 
 const EXTRA_UNITS := {

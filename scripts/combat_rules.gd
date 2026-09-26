@@ -20,7 +20,9 @@ static func damage(attacker: Dictionary, defender: Dictionary, modifiers: Dictio
 	total += float(modifiers.get("extra_damage", 0.0))
 	total *= float(modifiers.get("multiplier", 1.0))
 	var armor: Dictionary = defender.get("armor", {})
-	return maxf(1.0, total - float(armor.get(attack_type, 0.0)))
+	total = maxf(1.0, total - float(armor.get(attack_type, 0.0)))
+	var resistance: Dictionary = defender.get("resistance", {})
+	return maxf(1.0, total * (1.0 - clampf(float(resistance.get(attack_type, 0.0)), 0.0, 0.99)))
 
 
 static func charge_stopped(attacker: Dictionary, defender: Dictionary, defender_braced: bool) -> bool:

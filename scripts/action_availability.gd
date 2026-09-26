@@ -34,18 +34,21 @@ static func evaluate(action_type: String, kind: String, context: Dictionary) -> 
 				status = {"available": context.get("production_complete", false), "reason": "城墙尚未建成"}
 		"build":
 			if GameData.BUILDINGS.has(kind):
-				cost = GameData.BUILDINGS[kind]["cost"]
+				cost = RtsCivilizationRules.building_cost(civilization, kind)
 				status = RtsTechTree.building_status(civilization, age, kind)
 				if kind == "wonder" and context.get("has_wonder", false): status = {"available": false, "reason": "已有奇观"}
 		"train":
 			if GameData.UNITS.has(kind):
 				cost = GameData.unit_cost(kind)
+				if context.get("game") != null and context.get("producer_building") is RtsBuilding:
+					cost = RtsCivilizationRules.training_cost(context["game"], context["producer_building"], kind)
 				status = RtsTechTree.unit_status(civilization, age, producer, kind, researched, context.get("dynasty", ""))
 		"research":
 			var technology := RtsTechTree.get_technology(kind)
 			if not technology.is_empty():
 				cost = technology["cost"].duplicate(true)
 				var discount := RtsLandmarkCatalog.research_discount(context.get("landmark_id", ""))
+				if civilization == "French" and technology.get("economy", false): discount *= 0.7
 				for resource in cost: cost[resource] = ceili(float(cost[resource]) * discount)
 				status = RtsTechTree.research_status(civilization, age, producer, kind, researched)
 		"age":
@@ -60,7 +63,7 @@ static func evaluate(action_type: String, kind: String, context: Dictionary) -> 
 		return {"available": false, "reason": "建筑尚未建成", "cost": cost}
 	if action_type == "research" and context.get("queued_research", []).has(kind):
 		return {"available": false, "reason": "正在研究", "cost": cost}
-	if action_type == "train" and int(context.get("population_used", 0)) >= int(context.get("population_cap", 0)):
+	if action_type == "train" and int(context.get("population_used", 0)) + RtsBalanceData.population_cost(kind) > int(context.get("population_cap", 0)):
 		return {"available": false, "reason": "人口已满", "cost": cost}
 	var bank: Dictionary = context.get("resources", {})
 	for resource in GameData.RESOURCE_NAMES:

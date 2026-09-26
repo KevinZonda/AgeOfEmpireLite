@@ -24,11 +24,11 @@ func _run() -> void:
 	assert(guild.collect_stockpile() and int(french.players[0]["food"]) > food_before)
 	var college: RtsBuilding = french.spawn_building(0, "landmark", Vector2(950, 730), false, "fr_college_of_artillery")
 	french.players[0]["age"] = 4
-	var baseline: float = RtsStatResolver.unit("French", "trebuchet", 4)["hp"]
+	var baseline: float = RtsStatResolver.unit("French", "trebuchet", 4)["damage"]
 	assert(french.train_unit(college, "trebuchet"))
 	college._process(college._training_time("trebuchet") + 1.0)
 	var artillery: RtsUnit = french.units.back()
-	assert(artillery.kind == "trebuchet" and artillery.max_hp > baseline, "College siege units should retain their producer bonus")
+	assert(artillery.kind == "trebuchet" and artillery.stats["damage"] > baseline, "College siege units should retain their damage bonus")
 	var chinese: Variant = load("res://scenes/main.tscn").instantiate()
 	root.add_child(chinese)
 	await process_frame
@@ -46,7 +46,8 @@ func _run() -> void:
 	var gatehouse: RtsBuilding = chinese.spawn_building(0, "landmark", Vector2(900, 730), false, "zh_gatehouse")
 	var wall: RtsBuilding = chinese.spawn_building(0, "stone_wall", gatehouse.position + Vector2(95, 0))
 	wall.refresh_stats()
-	assert(float(wall.stats["armor"]["melee"]) == float(GameData.BUILDINGS["stone_wall"]["armor"]["melee"]) + 4.0)
+	assert(float(wall.stats["armor"]["melee"]) == float(GameData.BUILDINGS["stone_wall"]["armor"]["melee"]), "Gatehouse must no longer grant obsolete wall armor")
+	assert(int(gatehouse.stats["defense"].get("salvo", 0)) == 2, "Gatehouse should mount two Nest of Bees weapons")
 	var palace: RtsBuilding = chinese.spawn_building(0, "landmark", Vector2(1090, 730), false, "zh_imperial_palace")
 	assert(palace.activate_landmark_ability() and palace.landmark_ability_cooldown > 0.0)
 	assert(not palace.activate_landmark_ability())

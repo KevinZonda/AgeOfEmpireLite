@@ -8,6 +8,9 @@ var radius := 22.0
 var appearance := ""
 var home_position := Vector2.ZERO
 var wander_time := 0.0
+var claimed_by := -1
+var shepherd: RtsUnit
+var claim_timer := 0.0
 
 func setup(resource_kind: String, quantity: int, visual_kind := "") -> void:
 	kind = resource_kind
@@ -18,13 +21,45 @@ func setup(resource_kind: String, quantity: int, visual_kind := "") -> void:
 	queue_redraw()
 
 func _process(delta: float) -> void:
-	if appearance != "deer" or game == null or not game.started or game.paused or game.game_over: return
+	if game == null or not game.started or game.paused or game.game_over: return
+	if appearance == "sheep":
+		_process_sheep(delta)
+		return
+	if appearance != "deer": return
 	wander_time += delta
 	var desired := home_position + Vector2(sin(wander_time * 0.75) * 14.0, cos(wander_time * 0.52) * 10.0)
 	if game.world_map.is_walkable(desired):
 		var previous_position := position
 		position = desired
 		game.navigation.resource_moved(self, previous_position)
+		queue_redraw()
+
+func _process_sheep(delta: float) -> void:
+	claim_timer -= delta
+	if claim_timer <= 0.0:
+		claim_timer = 0.3
+		var closest := 75.0 * 75.0
+		for unit in game.units:
+			if not is_instance_valid(unit) or unit.kind != "scout" or unit.garrisoned_in != null: continue
+			var distance := position.distance_squared_to(unit.position)
+			if distance < closest:
+				closest = distance
+				claimed_by = unit.owner_id
+				shepherd = unit
+				queue_redraw()
+	if not is_instance_valid(shepherd): shepherd = null
+	if shepherd == null: return
+	var center: RtsBuilding = game.find_nearest_owned_building(claimed_by, "town_center", position)
+	if center != null and position.distance_to(center.position) < 100.0:
+		shepherd = null
+		return
+	var goal := shepherd.position - (shepherd.position - position).normalized() * 28.0
+	if position.distance_to(goal) <= 18.0: return
+	var next := position.move_toward(goal, 67.0 * delta)
+	if game.world_map.is_walkable(next):
+		var previous := position
+		position = next
+		game.navigation.resource_moved(self, previous)
 		queue_redraw()
 
 func harvest(quantity: int) -> int:
@@ -48,6 +83,12 @@ func _draw() -> void:
 		draw_circle(Vector2(9, -2), 1.5, Color("253947"))
 	elif appearance == "deer":
 		draw_ellipse_shape()
+	elif appearance == "sheep":
+		draw_circle(Vector2.ZERO, 16, Color("efead9") if claimed_by < 0 else game.player_color(claimed_by).lightened(0.35))
+		draw_circle(Vector2(11, -8), 7, Color("d8ccb2"))
+		draw_circle(Vector2(13, -10), 1.5, Color("252b27"))
+		draw_line(Vector2(-8, 9), Vector2(-8, 19), Color("8d8574"), 2)
+		draw_line(Vector2(5, 9), Vector2(5, 19), Color("8d8574"), 2)
 	elif kind == "wood":
 		draw_circle(Vector2(0, 8), 9, Color("6d4a31"))
 		draw_circle(Vector2(0, -4), 19, color)

@@ -3,6 +3,7 @@ extends RefCounted
 
 var game: Node2D
 var owner_id := 1
+var transport_wait: Dictionary = {}
 
 func _init(game_ref: Node2D, player_id := 1) -> void:
 	game = game_ref
@@ -14,6 +15,10 @@ func tick() -> void:
 	for unit in game.units:
 		if not is_instance_valid(unit) or unit.owner_id != owner_id or unit.garrisoned_in != null: continue
 		if unit.kind == "villager": workers.append(unit)
+		elif unit.kind == "scout":
+			if unit.order == "idle": _assign_scout(unit)
+		elif unit.kind == "transport_ship":
+			if unit.order == "idle": _assign_transport(unit)
 		elif unit.kind == "warship":
 			if unit.order == "idle":
 				var target: Node2D = game.nearest_enemy(unit, 350.0)
@@ -92,18 +97,25 @@ func tick() -> void:
 		if building.producer_kind() == "white_tower":
 			game.train_unit(building, "spearman" if enemy_profile["cavalry"] > 0 else "longbow")
 		if building.producer_kind() == "wynguard": game.train_unit(building, "longbow")
-		if building.producer_kind() == "spirit_way":
-			var dynasty: String = game.players[owner_id].get("dynasty", "")
-			if dynasty == "Ming": game.train_unit(building, "grenadier")
-			elif dynasty == "Yuan": game.train_unit(building, "fire_lancer")
-			elif dynasty == "Song": game.train_unit(building, "zhuge_nu")
 		if building.producer_kind() == "town_center" and building != center and workers.size() < 10: game.train_unit(building, "villager")
 		if building.producer_kind() == "market" and _unit_count("trader") < 1:
 			game.train_unit(building, "trader")
+		if building.kind == "market":
+			var bank: Dictionary = game.players[owner_id]
+			if bank["food"] < 140 and bank["gold"] > game.market_quote("food", true, owner_id) + 120:
+				game.exchange_resource(owner_id, "food", true)
+			elif bank["wood"] < 100 and bank["gold"] > game.market_quote("wood", true, owner_id) + 120:
+				game.exchange_resource(owner_id, "wood", true)
+			elif bank["wood"] > 600 and bank["gold"] < 180:
+				game.exchange_resource(owner_id, "wood", false)
 		if building.kind == "dock" and _unit_count("fishing_boat") < 2:
 			game.train_unit(building, "fishing_boat")
 		if building.kind == "dock" and _unit_count("fishing_boat") >= 1 and _unit_count("warship") < 1:
 			game.train_unit(building, "warship")
+		if building.kind == "dock" and _unit_count("arrow_ship") < 2:
+			game.train_unit(building, "arrow_ship")
+		if building.kind == "dock" and game.map_style == "islands" and _unit_count("transport_ship") < 1:
+			game.train_unit(building, "transport_ship")
 		if building.kind == "monastery" and _unit_count("monk") < 3:
 			game.train_unit(building, "monk")
 	if army.size() >= 4:
@@ -119,11 +131,62 @@ func tick() -> void:
 				if soldier.order == "idle": idle_army.append(soldier)
 			if not idle_army.is_empty(): game.issue_group_order(idle_army, target.position, true)
 
+func _assign_scout(scout: RtsUnit) -> void:
+	var center: RtsBuilding = game.find_nearest_owned_building(owner_id, "town_center", scout.position)
+	for sheep in game.resources:
+		if is_instance_valid(sheep) and sheep.appearance == "sheep" and sheep.shepherd == scout and center != null and sheep.position.distance_to(center.position) > 120.0:
+			scout.issue_command("move", center.position)
+			return
+	var nearest_sheep: RtsResource
+	var sheep_distance := 800.0 * 800.0
+	for sheep in game.resources:
+		if not is_instance_valid(sheep) or sheep.appearance != "sheep" or sheep.claimed_by == owner_id or not game.fog.can_see(owner_id, sheep.position): continue
+		var distance := scout.position.distance_squared_to(sheep.position)
+		if distance < sheep_distance and not game.navigation.path_between(scout.position, sheep.position, scout).is_empty():
+			nearest_sheep = sheep
+			sheep_distance = distance
+	if nearest_sheep != null:
+		scout.issue_command("move", nearest_sheep.position)
+		return
+	var closest := INF
+	var destination := Vector2.INF
+	for y in range(1, game.world_map.grid_size.y - 1, 4):
+		for x in range(1, game.world_map.grid_size.x - 1, 4):
+			var point: Vector2 = game.world_map.cell_center(Vector2i(x, y))
+			if not game.world_map.is_walkable(point) or game.fog.is_explored(owner_id, point): continue
+			var distance := scout.position.distance_squared_to(point)
+			if distance > 180.0 * 180.0 and distance < closest and not game.navigation.path_between(scout.position, point, scout).is_empty():
+				closest = distance
+				destination = point
+	if destination != Vector2.INF: scout.issue_command("move", destination)
+
+func _assign_transport(boat: RtsUnit) -> void:
+	if not boat.passengers.is_empty():
+		var waiting := 0
+		for soldier in game.units:
+			if is_instance_valid(soldier) and soldier.order == "board_transport" and soldier.target == boat: waiting += 1
+		var boat_id := boat.get_instance_id()
+		if waiting > 0 and boat.passengers.size() < 4:
+			transport_wait[boat_id] = int(transport_wait.get(boat_id, 0)) + 1
+			if int(transport_wait[boat_id]) < 5: return
+		transport_wait.erase(boat_id)
+		var target: Node2D = game.strategic_target_for(owner_id)
+		if target != null: boat.issue_command("unload", target.position)
+		return
+	if game.map_style != "islands": return
+	var boarded := 0
+	for soldier in game.units:
+		if not is_instance_valid(soldier) or soldier.owner_id != owner_id or soldier.garrisoned_in != null or soldier.kind == "scout" or not soldier.stats.get("tags", []).has("military") or soldier.stats.get("tags", []).has("naval"): continue
+		if soldier.position.distance_to(boat.position) > 700.0: continue
+		soldier.issue_command("board_transport", Vector2.INF, boat)
+		boarded += 1
+		if boarded >= 6: break
+
 func _enemy_profile() -> Dictionary:
 	var profile := {"cavalry": 0, "ranged": 0, "heavy": 0}
 	for unit in game.units:
 		if not is_instance_valid(unit) or not game.is_enemy(owner_id, unit.owner_id) or unit.kind == "villager": continue
-		if game.fog.active and not game.fog.can_see(owner_id, unit.position): continue
+		if game.fog.active and not game.fog.can_detect_unit(owner_id, unit): continue
 		for tag in profile:
 			if unit.stats.get("tags", []).has(tag): profile[tag] += 1
 	return profile

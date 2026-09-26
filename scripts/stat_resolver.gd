@@ -9,6 +9,7 @@ static func unit(civilization: String, unit_kind: String, age: int, researched: 
 	stats["kind"] = unit_kind
 	var source := RtsBalanceData.line(unit_kind)
 	stats["cost"] = RtsBalanceData.unit_cost(unit_kind)
+	stats["population_cost"] = RtsBalanceData.population_cost(unit_kind)
 	stats["time"] = RtsBalanceData.training_seconds(unit_kind)
 	stats["source_url"] = source.get("source_url", "")
 	stats["target_tags"] = target_tags(unit_kind, stats)
@@ -31,10 +32,14 @@ static func unit(civilization: String, unit_kind: String, age: int, researched: 
 		for profile_id in rank.get("attacks", {}):
 			stats["profiles"][profile_id] = RtsBalanceData.scaled_profile(rank["attacks"][profile_id])
 	if stats["profiles"].is_empty() and float(stats.get("damage", 0.0)) > 0.0:
+		var fallback_bonuses: Array[Dictionary] = []
+		for target_tag in stats.get("bonus", {}):
+			fallback_bonuses.append({"required_tags": [target_tag], "amount": float(stats["bonus"][target_tag]), "source_label": target_tag})
 		stats["profiles"]["ranged" if stats.get("attack_type") == "ranged" else "melee"] = {
 			"damage": float(stats["damage"]), "damage_kind": stats.get("attack_type", "melee"),
-			"range": float(stats["range"]), "cooldown": float(stats["cooldown"]), "hits": 1, "bonuses": [],
+			"range": float(stats["range"]), "cooldown": float(stats["cooldown"]), "hits": 1, "bonuses": fallback_bonuses,
 		}
+	if stats["tags"].has("siege"): RtsSiegeRules.apply_current_balance(stats)
 	var primary := primary_profile(stats)
 	stats["primary_profile"] = primary
 	_apply_legacy_primary(stats)
@@ -52,6 +57,8 @@ static func unit(civilization: String, unit_kind: String, age: int, researched: 
 	_apply_effects(stats, RtsLandmarkCatalog.dynasty_unit_bonus(civilization, dynasty, stats["tags"]))
 	if stats["tags"].has("siege"):
 		stats["hp"] = float(stats["hp"]) * RtsLandmarkCatalog.produced_siege_hp(producer_landmark_id)
+		var damage_multiplier := RtsLandmarkCatalog.produced_siege_damage(producer_landmark_id)
+		for profile_id in stats.get("profiles", {}): stats["profiles"][profile_id]["damage"] = float(stats["profiles"][profile_id]["damage"]) * damage_multiplier
 	_apply_legacy_primary(stats)
 	return stats
 

@@ -11,6 +11,7 @@ var map_style := "balanced"
 var player_count := 2
 var cells := PackedByteArray()
 var plants: Array[Dictionary] = []
+var stealth_patches: Array[Dictionary] = []
 var resource_specs: Array[Dictionary] = []
 var pathfinder := AStarGrid2D.new()
 var rng := RandomNumberGenerator.new()
@@ -18,12 +19,13 @@ var rng := RandomNumberGenerator.new()
 func generate(seed_value: int, map_size: Vector2, style := "balanced", participants := 2) -> void:
 	map_seed = seed_value
 	player_count = clampi(participants, 2, 4)
-	map_style = style if ["balanced", "lakes", "highlands"].has(style) else "balanced"
+	map_style = style if ["balanced", "lakes", "highlands", "islands"].has(style) else "balanced"
 	world_size = map_size
 	grid_size = Vector2i(ceili(map_size.x / CELL_SIZE), ceili(map_size.y / CELL_SIZE))
 	rng.seed = seed_value
 	cells.resize(grid_size.x * grid_size.y)
 	plants.clear()
+	stealth_patches.clear()
 	resource_specs.clear()
 	var noise := FastNoiseLite.new()
 	noise.seed = seed_value
@@ -35,7 +37,10 @@ func generate(seed_value: int, map_size: Vector2, style := "balanced", participa
 			var point := _reference_point(cell_center(Vector2i(x, y)))
 			var variation := noise.get_noise_2d(point.x, point.y)
 			var terrain := Terrain.GRASS
-			if _is_road(point):
+			if map_style == "islands":
+				var on_island := _ellipse(point, Vector2(330, 750), Vector2(435, 690)) < 1.0 or _ellipse(point, Vector2(2070, 750), Vector2(435, 690)) < 1.0 or _ellipse(point, Vector2(1200, 750), Vector2(350, 650)) < 1.0
+				terrain = Terrain.MEADOW if on_island and variation > 0.13 else Terrain.GRASS if on_island else Terrain.WATER
+			elif _is_road(point):
 				terrain = Terrain.ROAD
 			elif _is_base_clearance(point) or _is_corridor_clearance(point):
 				terrain = Terrain.MEADOW if variation > 0.13 else Terrain.GRASS
@@ -47,9 +52,11 @@ func generate(seed_value: int, map_size: Vector2, style := "balanced", participa
 				terrain = Terrain.MEADOW
 			cells[_index(Vector2i(x, y))] = terrain
 	_setup_pathfinder()
+	_generate_stealth_patches()
 	_generate_plants()
 	_generate_starter_resources()
 	_generate_resource_clusters()
+	_generate_sheep()
 	_generate_fish()
 	queue_redraw()
 
@@ -98,6 +105,22 @@ func cell_center(cell: Vector2i) -> Vector2:
 
 func terrain_at(point: Vector2) -> int:
 	return cells[_index(cell_at(point))]
+
+func forest_patch_at(point: Vector2) -> int:
+	for index in stealth_patches.size():
+		var patch: Dictionary = stealth_patches[index]
+		if point.distance_squared_to(patch["position"]) <= float(patch["radius"]) * float(patch["radius"]): return index
+	return -1
+
+func is_high_ground(point: Vector2) -> bool:
+	var cell := cell_at(point)
+	if not is_walkable(point): return false
+	for dy in range(-2, 3):
+		for dx in range(-2, 3):
+			var neighbor := cell + Vector2i(dx, dy)
+			if neighbor.x < 0 or neighbor.y < 0 or neighbor.x >= grid_size.x or neighbor.y >= grid_size.y: continue
+			if cells[_index(neighbor)] == Terrain.MOUNTAIN: return true
+	return false
 
 func is_walkable(point: Vector2) -> bool:
 	var terrain := terrain_at(point)
@@ -196,12 +219,34 @@ func _generate_plants() -> void:
 			if point.x < 25 or point.y < 25 or point.x > world_size.x - 25 or point.y > world_size.y - 25 or not is_walkable(point): continue
 			plants.append({"position": point, "flower": rng.randf() < 0.28, "size": rng.randf_range(4.0, 9.0)})
 
+func _generate_stealth_patches() -> void:
+	for index in 10:
+		var center := _random_open_point()
+		var radius := rng.randf_range(75.0, 105.0)
+		var valid := true
+		for patch in stealth_patches:
+			if center.distance_to(patch["position"]) < radius + float(patch["radius"]) + 35.0: valid = false
+		if valid: stealth_patches.append({"position": center, "radius": radius})
+
 func _generate_resource_clusters() -> void:
 	for cluster in 6: _add_cluster("wood", "tree", rng.randi_range(4, 7), 450)
 	for cluster in 4: _add_cluster("food", "berry", rng.randi_range(3, 5), 300)
 	for cluster in 3: _add_cluster("food", "deer", rng.randi_range(4, 6), 170)
 	for cluster in 3: _add_cluster("gold", "ore", rng.randi_range(2, 3), 550)
 	for cluster in 3: _add_cluster("stone", "ore", rng.randi_range(2, 3), 500)
+
+func _generate_sheep() -> void:
+	for cluster in 5:
+		for retry in 40:
+			var center := _random_open_point()
+			if _is_base_clearance(_reference_point(center)): continue
+			var placed := 0
+			for i in 3:
+				var point := center + Vector2.from_angle(TAU * float(i) / 3.0) * 34.0
+				if not is_walkable(point): continue
+				resource_specs.append({"kind": "food", "appearance": "sheep", "position": point, "amount": 220})
+				placed += 1
+			if placed > 0: break
 
 func _generate_starter_resources() -> void:
 	if player_count > 2:
@@ -293,6 +338,11 @@ func _draw() -> void:
 				draw_line(point + Vector2(19, 20), point + Vector2(26, 8), Color("d8d9c7"), 2)
 			elif terrain == Terrain.ROAD and x % 3 == 0 and y % 2 == 0:
 				draw_line(point + Vector2(10, 27), point + Vector2(35, 25), Color("b1aa75", 0.25), 2)
+	for patch in stealth_patches:
+		var center: Vector2 = patch["position"]
+		var radius: float = patch["radius"]
+		draw_circle(center, radius, Color("254f37", 0.28))
+		draw_arc(center, radius, 0.0, TAU, 48, Color("a1bc80", 0.5), 2.0)
 	for plant in plants:
 		var point: Vector2 = plant["position"]
 		var size: float = plant["size"]

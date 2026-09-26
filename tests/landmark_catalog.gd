@@ -25,7 +25,7 @@ func _initialize() -> void:
 	assert(RtsLandmarkCatalog.training_rate("eng_council_hall") == 0.5)
 	assert(RtsLandmarkCatalog.producer("eng_white_tower") == "white_tower")
 	assert(RtsLandmarkCatalog.landmark("eng_berkshire_fortress")["defense"]["range"] > GameData.BUILDINGS["keep"]["defense"]["range"])
-	assert(RtsLandmarkCatalog.trade_multiplier("French", ["fr_chamber_of_commerce"]) == 1.3)
+	assert(RtsLandmarkCatalog.trade_multiplier("French", ["fr_chamber_of_commerce"]) == 1.0)
 	assert(RtsLandmarkCatalog.trade_multiplier("English", ["fr_chamber_of_commerce"]) == 1.0)
 	assert(RtsLandmarkCatalog.produced_siege_hp("zh_clocktower") == 1.5)
 	assert(RtsLandmarkCatalog.research_discount("fr_royal_institute") == 0.5)

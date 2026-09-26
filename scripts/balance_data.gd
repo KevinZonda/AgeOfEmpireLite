@@ -26,6 +26,9 @@ static func unit_cost(unit_kind: String) -> Dictionary:
 	for resource in source.get("cost", {}): cost[resource] = int(source["cost"][resource])
 	return cost
 
+static func population_cost(unit_kind: String) -> int:
+	return maxi(1, int(line(unit_kind).get("population_cost", 1)))
+
 static func training_seconds(unit_kind: String) -> float:
 	var source := line(unit_kind)
 	if source.is_empty() or source.get("train_seconds") == null:

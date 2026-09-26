@@ -13,6 +13,10 @@ const LABELS := {
 	"construct": "建造",
 	"attack": "攻击",
 	"attack_move": "攻击移动",
+	"patrol": "巡逻",
+	"focus": "集火",
+	"unload": "登陆",
+	"board": "登船",
 	"drag": "框选",
 	"build_valid": "放置",
 	"build_invalid": "不可放置",
@@ -44,9 +48,9 @@ func _draw() -> void:
 	var accent := Color("f1e5bd")
 	match state:
 		"select", "drag": accent = Color("f3d96e")
-		"move", "rally": accent = Color("89c4f0")
+		"move", "rally", "patrol", "unload", "board": accent = Color("89c4f0")
 		"gather", "trade", "relic", "construct", "build_valid": accent = Color("83da8b")
-		"attack", "attack_move", "build_invalid": accent = Color("ef7772")
+		"attack", "attack_move", "focus", "build_invalid": accent = Color("ef7772")
 	var arrow := PackedVector2Array([Vector2(0, 0), Vector2(1, 23), Vector2(7, 17), Vector2(12, 29), Vector2(17, 26), Vector2(11, 15), Vector2(20, 14)])
 	draw_colored_polygon(arrow, Color("1e2628"))
 	draw_polyline(arrow, accent, 2, true)
@@ -56,13 +60,13 @@ func _draw() -> void:
 		match state:
 			"select", "drag":
 				draw_rect(Rect2(18, 21, 10, 10), accent, false, 2)
-			"move", "rally":
+			"move", "rally", "patrol", "unload", "board":
 				draw_line(Vector2(17, 26), Vector2(29, 26), accent, 2)
 				draw_line(Vector2(23, 20), Vector2(23, 32), accent, 2)
 			"gather", "trade", "relic":
 				draw_line(Vector2(18, 31), Vector2(27, 21), accent, 2)
 				draw_line(Vector2(23, 21), Vector2(29, 24), accent, 2)
-			"attack", "attack_move":
+			"attack", "attack_move", "focus":
 				draw_line(Vector2(17, 32), Vector2(29, 20), accent, 3)
 				draw_line(Vector2(18, 22), Vector2(27, 31), accent, 2)
 			"construct", "build_valid":

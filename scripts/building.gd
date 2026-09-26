@@ -30,6 +30,8 @@ var relic_income_timer := 4.0
 var landmark_tick_timer := 4.0
 var landmark_stockpile := {"food": 0, "wood": 0, "gold": 0, "stone": 0}
 var landmark_ability_cooldown := 0.0
+var tax_stockpile := 0
+var tax_timer := 4.0
 
 func setup(game_ref: Node2D, player_id: int, building_kind: String, under_construction := false, chosen_landmark := "") -> void:
 	game = game_ref
@@ -74,12 +76,6 @@ func refresh_stats(preserve_damage := true) -> void:
 	stats = definition().duplicate(true)
 	stats["armor"] = stats.get("armor", {"melee": 0.0, "ranged": 0.0}).duplicate(true)
 	var bonus := RtsLandmarkCatalog.building_bonus(game.civilizations[owner_id], game.players[owner_id].get("landmarks", []), kind)
-	if kind in ["stone_wall", "stone_gate"]:
-		for landmark in game.buildings:
-			if is_instance_valid(landmark) and landmark.owner_id == owner_id and landmark.landmark_id == "zh_gatehouse" and landmark.is_complete() and landmark.position.distance_to(position) <= 120.0:
-				bonus["armor_melee"] = float(bonus.get("armor_melee", 0.0)) + 4.0
-				bonus["armor_ranged"] = float(bonus.get("armor_ranged", 0.0)) + 4.0
-				break
 	for stat in bonus:
 		if str(stat).begins_with("armor_"):
 			var armor_kind: String = str(stat).trim_prefix("armor_")
@@ -175,7 +171,7 @@ func _sync_remaining() -> void:
 func _training_time(unit_kind: String) -> float:
 	var producer := producer_kind()
 	var academy := 0.75 if game.players[owner_id].get("researched", []).has("military_academy") and GameData.UNITS[unit_kind]["tags"].has("military") else 1.0
-	return GameData.training_time(game.civilizations[owner_id], producer, unit_kind) * RtsLandmarkCatalog.training_multiplier(game.civilizations[owner_id], game.players[owner_id].get("landmarks", []), producer, unit_kind) * RtsLandmarkCatalog.dynasty_training_multiplier(game.civilizations[owner_id], game.players[owner_id].get("dynasty", ""), producer, unit_kind) * RtsLandmarkCatalog.training_rate(landmark_id) * academy
+	return GameData.training_time(game.civilizations[owner_id], producer, unit_kind, game.players[owner_id]["age"]) * RtsLandmarkCatalog.training_multiplier(game.civilizations[owner_id], game.players[owner_id].get("landmarks", []), producer, unit_kind) * RtsLandmarkCatalog.dynasty_training_multiplier(game.civilizations[owner_id], game.players[owner_id].get("dynasty", ""), producer, unit_kind) * RtsLandmarkCatalog.training_rate(landmark_id) * academy
 
 func set_rally(world_point: Vector2, target_ref: Node2D = null) -> void:
 	rally_point = world_point
@@ -222,16 +218,18 @@ func _process_defense(delta: float) -> void:
 	var reach: float = float(attack.get("range", 0.0))
 	for unit in game.units:
 		if not is_instance_valid(unit) or unit.is_queued_for_deletion() or not game.is_enemy(owner_id, unit.owner_id) or unit.garrisoned_in != null: continue
-		if game.fog.active and not game.fog.can_see(owner_id, unit.position): continue
+		if game.fog.active and not game.fog.can_detect_unit(owner_id, unit): continue
 		var distance := position.distance_squared_to(unit.position)
 		if distance < best and distance <= reach * reach:
 			best = distance
 			enemy = unit
 	if enemy == null: return
 	var damage := RtsCombatRules.damage(attack, enemy.stats)
-	var projectile := RtsProjectile.new()
-	projectile.setup(game, owner_id, global_position, enemy, damage, float(attack.get("projectile_speed", 400.0)))
-	game.add_child(projectile)
+	for _shot in maxi(1, int(attack.get("salvo", 1))):
+		var projectile := RtsProjectile.new()
+		var profile := {"damage": float(attack.get("damage", 0.0)), "damage_kind": "ranged", "hits": 1}
+		projectile.setup(game, owner_id, global_position, enemy, damage, float(attack.get("projectile_speed", 400.0)), float(attack.get("splash_radius", 0.0)), attack, profile)
+		game.add_child(projectile)
 	defense_timer = float(attack.get("cooldown", 1.5))
 
 func _process_landmark(delta: float) -> void:
@@ -246,11 +244,6 @@ func _process_landmark(delta: float) -> void:
 	elif landmark_id == "fr_guild_hall":
 		for resource in landmark_stockpile:
 			landmark_stockpile[resource] = mini(400, int(landmark_stockpile[resource]) + 12)
-	elif landmark_id == "zh_imperial_academy":
-		var taxable := 0
-		for building in game.buildings:
-			if is_instance_valid(building) and building.owner_id == owner_id and building != self and building.is_complete() and building.position.distance_to(position) <= 180.0: taxable += 1
-		if taxable > 0: game.credit_resource(owner_id, "gold", taxable * 2)
 
 func collect_stockpile() -> bool:
 	if landmark_id != "fr_guild_hall" or not is_complete(): return false
@@ -268,6 +261,16 @@ func activate_landmark_ability() -> bool:
 
 func _process(delta: float) -> void:
 	if not game.started or game.paused or game.game_over: return
+	if game.civilizations[owner_id] == "Chinese" and is_complete() and kind in ["town_center", "market", "barracks", "archery_range", "stable", "siege_workshop", "blacksmith", "farm"]:
+		tax_timer -= delta
+		if tax_timer <= 0.0:
+			var tax := 2
+			for landmark in game.buildings:
+				if is_instance_valid(landmark) and landmark.owner_id == owner_id and landmark.landmark_id == "zh_imperial_academy" and landmark.is_complete() and landmark.position.distance_to(position) <= 180.0:
+					tax *= 2
+					break
+			tax_stockpile = mini(80, tax_stockpile + tax)
+			tax_timer += 4.0
 	landmark_ability_cooldown = maxf(0.0, landmark_ability_cooldown - delta)
 	if kind == "landmark" and is_complete(): _process_landmark(delta)
 	if kind == "monastery" and is_complete() and not relics.is_empty():
@@ -277,14 +280,19 @@ func _process(delta: float) -> void:
 			relic_income_timer += 4.0
 	if is_complete(): _process_defense(delta)
 	if not is_complete() or production_queue.is_empty(): return
-	production_remaining = maxf(0.0, production_remaining - delta)
+	var work_rate := 1.0
+	for unit in game.units:
+		if is_instance_valid(unit) and unit.owner_id == owner_id and unit.kind == "imperial_official" and unit.order == "supervise" and unit.target == self and unit.position.distance_to(position) <= 70.0:
+			work_rate = 1.5
+			break
+	production_remaining = maxf(0.0, production_remaining - delta * work_rate)
 	_sync_remaining()
 	if production_remaining > 0.0: return
 	var job: Dictionary = production_queue.pop_front()
 	if job["type"] == "train":
 		training_queue.pop_front()
 		var trained: RtsUnit = game.spawn_unit(owner_id, job["kind"], game.find_spawn_position(self), rally_point, rally_target, rally_resource_kind)
-		if kind == "landmark" and RtsLandmarkCatalog.produced_siege_hp(landmark_id) > 1.0 and trained.stats.get("tags", []).has("siege"):
+		if kind == "landmark" and (RtsLandmarkCatalog.produced_siege_hp(landmark_id) > 1.0 or RtsLandmarkCatalog.produced_siege_damage(landmark_id) > 1.0) and trained.stats.get("tags", []).has("siege"):
 			trained.producer_landmark_id = landmark_id
 			trained.refresh_stats()
 		if landmark_id == "eng_wynguard_palace" and job["kind"] == "longbow" and game.population_used(owner_id) + 2 <= game.population_cap(owner_id):
@@ -308,6 +316,10 @@ func _draw() -> void:
 	var bounds := Rect2(-size() * 0.5, size())
 	var color: Color = game.player_color(owner_id)
 	if not is_complete(): color = color.darkened(0.45)
+	if game.view_mode_25d and not kind in ["farm", "palisade_wall", "stone_wall", "palisade_gate", "stone_gate"]:
+		var depth := 18.0 if kind == "town_center" or kind == "landmark" or kind == "keep" else 12.0
+		draw_rect(Rect2(bounds.position + Vector2(0, depth), bounds.size), color.darkened(0.55))
+		draw_colored_polygon(PackedVector2Array([bounds.position + Vector2(0, bounds.size.y), bounds.position + bounds.size, bounds.position + bounds.size + Vector2(0, depth), bounds.position + Vector2(0, bounds.size.y + depth)]), color.darkened(0.4))
 	draw_rect(bounds, Color("272d2a"))
 	draw_rect(bounds.grow(-4), color)
 	if kind.ends_with("_gate"):

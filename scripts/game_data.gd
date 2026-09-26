@@ -15,6 +15,7 @@ const CIVILIZATIONS := {
 
 const UNITS := {
 	"villager": {"label": "村民", "hp": 45.0, "speed": 100.0, "damage": 3.0, "range": 20.0, "cooldown": 1.0, "radius": 10.0, "cost": {"food": 50}, "time": 5.0, "tags": ["worker", "light"], "armor": {"melee": 0.0, "ranged": 0.0}, "attack_type": "melee", "bonus": {}},
+	"imperial_official": {"label": "朝廷命官", "hp": 75.0, "speed": 95.0, "damage": 0.0, "range": 0.0, "cooldown": 1.0, "radius": 11.0, "cost": {"food": 150}, "time": 15.0, "tags": ["worker", "light", "unique"], "armor": {"melee": 0.0, "ranged": 0.0}, "attack_type": "melee", "bonus": {}},
 	"scout": {"label": "侦察兵", "hp": 105.0, "speed": 164.0, "damage": 6.0, "range": 23.0, "cooldown": 1.1, "radius": 12.0, "cost": {"food": 70}, "time": 8.0, "tags": ["military", "cavalry", "light", "scout"], "armor": {"melee": 0.0, "ranged": 1.0}, "attack_type": "melee", "bonus": {}},
 	"spearman": {"label": "长矛兵", "hp": 90.0, "speed": 88.0, "damage": 12.0, "range": 23.0, "cooldown": 1.15, "radius": 12.0, "cost": {"food": 60, "wood": 20}, "time": 7.0, "tags": ["military", "infantry", "light", "anti_cavalry"], "armor": {"melee": 0.0, "ranged": 0.0}, "attack_type": "melee", "bonus": {"cavalry": 18.0}, "brace_bonus": 16.0},
 	"man_at_arms": {"label": "重装步兵", "hp": 155.0, "speed": 83.0, "damage": 15.0, "range": 23.0, "cooldown": 1.2, "radius": 12.0, "cost": {"food": 100, "gold": 20}, "time": 10.0, "tags": ["military", "infantry", "heavy", "armored"], "armor": {"melee": 3.0, "ranged": 3.0}, "attack_type": "melee", "bonus": {}},
@@ -31,8 +32,17 @@ const UNITS := {
 	"royal_knight": {"label": "皇家骑士", "hp": 195.0, "speed": 138.0, "damage": 23.0, "range": 28.0, "cooldown": 1.25, "radius": 15.0, "cost": {"food": 110, "gold": 75}, "time": 12.0, "tags": ["military", "cavalry", "heavy", "armored", "unique"], "armor": {"melee": 3.0, "ranged": 3.0}, "attack_type": "melee", "bonus": {}, "charge_bonus": 16.0},
 	"battering_ram": {"label": "攻城槌", "hp": 360.0, "speed": 52.0, "damage": 15.0, "range": 24.0, "cooldown": 2.3, "radius": 18.0, "cost": {"wood": 250}, "time": 22.0, "tags": ["military", "siege", "heavy"], "armor": {"melee": 2.0, "ranged": 12.0}, "attack_type": "melee", "bonus": {"structure": 80.0}},
 	"trebuchet": {"label": "投石机", "hp": 175.0, "speed": 45.0, "damage": 28.0, "range": 350.0, "min_range": 95.0, "cooldown": 5.5, "radius": 19.0, "cost": {"wood": 270, "gold": 150}, "time": 30.0, "tags": ["military", "siege", "heavy", "ranged"], "armor": {"melee": 0.0, "ranged": 6.0}, "attack_type": "ranged", "bonus": {"structure": 105.0}, "projectile_speed": 330.0},
+	"handcannoneer": {"label": "火枪兵", "hp": 130.0, "speed": 86.0, "damage": 35.0, "range": 125.0, "cooldown": 2.0, "radius": 11.0, "cost": {"food": 120, "gold": 120}, "time": 20.0, "tags": ["military", "infantry", "light", "ranged", "gunpowder"], "armor": {"melee": 0.0, "ranged": 0.0}, "attack_type": "ranged", "bonus": {}, "projectile_speed": 520.0},
+	"mangonel": {"label": "轻型投石车", "hp": 130.0, "speed": 52.0, "damage": 12.0, "range": 260.0, "min_range": 70.0, "cooldown": 5.0, "radius": 19.0, "cost": {"wood": 400, "gold": 200}, "time": 30.0, "tags": ["military", "siege", "heavy", "ranged"], "armor": {"melee": 0.0, "ranged": 0.0}, "attack_type": "ranged", "bonus": {"infantry": 10.0}, "projectile_speed": 300.0},
+	"springald": {"label": "弹簧弩炮", "hp": 125.0, "speed": 58.0, "damage": 30.0, "range": 280.0, "cooldown": 3.0, "radius": 18.0, "cost": {"wood": 250, "gold": 100}, "time": 30.0, "tags": ["military", "siege", "heavy", "ranged"], "armor": {"melee": 0.0, "ranged": 0.0}, "attack_type": "ranged", "bonus": {"melee_unit": 20.0}, "projectile_speed": 570.0},
+	"bombard": {"label": "手推炮", "hp": 240.0, "speed": 46.0, "damage": 80.0, "range": 280.0, "min_range": 65.0, "cooldown": 6.0, "radius": 20.0, "cost": {"wood": 400, "gold": 400}, "time": 40.0, "tags": ["military", "siege", "heavy", "ranged", "gunpowder"], "armor": {"melee": 0.0, "ranged": 0.0}, "attack_type": "ranged", "bonus": {"structure": 100.0}, "projectile_speed": 510.0},
+	"cannon": {"label": "加农炮", "hp": 250.0, "speed": 46.0, "damage": 85.0, "range": 280.0, "min_range": 65.0, "cooldown": 6.0, "radius": 20.0, "cost": {"wood": 400, "gold": 400}, "time": 40.0, "tags": ["military", "siege", "heavy", "ranged", "gunpowder", "unique"], "armor": {"melee": 0.0, "ranged": 0.0}, "attack_type": "ranged", "bonus": {"structure": 100.0}, "projectile_speed": 510.0},
+	"nest_of_bees": {"label": "一窝蜂", "hp": 130.0, "speed": 54.0, "damage": 12.0, "range": 245.0, "min_range": 65.0, "cooldown": 5.0, "radius": 19.0, "cost": {"wood": 300, "gold": 300}, "time": 35.0, "tags": ["military", "siege", "heavy", "ranged", "gunpowder", "unique"], "armor": {"melee": 0.0, "ranged": 0.0}, "attack_type": "ranged", "bonus": {"infantry": 8.0}, "projectile_speed": 400.0},
+	"siege_tower": {"label": "攻城塔", "hp": 360.0, "speed": 48.0, "damage": 0.0, "range": 0.0, "cooldown": 1.0, "radius": 19.0, "cost": {"wood": 250}, "time": 25.0, "tags": ["military", "siege", "heavy", "transport"], "armor": {"melee": 0.0, "ranged": 0.0}, "attack_type": "melee", "bonus": {}},
 	"fishing_boat": {"label": "渔船", "hp": 115.0, "speed": 105.0, "damage": 0.0, "range": 0.0, "cooldown": 1.0, "radius": 14.0, "cost": {"wood": 85}, "time": 10.0, "tags": ["naval", "worker"], "armor": {"melee": 0.0, "ranged": 0.0}, "attack_type": "melee", "bonus": {}},
 	"warship": {"label": "战船", "hp": 260.0, "speed": 95.0, "damage": 17.0, "range": 180.0, "cooldown": 1.8, "radius": 19.0, "cost": {"wood": 170, "gold": 60}, "time": 18.0, "tags": ["naval", "military", "ranged", "heavy"], "armor": {"melee": 2.0, "ranged": 3.0}, "attack_type": "ranged", "bonus": {"naval": 8.0}, "projectile_speed": 380.0},
+	"arrow_ship": {"label": "箭船", "hp": 145.0, "speed": 128.0, "damage": 10.0, "range": 150.0, "cooldown": 1.0, "radius": 16.0, "cost": {"wood": 120, "gold": 35}, "time": 13.0, "tags": ["naval", "military", "ranged", "light"], "armor": {"melee": 0.0, "ranged": 1.0}, "attack_type": "ranged", "bonus": {"naval": 7.0}, "projectile_speed": 410.0},
+	"transport_ship": {"label": "运输船", "hp": 230.0, "speed": 106.0, "damage": 0.0, "range": 0.0, "cooldown": 1.0, "radius": 20.0, "cost": {"wood": 150}, "time": 16.0, "tags": ["naval", "transport", "light"], "armor": {"melee": 0.0, "ranged": 1.0}, "attack_type": "melee", "bonus": {}},
 	"trader": {"label": "商人", "hp": 75.0, "speed": 110.0, "damage": 0.0, "range": 0.0, "cooldown": 1.0, "radius": 11.0, "cost": {"food": 65, "wood": 35}, "time": 11.0, "tags": ["trade", "light"], "armor": {"melee": 0.0, "ranged": 0.0}, "attack_type": "melee", "bonus": {}},
 	"monk": {"label": "修士", "hp": 70.0, "speed": 88.0, "damage": 0.0, "range": 0.0, "cooldown": 1.0, "radius": 11.0, "cost": {"food": 100, "gold": 75}, "time": 16.0, "tags": ["religious", "light"], "armor": {"melee": 0.0, "ranged": 0.0}, "attack_type": "melee", "bonus": {}},
 }
@@ -63,11 +73,13 @@ const BUILDINGS := {
 static func gathered_amount(civ: String, resource_kind: String, from_farm: bool) -> int:
 	var amount := 9 if resource_kind == "food" else 7
 	if civ == "English" and from_farm: amount = 12
+	if civ == "Chinese" and resource_kind == "gold": amount = 9
 	return amount
 
-static func training_time(civ: String, building_kind: String, unit_kind: String) -> float:
+static func training_time(civ: String, building_kind: String, unit_kind: String, age := 2) -> float:
 	var duration: float = RtsBalanceData.training_seconds(unit_kind)
 	if civ == "French" and building_kind == "stable": duration *= 0.85
+	if civ == "French" and unit_kind == "villager": duration *= 1.0 - 0.05 * clampi(age, 1, 4)
 	return duration
 
 static func unit_cost(unit_kind: String) -> Dictionary:

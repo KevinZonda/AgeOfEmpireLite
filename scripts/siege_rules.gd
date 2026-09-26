@@ -1,6 +1,31 @@
 class_name RtsSiegeRules
 extends RefCounted
 
+# Season Nine changed siege protection from flat ranged armor to percentage
+# resistance, and changed the Springald's target role. Keep these overrides
+# separate from the archived unit sheets, which describe an older patch.
+const RANGED_RESISTANCE := {
+	"battering_ram": 0.95, "siege_tower": 0.95,
+	"bombard": 0.85, "cannon": 0.85, "trebuchet": 0.80,
+	"mangonel": 0.85, "nest_of_bees": 0.85, "springald": 0.60,
+}
+
+static func apply_current_balance(stats: Dictionary) -> void:
+	var kind: String = stats.get("kind", "")
+	if not RANGED_RESISTANCE.has(kind): return
+	stats["armor"]["ranged"] = 0.0
+	var resistance: Dictionary = stats.get("resistance", {})
+	resistance["ranged"] = RANGED_RESISTANCE[kind]
+	stats["resistance"] = resistance
+	if kind == "springald":
+		for profile_id in stats.get("profiles", {}):
+			var profile: Dictionary = stats["profiles"][profile_id]
+			if float(profile.get("damage", 0.0)) <= 0.0: continue
+			profile["damage"] = 14.0
+			profile["bonuses"] = [{"required_tags": ["infantry", "melee_unit"], "amount": 20.0, "source_label": "近战步兵"}]
+			profile["pierce_width"] = 18.0
+			profile["pierce_length"] = 70.0
+
 # Fortification and siege behavior is derived from GameData so simulation,
 # action availability, and combat calculations use the same definitions.
 static func garrison_capacity(building_kind: String) -> int:
@@ -46,3 +71,14 @@ static func is_wall(building_kind: String) -> bool:
 static func is_siege(unit_kind: String) -> bool:
 	var definition: Dictionary = GameData.UNITS.get(unit_kind, {})
 	return definition.get("tags", []).has("siege")
+
+static func wall_entry(game: Node2D, unit: RtsUnit, wall: RtsBuilding) -> Node2D:
+	if wall.kind != "stone_wall" or not wall.is_complete() or not unit.stats.get("tags", []).has("military") or unit.stats.get("tags", []).has("siege"): return null
+	if is_instance_valid(unit.wall_host) and unit.wall_host.position.distance_to(wall.position) <= 80.0: return unit.wall_host
+	if wall.owner_id == unit.owner_id:
+		for building in game.buildings:
+			if is_instance_valid(building) and building.owner_id == unit.owner_id and building.kind == "stone_gate" and building.is_complete() and building.position.distance_to(wall.position) <= 155.0: return building
+	else:
+		for siege in game.units:
+			if is_instance_valid(siege) and siege.owner_id == unit.owner_id and siege.kind == "siege_tower" and siege.position.distance_to(wall.position) <= 95.0: return siege
+	return null

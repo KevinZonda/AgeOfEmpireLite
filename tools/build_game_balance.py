@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build the game's three-civilization reference baseline from archived facts.
 
-The output is intentionally limited to units already implemented by the game.
+The output is limited to units implemented by the game.
 Mechanics such as targeting and abilities remain explicit game design data in
 GDScript; this file supplies sourced costs, ranks, and attack measurements.
 """
@@ -19,6 +19,7 @@ OUTPUT = ROOT / "data" / "aoe4_balance.json"
 
 SOURCES = {
     "villager": ("chi", "村民"),
+    "imperial_official": ("chi", "朝廷命官"),
     "scout": ("eng", "侦察兵"),
     "spearman": ("eng", "长矛兵"),
     "man_at_arms": ("eng", "武士"),
@@ -35,8 +36,17 @@ SOURCES = {
     "royal_knight": ("fre", "皇家骑士"),
     "battering_ram": ("chi", "攻城锤"),
     "trebuchet": ("eng", "配重式巨型投石机"),
+    "handcannoneer": ("eng", "火枪兵"),
+    "mangonel": ("eng", "轻型投石车"),
+    "springald": ("eng", "扭力弩炮"),
+    "bombard": ("eng", "手推炮"),
+    "cannon": ("fre", "加农炮"),
+    "nest_of_bees": ("chi", "一窝蜂"),
+    "siege_tower": ("eng", "攻城塔"),
     "fishing_boat": ("chi", "渔船"),
     "warship": ("eng", "趸船"),
+    "arrow_ship": ("eng", "箭船"),
+    "transport_ship": ("eng", "运输船"),
     "trader": ("chi", "商人"),
     "monk": ("chi", "僧侣"),
 }
@@ -120,6 +130,7 @@ def main() -> None:
             "source_name": source["name"],
             "source_civilization": civ,
             "cost": resources(training_fields["成本"][0]) if "成本" in training_fields else {},
+            "population_cost": int(number(training_fields["人口占用"][0]["text"]) or 1) if "人口占用" in training_fields else 1,
             "train_seconds": number(training_fields.get("训练时间", [{"text": ""}])[0]["text"]),
             "move_tiles_per_second": number(state_fields.get("移动速度", [{"text": ""}])[0]["text"]),
             "ranks": {},

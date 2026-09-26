@@ -89,11 +89,36 @@ func _draw_icon(center: Vector2, color: Color) -> void:
 		"palisade_wall", "stone_wall":
 			draw_rect(Rect2(center + Vector2(-13, -8), Vector2(26, 16)), color, false, 2)
 			for x in [-6, 3]: draw_line(center + Vector2(x, -8), center + Vector2(x, 8), color, 2)
-		"battering_ram", "trebuchet":
+		"battering_ram", "trebuchet", "siege_tower", "mangonel", "nest_of_bees", "springald", "bombard", "cannon":
 			draw_line(center + Vector2(-13, 8), center + Vector2(13, 8), color, 3)
 			draw_circle(center + Vector2(-7, 11), 3, color)
 			draw_circle(center + Vector2(8, 11), 3, color)
 			draw_line(center + Vector2(-7, 4), center + Vector2(6, -12), color, 3)
+		"fishing_boat", "arrow_ship", "warship", "transport_ship":
+			draw_colored_polygon(PackedVector2Array([center + Vector2(-14, 1), center + Vector2(14, 1), center + Vector2(9, 10), center + Vector2(-9, 10)]), color)
+			draw_line(center + Vector2(0, 1), center + Vector2(0, -15), color, 2)
+			if icon_kind == "transport_ship": draw_rect(Rect2(center + Vector2(-7, -5), Vector2(14, 6)), color.darkened(0.3))
+		"patrol":
+			draw_arc(center, 10, -PI * 0.8, PI * 0.85, 16, color, 2)
+			draw_colored_polygon(PackedVector2Array([center + Vector2(-10, -7), center + Vector2(-14, 0), center + Vector2(-5, -1)]), color)
+		"hold":
+			draw_rect(Rect2(center + Vector2(-9, -9), Vector2(18, 18)), color, false, 2)
+			draw_circle(center, 3, color)
+		"focus":
+			draw_arc(center, 10, 0, TAU, 18, color, 2)
+			draw_line(center + Vector2(-15, 0), center + Vector2(15, 0), color, 2)
+			draw_line(center + Vector2(0, -15), center + Vector2(0, 15), color, 2)
+		"retreat":
+			draw_line(center + Vector2(12, 0), center + Vector2(-10, 0), color, 3)
+			draw_colored_polygon(PackedVector2Array([center + Vector2(-6, -8), center + Vector2(-15, 0), center + Vector2(-6, 8)]), color)
+		"market_buy", "market_sell":
+			draw_circle(center + Vector2(-4, 3), 7, color)
+			draw_line(center + Vector2(5, 4), center + Vector2(12, 4), color, 2)
+			draw_colored_polygon(PackedVector2Array([center + Vector2(9, 0), center + Vector2(15, 4), center + Vector2(9, 8)]), color)
+		"unload":
+			draw_line(center + Vector2(-12, 8), center + Vector2(11, 8), color, 3)
+			draw_line(center + Vector2(0, -12), center + Vector2(0, 4), color, 3)
+			draw_colored_polygon(PackedVector2Array([center + Vector2(-6, -2), center + Vector2(0, 6), center + Vector2(6, -2)]), color)
 		"next_page":
 			draw_line(center + Vector2(-10, 0), center + Vector2(9, 0), color, 3)
 			draw_colored_polygon(PackedVector2Array([center + Vector2(4, -7), center + Vector2(12, 0), center + Vector2(4, 7)]), color)

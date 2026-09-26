@@ -13,17 +13,17 @@ const LANDMARKS := {
 	"eng_berkshire_fortress": {"label": "伯克郡宫殿", "civilization": "English", "age": 4, "description": "远射程防御城堡", "defense_kind": "berkshire", "effects": {}},
 	"eng_wynguard_palace": {"label": "温嘉德宫殿", "civilization": "English", "age": 4, "description": "训练温嘉德军队", "producer": "wynguard", "effects": {}},
 	"fr_school_of_cavalry": {"label": "骑兵学校", "civilization": "French", "age": 2, "description": "直接训练骑兵且速度提高", "producer": "stable", "training_rate": 0.75, "effects": {}},
-	"fr_chamber_of_commerce": {"label": "商会", "civilization": "French", "age": 2, "description": "训练商人并提高贸易收益", "producer": "market", "trade_multiplier": 1.3, "effects": {}},
+	"fr_chamber_of_commerce": {"label": "商会", "civilization": "French", "age": 2, "description": "每完成一项经济科技免费训练商人", "producer": "market", "effects": {}},
 	"fr_royal_institute": {"label": "皇家学院", "civilization": "French", "age": 3, "description": "研究军事科技，费用降低", "producer": "royal_institute", "research_discount": 0.5, "effects": {}},
 	"fr_guild_hall": {"label": "公会大厅", "civilization": "French", "age": 3, "description": "持续积累资源并可提取", "stockpile": true, "effects": {}},
 	"fr_red_palace": {"label": "红宫", "civilization": "French", "age": 4, "description": "强化防御城堡", "defense_kind": "red_palace", "effects": {}},
-	"fr_college_of_artillery": {"label": "炮兵学院", "civilization": "French", "age": 4, "description": "生产强化攻城器械", "producer": "siege_workshop", "produced_siege_hp": 1.3, "effects": {}},
-	"zh_imperial_academy": {"label": "翰林院", "civilization": "Chinese", "age": 2, "description": "附近经济建筑产生额外税金", "tax_radius": 180.0, "effects": {}},
+	"fr_college_of_artillery": {"label": "炮兵学院", "civilization": "French", "age": 4, "description": "快速生产伤害更高的皇家攻城器械", "producer": "siege_workshop", "training_rate": 0.67, "produced_siege_damage": 1.3, "effects": {}},
+	"zh_imperial_academy": {"label": "翰林院", "civilization": "Chinese", "age": 2, "description": "训练朝廷命官；附近经济建筑产生额外税金", "producer": "imperial_academy", "tax_radius": 180.0, "effects": {}},
 	"zh_barbican": {"label": "烈日瓮城", "civilization": "Chinese", "age": 2, "description": "可驻军的防御地标", "defense_kind": "barbican", "effects": {}},
 	"zh_clocktower": {"label": "天文钟楼", "civilization": "Chinese", "age": 3, "description": "生产更坚固的攻城器械", "producer": "siege_workshop", "produced_siege_hp": 1.5, "effects": {}},
 	"zh_imperial_palace": {"label": "皇宫", "civilization": "Chinese", "age": 3, "description": "主动侦察敌方村民", "active_ability": "spy", "effects": {}},
-	"zh_gatehouse": {"label": "长城门楼", "civilization": "Chinese", "age": 4, "description": "增强相邻石墙并防御敌军", "defense_kind": "gatehouse", "wall_aura": 120.0, "effects": {}},
-	"zh_spirit_way": {"label": "皇陵", "civilization": "Chinese", "age": 4, "description": "训练王朝单位", "producer": "spirit_way", "effects": {}},
+	"zh_gatehouse": {"label": "长城门楼", "civilization": "Chinese", "age": 4, "description": "双蜂巢炮与城墙守军远程伤害加成", "defense_kind": "gatehouse", "effects": {}},
+	"zh_spirit_way": {"label": "皇陵", "civilization": "Chinese", "age": 4, "description": "半价快速研究王朝兵升级；王朝兵阵亡鼓舞友军", "producer": "spirit_way", "research_discount": 0.5, "effects": {}},
 }
 const LANDMARK_HP := 1350.0
 const LANDMARK_SIZE := Vector2(110, 100)
@@ -60,7 +60,9 @@ static func defense(landmark_id: String) -> Dictionary:
 		base["damage"] = 16.0
 	elif role == "gatehouse":
 		base["range"] = 235.0
-		base["damage"] = 22.0
+		base["damage"] = 16.0
+		base["salvo"] = 2
+		base["splash_radius"] = 28.0
 	return base
 
 static func training_rate(landmark_id: String) -> float:
@@ -68,6 +70,9 @@ static func training_rate(landmark_id: String) -> float:
 
 static func produced_siege_hp(landmark_id: String) -> float:
 	return float(LANDMARKS.get(landmark_id, {}).get("produced_siege_hp", 1.0))
+
+static func produced_siege_damage(landmark_id: String) -> float:
+	return float(LANDMARKS.get(landmark_id, {}).get("produced_siege_damage", 1.0))
 
 static func research_discount(landmark_id: String) -> float:
 	return float(LANDMARKS.get(landmark_id, {}).get("research_discount", 1.0))

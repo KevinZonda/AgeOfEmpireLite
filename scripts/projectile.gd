@@ -11,12 +11,14 @@ var splash_radius := 0.0
 var source_stats: Dictionary = {}
 var attack_profile: Dictionary = {}
 var last_destination := Vector2.ZERO
+var launch_position := Vector2.ZERO
 
 
 func setup(game_ref: Node2D, player_id: int, origin: Vector2, enemy: Node2D, damage_amount: float, flight_speed: float = 350.0, area_radius: float = 0.0, attacker: Dictionary = {}, profile: Dictionary = {}) -> void:
 	game = game_ref
 	owner_id = player_id
 	position = origin
+	launch_position = origin
 	target = enemy
 	impact_damage = damage_amount
 	speed = maxf(1.0, flight_speed)
@@ -48,6 +50,14 @@ func _process(delta: float) -> void:
 	if global_position.distance_to(destination) <= travel + 3.0:
 		var impact_point := destination
 		if is_instance_valid(target) and not target.is_queued_for_deletion(): target.take_damage(impact_damage)
+		if float(attack_profile.get("pierce_length", 0.0)) > 0.0 and game.has_method("nearest_enemy"):
+			var direction := (destination - launch_position).normalized()
+			var end := destination + direction * float(attack_profile["pierce_length"])
+			for entity in game.units:
+				if not is_instance_valid(entity) or entity == target or entity.is_queued_for_deletion() or not game.is_enemy(owner_id, entity.owner_id) or entity.garrisoned_in != null: continue
+				var closest := Geometry2D.get_closest_point_to_segment(entity.global_position, launch_position, end)
+				if entity.global_position.distance_to(closest) <= entity.radius() + float(attack_profile.get("pierce_width", 0.0)):
+					entity.take_damage(RtsCombatRules.volley_damage(source_stats, entity.stats, attack_profile))
 		if splash_radius > 0.0 and game.has_method("nearest_enemy"):
 			for entity in game.units + game.buildings:
 				if not is_instance_valid(entity) or entity.is_queued_for_deletion() or entity == target or not game.is_enemy(owner_id, entity.owner_id): continue

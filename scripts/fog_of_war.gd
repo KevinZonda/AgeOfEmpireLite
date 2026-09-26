@@ -65,12 +65,23 @@ func can_see(owner_id: int, point: Vector2) -> bool:
 	if not active or owner_id < 0 or owner_id >= visible_cells.size(): return false
 	return visible_cells[owner_id][_index(game.world_map.cell_at(point))] != 0
 
+func can_detect_unit(owner_id: int, enemy: RtsUnit) -> bool:
+	if not can_see(owner_id, enemy.position): return false
+	if enemy.owner_id == owner_id or enemy.revealed_timer > 0.0: return true
+	var patch_index: int = game.world_map.forest_patch_at(enemy.position)
+	if patch_index < 0: return true
+	for observer in game.units:
+		if not is_instance_valid(observer) or observer.owner_id != owner_id or observer.garrisoned_in != null: continue
+		if observer.position.distance_to(enemy.position) <= (145.0 if observer.kind == "scout" else 85.0): return true
+		if game.world_map.forest_patch_at(observer.position) == patch_index: return true
+	return false
+
 func is_explored(owner_id: int, point: Vector2) -> bool:
 	if not active or owner_id < 0 or owner_id >= explored_cells.size(): return false
 	return explored_cells[owner_id][_index(game.world_map.cell_at(point))] != 0
 
 func can_show_resource(owner_id: int, resource: RtsResource) -> bool:
-	if resource.appearance == "deer": return can_see(owner_id, resource.position)
+	if resource.appearance in ["deer", "sheep"]: return can_see(owner_id, resource.position)
 	return is_explored(owner_id, resource.position)
 
 func reveal_enemy_villagers(owner_id: int, duration: float) -> void:
@@ -85,6 +96,7 @@ func update_visibility() -> void:
 		for unit in game.units:
 			if not is_instance_valid(unit) or unit.is_queued_for_deletion() or unit.owner_id != owner_id or unit.garrisoned_in != null: continue
 			var radius := 360.0 if unit.kind == "scout" else 185.0 if unit.kind == "villager" else 250.0
+			if game.world_map.is_high_ground(unit.position): radius += 65.0
 			for camp in game.buildings:
 				if is_instance_valid(camp) and camp.owner_id == owner_id and camp.kind == "scout_camp" and camp.position.distance_to(unit.position) <= 180.0:
 					radius *= 1.3
@@ -156,7 +168,7 @@ func _line_of_sight(from: Vector2i, to: Vector2i) -> bool:
 func _update_entity_visibility() -> void:
 	for unit in game.units:
 		if not is_instance_valid(unit) or unit.is_queued_for_deletion(): continue
-		unit.visible = unit.garrisoned_in == null and (unit.owner_id == 0 or can_see(0, unit.position))
+		unit.visible = unit.garrisoned_in == null and (unit.owner_id == 0 or can_detect_unit(0, unit))
 	for building in game.buildings:
 		if not is_instance_valid(building) or building.is_queued_for_deletion(): continue
 		building.visible = building.owner_id == 0 or can_see(0, building.position)

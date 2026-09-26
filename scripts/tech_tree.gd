@@ -33,27 +33,30 @@ const BUILDING_AGE := {
 	"white_tower": 3,
 	"wynguard": 4,
 	"royal_institute": 3,
+	"imperial_academy": 2,
 	"spirit_way": 4,
 }
 
 # Base roster; civilization substitutions are declared in RtsUnitCatalog.
 const PRODUCTION := {
-	"town_center": ["villager"],
+	"town_center": ["villager", "imperial_official"],
+	"imperial_academy": ["imperial_official"],
 	"market": ["trader"],
-	"dock": ["fishing_boat", "warship"],
+	"dock": ["fishing_boat", "arrow_ship", "warship", "transport_ship"],
 	"monastery": ["monk"],
 	"barracks": ["spearman", "man_at_arms"],
-	"archery_range": ["archer", "crossbowman"],
+	"archery_range": ["archer", "crossbowman", "handcannoneer"],
 	"stable": ["scout", "horseman", "knight"],
 	"blacksmith": [],
-	"siege_workshop": ["battering_ram", "trebuchet"],
+	"siege_workshop": ["battering_ram", "siege_tower", "springald", "mangonel", "trebuchet", "bombard"],
 	"white_tower": ["spearman", "man_at_arms", "archer", "crossbowman", "horseman", "knight"],
 	"wynguard": ["spearman", "man_at_arms", "archer", "trebuchet"],
 	"royal_institute": [],
-	"spirit_way": ["zhuge_nu", "fire_lancer", "grenadier"],
+	"spirit_way": [],
 }
 const UNIT_AGE := {
 	"villager": 1,
+	"imperial_official": 1,
 	"scout": 2,
 	"spearman": 2,
 	"man_at_arms": 3,
@@ -70,15 +73,25 @@ const UNIT_AGE := {
 	"royal_knight": 2,
 	"battering_ram": 3,
 	"trebuchet": 3,
+	"handcannoneer": 4,
+	"mangonel": 3,
+	"springald": 3,
+	"bombard": 4,
+	"cannon": 4,
+	"nest_of_bees": 3,
+	"siege_tower": 3,
 	"trader": 2,
 	"fishing_boat": 2,
 	"warship": 2,
+	"arrow_ship": 2,
+	"transport_ship": 2,
 	"monk": 3,
 }
 const UNIT_AGE_OVERRIDES := {
 	"English": {"man_at_arms": 2},
 }
 const UNIT_CIVILIZATION := {
+	"imperial_official": "Chinese",
 	"longbow": "English",
 	"arbaletrier": "French",
 	"royal_knight": "French",
@@ -86,6 +99,8 @@ const UNIT_CIVILIZATION := {
 	"fire_lancer": "Chinese",
 	"grenadier": "Chinese",
 	"palace_guard": "Chinese",
+	"cannon": "French",
+	"nest_of_bees": "Chinese",
 }
 const UNIT_REQUIRES := {} # Unit-specific research prerequisites can be added here.
 
@@ -109,6 +124,10 @@ const TECHNOLOGIES := {
 	"ranged_armor_3": {"label": "楔形铆钉", "age": 3, "building": "blacksmith", "cost": {"food": 100, "gold": 250}, "time": 33.0, "requires": ["ranged_armor_2"], "target_tags": ["military"], "exclude_tags": ["siege", "naval"], "effects": {"armor_ranged": 1.0}},
 	"ranged_armor_4": {"label": "斜面", "age": 4, "building": "blacksmith", "cost": {"food": 150, "gold": 350}, "time": 33.0, "requires": ["ranged_armor_3"], "target_tags": ["military"], "exclude_tags": ["siege", "naval"], "effects": {"armor_ranged": 1.0}},
 	"military_academy": {"label": "军事学院", "age": 3, "building": "blacksmith", "cost": {"food": 100, "gold": 250}, "time": 33.0, "requires": [], "target_tags": [], "effects": {}},
+	"enclosures": {"label": "圈地法", "age": 4, "building": "town_center", "cost": {"wood": 200, "gold": 350}, "time": 45.0, "requires": [], "civilizations": ["English"], "target_tags": [], "effects": {}},
+	"horticulture": {"label": "园艺学", "age": 2, "building": "town_center", "cost": {"food": 100, "gold": 75}, "time": 25.0, "requires": [], "economy": true, "gather_kind": "food", "gather_multiplier": 1.15, "target_tags": [], "effects": {}},
+	"double_broadaxe": {"label": "双刃斧", "age": 2, "building": "town_center", "cost": {"wood": 100, "gold": 75}, "time": 25.0, "requires": [], "economy": true, "gather_kind": "wood", "gather_multiplier": 1.15, "target_tags": [], "effects": {}},
+	"specialized_pick": {"label": "专用镐", "age": 2, "building": "town_center", "cost": {"food": 100, "gold": 75}, "time": 25.0, "requires": [], "economy": true, "gather_kind": "gold", "gather_multiplier": 1.15, "target_tags": [], "effects": {}},
 }
 
 static func can_advance(age: int) -> bool:
@@ -219,6 +238,10 @@ static func all_researches(civilization: String, building_kind: String) -> Array
 	if not GameData.CIVILIZATIONS.has(civilization): return result
 	for tech_id in TECHNOLOGIES:
 		if TECHNOLOGIES[tech_id]["building"] == building_kind and _technology_civilization_available(civilization, TECHNOLOGIES[tech_id]): result.append(tech_id)
+	if civilization == "Chinese" and building_kind == "spirit_way":
+		for unit_kind in ["zhuge_nu", "fire_lancer", "grenadier"]:
+			for age_key in RtsBalanceData.line(unit_kind).get("upgrade_costs", {}):
+				if int(age_key) > RtsBalanceData.first_rank_age(unit_kind): result.append(RtsBalanceData.rank_tech_id(unit_kind, int(age_key)))
 	if civilization == "French" and building_kind == "royal_institute":
 		for tech_id in TECHNOLOGIES:
 			if _technology_civilization_available(civilization, TECHNOLOGIES[tech_id]) and not result.has(tech_id): result.append(tech_id)
@@ -241,9 +264,10 @@ static func research_status(civilization: String, age: int, building_kind: Strin
 	if definition.is_empty(): return _locked("未知科技")
 	if not _technology_civilization_available(civilization, definition): return _locked("该文明自动获得此科技")
 	var royal_override := civilization == "French" and building_kind == "royal_institute" and all_researches(civilization, building_kind).has(tech_id)
-	if definition.has("rank_unit") and not all_train_units(civilization, building_kind).has(definition["rank_unit"]) and not royal_override: return _locked("该文明没有此兵种")
+	var spirit_override := civilization == "Chinese" and building_kind == "spirit_way" and definition.has("rank_unit") and all_researches(civilization, building_kind).has(tech_id)
+	if definition.has("rank_unit") and not all_train_units(civilization, building_kind).has(definition["rank_unit"]) and not royal_override and not spirit_override: return _locked("该文明没有此兵种")
 	var rank_producer := definition.has("rank_unit") and all_train_units(civilization, building_kind).has(definition["rank_unit"])
-	if definition["building"] != building_kind and not royal_override and not rank_producer: return _locked("需要%s" % GameData.BUILDINGS.get(definition["building"], {"label": "对应生产建筑"})["label"])
+	if definition["building"] != building_kind and not royal_override and not spirit_override and not rank_producer: return _locked("需要%s" % GameData.BUILDINGS.get(definition["building"], {"label": "对应生产建筑"})["label"])
 	if researched.has(tech_id): return _locked("已研究")
 	if age < int(definition["age"]): return _locked("需要时代 %s" % _age_name(definition["age"]))
 	for prerequisite in definition["requires"]:

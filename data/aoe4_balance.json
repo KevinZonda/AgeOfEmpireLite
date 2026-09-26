@@ -11,6 +11,7 @@
       "cost": {
         "food": 50
       },
+      "population_cost": 1,
       "train_seconds": 20.0,
       "move_tiles_per_second": 1.13,
       "ranks": {
@@ -206,6 +207,49 @@
       "abilities": [],
       "upgrade_costs": {}
     },
+    "imperial_official": {
+      "source_url": "https://seicing.com/html/aoe2/unitaoe4/朝廷命官.html?civ=chi",
+      "source_name": "朝廷命官",
+      "source_civilization": "chi",
+      "cost": {
+        "food": 100,
+        "gold": 50
+      },
+      "population_cost": 1,
+      "train_seconds": 20.0,
+      "move_tiles_per_second": 1.125,
+      "ranks": {
+        "1": {
+          "hp": 75.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 0.0,
+          "attacks": {}
+        },
+        "2": {
+          "hp": 75.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 0.0,
+          "attacks": {}
+        },
+        "3": {
+          "hp": 75.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 0.0,
+          "attacks": {}
+        },
+        "4": {
+          "hp": 75.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 0.0,
+          "attacks": {}
+        }
+      },
+      "abilities": [
+        "收税：自动从附近的建筑收取税金",
+        "监督：监督一座生产建筑或经济建筑，提高150%工作效率或额外的20%资源收集量"
+      ],
+      "upgrade_costs": {}
+    },
     "scout": {
       "source_url": "https://seicing.com/html/aoe2/unitaoe4/侦察兵.html?civ=eng",
       "source_name": "侦察兵",
@@ -213,6 +257,7 @@
       "cost": {
         "food": 65
       },
+      "population_cost": 1,
       "train_seconds": 23.0,
       "move_tiles_per_second": 1.625,
       "ranks": {
@@ -390,6 +435,7 @@
         "food": 60,
         "wood": 20
       },
+      "population_cost": 1,
       "train_seconds": 15.0,
       "move_tiles_per_second": 1.25,
       "ranks": {
@@ -508,6 +554,7 @@
         "food": 90,
         "gold": 20
       },
+      "population_cost": 1,
       "train_seconds": 15.0,
       "move_tiles_per_second": 1.125,
       "ranks": {
@@ -649,6 +696,7 @@
         "food": 90,
         "gold": 25
       },
+      "population_cost": 1,
       "train_seconds": 20.5,
       "move_tiles_per_second": 1.375,
       "ranks": {
@@ -729,6 +777,7 @@
         "food": 30,
         "wood": 50
       },
+      "population_cost": 1,
       "train_seconds": 15.0,
       "move_tiles_per_second": 1.25,
       "ranks": {
@@ -825,6 +874,7 @@
         "food": 40,
         "wood": 50
       },
+      "population_cost": 1,
       "train_seconds": 15.0,
       "move_tiles_per_second": 1.125,
       "ranks": {
@@ -925,6 +975,7 @@
         "wood": 30,
         "gold": 20
       },
+      "population_cost": 1,
       "train_seconds": 15.0,
       "move_tiles_per_second": 1.125,
       "ranks": {
@@ -1013,6 +1064,7 @@
         "gold": 20,
         "wood": 20
       },
+      "population_cost": 1,
       "train_seconds": 22.0,
       "move_tiles_per_second": 1.625,
       "ranks": {
@@ -1113,6 +1165,7 @@
         "gold": 60,
         "wood": 60
       },
+      "population_cost": 1,
       "train_seconds": 30.0,
       "move_tiles_per_second": 1.25,
       "ranks": {
@@ -1172,6 +1225,7 @@
         "food": 80,
         "gold": 40
       },
+      "population_cost": 1,
       "train_seconds": 22.5,
       "move_tiles_per_second": 1.125,
       "ranks": {
@@ -1241,6 +1295,7 @@
         "food": 80,
         "gold": 40
       },
+      "population_cost": 1,
       "train_seconds": 22.0,
       "move_tiles_per_second": 1.125,
       "ranks": {
@@ -1312,6 +1367,7 @@
         "food": 100,
         "wood": 20
       },
+      "population_cost": 1,
       "train_seconds": 22.5,
       "move_tiles_per_second": 1.88,
       "ranks": {
@@ -1428,6 +1484,7 @@
         "food": 140,
         "gold": 100
       },
+      "population_cost": 1,
       "train_seconds": 35.0,
       "move_tiles_per_second": 1.625,
       "ranks": {
@@ -1523,6 +1580,7 @@
         "food": 140,
         "gold": 100
       },
+      "population_cost": 1,
       "train_seconds": 35.0,
       "move_tiles_per_second": 1.625,
       "ranks": {
@@ -1661,6 +1719,7 @@
       "cost": {
         "wood": 200
       },
+      "population_cost": 1,
       "train_seconds": 35.0,
       "move_tiles_per_second": 0.75,
       "ranks": {
@@ -1758,6 +1817,7 @@
         "wood": 400,
         "gold": 150
       },
+      "population_cost": 2,
       "train_seconds": 30.0,
       "move_tiles_per_second": 0.62,
       "ranks": {
@@ -1807,6 +1867,351 @@
       "abilities": [],
       "upgrade_costs": {}
     },
+    "handcannoneer": {
+      "source_url": "https://seicing.com/html/aoe2/unitaoe4/火枪兵.html?civ=eng",
+      "source_name": "火枪兵",
+      "source_civilization": "eng",
+      "cost": {
+        "food": 120,
+        "gold": 120
+      },
+      "population_cost": 1,
+      "train_seconds": 35.0,
+      "move_tiles_per_second": 1.125,
+      "ranks": {
+        "3": {
+          "hp": 100.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 0.0,
+          "attacks": {
+            "ranged": {
+              "damage": 26.0,
+              "damage_kind": "ranged",
+              "range_tiles": 4.0,
+              "min_range_tiles": null,
+              "interval": 2.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            }
+          }
+        },
+        "4": {
+          "hp": 130.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 0.0,
+          "attacks": {
+            "ranged": {
+              "damage": 38.0,
+              "damage_kind": "ranged",
+              "range_tiles": 4.0,
+              "min_range_tiles": null,
+              "interval": 2.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            }
+          }
+        }
+      },
+      "abilities": [],
+      "upgrade_costs": {}
+    },
+    "mangonel": {
+      "source_url": "https://seicing.com/html/aoe2/unitaoe4/轻型投石车.html?civ=eng",
+      "source_name": "轻型投石车",
+      "source_civilization": "eng",
+      "cost": {
+        "wood": 400,
+        "gold": 200
+      },
+      "population_cost": 3,
+      "train_seconds": 40.0,
+      "move_tiles_per_second": 0.75,
+      "ranks": {
+        "3": {
+          "hp": 130.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 85.0,
+          "fire_armor": 0.0,
+          "attacks": {
+            "siege": {
+              "damage": 10.0,
+              "damage_kind": "siege",
+              "range_tiles": 8.0,
+              "min_range_tiles": 3.0,
+              "interval": 6.875,
+              "hits": 3,
+              "splash_tiles": 0.5,
+              "bonuses": {
+                "对[建筑]加成": 30.0,
+                "对[船只]加成": 30.0,
+                "对[远程]加成": 10.0
+              }
+            }
+          }
+        },
+        "4": {
+          "hp": 130.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 85.0,
+          "fire_armor": 0.0,
+          "attacks": {
+            "siege": {
+              "damage": 10.0,
+              "damage_kind": "siege",
+              "range_tiles": 8.0,
+              "min_range_tiles": 3.0,
+              "interval": 6.875,
+              "hits": 3,
+              "splash_tiles": 0.5,
+              "bonuses": {
+                "对[建筑]加成": 30.0,
+                "对[船只]加成": 30.0,
+                "对[远程]加成": 10.0
+              }
+            }
+          }
+        }
+      },
+      "abilities": [],
+      "upgrade_costs": {}
+    },
+    "springald": {
+      "source_url": "https://seicing.com/html/aoe2/unitaoe4/扭力弩炮.html?civ=eng",
+      "source_name": "扭力弩炮",
+      "source_civilization": "eng",
+      "cost": {
+        "wood": 150,
+        "gold": 100
+      },
+      "population_cost": 2,
+      "train_seconds": 20.0,
+      "move_tiles_per_second": 0.88,
+      "ranks": {
+        "3": {
+          "hp": 85.0,
+          "melee_armor": 3.0,
+          "ranged_armor": 55.0,
+          "fire_armor": 0.0,
+          "attacks": {
+            "ranged": {
+              "damage": 15.0,
+              "damage_kind": "ranged",
+              "range_tiles": 7.5,
+              "min_range_tiles": null,
+              "interval": 3.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {
+                "对[近战步兵]加成": 12.0,
+                "对[船]加成": 65.0
+              }
+            }
+          }
+        },
+        "4": {
+          "hp": 85.0,
+          "melee_armor": 3.0,
+          "ranged_armor": 55.0,
+          "fire_armor": 0.0,
+          "attacks": {
+            "ranged": {
+              "damage": 15.0,
+              "damage_kind": "ranged",
+              "range_tiles": 7.5,
+              "min_range_tiles": null,
+              "interval": 3.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {
+                "对[近战步兵]加成": 12.0,
+                "对[船]加成": 65.0
+              }
+            }
+          }
+        }
+      },
+      "abilities": [],
+      "upgrade_costs": {}
+    },
+    "bombard": {
+      "source_url": "https://seicing.com/html/aoe2/unitaoe4/手推炮.html?civ=eng",
+      "source_name": "手推炮",
+      "source_civilization": "eng",
+      "cost": {
+        "wood": 350,
+        "gold": 500
+      },
+      "population_cost": 3,
+      "train_seconds": 45.0,
+      "move_tiles_per_second": 0.75,
+      "ranks": {
+        "4": {
+          "hp": 210.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 85.0,
+          "fire_armor": 0.0,
+          "attacks": {
+            "siege": {
+              "damage": 55.0,
+              "damage_kind": "siege",
+              "range_tiles": 10.0,
+              "min_range_tiles": 3.75,
+              "interval": 5.38,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {
+                "对[建筑]加成": 375.0,
+                "对[大象]加成": 50.0,
+                "对[船]加成": 410.0,
+                "对[步兵]加成": 50.0
+              }
+            }
+          }
+        }
+      },
+      "abilities": [],
+      "upgrade_costs": {}
+    },
+    "cannon": {
+      "source_url": "https://seicing.com/html/aoe2/unitaoe4/加农炮.html?civ=fre",
+      "source_name": "加农炮",
+      "source_civilization": "fre",
+      "cost": {
+        "wood": 300,
+        "gold": 600
+      },
+      "population_cost": 3,
+      "train_seconds": 45.0,
+      "move_tiles_per_second": 0.88,
+      "ranks": {
+        "4": {
+          "hp": 190.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 85.0,
+          "fire_armor": 0.0,
+          "attacks": {
+            "siege": {
+              "damage": 60.0,
+              "damage_kind": "siege",
+              "range_tiles": 10.0,
+              "min_range_tiles": 3.75,
+              "interval": 5.38,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {
+                "对[建筑]加成": 450.0,
+                "对[大象]加成": 55.0,
+                "对[船]加成": 500.0,
+                "对[步兵]加成": 55.0
+              }
+            }
+          }
+        }
+      },
+      "abilities": [
+        "火炮射击：下一发攻击会提高5格攻击范围和30%的伤害，只能以建筑物为目标，可以以战争迷雾中的目标为目标，击中的地方会显示3秒的迷雾，200秒冷却时间，仅皇家加农炮可用"
+      ],
+      "upgrade_costs": {}
+    },
+    "nest_of_bees": {
+      "source_url": "https://seicing.com/html/aoe2/unitaoe4/一窝蜂.html?civ=chi",
+      "source_name": "一窝蜂",
+      "source_civilization": "chi",
+      "cost": {
+        "wood": 300,
+        "gold": 300
+      },
+      "population_cost": 3,
+      "train_seconds": 40.0,
+      "move_tiles_per_second": 0.8125,
+      "ranks": {
+        "3": {
+          "hp": 120.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 85.0,
+          "fire_armor": 0.0,
+          "attacks": {
+            "siege": {
+              "damage": 6.0,
+              "damage_kind": "siege",
+              "range_tiles": 7.5,
+              "min_range_tiles": 3.0,
+              "interval": 6.5,
+              "hits": 7,
+              "splash_tiles": 1.0,
+              "bonuses": {
+                "对[船]加成": 4.0,
+                "对[远程]加成": 2.0
+              }
+            }
+          }
+        },
+        "4": {
+          "hp": 120.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 85.0,
+          "fire_armor": 0.0,
+          "attacks": {
+            "siege": {
+              "damage": 6.0,
+              "damage_kind": "siege",
+              "range_tiles": 7.5,
+              "min_range_tiles": 3.0,
+              "interval": 6.5,
+              "hits": 7,
+              "splash_tiles": 1.0,
+              "bonuses": {
+                "对[船]加成": 4.0,
+                "对[远程]加成": 2.0
+              }
+            }
+          }
+        }
+      },
+      "abilities": [],
+      "upgrade_costs": {}
+    },
+    "siege_tower": {
+      "source_url": "https://seicing.com/html/aoe2/unitaoe4/攻城塔.html?civ=eng",
+      "source_name": "攻城塔",
+      "source_civilization": "eng",
+      "cost": {
+        "wood": 125
+      },
+      "population_cost": 1,
+      "train_seconds": null,
+      "move_tiles_per_second": 0.81,
+      "ranks": {
+        "1": {
+          "hp": 480.0,
+          "ranged_armor": 95.0,
+          "fire_armor": 0.0,
+          "attacks": {}
+        },
+        "2": {
+          "hp": 480.0,
+          "ranged_armor": 95.0,
+          "fire_armor": 0.0,
+          "attacks": {}
+        },
+        "3": {
+          "hp": 480.0,
+          "ranged_armor": 95.0,
+          "fire_armor": 0.0,
+          "attacks": {}
+        },
+        "4": {
+          "hp": 480.0,
+          "ranged_armor": 95.0,
+          "fire_armor": 0.0,
+          "attacks": {}
+        }
+      },
+      "abilities": [],
+      "upgrade_costs": {}
+    },
     "fishing_boat": {
       "source_url": "https://seicing.com/html/aoe2/unitaoe4/渔船.html?civ=chi",
       "source_name": "渔船",
@@ -1814,6 +2219,7 @@
       "cost": {
         "wood": 75
       },
+      "population_cost": 1,
       "train_seconds": 30.0,
       "move_tiles_per_second": 1.5,
       "ranks": {
@@ -1854,6 +2260,7 @@
         "wood": 200,
         "gold": 30
       },
+      "population_cost": 3,
       "train_seconds": 30.0,
       "move_tiles_per_second": 1.375,
       "ranks": {
@@ -1892,6 +2299,112 @@
       ],
       "upgrade_costs": {}
     },
+    "arrow_ship": {
+      "source_url": "https://seicing.com/html/aoe2/unitaoe4/步弓手船.html?civ=eng",
+      "source_name": "箭船",
+      "source_civilization": "eng",
+      "cost": {
+        "food": 80,
+        "wood": 150
+      },
+      "population_cost": 3,
+      "train_seconds": 25.0,
+      "move_tiles_per_second": 1.75,
+      "ranks": {
+        "2": {
+          "hp": 300.0,
+          "ranged_armor": 1.0,
+          "fire_armor": 0.0,
+          "attacks": {
+            "ranged": {
+              "damage": 6.0,
+              "damage_kind": "ranged",
+              "range_tiles": 6.5,
+              "min_range_tiles": null,
+              "interval": 1.5,
+              "hits": 5,
+              "splash_tiles": 0.25,
+              "bonuses": {
+                "对[燃烧船]加成": 18.0
+              }
+            }
+          }
+        },
+        "3": {
+          "hp": 300.0,
+          "ranged_armor": 1.0,
+          "fire_armor": 0.0,
+          "attacks": {
+            "ranged": {
+              "damage": 6.0,
+              "damage_kind": "ranged",
+              "range_tiles": 6.5,
+              "min_range_tiles": null,
+              "interval": 1.5,
+              "hits": 5,
+              "splash_tiles": 0.25,
+              "bonuses": {
+                "对[燃烧船]加成": 18.0
+              }
+            }
+          }
+        },
+        "4": {
+          "hp": 300.0,
+          "ranged_armor": 1.0,
+          "fire_armor": 0.0,
+          "attacks": {
+            "ranged": {
+              "damage": 6.0,
+              "damage_kind": "ranged",
+              "range_tiles": 6.5,
+              "min_range_tiles": null,
+              "interval": 1.5,
+              "hits": 5,
+              "splash_tiles": 0.25,
+              "bonuses": {
+                "对[燃烧船]加成": 18.0
+              }
+            }
+          }
+        }
+      },
+      "abilities": [],
+      "upgrade_costs": {}
+    },
+    "transport_ship": {
+      "source_url": "https://seicing.com/html/aoe2/unitaoe4/运输船.html?civ=eng",
+      "source_name": "运输船",
+      "source_civilization": "eng",
+      "cost": {
+        "wood": 100
+      },
+      "population_cost": 2,
+      "train_seconds": 20.0,
+      "move_tiles_per_second": 1.5,
+      "ranks": {
+        "2": {
+          "hp": 400.0,
+          "ranged_armor": 0.0,
+          "fire_armor": 0.0,
+          "attacks": {}
+        },
+        "3": {
+          "hp": 400.0,
+          "ranged_armor": 0.0,
+          "fire_armor": 0.0,
+          "attacks": {}
+        },
+        "4": {
+          "hp": 400.0,
+          "ranged_armor": 0.0,
+          "fire_armor": 0.0,
+          "attacks": {}
+        }
+      },
+      "abilities": [],
+      "upgrade_costs": {}
+    },
     "trader": {
       "source_url": "https://seicing.com/html/aoe2/unitaoe4/商人.html?civ=chi",
       "source_name": "商人",
@@ -1900,6 +2413,7 @@
         "wood": 60,
         "gold": 60
       },
+      "population_cost": 1,
       "train_seconds": 30.0,
       "move_tiles_per_second": 1.0,
       "ranks": {
@@ -1938,6 +2452,7 @@
       "cost": {
         "gold": 150
       },
+      "population_cost": 1,
       "train_seconds": 30.0,
       "move_tiles_per_second": 1.125,
       "ranks": {
