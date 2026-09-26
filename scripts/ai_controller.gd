@@ -17,7 +17,7 @@ func tick() -> void:
 	for worker in workers:
 		if worker.order == "idle":
 			var resource_kind := "food" if game.players[1]["food"] < 330 else "wood" if game.players[1]["wood"] < 230 else "gold"
-			var resource: RtsResource = game.find_nearest_resource(worker.position, resource_kind)
+			var resource: RtsResource = game.find_nearest_resource(worker.position, resource_kind, INF, 1)
 			if resource != null: worker.order_gather(resource)
 	if game.players[1]["age"] == 1:
 		game.advance_age(1)
@@ -67,6 +67,7 @@ func _enemy_profile() -> Dictionary:
 	var profile := {"cavalry": 0, "ranged": 0, "heavy": 0}
 	for unit in game.units:
 		if not is_instance_valid(unit) or unit.owner_id != 0 or unit.kind == "villager": continue
+		if game.fog.active and not game.fog.can_see(1, unit.position): continue
 		for tag in profile:
 			if unit.stats.get("tags", []).has(tag): profile[tag] += 1
 	return profile

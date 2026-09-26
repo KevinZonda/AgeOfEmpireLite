@@ -22,7 +22,9 @@ func _process(delta: float) -> void:
 	wander_time += delta
 	var desired := home_position + Vector2(sin(wander_time * 0.75) * 14.0, cos(wander_time * 0.52) * 10.0)
 	if game.world_map.is_walkable(desired):
+		var previous_position := position
 		position = desired
+		game.navigation.resource_moved(self, previous_position)
 		queue_redraw()
 
 func harvest(quantity: int) -> int:

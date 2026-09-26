@@ -92,7 +92,7 @@ func order_gather(resource: Node2D) -> void:
 func _continue_gather() -> void:
 	var next_resource: RtsResource
 	if gather_kind != "":
-		next_resource = game.find_nearest_resource(gather_location, gather_kind, AUTO_GATHER_RADIUS)
+		next_resource = game.find_nearest_resource(gather_location, gather_kind, AUTO_GATHER_RADIUS, owner_id)
 	if next_resource != null:
 		order_gather(next_resource)
 	else:
@@ -205,6 +205,7 @@ func _move_toward(point: Vector2, delta: float, stop_distance: float) -> bool:
 	if route_index >= route.size(): step = minf(step, distance - stop_distance)
 	var old_position := position
 	position = game.navigation.move_step(self, position.move_toward(waypoint, step))
+	game.navigation.unit_moved(self, old_position)
 	if charging: charge_distance += old_position.distance_to(position)
 	position = position.clamp(Vector2(24, 24), game.world_size - Vector2(24, 24))
 	queue_redraw()

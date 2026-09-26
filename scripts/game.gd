@@ -19,6 +19,7 @@ var camera: Camera2D
 var world_map: RtsWorldMap
 var navigation: RtsNavigation
 var weather: RtsWeather
+var fog: RtsFogOfWar
 var map_seed := 0
 var started := false
 var game_over := false
@@ -74,6 +75,11 @@ func _ready() -> void:
 	weather.z_index = 10
 	add_child(weather)
 	weather.hide()
+	fog = RtsFogOfWar.new()
+	fog.z_index = 20
+	add_child(fog)
+	fog.setup(self)
+	fog.hide()
 	ai = RtsAiController.new(self)
 	_create_hud()
 	_create_cursor()
@@ -332,6 +338,7 @@ func start_game(civ: String, requested_seed := -1) -> void:
 			var resource := find_nearest_resource(worker.position, "food" if i < 2 else "wood" if i < 4 else "gold")
 			if resource != null: worker.order_gather(resource)
 	navigation.refresh()
+	fog.reset()
 	_update_hud()
 	_rebuild_actions()
 	queue_redraw()
@@ -339,6 +346,7 @@ func start_game(civ: String, requested_seed := -1) -> void:
 func _clear_world() -> void:
 	if world_map != null: world_map.hide()
 	if weather != null: weather.hide()
+	if fog != null: fog.clear()
 	for unit in units: if is_instance_valid(unit): unit.queue_free()
 	for building in buildings: if is_instance_valid(building): building.queue_free()
 	for resource in resources: if is_instance_valid(resource): resource.queue_free()
@@ -381,6 +389,7 @@ func spawn_resource(kind: String, world_point: Vector2, amount: int, appearance 
 	add_child(resource)
 	resource.setup(kind, amount, appearance)
 	resources.append(resource)
+	navigation.invalidate_spatial_index()
 	return resource
 
 func spawn_unit(owner_id: int, kind: String, world_point: Vector2, rally := Vector2.INF) -> RtsUnit:
@@ -390,6 +399,7 @@ func spawn_unit(owner_id: int, kind: String, world_point: Vector2, rally := Vect
 	unit.setup(self, owner_id, kind)
 	unit.position = navigation.nearest_walkable_point(unit.position, unit.radius(), unit)
 	units.append(unit)
+	navigation.invalidate_spatial_index()
 	if rally != Vector2.INF: unit.order_move(rally)
 	_update_hud()
 	return unit
@@ -417,6 +427,7 @@ func entity_destroyed(entity: Node2D) -> void:
 	selected.erase(entity)
 	if entity is RtsUnit:
 		units.erase(entity)
+		navigation.invalidate_spatial_index()
 	elif entity is RtsBuilding:
 		buildings.erase(entity)
 		if entity.kind == "town_center":
@@ -599,11 +610,12 @@ func count_builders(building: RtsBuilding) -> int:
 			count += 1
 	return count
 
-func find_nearest_resource(world_point: Vector2, kind: String, max_distance := INF) -> RtsResource:
+func find_nearest_resource(world_point: Vector2, kind: String, max_distance := INF, viewer_id := -1) -> RtsResource:
 	var nearest: RtsResource
 	var shortest := max_distance * max_distance
 	for resource in resources:
 		if not is_instance_valid(resource) or resource.is_queued_for_deletion() or resource.kind != kind: continue
+		if viewer_id >= 0 and fog.active and not fog.can_show_resource(viewer_id, resource): continue
 		var distance := world_point.distance_squared_to(resource.position)
 		if distance < shortest:
 			shortest = distance
@@ -615,12 +627,14 @@ func nearest_enemy(unit: RtsUnit, max_distance: float) -> Node2D:
 	var distance_limit := max_distance * max_distance
 	for other in units:
 		if not is_instance_valid(other) or other == unit or other.owner_id == unit.owner_id: continue
+		if fog.active and not fog.can_see(unit.owner_id, other.position): continue
 		var d := unit.position.distance_squared_to(other.position)
 		if d < distance_limit:
 			distance_limit = d
 			best = other
 	for building in buildings:
 		if not is_instance_valid(building) or building.owner_id == unit.owner_id: continue
+		if fog.active and not fog.can_see(unit.owner_id, building.position): continue
 		var d := unit.position.distance_squared_to(building.position)
 		if d < distance_limit:
 			distance_limit = d
@@ -797,14 +811,18 @@ func _select_area(from: Vector2, to: Vector2, additive: bool) -> void:
 
 func _entity_at(point: Vector2) -> Node2D:
 	for unit in units:
+		if not is_instance_valid(unit) or unit.is_queued_for_deletion(): continue
+		if unit.owner_id != 0 and fog.active and not fog.can_see(0, unit.position): continue
 		if is_instance_valid(unit) and unit.position.distance_to(point) <= unit.radius() + 5: return unit
 	for building in buildings:
+		if not is_instance_valid(building) or building.is_queued_for_deletion(): continue
+		if building.owner_id != 0 and fog.active and not fog.can_see(0, building.position): continue
 		if is_instance_valid(building) and building.contains(point): return building
 	return null
 
 func _resource_at(point: Vector2) -> RtsResource:
 	for resource in resources:
-		if is_instance_valid(resource) and not resource.is_queued_for_deletion() and resource.position.distance_to(point) < resource.radius + 6:
+		if is_instance_valid(resource) and not resource.is_queued_for_deletion() and (not fog.active or fog.can_show_resource(0, resource)) and resource.position.distance_to(point) < resource.radius + 6:
 			return resource
 	return null
 
@@ -1057,5 +1075,6 @@ func _draw() -> void:
 		var size: Vector2 = GameData.BUILDINGS[build_mode]["size"]
 		draw_rect(Rect2(mouse - size * 0.5, size), Color(0.25, 0.9, 0.4, 0.35) if valid else Color(0.9, 0.2, 0.2, 0.35))
 	for line in hit_lines:
+		if fog.active and line["owner"] != 0 and not fog.can_see(0, line["to"]): continue
 		var color: Color = GameData.CIVILIZATIONS[civilizations[line["owner"]]]["color"].lightened(0.45)
 		draw_line(line["from"], line["to"], color, 3)

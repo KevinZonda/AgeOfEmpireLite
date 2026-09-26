@@ -24,6 +24,7 @@ make run
 - 选择可训练单位的建筑后右键点击地图设置集结点；新训练的单位会自动前往该位置。
 - 野外资源点耗尽时，村民会自动转向附近的同类资源点继续采集。
 - 每局会生成新地图；顶部显示地图种子。山地、水域不可建造，单位会绕行；鹿群可以作为食物采集。
+- 单位和建筑提供视野；未探索区域全黑，探索后失去视野的区域变暗，山地会挡住视线。敌军与鹿群只有在当前视野内才会显示。
 - 底部命令网格显示各按钮快捷键；底部中间显示选中对象、生产队列与进度，右下角小地图可点击定位。
 - WASD / 方向键、鼠标移到窗口边缘或 Mac 触控板双指滑动可移动镜头，四角可斜向移动；滚轮缩放。
 - 按 Esc 打开或关闭暂停菜单；暂停时显示系统鼠标，可移出游戏窗口。
@@ -36,6 +37,7 @@ make run
 - 战斗包含轻重甲、近远程护甲、兵种克制、骑兵冲锋、长矛兵驻足反冲锋与飞行中的远程弹体。科技升级会更新已有单位的数值。
 - 电脑对手能够采集、升级、研究、建造、根据对方兵种训练部队并进攻。
 - 地图由种子生成山地、湖泊、草地、植物群、树林、矿点与鹿群；雨会周期性出现。可用 `start_game("English", 12345)` 复现指定地图。
+- 战争迷雾分别记录双方当前视野与探索范围，并同步到主地图、小地图和鼠标目标判定。
 - 单位按地形与建筑、资源障碍寻路，并在移动时避开其他单位。目前胜利条件为摧毁城镇中心；多人联机和正式美术资源尚未加入。
 
 ## 验证
@@ -43,6 +45,7 @@ make run
 ```sh
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/smoke.gd
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/map_generator.gd
+/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/fog_of_war.gd
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/navigation.gd
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/combat_rules.gd
 ```

@@ -33,5 +33,13 @@ func _run() -> void:
 	game.navigation.path_between(worker.position, movable_resource.position)
 	assert(not game.navigation.pathfinder.is_point_solid(old_cell), "moved resources should release old path cells")
 	assert(game.navigation.pathfinder.is_point_solid(game.world_map.cell_at(movable_resource.position)), "moved resources should block their new path cells")
+	var blocker: RtsUnit = game.units[1]
+	var blocker_destination := Vector2(1350, 750)
+	game.navigation.invalidate_spatial_index()
+	assert(game.navigation.can_occupy(blocker_destination, worker.radius(), worker))
+	var blocker_previous := blocker.position
+	blocker.position = blocker_destination
+	game.navigation.unit_moved(blocker, blocker_previous)
+	assert(not game.navigation.can_occupy(blocker_destination, worker.radius(), worker), "moved units should update collision cells immediately")
 	print("NAVIGATION_OK")
 	quit()

@@ -123,7 +123,7 @@ func _run() -> void:
 	game.command_buttons[1].pressed.emit()
 	assert(game.build_mode == "farm", "second construction command should select a farm")
 	game.build_mode = ""
-	assert(game._cursor_state_at(game._player_center(1).position) == "attack")
+	assert(game._cursor_state_at(game._player_center(1).position) == "move", "unseen enemies should not be targetable")
 	assert(game._cursor_state_at(game.resources[0].position) == "gather")
 	assert(game._cursor_state_at(Vector2(700, 700)) == "move")
 	assert(game._cursor_state_at(Vector2(700, 700), true) == "default")
@@ -190,6 +190,7 @@ func _run() -> void:
 	var nearby_wood: RtsResource = game.spawn_resource("wood", Vector2(975, 850), 1)
 	worker.position = depleted_wood.position + Vector2(20, 0)
 	helper.position = depleted_wood.position + Vector2(-20, 0)
+	game.fog.update_visibility()
 	worker.work_timer = 0.0
 	helper.work_timer = 0.0
 	worker.order_gather(depleted_wood)

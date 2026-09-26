@@ -16,6 +16,7 @@ func setup(game_ref: Node2D, player_id: int, origin: Vector2, enemy: Node2D, dam
 	target = enemy
 	impact_damage = damage_amount
 	speed = maxf(1.0, flight_speed)
+	visible = owner_id == 0 or not game.fog.active or game.fog.can_see(0, position)
 	queue_redraw()
 
 
@@ -24,6 +25,7 @@ func _process(delta: float) -> void:
 		queue_free()
 		return
 	if game.paused or not game.started: return
+	visible = owner_id == 0 or not game.fog.active or game.fog.can_see(0, position)
 	if not is_instance_valid(target) or target.is_queued_for_deletion():
 		queue_free()
 		return

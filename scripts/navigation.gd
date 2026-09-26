@@ -3,11 +3,18 @@ extends RefCounted
 
 # Terrain is owned by RtsWorldMap. This layer adds changing entity footprints.
 const CLEARANCE := 16.0
+const SPATIAL_CELL_SIZE := 64.0
 
 var game: Node2D
 var world_map: RtsWorldMap
 var pathfinder := AStarGrid2D.new()
 var obstacle_signature := -1
+var spatial_frame := -1
+var indexed_unit_count := -1
+var indexed_resource_count := -1
+var max_dynamic_radius := 0.0
+var units_by_cell: Dictionary = {}
+var resources_by_cell: Dictionary = {}
 
 func _init(game_ref: Node2D, map_ref: RtsWorldMap) -> void:
 	game = game_ref
@@ -15,6 +22,7 @@ func _init(game_ref: Node2D, map_ref: RtsWorldMap) -> void:
 
 func refresh() -> void:
 	obstacle_signature = _obstacle_signature()
+	invalidate_spatial_index()
 	pathfinder.clear()
 	pathfinder.region = Rect2i(Vector2i.ZERO, world_map.grid_size)
 	pathfinder.cell_size = Vector2(RtsWorldMap.CELL_SIZE, RtsWorldMap.CELL_SIZE)
@@ -46,6 +54,50 @@ func _obstacle_signature() -> int:
 
 func _ensure_current() -> void:
 	if obstacle_signature != _obstacle_signature(): refresh()
+
+func invalidate_spatial_index() -> void:
+	spatial_frame = -1
+
+func _spatial_cell(point: Vector2) -> Vector2i:
+	return Vector2i(floori(point.x / SPATIAL_CELL_SIZE), floori(point.y / SPATIAL_CELL_SIZE))
+
+func _ensure_spatial_index() -> void:
+	var frame := Engine.get_process_frames()
+	if spatial_frame == frame and indexed_unit_count == game.units.size() and indexed_resource_count == game.resources.size(): return
+	units_by_cell.clear()
+	resources_by_cell.clear()
+	max_dynamic_radius = 0.0
+	for unit in game.units:
+		if not is_instance_valid(unit) or unit.is_queued_for_deletion(): continue
+		max_dynamic_radius = maxf(max_dynamic_radius, unit.radius())
+		var cell := _spatial_cell(unit.position)
+		if not units_by_cell.has(cell): units_by_cell[cell] = []
+		units_by_cell[cell].append(unit)
+	for resource in game.resources:
+		if not is_instance_valid(resource) or resource.is_queued_for_deletion(): continue
+		max_dynamic_radius = maxf(max_dynamic_radius, resource.radius)
+		var cell := _spatial_cell(resource.position)
+		if not resources_by_cell.has(cell): resources_by_cell[cell] = []
+		resources_by_cell[cell].append(resource)
+	spatial_frame = frame
+	indexed_unit_count = game.units.size()
+	indexed_resource_count = game.resources.size()
+
+func unit_moved(unit: RtsUnit, previous_position: Vector2) -> void:
+	if spatial_frame != Engine.get_process_frames(): return
+	_move_in_index(units_by_cell, unit, previous_position)
+
+func resource_moved(resource: RtsResource, previous_position: Vector2) -> void:
+	if spatial_frame != Engine.get_process_frames(): return
+	_move_in_index(resources_by_cell, resource, previous_position)
+
+func _move_in_index(index: Dictionary, entity: Node2D, previous_position: Vector2) -> void:
+	var old_cell := _spatial_cell(previous_position)
+	var new_cell := _spatial_cell(entity.position)
+	if old_cell == new_cell: return
+	if index.has(old_cell): index[old_cell].erase(entity)
+	if not index.has(new_cell): index[new_cell] = []
+	index[new_cell].append(entity)
 
 func _mark_rect(area: Rect2) -> void:
 	var first := world_map.cell_at(area.position)
@@ -121,6 +173,7 @@ func _motion_clear(unit: RtsUnit, destination: Vector2) -> bool:
 	return true
 
 func can_occupy(point: Vector2, radius: float, self_unit: RtsUnit) -> bool:
+	_ensure_spatial_index()
 	if point.x < radius or point.y < radius or point.x > world_map.world_size.x - radius or point.y > world_map.world_size.y - radius: return false
 	for sample in 9:
 		var offset := Vector2.ZERO if sample == 0 else Vector2.from_angle(TAU * (sample - 1) / 8.0) * radius
@@ -128,11 +181,16 @@ func can_occupy(point: Vector2, radius: float, self_unit: RtsUnit) -> bool:
 	for building in game.buildings:
 		if not is_instance_valid(building) or building.is_queued_for_deletion(): continue
 		if Rect2(building.position - building.size() * 0.5, building.size()).grow(radius).has_point(point): return false
-	for resource in game.resources:
-		if not is_instance_valid(resource) or resource.is_queued_for_deletion(): continue
-		if point.distance_squared_to(resource.position) < pow(radius + resource.radius, 2): return false
-	for other in game.units:
-		if not is_instance_valid(other) or other.is_queued_for_deletion() or other == self_unit: continue
-		if point.distance_squared_to(other.position) < pow(radius + other.radius(), 2):
-			if self_unit == null or point.distance_squared_to(other.position) <= self_unit.position.distance_squared_to(other.position): return false
+	var center_cell := _spatial_cell(point)
+	var search_radius := ceili((radius + max_dynamic_radius) / SPATIAL_CELL_SIZE)
+	for y in range(center_cell.y - search_radius, center_cell.y + search_radius + 1):
+		for x in range(center_cell.x - search_radius, center_cell.x + search_radius + 1):
+			var cell := Vector2i(x, y)
+			for resource in resources_by_cell.get(cell, []):
+				if not is_instance_valid(resource) or resource.is_queued_for_deletion(): continue
+				if point.distance_squared_to(resource.position) < pow(radius + resource.radius, 2): return false
+			for other in units_by_cell.get(cell, []):
+				if not is_instance_valid(other) or other.is_queued_for_deletion() or other == self_unit: continue
+				if point.distance_squared_to(other.position) < pow(radius + other.radius(), 2):
+					if self_unit == null or point.distance_squared_to(other.position) <= self_unit.position.distance_squared_to(other.position): return false
 	return true

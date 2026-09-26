@@ -42,18 +42,23 @@ func _draw() -> void:
 	if cached_seed != terrain_map.map_seed or terrain_texture == null:
 		_build_terrain_texture(terrain_map)
 	draw_texture_rect(terrain_texture, Rect2(Vector2.ZERO, size), false)
+	if game.fog.active and game.fog.mask_texture != null:
+		draw_texture_rect(game.fog.mask_texture, Rect2(Vector2.ZERO, size), false)
 	for resource in game.resources:
 		if not is_instance_valid(resource) or resource.is_queued_for_deletion(): continue
+		if game.fog.active and not game.fog.can_show_resource(0, resource): continue
 		var resource_color := Color("72b16b")
 		if resource.kind == "gold": resource_color = Color("d7bc5d")
 		if resource.kind == "stone": resource_color = Color("a2aaa8")
 		draw_circle(world_to_map(resource.position), 1.5, resource_color)
 	for building in game.buildings:
 		if not is_instance_valid(building): continue
+		if building.owner_id != 0 and game.fog.active and not game.fog.can_see(0, building.position): continue
 		var color: Color = GameData.CIVILIZATIONS[game.civilizations[building.owner_id]]["color"]
 		draw_rect(Rect2(world_to_map(building.position) - Vector2(3, 3), Vector2(6, 6)), color)
 	for unit in game.units:
 		if not is_instance_valid(unit): continue
+		if unit.owner_id != 0 and game.fog.active and not game.fog.can_see(0, unit.position): continue
 		var color: Color = GameData.CIVILIZATIONS[game.civilizations[unit.owner_id]]["color"].lightened(0.28)
 		draw_circle(world_to_map(unit.position), 1.8, color)
 	var visible_size: Vector2 = get_viewport_rect().size / game.camera.zoom
