@@ -4,13 +4,32 @@ extends Button
 var icon_kind := ""
 var caption := ""
 var shortcut_label := ""
+var slot_index := -1
+var availability_reason := ""
+var action_cost: Dictionary = {}
 
-func configure(kind: String, label_text: String, key_text: String) -> void:
+func configure(kind: String, label_text: String, key_text: String, slot: int = -1) -> void:
 	icon_kind = kind
 	caption = label_text
 	shortcut_label = key_text
-	custom_minimum_size = Vector2(108, 61)
+	slot_index = slot
+	custom_minimum_size = Vector2(108, 69)
+	_refresh_tooltip()
 	queue_redraw()
+
+func set_availability(available: bool, reason: String = "", cost: Dictionary = {}) -> void:
+	disabled = not available
+	availability_reason = "" if available else reason
+	action_cost = cost.duplicate(true)
+	_refresh_tooltip()
+	queue_redraw()
+
+func _refresh_tooltip() -> void:
+	var lines: Array[String] = [caption]
+	if not action_cost.is_empty(): lines.append(GameData.cost_text(action_cost))
+	if not availability_reason.is_empty(): lines.append(availability_reason)
+	if not shortcut_label.is_empty(): lines.append("快捷键 %s" % shortcut_label)
+	tooltip_text = "\n".join(lines)
 
 func _draw() -> void:
 	var color := Color("e9d69d") if not disabled else Color("8b9291")
@@ -18,7 +37,9 @@ func _draw() -> void:
 	var font := ThemeDB.fallback_font
 	if font == null: return
 	draw_string(font, Vector2(46, 26), caption, HORIZONTAL_ALIGNMENT_LEFT, 55, 14, color)
-	draw_string(font, Vector2(46, 46), "[%s]" % shortcut_label, HORIZONTAL_ALIGNMENT_LEFT, 55, 11, color.darkened(0.15))
+	draw_string(font, Vector2(46, 45), "[%s]" % shortcut_label, HORIZONTAL_ALIGNMENT_LEFT, 55, 11, color.darkened(0.15))
+	if disabled and not availability_reason.is_empty():
+		draw_string(font, Vector2(5, 63), availability_reason, HORIZONTAL_ALIGNMENT_LEFT, 98, 10, Color("d9a99a"))
 
 func _draw_icon(center: Vector2, color: Color) -> void:
 	match icon_kind:
@@ -34,6 +55,10 @@ func _draw_icon(center: Vector2, color: Color) -> void:
 			draw_arc(center, 12, -PI * 0.6, PI * 0.6, 20, color, 2)
 			draw_line(center + Vector2(4, -12), center + Vector2(4, 12), color, 2)
 			draw_line(center + Vector2(-6, 0), center + Vector2(14, 0), color, 2)
+		"crossbowman", "arbaletrier":
+			draw_arc(center + Vector2(2, -5), 11, 0, PI, 16, color, 2)
+			draw_line(center + Vector2(2, -9), center + Vector2(2, 13), color, 2)
+			draw_line(center + Vector2(-11, -5), center + Vector2(13, -5), color, 2)
 		"villager":
 			draw_circle(center + Vector2(0, -8), 5, color)
 			draw_line(center + Vector2(0, -2), center + Vector2(0, 12), color, 3)
@@ -41,9 +66,16 @@ func _draw_icon(center: Vector2, color: Color) -> void:
 		"spearman":
 			draw_line(center + Vector2(-8, 12), center + Vector2(8, -12), color, 3)
 			draw_colored_polygon(PackedVector2Array([center + Vector2(8, -17), center + Vector2(3, -9), center + Vector2(11, -9)]), color)
-		"horseman", "knight":
+		"man_at_arms":
+			draw_rect(Rect2(center + Vector2(-8, -10), Vector2(16, 21)), color, false, 2)
+			draw_line(center + Vector2(8, 8), center + Vector2(15, -12), color, 3)
+		"scout", "horseman", "knight", "royal_knight":
 			draw_colored_polygon(PackedVector2Array([center + Vector2(-10, -8), center + Vector2(9, -8), center + Vector2(12, 4), center + Vector2(0, 13), center + Vector2(-12, 4)]), color)
 			draw_line(center + Vector2(-5, 1), center + Vector2(5, 1), Color("273338"), 2)
+		"forged_weapons", "iron_armor", "veteran_training", "elite_training":
+			draw_rect(Rect2(center + Vector2(-10, -12), Vector2(20, 24)), color, false, 2)
+			draw_line(center + Vector2(-5, -5), center + Vector2(5, -5), color, 2)
+			draw_line(center + Vector2(-5, 1), center + Vector2(5, 1), color, 2)
 		"age":
 			draw_line(center + Vector2(0, 12), center + Vector2(0, -8), color, 4)
 			draw_colored_polygon(PackedVector2Array([center + Vector2(-9, -5), center + Vector2(0, -16), center + Vector2(9, -5)]), color)

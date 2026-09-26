@@ -2,6 +2,7 @@ extends Node2D
 
 const WORLD_SIZE := Vector2(2400, 1500)
 const CAMERA_PAN_SPEED := 570.0
+const GESTURE_PAN_PIXELS := 32.0
 const EDGE_SCROLL_MARGIN := 28.0
 const UNIT_SCENE := preload("res://scripts/unit.gd")
 const BUILDING_SCENE := preload("res://scripts/building.gd")
@@ -15,11 +16,16 @@ var buildings: Array[RtsBuilding] = []
 var resources: Array[RtsResource] = []
 var selected: Array[Node2D] = []
 var camera: Camera2D
+var world_map: RtsWorldMap
+var navigation: RtsNavigation
+var weather: RtsWeather
+var map_seed := 0
 var started := false
 var game_over := false
 var paused := false
 var selected_civ := "English"
 var build_mode := ""
+var order_mode := ""
 var dragging := false
 var drag_start := Vector2.ZERO
 var drag_current := Vector2.ZERO
@@ -36,6 +42,9 @@ var selection_icon: Label
 var selection_health: ProgressBar
 var selection_progress: ProgressBar
 var queue_label: Label
+var queue_controls: HBoxContainer
+var queue_choice: OptionButton
+var cancel_queue_button: Button
 var command_title: Label
 var notice_label: Label
 var action_bar: GridContainer
@@ -48,6 +57,11 @@ var pause_overlay: ColorRect
 var cursor: GameCursor
 
 func _ready() -> void:
+	world_map = RtsWorldMap.new()
+	world_map.z_index = -10
+	add_child(world_map)
+	world_map.hide()
+	navigation = RtsNavigation.new(self, world_map)
 	camera = Camera2D.new()
 	camera.position = Vector2(630, 720)
 	camera.limit_left = 0
@@ -56,6 +70,10 @@ func _ready() -> void:
 	camera.limit_bottom = int(WORLD_SIZE.y)
 	add_child(camera)
 	camera.make_current()
+	weather = RtsWeather.new()
+	weather.z_index = 10
+	add_child(weather)
+	weather.hide()
 	ai = RtsAiController.new(self)
 	_create_hud()
 	_create_cursor()
@@ -158,6 +176,16 @@ func _create_hud() -> void:
 	queue_label = Label.new()
 	queue_label.add_theme_font_size_override("font_size", 13)
 	selection_column.add_child(queue_label)
+	queue_controls = HBoxContainer.new()
+	queue_controls.hide()
+	selection_column.add_child(queue_controls)
+	queue_choice = OptionButton.new()
+	queue_choice.custom_minimum_size.x = 205
+	queue_controls.add_child(queue_choice)
+	cancel_queue_button = Button.new()
+	cancel_queue_button.text = "取消并退款"
+	cancel_queue_button.pressed.connect(_cancel_selected_job)
+	queue_controls.add_child(cancel_queue_button)
 	notice_label = Label.new()
 	notice_label.add_theme_color_override("font_color", Color("f0d783"))
 	notice_label.add_theme_font_size_override("font_size", 13)
@@ -270,19 +298,25 @@ func _add_menu_label(parent: Node, value: String, size: int) -> void:
 	label.add_theme_font_size_override("font_size", size)
 	parent.add_child(label)
 
-func start_game(civ: String) -> void:
+func start_game(civ: String, requested_seed := -1) -> void:
 	_clear_world()
 	paused = false
 	pause_overlay.hide()
 	selected_civ = civ
 	civilizations = [civ, "French" if civ == "English" else "English"]
 	players = [
-		{"food": 340, "wood": 360, "gold": 150, "stone": 100, "age": 1},
-		{"food": 420, "wood": 420, "gold": 170, "stone": 100, "age": 1},
+		{"food": 340, "wood": 360, "gold": 150, "stone": 100, "age": 1, "researched": []},
+		{"food": 420, "wood": 420, "gold": 170, "stone": 100, "age": 1, "researched": []},
 	]
 	started = true
 	game_over = false
+	map_seed = requested_seed if requested_seed >= 0 else randi_range(1, 2147483647)
+	world_map.generate(map_seed, WORLD_SIZE)
+	world_map.show()
+	weather.setup(self, map_seed, WORLD_SIZE)
+	weather.show()
 	build_mode = ""
+	order_mode = ""
 	ai_timer = 0.0
 	camera.position = Vector2(630, 720)
 	menu_panel.hide()
@@ -297,11 +331,14 @@ func start_game(civ: String) -> void:
 			var worker := spawn_unit(owner_id, "villager", base + Vector2((i % 3) * 29 - 30, 80 + (i / 3) * 28))
 			var resource := find_nearest_resource(worker.position, "food" if i < 2 else "wood" if i < 4 else "gold")
 			if resource != null: worker.order_gather(resource)
+	navigation.refresh()
 	_update_hud()
 	_rebuild_actions()
 	queue_redraw()
 
 func _clear_world() -> void:
+	if world_map != null: world_map.hide()
+	if weather != null: weather.hide()
 	for unit in units: if is_instance_valid(unit): unit.queue_free()
 	for building in buildings: if is_instance_valid(building): building.queue_free()
 	for resource in resources: if is_instance_valid(resource): resource.queue_free()
@@ -326,6 +363,7 @@ func _return_to_menu() -> void:
 	game_over = false
 	paused = false
 	build_mode = ""
+	order_mode = ""
 	result_panel.hide()
 	top_label.text = ""
 	_rebuild_actions()
@@ -333,34 +371,24 @@ func _return_to_menu() -> void:
 	queue_redraw()
 
 func _spawn_map_resources() -> void:
-	for side in [0, 1]:
-		var x := 330.0 if side == 0 else 2070.0
-		for i in 5:
-			spawn_resource("wood", Vector2(x + (-270 if side == 0 else 270) + (i % 2) * 52, 570 + (i / 2) * 57), 500)
-		for i in 4:
-			spawn_resource("food", Vector2(x + (120 if side == 0 else -120) + (i % 2) * 55, 560 + (i / 2) * 55), 420)
-		for i in 3:
-			spawn_resource("gold", Vector2(x + (-180 if side == 0 else 180) + i * 50, 930), 580)
-		for i in 3:
-			spawn_resource("stone", Vector2(x + (100 if side == 0 else -100) + i * 50, 970), 560)
-	for i in 7:
-		spawn_resource("wood", Vector2(1100 + (i % 3) * 60, 350 + (i / 3) * 60), 550)
-	for i in 5:
-		spawn_resource("gold", Vector2(1100 + (i % 3) * 60, 1130 + (i / 3) * 60), 550)
+	for spec in world_map.resource_specs:
+		spawn_resource(spec["kind"], spec["position"], spec["amount"], spec["appearance"])
 
-func spawn_resource(kind: String, world_point: Vector2, amount: int) -> RtsResource:
+func spawn_resource(kind: String, world_point: Vector2, amount: int, appearance := "") -> RtsResource:
 	var resource: RtsResource = RESOURCE_SCENE.new()
 	resource.position = world_point
+	resource.game = self
 	add_child(resource)
-	resource.setup(kind, amount)
+	resource.setup(kind, amount, appearance)
 	resources.append(resource)
 	return resource
 
 func spawn_unit(owner_id: int, kind: String, world_point: Vector2, rally := Vector2.INF) -> RtsUnit:
 	var unit: RtsUnit = UNIT_SCENE.new()
-	unit.position = world_point
+	unit.position = world_map.nearest_walkable_point(world_point)
 	add_child(unit)
 	unit.setup(self, owner_id, kind)
+	unit.position = navigation.nearest_walkable_point(unit.position, unit.radius(), unit)
 	units.append(unit)
 	if rally != Vector2.INF: unit.order_move(rally)
 	_update_hud()
@@ -446,7 +474,7 @@ func population_cap(owner_id: int) -> int:
 
 func train_unit(building: RtsBuilding, unit_kind: String) -> bool:
 	if game_over or not is_instance_valid(building) or not building.is_complete(): return false
-	if not RtsTechTree.can_train(civilizations[building.owner_id], players[building.owner_id]["age"], building.kind, unit_kind): return false
+	if not RtsTechTree.can_train(civilizations[building.owner_id], players[building.owner_id]["age"], building.kind, unit_kind, players[building.owner_id]["researched"]): return false
 	if population_used(building.owner_id) >= population_cap(building.owner_id):
 		if building.owner_id == 0: notify_player("人口已满，请建造房屋")
 		return false
@@ -458,24 +486,86 @@ func train_unit(building: RtsBuilding, unit_kind: String) -> bool:
 	_update_hud()
 	return true
 
-func advance_age(owner_id: int) -> bool:
-	var age: int = players[owner_id]["age"]
-	if not RtsTechTree.can_advance(age): return false
-	if not spend(owner_id, RtsTechTree.age_cost(age)):
-		if owner_id == 0: notify_player("升级时代所需资源不足")
+func queued_research(owner_id: int) -> Array[String]:
+	var result: Array[String] = []
+	for building in buildings:
+		if not is_instance_valid(building) or building.owner_id != owner_id: continue
+		for tech_id in building.research_queue:
+			if not result.has(tech_id): result.append(tech_id)
+	return result
+
+func research_technology(building: RtsBuilding, tech_id: String) -> bool:
+	if game_over or not is_instance_valid(building) or not building.is_complete(): return false
+	var owner_id: int = building.owner_id
+	if not RtsTechTree.can_research(civilizations[owner_id], players[owner_id]["age"], building.kind, tech_id, players[owner_id]["researched"]): return false
+	if queued_research(owner_id).has(tech_id): return false
+	var technology: Dictionary = RtsTechTree.TECHNOLOGIES[tech_id]
+	if not spend(owner_id, technology["cost"]):
+		if owner_id == 0: notify_player("研究所需资源不足")
 		return false
-	players[owner_id]["age"] = age + 1
-	if owner_id == 0:
-		notify_player("进入时代 %d！" % (age + 1))
-		_rebuild_actions()
+	building.enqueue_research(tech_id, technology["time"], technology["cost"])
+	if owner_id == 0: notify_player("正在研究%s" % technology["label"])
 	_update_hud()
 	return true
+
+func complete_research(owner_id: int, tech_id: String) -> void:
+	if players[owner_id]["researched"].has(tech_id): return
+	players[owner_id]["researched"].append(tech_id)
+	for unit in units:
+		if is_instance_valid(unit) and unit.owner_id == owner_id: unit.refresh_stats()
+	if owner_id == 0:
+		notify_player("%s研究完成" % RtsTechTree.TECHNOLOGIES[tech_id]["label"])
+		_rebuild_actions()
+	_update_hud()
+
+func is_age_queued(owner_id: int) -> bool:
+	for building in buildings:
+		if is_instance_valid(building) and building.owner_id == owner_id and building.has_queued_age(): return true
+	return false
+
+func advance_age(owner_id: int) -> bool:
+	var age: int = players[owner_id]["age"]
+	if not RtsTechTree.can_advance(age) or is_age_queued(owner_id): return false
+	var center := _player_center(owner_id)
+	if center == null or not center.is_complete(): return false
+	var cost := RtsTechTree.age_cost(age)
+	if not spend(owner_id, cost):
+		if owner_id == 0: notify_player("升级时代所需资源不足")
+		return false
+	center.enqueue_age(age + 1, RtsTechTree.age_time(age), cost)
+	if owner_id == 0: notify_player("正在升级到时代 %d" % (age + 1))
+	_update_hud()
+	return true
+
+func complete_age(owner_id: int, target_age: int) -> void:
+	if target_age != players[owner_id]["age"] + 1: return
+	players[owner_id]["age"] = target_age
+	if owner_id == 0:
+		notify_player("进入时代 %d！" % target_age)
+		_rebuild_actions()
+	_update_hud()
+
+func cancel_production_job(building: RtsBuilding, index: int = 0) -> bool:
+	if not is_instance_valid(building) or building.is_queued_for_deletion() or index < 0: return false
+	var job := building.cancel_queue_entry(index)
+	if job.is_empty(): return false
+	for resource in job["cost"]:
+		players[building.owner_id][resource] += job["cost"][resource]
+	if building.owner_id == 0: notify_player("已取消，资源已返还")
+	_update_hud()
+	return true
+
+func _cancel_selected_job() -> void:
+	if selected.is_empty() or not is_instance_valid(selected[0]) or not selected[0] is RtsBuilding: return
+	var building: RtsBuilding = selected[0]
+	if building.owner_id == 0: cancel_production_job(building, queue_choice.get_selected_id())
 
 func can_place(kind: String, world_point: Vector2) -> bool:
 	var half: Vector2 = GameData.BUILDINGS[kind]["size"] * 0.5
 	if world_point.x < half.x + 20 or world_point.y < half.y + 70: return false
 	if world_point.x > WORLD_SIZE.x - half.x - 20 or world_point.y > WORLD_SIZE.y - half.y - 20: return false
 	var footprint := Rect2(world_point - half - Vector2(9, 9), half * 2 + Vector2(18, 18))
+	if world_map != null and not world_map.is_area_buildable(footprint): return false
 	for building in buildings:
 		if is_instance_valid(building):
 			var other := Rect2(building.position - building.size() * 0.5, building.size())
@@ -509,9 +599,9 @@ func count_builders(building: RtsBuilding) -> int:
 			count += 1
 	return count
 
-func find_nearest_resource(world_point: Vector2, kind: String) -> RtsResource:
+func find_nearest_resource(world_point: Vector2, kind: String, max_distance := INF) -> RtsResource:
 	var nearest: RtsResource
-	var shortest := INF
+	var shortest := max_distance * max_distance
 	for resource in resources:
 		if not is_instance_valid(resource) or resource.is_queued_for_deletion() or resource.kind != kind: continue
 		var distance := world_point.distance_squared_to(resource.position)
@@ -574,8 +664,12 @@ func _pan_camera(delta: float) -> void:
 	if get_window().has_focus():
 		direction += _edge_pan_direction(get_viewport().get_mouse_position(), get_viewport_rect().size)
 	if direction != Vector2.ZERO:
-		camera.position += direction.normalized() * CAMERA_PAN_SPEED * delta / camera.zoom.x
-		camera.position = camera.position.clamp(Vector2.ZERO, WORLD_SIZE)
+		_move_camera_screen_delta(direction.normalized() * CAMERA_PAN_SPEED * delta)
+
+func _move_camera_screen_delta(screen_delta: Vector2) -> void:
+	var half_view := get_viewport_rect().size * 0.5 / camera.zoom.x
+	var min_center := half_view.min(WORLD_SIZE * 0.5)
+	camera.position = (camera.position + screen_delta / camera.zoom.x).clamp(min_center, WORLD_SIZE - min_center)
 
 func _edge_pan_direction(screen_point: Vector2, viewport_size: Vector2) -> Vector2:
 	if not Rect2(Vector2.ZERO, viewport_size).has_point(screen_point): return Vector2.ZERO
@@ -595,6 +689,7 @@ func _update_cursor() -> void:
 
 func _cursor_state_at(world_point: Vector2, over_ui := false) -> String:
 	if over_ui: return "default"
+	if order_mode == "attack_move": return "attack_move"
 	if build_mode != "":
 		var cost: Dictionary = GameData.BUILDINGS[build_mode]["cost"]
 		return "build_valid" if can_place(build_mode, world_point) and can_afford(0, cost) else "build_invalid"
@@ -603,15 +698,20 @@ func _cursor_state_at(world_point: Vector2, over_ui := false) -> String:
 	var resource := _resource_at(world_point)
 	var has_unit := false
 	var has_worker := false
+	var has_producer := false
 	for subject in selected:
-		if not is_instance_valid(subject) or not subject is RtsUnit: continue
-		has_unit = true
-		if subject.kind == "villager": has_worker = true
+		if not is_instance_valid(subject): continue
+		if subject is RtsUnit:
+			has_unit = true
+			if subject.kind == "villager": has_worker = true
+		elif subject is RtsBuilding and subject.is_complete() and RtsTechTree.PRODUCTION.has(subject.kind):
+			has_producer = true
 	if entity != null and entity.owner_id == 1 and has_unit: return "attack"
 	if has_worker and entity is RtsBuilding and entity.owner_id == 0 and not entity.is_complete(): return "construct"
 	if has_worker and (resource != null or entity is RtsBuilding and entity.kind == "farm"): return "gather"
 	if entity != null and entity.owner_id == 0: return "select"
 	if has_unit: return "move"
+	if has_producer: return "rally"
 	return "default"
 
 func _player_center(owner_id: int) -> RtsBuilding:
@@ -627,6 +727,10 @@ func _input(event: InputEvent) -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not started or game_over or paused: return
+	if event is InputEventPanGesture:
+		_move_camera_screen_delta(event.delta * GESTURE_PAN_PIXELS)
+		get_viewport().set_input_as_handled()
+		return
 	if event is InputEventMouseButton:
 		if event.pressed and (event.button_index == MOUSE_BUTTON_LEFT or event.button_index == MOUSE_BUTTON_RIGHT): cursor.flash()
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP and event.pressed:
@@ -637,6 +741,9 @@ func _unhandled_input(event: InputEvent) -> void:
 			return
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			if event.pressed:
+				if order_mode == "attack_move":
+					_issue_attack_move(get_global_mouse_position())
+					return
 				if build_mode != "":
 					_confirm_build(get_global_mouse_position())
 					return
@@ -650,6 +757,10 @@ func _unhandled_input(event: InputEvent) -> void:
 					queue_redraw()
 			return
 		if event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
+			if order_mode != "":
+				order_mode = ""
+				notify_player("已取消命令")
+				return
 			if build_mode != "":
 				build_mode = ""
 				notify_player("已取消建造")
@@ -698,6 +809,22 @@ func _resource_at(point: Vector2) -> RtsResource:
 	return null
 
 func _issue_order(point: Vector2) -> void:
+	var has_selected_unit := false
+	for subject in selected:
+		if is_instance_valid(subject) and subject is RtsUnit:
+			has_selected_unit = true
+			break
+	if not has_selected_unit:
+		var assigned := false
+		for subject in selected:
+			if not is_instance_valid(subject) or not subject is RtsBuilding: continue
+			if subject.owner_id != 0 or not subject.is_complete() or not RtsTechTree.PRODUCTION.has(subject.kind): continue
+			subject.rally_point = point.clamp(Vector2(24, 24), WORLD_SIZE - Vector2(24, 24))
+			assigned = true
+		if assigned:
+			notify_player("集结点已设置")
+			queue_redraw()
+		return
 	var entity := _entity_at(point)
 	var resource := _resource_at(point)
 	var index := 0
@@ -716,6 +843,22 @@ func _issue_order(point: Vector2) -> void:
 			subject.order_move(point + offset)
 		index += 1
 
+func _issue_attack_move(point: Vector2) -> void:
+	order_mode = ""
+	var index := 0
+	for subject in selected:
+		if not is_instance_valid(subject) or not subject is RtsUnit or subject.kind == "villager": continue
+		var offset := Vector2((index % 4) * 25 - 37, (index / 4) * 25 - 25)
+		subject.order_attack_move(point + offset)
+		index += 1
+	queue_redraw()
+
+func _stop_selected_units() -> void:
+	order_mode = ""
+	for subject in selected:
+		if is_instance_valid(subject) and subject is RtsUnit: subject.order_stop()
+	notify_player("单位已停止")
+
 func _confirm_build(point: Vector2) -> void:
 	var builders: Array[RtsUnit] = []
 	for entity in selected:
@@ -732,12 +875,13 @@ func _confirm_build(point: Vector2) -> void:
 func _update_hud() -> void:
 	if top_label == null or players.is_empty(): return
 	var bank := players[0]
-	top_label.text = "%s  ·  时代 %d     食物 %d    木材 %d    黄金 %d    石料 %d     人口 %d/%d" % [
-		GameData.CIVILIZATIONS[civilizations[0]]["label"], bank["age"], bank["food"], bank["wood"], bank["gold"], bank["stone"], population_used(0), population_cap(0)]
+	top_label.text = "%s  ·  时代 %d     食物 %d    木材 %d    黄金 %d    石料 %d     人口 %d/%d     地图 %d" % [
+		GameData.CIVILIZATIONS[civilizations[0]]["label"], bank["age"], bank["food"], bank["wood"], bank["gold"], bank["stone"], population_used(0), population_cap(0), map_seed]
 	_refresh_action_buttons()
 	selection_health.hide()
 	selection_progress.hide()
 	queue_label.text = ""
+	queue_controls.hide()
 	if selected.is_empty() or not is_instance_valid(selected[0]):
 		selection_icon.text = "◆"
 		selection_icon.add_theme_color_override("font_color", Color("9da9a2"))
@@ -764,31 +908,69 @@ func _update_hud() -> void:
 	selection_health.value = maxf(0.0, item.hp)
 	selection_health.show()
 	if item is RtsUnit:
-		var stats: Dictionary = GameData.UNITS[item.kind]
-		detail_label.text = "生命 %.0f/%.0f   攻击 %.0f   射程 %.0f   移速 %.0f" % [item.hp, item.max_hp, stats["damage"], stats["range"], stats["speed"]]
+		var stats: Dictionary = item.stats
+		var armor: Dictionary = stats.get("armor", {})
+		detail_label.text = "生命 %.0f/%.0f   攻击 %.0f   近甲 %.0f   远甲 %.0f   射程 %.0f   移速 %.0f" % [item.hp, item.max_hp, stats["damage"], armor.get("melee", 0.0), armor.get("ranged", 0.0), stats["range"], stats["speed"]]
 	else:
 		detail_label.text = "生命 %.0f/%.0f   %s" % [item.hp, item.max_hp, "建造中" if not item.is_complete() else "已建成"]
+		if item.is_complete() and RtsTechTree.PRODUCTION.has(item.kind):
+			detail_label.text += "   右键设置集结点"
 		if not item.is_complete():
 			selection_progress.max_value = maxf(0.1, item.build_total)
 			selection_progress.value = item.build_total - item.build_remaining
 			selection_progress.show()
 			queue_label.text = "施工 %d%% · 村民 %d · 选村民右键继续" % [int(100.0 * selection_progress.value / selection_progress.max_value), count_builders(item)]
-		elif not item.training_queue.is_empty():
-			var unit_kind: String = item.training_queue[0]
-			selection_progress.max_value = GameData.training_time(civilizations[0], item.kind, unit_kind)
-			selection_progress.value = selection_progress.max_value - item.training_remaining
+		elif not item.production_queue.is_empty():
+			var job: Dictionary = item.current_job()
+			selection_progress.max_value = job["time"]
+			selection_progress.value = job["time"] - job["remaining"]
 			selection_progress.show()
-			queue_label.text = "训练中：%s   队列 %d" % [GameData.UNITS[unit_kind]["label"], item.training_queue.size()]
+			queue_label.text = "%s   队列 %d" % [_job_label(job), item.production_queue.size()]
+		_refresh_queue_controls(item)
+
+func _job_label(job: Dictionary) -> String:
+	match job["type"]:
+		"train": return "训练：%s" % GameData.UNITS[job["kind"]]["label"]
+		"research": return "研究：%s" % RtsTechTree.TECHNOLOGIES[job["kind"]]["label"]
+		"age": return "升级到时代 %d" % job["target_age"]
+	return "未知任务"
+
+func _refresh_queue_controls(building: RtsBuilding) -> void:
+	if building.owner_id != 0 or building.production_queue.is_empty(): return
+	queue_controls.show()
+	var previous := queue_choice.get_selected_id()
+	var needs_rebuild := queue_choice.item_count != building.production_queue.size()
+	if not needs_rebuild:
+		for index in building.production_queue.size():
+			if queue_choice.get_item_text(index) != "%d. %s" % [index + 1, _job_label(building.production_queue[index])]:
+				needs_rebuild = true
+				break
+	if not needs_rebuild: return
+	queue_choice.clear()
+	for index in building.production_queue.size():
+		queue_choice.add_item("%d. %s" % [index + 1, _job_label(building.production_queue[index])], index)
+	queue_choice.select(clampi(previous, 0, building.production_queue.size() - 1))
 
 func _refresh_action_buttons() -> void:
+	if players.is_empty(): return
+	var producer := ""
+	var complete := true
+	if not selected.is_empty() and is_instance_valid(selected[0]) and selected[0] is RtsBuilding:
+		producer = selected[0].kind
+		complete = selected[0].is_complete()
+	var context := {
+		"civilization": civilizations[0], "age": players[0]["age"], "producer": producer,
+		"researched": players[0]["researched"], "queued_research": queued_research(0),
+		"resources": players[0], "population_used": population_used(0), "population_cap": population_cap(0),
+		"production_complete": complete,
+	}
 	for button in command_buttons:
 		if not is_instance_valid(button) or button.is_queued_for_deletion(): continue
-		var cost: Dictionary = button.get_meta("cost")
-		var available := can_afford(0, cost)
-		if button.get_meta("action_type") == "train":
-			available = available and population_used(0) < population_cap(0)
-		button.disabled = not available
-		button.queue_redraw()
+		var status := RtsActionAvailability.evaluate(button.get_meta("action_type"), button.get_meta("action_kind"), context)
+		if button.get_meta("action_type") == "age" and status["available"] and is_age_queued(0):
+			status["available"] = false
+			status["reason"] = "正在升级"
+		button.set_availability(status["available"], status["reason"], status["cost"])
 
 func _rebuild_actions() -> void:
 	if action_bar == null: return
@@ -802,55 +984,71 @@ func _rebuild_actions() -> void:
 	var action_index := 0
 	if item is RtsUnit:
 		var any_worker := false
+		var any_military := false
 		for unit in selected:
-			if is_instance_valid(unit) and unit is RtsUnit and unit.kind == "villager": any_worker = true
+			if not is_instance_valid(unit) or not unit is RtsUnit: continue
+			if unit.kind == "villager": any_worker = true
+			else: any_military = true
 		if any_worker:
 			command_title.text = "村民 · 建造"
-			for kind in RtsTechTree.buildable_buildings(civilizations[0], players[0]["age"]):
+			for kind in RtsTechTree.all_buildings(civilizations[0]):
 				var cost: Dictionary = GameData.BUILDINGS[kind]["cost"]
 				_add_action(kind, GameData.BUILDINGS[kind]["label"], cost, keys[action_index], "build", func() -> void:
 					build_mode = kind
 					notify_player("点击地图放置%s；右键取消" % GameData.BUILDINGS[kind]["label"])
 				)
 				action_index += 1
-		else:
-			command_title.text = "部队 · 右键下令"
-	elif item is RtsBuilding and item.is_complete():
-		command_title.text = "%s · 训练" % GameData.BUILDINGS[item.kind]["label"]
-		for kind in RtsTechTree.trainable_units(civilizations[0], players[0]["age"], item.kind):
+		if any_military:
+			if not any_worker: command_title.text = "部队 · 命令"
+			_add_action("attack_move", "攻击移动", {}, KEY_6 if any_worker else KEY_1, "order", func() -> void:
+				order_mode = "attack_move"
+				build_mode = ""
+				notify_player("点击地图指定攻击移动目标；右键取消")
+			)
+		_add_action("stop", "停止", {}, KEY_7 if any_worker and any_military else KEY_6 if any_worker else KEY_2, "order", func() -> void: _stop_selected_units())
+	elif item is RtsBuilding:
+		command_title.text = "%s · 训练与研究" % GameData.BUILDINGS[item.kind]["label"]
+		for kind in RtsTechTree.all_train_units(civilizations[0], item.kind):
 			var cost: Dictionary = GameData.UNITS[kind]["cost"]
 			_add_action(kind, GameData.UNITS[kind]["label"], cost, keys[action_index], "train", func() -> void: train_unit(item, kind))
 			action_index += 1
-		if item.kind == "town_center" and RtsTechTree.can_advance(players[0]["age"]):
+		for kind in RtsTechTree.all_researches(civilizations[0], item.kind):
+			var technology: Dictionary = RtsTechTree.TECHNOLOGIES[kind]
+			_add_action(kind, technology["label"], technology["cost"], keys[action_index], "research", func() -> void: research_technology(item, kind))
+			action_index += 1
+		if item.kind == "town_center":
 			var age: int = players[0]["age"]
-			_add_action("age", "升级", RtsTechTree.age_cost(age), keys[action_index], "age", func() -> void: advance_age(0))
+			_add_action("age", "升级时代", RtsTechTree.age_cost(age), keys[action_index], "age", func() -> void: advance_age(0))
 	_refresh_action_buttons()
 
 func _add_action(icon_kind: String, label_text: String, cost: Dictionary, keycode: int, action_type: String, callback: Callable) -> void:
 	var button := RtsCommandButton.new()
 	var key_text := OS.get_keycode_string(keycode)
-	button.configure(icon_kind, label_text, key_text)
-	button.tooltip_text = "%s\n%s\n快捷键 %s" % [label_text, GameData.cost_text(cost), key_text]
+	button.configure(icon_kind, label_text, key_text, command_buttons.size())
 	button.set_meta("cost", cost)
 	button.set_meta("action_type", action_type)
+	button.set_meta("action_kind", icon_kind)
 	button.pressed.connect(callback)
 	action_bar.add_child(button)
 	command_buttons.append(button)
 	hotkey_buttons[keycode] = button
 
 func _draw() -> void:
-	draw_rect(Rect2(Vector2.ZERO, WORLD_SIZE), Color("638b5c"))
-	for x in range(0, int(WORLD_SIZE.x), 100):
-		draw_line(Vector2(x, 0), Vector2(x, WORLD_SIZE.y), Color(1, 1, 1, 0.055), 1)
-	for y in range(0, int(WORLD_SIZE.y), 100):
-		draw_line(Vector2(0, y), Vector2(WORLD_SIZE.x, y), Color(1, 1, 1, 0.055), 1)
-	draw_rect(Rect2(Vector2(150, 625), Vector2(2100, 190)), Color("8c9364"), false, 80)
+	if not started:
+		draw_rect(Rect2(Vector2.ZERO, WORLD_SIZE), Color("638b5c"))
 	for entity in selected:
 		if not is_instance_valid(entity): continue
 		if entity is RtsUnit:
 			draw_arc(entity.position, entity.radius() + 6, 0, TAU, 32, Color("f5e597"), 2)
 		elif entity is RtsBuilding:
 			draw_rect(Rect2(entity.position - entity.size() * 0.5 - Vector2(5, 5), entity.size() + Vector2(10, 10)), Color("f5e597"), false, 2)
+			if entity.owner_id == 0 and entity.is_complete() and RtsTechTree.PRODUCTION.has(entity.kind):
+				var marker: Vector2 = entity.rally_point
+				var marker_color := Color("f5e597")
+				draw_line(entity.position, marker, Color(marker_color, 0.65), 2)
+				draw_arc(marker, 9, 0, TAU, 24, marker_color, 2)
+				draw_line(marker + Vector2(0, 12), marker + Vector2(0, -14), marker_color, 2)
+				draw_colored_polygon(PackedVector2Array([marker + Vector2(0, -14), marker + Vector2(15, -9), marker + Vector2(0, -4)]), marker_color)
 	if dragging:
 		draw_rect(Rect2(drag_start, drag_current - drag_start).abs(), Color("f5e597"), false, 2)
 	if build_mode != "":

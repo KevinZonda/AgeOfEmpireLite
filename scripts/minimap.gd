@@ -3,11 +3,14 @@ extends Control
 
 var game: Node2D
 var update_timer := 0.0
+var terrain_texture: Texture2D
+var cached_seed := -1
 
 func setup(game_ref: Node2D) -> void:
 	game = game_ref
 	custom_minimum_size = Vector2(208, 130)
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	queue_redraw()
 
 func _process(delta: float) -> void:
@@ -34,9 +37,11 @@ func _gui_input(event: InputEvent) -> void:
 
 func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, size), Color("334934"))
-	for x in range(0, int(size.x), 26): draw_line(Vector2(x, 0), Vector2(x, size.y), Color(1, 1, 1, 0.07))
-	for y in range(0, int(size.y), 26): draw_line(Vector2(0, y), Vector2(size.x, y), Color(1, 1, 1, 0.07))
 	if game == null or not game.started: return
+	var terrain_map: RtsWorldMap = game.world_map
+	if cached_seed != terrain_map.map_seed or terrain_texture == null:
+		_build_terrain_texture(terrain_map)
+	draw_texture_rect(terrain_texture, Rect2(Vector2.ZERO, size), false)
 	for resource in game.resources:
 		if not is_instance_valid(resource) or resource.is_queued_for_deletion(): continue
 		var resource_color := Color("72b16b")
@@ -57,3 +62,18 @@ func _draw() -> void:
 	var bottom_right := world_to_map(viewport_center + visible_size * 0.5)
 	draw_rect(Rect2(top_left, bottom_right - top_left), Color("f4dd89"), false, 1.5)
 	draw_rect(Rect2(Vector2.ZERO, size), Color("c8b987"), false, 2)
+
+func _build_terrain_texture(terrain_map: RtsWorldMap) -> void:
+	var image := Image.create(terrain_map.grid_size.x, terrain_map.grid_size.y, false, Image.FORMAT_RGBA8)
+	for y in terrain_map.grid_size.y:
+		for x in terrain_map.grid_size.x:
+			var terrain: int = terrain_map.cells[y * terrain_map.grid_size.x + x]
+			var color := Color("688e5e")
+			match terrain:
+				RtsWorldMap.Terrain.MEADOW: color = Color("7d9b64")
+				RtsWorldMap.Terrain.WATER: color = Color("437e9f")
+				RtsWorldMap.Terrain.MOUNTAIN: color = Color("747d79")
+				RtsWorldMap.Terrain.ROAD: color = Color("879468")
+			image.set_pixel(x, y, color)
+	terrain_texture = ImageTexture.create_from_image(image)
+	cached_seed = terrain_map.map_seed
