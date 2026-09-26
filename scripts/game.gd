@@ -485,7 +485,12 @@ func can_place(kind: String, world_point: Vector2) -> bool:
 		if is_instance_valid(resource) and footprint.grow(resource.radius * 0.5).has_point(resource.position): return false
 	return true
 
-func place_building(owner_id: int, kind: String, world_point: Vector2, worker: RtsUnit) -> bool:
+func place_building(owner_id: int, kind: String, world_point: Vector2, workers: Array[RtsUnit]) -> bool:
+	var builders: Array[RtsUnit] = []
+	for worker in workers:
+		if is_instance_valid(worker) and worker.owner_id == owner_id and worker.kind == "villager":
+			builders.append(worker)
+	if builders.is_empty(): return false
 	if not can_place(kind, world_point):
 		if owner_id == 0: notify_player("这里不能建造")
 		return false
@@ -493,9 +498,16 @@ func place_building(owner_id: int, kind: String, world_point: Vector2, worker: R
 		if owner_id == 0: notify_player("建造资源不足")
 		return false
 	var building := spawn_building(owner_id, kind, world_point, true)
-	worker.order_build(building)
-	if owner_id == 0: notify_player("正在建造%s" % GameData.BUILDINGS[kind]["label"])
+	for worker in builders: worker.order_build(building)
+	if owner_id == 0: notify_player("%d 名村民正在建造%s" % [builders.size(), GameData.BUILDINGS[kind]["label"]])
 	return true
+
+func count_builders(building: RtsBuilding) -> int:
+	var count := 0
+	for unit in units:
+		if is_instance_valid(unit) and unit.order == "build" and unit.target == building:
+			count += 1
+	return count
 
 func find_nearest_resource(world_point: Vector2, kind: String) -> RtsResource:
 	var nearest: RtsResource
@@ -596,6 +608,7 @@ func _cursor_state_at(world_point: Vector2, over_ui := false) -> String:
 		has_unit = true
 		if subject.kind == "villager": has_worker = true
 	if entity != null and entity.owner_id == 1 and has_unit: return "attack"
+	if has_worker and entity is RtsBuilding and entity.owner_id == 0 and not entity.is_complete(): return "construct"
 	if has_worker and (resource != null or entity is RtsBuilding and entity.kind == "farm"): return "gather"
 	if entity != null and entity.owner_id == 0: return "select"
 	if has_unit: return "move"
@@ -691,6 +704,8 @@ func _issue_order(point: Vector2) -> void:
 		if not is_instance_valid(subject) or not subject is RtsUnit: continue
 		if entity != null and entity.owner_id == 1:
 			subject.order_attack(entity)
+		elif entity is RtsBuilding and entity.owner_id == 0 and not entity.is_complete() and subject.kind == "villager":
+			subject.order_build(entity)
 		elif resource != null and subject.kind == "villager":
 			subject.order_gather(resource)
 		elif entity is RtsBuilding and entity.owner_id == 0 and entity.kind == "farm" and subject.kind == "villager":
@@ -701,15 +716,14 @@ func _issue_order(point: Vector2) -> void:
 		index += 1
 
 func _confirm_build(point: Vector2) -> void:
-	var worker: RtsUnit
+	var builders: Array[RtsUnit] = []
 	for entity in selected:
-		if is_instance_valid(entity) and entity is RtsUnit and entity.kind == "villager":
-			worker = entity
-			break
-	if worker == null:
+		if is_instance_valid(entity) and entity is RtsUnit and entity.owner_id == 0 and entity.kind == "villager":
+			builders.append(entity)
+	if builders.is_empty():
 		build_mode = ""
 		return
-	if place_building(0, build_mode, point, worker):
+	if place_building(0, build_mode, point, builders):
 		build_mode = ""
 		_rebuild_actions()
 	queue_redraw()
@@ -757,7 +771,7 @@ func _update_hud() -> void:
 			selection_progress.max_value = maxf(0.1, item.build_total)
 			selection_progress.value = item.build_total - item.build_remaining
 			selection_progress.show()
-			queue_label.text = "施工进度 %d%%" % int(100.0 * selection_progress.value / selection_progress.max_value)
+			queue_label.text = "施工 %d%% · 村民 %d · 选村民右键继续" % [int(100.0 * selection_progress.value / selection_progress.max_value), count_builders(item)]
 		elif not item.training_queue.is_empty():
 			var unit_kind: String = item.training_queue[0]
 			selection_progress.max_value = GameData.training_time(civilizations[0], item.kind, unit_kind)

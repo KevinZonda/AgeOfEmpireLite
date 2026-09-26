@@ -7,6 +7,7 @@ const LABELS := {
 	"select": "选择",
 	"move": "移动",
 	"gather": "采集",
+	"construct": "建造",
 	"attack": "攻击",
 	"drag": "框选",
 	"build_valid": "放置",
@@ -40,7 +41,7 @@ func _draw() -> void:
 	match state:
 		"select", "drag": accent = Color("f3d96e")
 		"move": accent = Color("89c4f0")
-		"gather", "build_valid": accent = Color("83da8b")
+		"gather", "construct", "build_valid": accent = Color("83da8b")
 		"attack", "build_invalid": accent = Color("ef7772")
 	var arrow := PackedVector2Array([Vector2(0, 0), Vector2(1, 23), Vector2(7, 17), Vector2(12, 29), Vector2(17, 26), Vector2(11, 15), Vector2(20, 14)])
 	draw_colored_polygon(arrow, Color("1e2628"))
@@ -60,7 +61,7 @@ func _draw() -> void:
 			"attack":
 				draw_line(Vector2(17, 32), Vector2(29, 20), accent, 3)
 				draw_line(Vector2(18, 22), Vector2(27, 31), accent, 2)
-			"build_valid":
+			"construct", "build_valid":
 				draw_line(Vector2(17, 26), Vector2(21, 30), accent, 2)
 				draw_line(Vector2(21, 30), Vector2(29, 21), accent, 2)
 			"build_invalid":

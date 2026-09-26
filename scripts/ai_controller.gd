@@ -13,6 +13,7 @@ func tick() -> void:
 		if not is_instance_valid(unit) or unit.owner_id != 1: continue
 		if unit.kind == "villager": workers.append(unit)
 		else: army.append(unit)
+	_resume_construction(workers)
 	for worker in workers:
 		if worker.order == "idle":
 			var resource_kind := "food" if game.players[1]["food"] < 330 else "wood" if game.players[1]["wood"] < 230 else "gold"
@@ -48,11 +49,21 @@ func _has_building(kind: String) -> bool:
 		if is_instance_valid(building) and building.owner_id == 1 and building.kind == kind: return true
 	return false
 
+func _resume_construction(workers: Array[RtsUnit]) -> void:
+	for building in game.buildings:
+		if not is_instance_valid(building) or building.owner_id != 1 or building.is_complete(): continue
+		if game.count_builders(building) > 0: continue
+		for worker in workers:
+			if worker.order != "build":
+				worker.order_build(building)
+				break
+
 func _construct(kind: String, worker: RtsUnit) -> void:
 	if worker.order == "build" or not game.can_afford(1, GameData.BUILDINGS[kind]["cost"]): return
 	var base := Vector2(2070, 720)
 	for attempt in 24:
 		var point := base + Vector2(-randf_range(90, 380), randf_range(-300, 300))
 		if game.can_place(kind, point):
-			game.place_building(1, kind, point, worker)
+			var builders: Array[RtsUnit] = [worker]
+			game.place_building(1, kind, point, builders)
 			return
