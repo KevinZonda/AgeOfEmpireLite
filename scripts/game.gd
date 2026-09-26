@@ -681,6 +681,7 @@ func _select_area(from: Vector2, to: Vector2, additive: bool) -> void:
 			if is_instance_valid(unit) and unit.owner_id == 0 and area.has_point(unit.position) and not selected.has(unit):
 				selected.append(unit)
 	_rebuild_actions()
+	_update_hud()
 	queue_redraw()
 
 func _entity_at(point: Vector2) -> Node2D:
