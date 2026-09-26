@@ -23,6 +23,8 @@ var route := PackedVector2Array()
 var route_index := 0
 var route_goal := Vector2.INF
 var route_retry := 0.0
+var command_queue: Array[Dictionary] = []
+var garrisoned_in: RtsBuilding
 
 func setup(game_ref: Node2D, player_id: int, unit_kind: String) -> void:
 	game = game_ref
@@ -34,6 +36,16 @@ func setup(game_ref: Node2D, player_id: int, unit_kind: String) -> void:
 func refresh_stats(preserve_damage := true) -> void:
 	var missing_hp := maxf(0.0, max_hp - hp) if preserve_damage else 0.0
 	stats = RtsUnitCatalog.unit_definition(game.civilizations[owner_id], kind, game.players[owner_id].get("researched", []))
+	var landmark_bonus := RtsLandmarkCatalog.unit_bonus(game.civilizations[owner_id], game.players[owner_id].get("landmarks", []), kind, stats.get("tags", []))
+	for stat in landmark_bonus:
+		if stat.begins_with("armor_"):
+			var armor_kind: String = str(stat).trim_prefix("armor_")
+			stats["armor"][armor_kind] = float(stats["armor"].get(armor_kind, 0.0)) + float(landmark_bonus[stat])
+		else:
+			stats[stat] = float(stats.get(stat, 0.0)) + float(landmark_bonus[stat])
+	var dynasty_bonus := RtsLandmarkCatalog.dynasty_unit_bonus(game.civilizations[owner_id], game.players[owner_id].get("dynasty", ""), stats.get("tags", []))
+	for stat in dynasty_bonus:
+		stats[stat] = float(stats.get(stat, 0.0)) + float(dynasty_bonus[stat])
 	max_hp = float(stats["hp"])
 	hp = maxf(1.0, max_hp - missing_hp)
 	queue_redraw()
@@ -43,7 +55,7 @@ func radius() -> float:
 
 func order_move(world_point: Vector2) -> void:
 	order = "move"
-	destination = game.navigation.nearest_walkable_point(world_point, radius(), self)
+	destination = game.navigation.nearest_walkable_point(world_point, radius(), self, true)
 	target = null
 	charging = false
 	resume_destination = Vector2.INF
@@ -59,18 +71,60 @@ func order_attack(enemy: Node2D) -> void:
 
 func order_attack_move(world_point: Vector2) -> void:
 	order = "attack_move"
-	destination = game.navigation.nearest_walkable_point(world_point, radius(), self)
+	destination = game.navigation.nearest_walkable_point(world_point, radius(), self, true)
 	target = null
 	charging = false
 	resume_destination = Vector2.INF
 	_reset_route()
 
 func order_stop() -> void:
+	command_queue.clear()
 	order = "idle"
 	target = null
 	charging = false
 	resume_destination = Vector2.INF
 	_reset_route()
+
+func issue_command(command_type: String, world_point := Vector2.INF, target_ref: Node2D = null, append := false) -> void:
+	var command := {"type": command_type, "point": world_point, "target": target_ref}
+	if not append:
+		command_queue.clear()
+		_start_command(command)
+	elif order == "idle" and command_queue.is_empty():
+		_start_command(command)
+	else:
+		command_queue.append(command)
+	queue_redraw()
+
+func _start_command(command: Dictionary) -> bool:
+	match command["type"]:
+		"move": order_move(command["point"])
+		"attack_move": order_attack_move(command["point"])
+		"attack":
+			if not is_instance_valid(command["target"]) or command["target"].is_queued_for_deletion(): return false
+			if kind == "battering_ram" and command["target"] is RtsUnit: return false
+			order_attack(command["target"])
+		"gather":
+			if kind != "villager" or not is_instance_valid(command["target"]) or command["target"].is_queued_for_deletion(): return false
+			order_gather(command["target"])
+		"build":
+			if kind != "villager" or not is_instance_valid(command["target"]) or command["target"].is_queued_for_deletion() or command["target"].is_complete(): return false
+			order_build(command["target"])
+		"garrison":
+			if not is_instance_valid(command["target"]) or command["target"].is_queued_for_deletion() or not RtsSiegeRules.can_garrison(stats, command["target"].kind): return false
+			order = "garrison"
+			target = command["target"]
+			_reset_route()
+		_: return false
+	return true
+
+func _advance_command() -> void:
+	order = "idle"
+	target = null
+	resume_destination = Vector2.INF
+	while not command_queue.is_empty():
+		var command: Dictionary = command_queue.pop_front()
+		if _start_command(command): break
 
 func is_braced() -> bool:
 	if float(stats.get("brace_bonus", 0.0)) <= 0.0: return false
@@ -96,8 +150,7 @@ func _continue_gather() -> void:
 	if next_resource != null:
 		order_gather(next_resource)
 	else:
-		order = "idle"
-		target = null
+		_advance_command()
 
 func order_build(building: Node2D) -> void:
 	if kind != "villager": return
@@ -114,7 +167,7 @@ func _reset_route() -> void:
 	route_retry = 0.0
 
 func _process(delta: float) -> void:
-	if not game.started or game.paused or game.game_over: return
+	if not game.started or game.paused or game.game_over or garrisoned_in != null: return
 	attack_timer = maxf(0.0, attack_timer - delta)
 	work_timer = maxf(0.0, work_timer - delta)
 	if order == "idle":
@@ -129,32 +182,40 @@ func _process(delta: float) -> void:
 			resume_destination = resume_point
 			return
 		_move_toward(destination, delta, 6.0)
-		if position.distance_to(destination) < 7.0: order = "idle"
+		if position.distance_to(destination) < 7.0: _advance_command()
 		return
 	if order == "move":
 		_move_toward(destination, delta, 6.0)
-		if position.distance_to(destination) < 7.0: order = "idle"
+		if position.distance_to(destination) < 7.0: _advance_command()
 		return
 	if order == "gather":
 		if not is_instance_valid(target):
 			_continue_gather()
 		elif target is RtsResource and (target.is_queued_for_deletion() or target.amount <= 0):
 			_continue_gather()
+		if order != "gather": return
 	if not is_instance_valid(target):
 		if resume_destination != Vector2.INF:
 			var resume_point := resume_destination
 			order_attack_move(resume_point)
 			return
-		order = "idle"
-		target = null
+		_advance_command()
 		return
 	if order == "idle": return
+	if order == "garrison":
+		if not target is RtsBuilding or not target.is_complete():
+			_advance_command()
+			return
+		if not _move_toward(target.position, delta, target.size().x * 0.5 + radius() + 5.0): return
+		if not target.garrison_unit(self): _advance_command()
+		return
 	if order == "gather":
 		var gathering_distance: float = target.radius + radius() + 2.0 if target is RtsResource else target.size().x * 0.5 + radius() + 2.0
 		if not _move_toward(target.position, delta, gathering_distance): return
 		if work_timer <= 0.0:
 			var resource_kind: String = "food" if target is RtsBuilding else target.kind
 			var amount := GameData.gathered_amount(game.civilizations[owner_id], resource_kind, target is RtsBuilding)
+			amount = maxi(1, roundi(amount * RtsLandmarkCatalog.gather_multiplier(game.civilizations[owner_id], game.players[owner_id].get("landmarks", []), resource_kind, target is RtsBuilding)))
 			if target is RtsResource: amount = target.harvest(amount)
 			if amount > 0: game.credit_resource(owner_id, resource_kind, amount)
 			work_timer = 1.1
@@ -162,17 +223,23 @@ func _process(delta: float) -> void:
 		return
 	if order == "build":
 		if not _move_toward(target.position, delta, target.size().x * 0.6 + radius()): return
-		target.advance_construction(delta)
-		if target.is_complete(): order = "idle"
+		target.advance_construction(delta * GameData.construction_multiplier(game.civilizations[owner_id]))
+		if target.is_complete(): _advance_command()
 		return
 	if order == "attack":
 		var target_radius := 18.0
 		if target is RtsUnit: target_radius = target.radius()
-		if target is RtsBuilding: target_radius = target.size().x * 0.4
+		if target is RtsBuilding: target_radius = maxf(target.size().x, target.size().y) * 0.5 + radius() + 3.0
 		var reach: float = float(stats["range"]) + target_radius
+		var min_reach: float = float(stats.get("min_range", 0.0)) + target_radius
+		if min_reach > 0.0 and position.distance_to(target.position) < min_reach:
+			var away := (position - target.position).normalized()
+			if away.is_zero_approx(): away = Vector2.RIGHT
+			_move_toward(target.position + away * (min_reach + 10.0), delta, 6.0)
+			return
 		if not _move_toward(target.position, delta, reach): return
 		if attack_timer > 0.0: return
-		var defender_stats: Dictionary = target.stats if target is RtsUnit else RtsUnitCatalog.building_definition(target.kind)
+		var defender_stats: Dictionary = target.stats if target is RtsUnit or target is RtsBuilding else {}
 		var charged := charging and charge_distance >= 60.0
 		var modifiers := {"charging": charged, "braced": is_braced(), "defender_braced": target.is_braced() if target is RtsUnit else false}
 		var damage: float = RtsCombatRules.damage(stats, defender_stats, modifiers)
@@ -189,10 +256,13 @@ func _process(delta: float) -> void:
 
 func _move_toward(point: Vector2, delta: float, stop_distance: float) -> bool:
 	var distance := position.distance_to(point)
-	if distance <= stop_distance: return true
+	if distance <= stop_distance + 0.5: return true
 	route_retry = maxf(0.0, route_retry - delta)
 	if route_goal == Vector2.INF or route_goal.distance_to(point) > RtsWorldMap.CELL_SIZE * 0.5 or route_retry <= 0.0:
-		route = game.navigation.path_between(position, point)
+		if order == "gather" or order == "build" or order == "attack" or order == "garrison":
+			route = game.navigation.path_to_range(position, point, stop_distance, self)
+		else:
+			route = game.navigation.path_between(position, point)
 		route_index = 1 if route.size() > 1 else route.size()
 		route_goal = point
 		route_retry = 0.7
@@ -209,7 +279,7 @@ func _move_toward(point: Vector2, delta: float, stop_distance: float) -> bool:
 	if charging: charge_distance += old_position.distance_to(position)
 	position = position.clamp(Vector2(24, 24), game.world_size - Vector2(24, 24))
 	queue_redraw()
-	return position.distance_to(point) <= stop_distance
+	return position.distance_to(point) <= stop_distance + 0.5
 
 func take_damage(damage: float) -> void:
 	hp -= damage
@@ -226,10 +296,10 @@ func _draw() -> void:
 		draw_rect(Rect2(-5, -3, 10, 6), Color("f1e6c6"))
 	elif kind == "archer" or kind == "longbow":
 		draw_arc(Vector2(1, 0), 7, -PI * 0.6, PI * 0.6, 12, Color("eee6c9"), 2)
-	elif kind == "crossbowman" or kind == "arbaletrier":
+	elif kind == "crossbowman" or kind == "arbaletrier" or kind == "zhuge_nu":
 		draw_line(Vector2(-7, -3), Vector2(7, -3), Color("eee6c9"), 2)
 		draw_line(Vector2(0, -3), Vector2(0, 8), Color("eee6c9"), 2)
-	elif kind == "man_at_arms":
+	elif kind == "man_at_arms" or kind == "palace_guard":
 		draw_rect(Rect2(-5, -6, 10, 12), Color("eee6c9"), false, 2)
 	else:
 		draw_line(Vector2(0, -8), Vector2(0, 8), Color("eee6c9"), 2)

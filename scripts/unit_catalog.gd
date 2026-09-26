@@ -6,6 +6,7 @@ extends RefCounted
 const REPLACEMENTS := {
 	"English": {"archer": "longbow"},
 	"French": {"crossbowman": "arbaletrier", "knight": "royal_knight"},
+	"Chinese": {"archer": "zhuge_nu", "man_at_arms": "palace_guard"},
 }
 
 const CIVILIZATION_BONUSES := {

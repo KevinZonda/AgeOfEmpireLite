@@ -20,12 +20,16 @@ var world_map: RtsWorldMap
 var navigation: RtsNavigation
 var weather: RtsWeather
 var fog: RtsFogOfWar
+var objectives: RtsObjectiveManager
 var map_seed := 0
 var started := false
 var game_over := false
 var paused := false
 var selected_civ := "English"
+var selected_opponent_civ := "French"
 var build_mode := ""
+var pending_landmark_id := ""
+var build_page := 0
 var order_mode := ""
 var dragging := false
 var drag_start := Vector2.ZERO
@@ -80,6 +84,13 @@ func _ready() -> void:
 	add_child(fog)
 	fog.setup(self)
 	fog.hide()
+	objectives = RtsObjectiveManager.new()
+	objectives.z_index = 2
+	add_child(objectives)
+	objectives.victory.connect(func(owner_id: int, reason: String) -> void: _finish_game(owner_id == 0, reason))
+	objectives.site_captured.connect(func(_index: int, owner_id: int) -> void:
+		if owner_id == 0: notify_player("圣地已占领")
+	)
 	ai = RtsAiController.new(self)
 	_create_hud()
 	_create_cursor()
@@ -213,11 +224,11 @@ func _create_hud() -> void:
 
 	menu_panel = PanelContainer.new()
 	menu_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	menu_panel.custom_minimum_size = Vector2(460, 300)
-	menu_panel.offset_left = -230
-	menu_panel.offset_top = -150
-	menu_panel.offset_right = 230
-	menu_panel.offset_bottom = 150
+	menu_panel.custom_minimum_size = Vector2(500, 375)
+	menu_panel.offset_left = -250
+	menu_panel.offset_top = -187
+	menu_panel.offset_right = 250
+	menu_panel.offset_bottom = 188
 	root.add_child(menu_panel)
 	result_panel = PanelContainer.new()
 	result_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
@@ -248,7 +259,7 @@ func _create_hud() -> void:
 	_add_menu_label(pause_box, "游戏已暂停", 27)
 	_add_menu_label(pause_box, "按 Esc 继续游戏", 16)
 	_add_pause_button(pause_box, "继续游戏", func() -> void: _set_paused(false))
-	_add_pause_button(pause_box, "重新开始", func() -> void: start_game(selected_civ))
+	_add_pause_button(pause_box, "重新开始", func() -> void: start_game(selected_civ, -1, selected_opponent_civ))
 	_add_pause_button(pause_box, "返回文明选择", func() -> void: _return_to_menu())
 	_add_pause_button(pause_box, "退出游戏", func() -> void: get_tree().quit())
 
@@ -287,14 +298,13 @@ func _show_menu() -> void:
 	menu_panel.add_child(box)
 	_add_menu_label(box, "AGE OF EMPIRE LITE", 27)
 	_add_menu_label(box, "选择文明，开始与电脑进行一场即时战略对战。", 17)
-	_add_menu_label(box, "英格兰：农田收益和长弓兵    法兰西：骑士冲锋和快速骑兵", 15)
-	for civ in ["English", "French"]:
+	for civ in GameData.CIVILIZATIONS:
 		var button := Button.new()
-		button.text = "使用%s开始" % GameData.CIVILIZATIONS[civ]["label"]
+		button.text = "%s · %s" % [GameData.CIVILIZATIONS[civ]["label"], GameData.CIVILIZATIONS[civ]["description"]]
 		button.custom_minimum_size.y = 44
 		button.pressed.connect(func() -> void: start_game(civ))
 		box.add_child(button)
-	_add_menu_label(box, "目标：摧毁敌人的城镇中心。画面使用临时图形。", 14)
+	_add_menu_label(box, "目标：摧毁城镇中心和地标、控制圣地，或建造奇观。", 14)
 	menu_panel.show()
 
 func _add_menu_label(parent: Node, value: String, size: int) -> void:
@@ -304,15 +314,20 @@ func _add_menu_label(parent: Node, value: String, size: int) -> void:
 	label.add_theme_font_size_override("font_size", size)
 	parent.add_child(label)
 
-func start_game(civ: String, requested_seed := -1) -> void:
+func start_game(civ: String, requested_seed := -1, opponent_civ := "") -> void:
+	if not GameData.CIVILIZATIONS.has(civ): return
+	var civilization_ids := GameData.CIVILIZATIONS.keys()
+	if opponent_civ == "" or opponent_civ == civ or not GameData.CIVILIZATIONS.has(opponent_civ):
+		opponent_civ = civilization_ids[(civilization_ids.find(civ) + 1) % civilization_ids.size()]
 	_clear_world()
 	paused = false
 	pause_overlay.hide()
 	selected_civ = civ
-	civilizations = [civ, "French" if civ == "English" else "English"]
+	selected_opponent_civ = opponent_civ
+	civilizations = [civ, opponent_civ]
 	players = [
-		{"food": 340, "wood": 360, "gold": 150, "stone": 100, "age": 1, "researched": []},
-		{"food": 420, "wood": 420, "gold": 170, "stone": 100, "age": 1, "researched": []},
+		{"food": 340, "wood": 360, "gold": 150, "stone": 100, "age": 1, "researched": [], "landmarks": [], "dynasty": ""},
+		{"food": 420, "wood": 420, "gold": 170, "stone": 100, "age": 1, "researched": [], "landmarks": [], "dynasty": ""},
 	]
 	started = true
 	game_over = false
@@ -322,6 +337,8 @@ func start_game(civ: String, requested_seed := -1) -> void:
 	weather.setup(self, map_seed, WORLD_SIZE)
 	weather.show()
 	build_mode = ""
+	pending_landmark_id = ""
+	build_page = 0
 	order_mode = ""
 	ai_timer = 0.0
 	camera.position = Vector2(630, 720)
@@ -330,6 +347,7 @@ func start_game(civ: String, requested_seed := -1) -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
 	cursor.show()
 	_spawn_map_resources()
+	objectives.setup(self)
 	for owner_id in 2:
 		var base := Vector2(330, 720) if owner_id == 0 else Vector2(2070, 720)
 		spawn_building(owner_id, "town_center", base)
@@ -353,6 +371,7 @@ func _clear_world() -> void:
 	units.clear()
 	buildings.clear()
 	resources.clear()
+	if objectives != null: objectives.reset()
 	selected.clear()
 	hit_lines.clear()
 
@@ -392,7 +411,7 @@ func spawn_resource(kind: String, world_point: Vector2, amount: int, appearance 
 	navigation.invalidate_spatial_index()
 	return resource
 
-func spawn_unit(owner_id: int, kind: String, world_point: Vector2, rally := Vector2.INF) -> RtsUnit:
+func spawn_unit(owner_id: int, kind: String, world_point: Vector2, rally := Vector2.INF, rally_target: Node2D = null, rally_resource_kind := "") -> RtsUnit:
 	var unit: RtsUnit = UNIT_SCENE.new()
 	unit.position = world_map.nearest_walkable_point(world_point)
 	add_child(unit)
@@ -400,15 +419,22 @@ func spawn_unit(owner_id: int, kind: String, world_point: Vector2, rally := Vect
 	unit.position = navigation.nearest_walkable_point(unit.position, unit.radius(), unit)
 	units.append(unit)
 	navigation.invalidate_spatial_index()
-	if rally != Vector2.INF: unit.order_move(rally)
+	if rally != Vector2.INF:
+		if kind == "villager" and is_instance_valid(rally_target) and not rally_target.is_queued_for_deletion() and (rally_target is RtsResource or rally_target is RtsBuilding and rally_target.kind == "farm" and rally_target.is_complete()):
+			unit.issue_command("gather", Vector2.INF, rally_target)
+		elif kind == "villager" and rally_resource_kind != "":
+			var replacement := find_nearest_resource(rally, rally_resource_kind, 220.0, owner_id)
+			if replacement != null: unit.issue_command("gather", Vector2.INF, replacement)
+			else: unit.issue_command("move", rally)
+		else: unit.issue_command("move", rally)
 	_update_hud()
 	return unit
 
-func spawn_building(owner_id: int, kind: String, world_point: Vector2, under_construction := false) -> RtsBuilding:
+func spawn_building(owner_id: int, kind: String, world_point: Vector2, under_construction := false, landmark_id := "") -> RtsBuilding:
 	var building: RtsBuilding = BUILDING_SCENE.new()
 	building.position = world_point
 	add_child(building)
-	building.setup(self, owner_id, kind, under_construction)
+	building.setup(self, owner_id, kind, under_construction, landmark_id)
 	buildings.append(building)
 	_update_hud()
 	return building
@@ -418,7 +444,9 @@ func find_spawn_position(building: RtsBuilding) -> Vector2:
 	return building.position + Vector2(direction * (building.size().x * 0.5 + 27), randf_range(-25, 25))
 
 func building_completed(building: RtsBuilding) -> void:
-	if building.owner_id == 0: notify_player("%s建造完成" % GameData.BUILDINGS[building.kind]["label"])
+	if building.kind == "landmark":
+		complete_age(building.owner_id, int(RtsLandmarkCatalog.landmark(building.landmark_id).get("age", 0)), building.landmark_id)
+	if building.owner_id == 0: notify_player("%s建造完成" % building.display_label())
 	_rebuild_actions()
 	_update_hud()
 
@@ -429,14 +457,22 @@ func entity_destroyed(entity: Node2D) -> void:
 		units.erase(entity)
 		navigation.invalidate_spatial_index()
 	elif entity is RtsBuilding:
+		entity.ungarrison_all()
+		objectives.on_building_destroyed(entity)
 		buildings.erase(entity)
-		if entity.kind == "town_center":
-			_finish_game(entity.owner_id != 0)
+		if entity.kind == "town_center" or entity.kind == "landmark":
+			var has_landmark := false
+			for building in buildings:
+				if is_instance_valid(building) and building.owner_id == entity.owner_id and building.is_complete() and (building.kind == "town_center" or building.kind == "landmark"):
+					has_landmark = true
+					break
+			if not has_landmark: _finish_game(entity.owner_id != 0, "landmarks")
 	entity.queue_free()
 	_rebuild_actions()
 	_update_hud()
 
-func _finish_game(won: bool) -> void:
+func _finish_game(won: bool, reason := "landmarks") -> void:
+	if game_over: return
 	game_over = true
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	cursor.hide()
@@ -445,7 +481,8 @@ func _finish_game(won: bool) -> void:
 	box.add_theme_constant_override("separation", 18)
 	result_panel.add_child(box)
 	_add_menu_label(box, "胜利！" if won else "战败", 30)
-	_add_menu_label(box, "敌方城镇中心已被摧毁。" if won else "你的城镇中心被摧毁了。", 17)
+	var result_reason: String = {"landmarks": "城镇中心与地标全部摧毁", "sacred": "控制全部圣地", "wonder": "奇观守护成功"}.get(reason, reason)
+	_add_menu_label(box, result_reason, 17)
 	var button := Button.new()
 	button.text = "返回文明选择"
 	button.pressed.connect(func() -> void: _return_to_menu())
@@ -480,7 +517,7 @@ func population_cap(owner_id: int) -> int:
 	var cap := 0
 	for building in buildings:
 		if is_instance_valid(building) and building.owner_id == owner_id and building.is_complete():
-			cap += GameData.BUILDINGS[building.kind]["pop"]
+			cap += building.definition()["pop"]
 	return cap
 
 func train_unit(building: RtsBuilding, unit_kind: String) -> bool:
@@ -531,28 +568,84 @@ func complete_research(owner_id: int, tech_id: String) -> void:
 
 func is_age_queued(owner_id: int) -> bool:
 	for building in buildings:
+		if is_instance_valid(building) and building.owner_id == owner_id and building.kind == "landmark" and not building.is_complete(): return true
 		if is_instance_valid(building) and building.owner_id == owner_id and building.has_queued_age(): return true
 	return false
 
-func advance_age(owner_id: int) -> bool:
+func active_landmark_id(owner_id: int) -> String:
+	for building in buildings:
+		if is_instance_valid(building) and building.owner_id == owner_id and building.kind == "landmark" and not building.is_complete(): return building.landmark_id
+	return ""
+
+func place_landmark(owner_id: int, landmark_id: String, world_point: Vector2, workers: Array[RtsUnit], append_order := false) -> bool:
+	var status := RtsLandmarkCatalog.choice_status(civilizations[owner_id], players[owner_id]["age"], players[owner_id]["landmarks"], landmark_id, active_landmark_id(owner_id))
+	if not status["available"]:
+		if owner_id == 0: notify_player(status["reason"])
+		return false
+	var builders: Array[RtsUnit] = []
+	for worker in workers:
+		if is_instance_valid(worker) and worker.owner_id == owner_id and worker.kind == "villager": builders.append(worker)
+	if builders.is_empty(): return false
+	if not can_place("landmark", world_point):
+		if owner_id == 0: notify_player("这里不能建造地标")
+		return false
+	var choice := RtsLandmarkCatalog.landmark(landmark_id)
+	if not spend(owner_id, choice["cost"]):
+		if owner_id == 0: notify_player("地标资源不足")
+		return false
+	var building := spawn_building(owner_id, "landmark", world_point, true, landmark_id)
+	for worker in builders: worker.issue_command("build", Vector2.INF, building, append_order)
+	if owner_id == 0: notify_player("正在建造%s" % choice["label"])
+	_rebuild_actions()
+	return true
+
+func advance_age(owner_id: int, landmark_id := "") -> bool:
 	var age: int = players[owner_id]["age"]
 	if not RtsTechTree.can_advance(age) or is_age_queued(owner_id): return false
 	var center := _player_center(owner_id)
 	if center == null or not center.is_complete(): return false
-	var cost := RtsTechTree.age_cost(age)
-	if not spend(owner_id, cost):
-		if owner_id == 0: notify_player("升级时代所需资源不足")
-		return false
-	center.enqueue_age(age + 1, RtsTechTree.age_time(age), cost)
-	if owner_id == 0: notify_player("正在升级到时代 %d" % (age + 1))
-	_update_hud()
-	return true
+	var choices := RtsLandmarkCatalog.choices_for(civilizations[owner_id], age, players[owner_id]["landmarks"])
+	if choices.is_empty(): return false
+	if landmark_id.is_empty():
+		for choice in choices:
+			if choice["age"] == age + 1:
+				landmark_id = choice["id"]
+				break
+	if landmark_id.is_empty(): return false
+	return construct_landmark(owner_id, landmark_id)
 
-func complete_age(owner_id: int, target_age: int) -> void:
-	if target_age != players[owner_id]["age"] + 1: return
-	players[owner_id]["age"] = target_age
+func construct_landmark(owner_id: int, landmark_id: String) -> bool:
+	var age: int = players[owner_id]["age"]
+	if not RtsLandmarkCatalog.choice_status(civilizations[owner_id], age, players[owner_id]["landmarks"], landmark_id, active_landmark_id(owner_id))["available"]: return false
+	var center := _player_center(owner_id)
+	if center == null or not center.is_complete(): return false
+	var workers: Array[RtsUnit] = []
+	for unit in units:
+		if is_instance_valid(unit) and unit.owner_id == owner_id and unit.kind == "villager": workers.append(unit)
+	workers.sort_custom(func(a: RtsUnit, b: RtsUnit) -> bool: return a.position.distance_squared_to(center.position) < b.position.distance_squared_to(center.position))
+	if workers.size() > 2: workers.resize(2)
+	var candidates := [Vector2(0, 180), Vector2(0, -180), Vector2(-180 if owner_id == 1 else 180, 0), Vector2(-180 if owner_id == 1 else 180, 180), Vector2(-180 if owner_id == 1 else 180, -180)]
+	for offset in candidates:
+		if can_place("landmark", center.position + offset): return place_landmark(owner_id, landmark_id, center.position + offset, workers)
+	return false
+
+func complete_age(owner_id: int, target_age: int, landmark_id := "") -> void:
+	var current_age: int = players[owner_id]["age"]
+	var aged_up := target_age == current_age + 1
+	if not aged_up and (landmark_id.is_empty() or civilizations[owner_id] != "Chinese" or target_age > current_age): return
+	if landmark_id != "" and players[owner_id]["landmarks"].has(landmark_id): return
+	if aged_up: players[owner_id]["age"] = target_age
+	if landmark_id != "": players[owner_id]["landmarks"].append(landmark_id)
+	var previous_dynasty: String = players[owner_id].get("dynasty", "")
+	players[owner_id]["dynasty"] = RtsLandmarkCatalog.dynasty_for(players[owner_id]["landmarks"]) if civilizations[owner_id] == "Chinese" else ""
+	for unit in units:
+		if is_instance_valid(unit) and unit.owner_id == owner_id: unit.refresh_stats()
+	for building in buildings:
+		if is_instance_valid(building) and building.owner_id == owner_id: building.refresh_stats()
 	if owner_id == 0:
-		notify_player("进入时代 %d！" % target_age)
+		if aged_up: notify_player("进入时代 %d！" % target_age)
+		if players[owner_id]["dynasty"] != previous_dynasty:
+			notify_player("进入%s朝：王朝加成已生效" % RtsLandmarkCatalog.DYNASTY_NAMES[players[owner_id]["dynasty"]])
 		_rebuild_actions()
 	_update_hud()
 
@@ -585,8 +678,13 @@ func can_place(kind: String, world_point: Vector2) -> bool:
 		if is_instance_valid(resource) and footprint.grow(resource.radius * 0.5).has_point(resource.position): return false
 	return true
 
-func place_building(owner_id: int, kind: String, world_point: Vector2, workers: Array[RtsUnit]) -> bool:
+func place_building(owner_id: int, kind: String, world_point: Vector2, workers: Array[RtsUnit], append_order := false) -> bool:
 	if not RtsTechTree.can_build(civilizations[owner_id], players[owner_id]["age"], kind): return false
+	if kind == "wonder":
+		for existing in buildings:
+			if is_instance_valid(existing) and existing.owner_id == owner_id and existing.kind == "wonder":
+				if owner_id == 0: notify_player("已有奇观")
+				return false
 	var builders: Array[RtsUnit] = []
 	for worker in workers:
 		if is_instance_valid(worker) and worker.owner_id == owner_id and worker.kind == "villager":
@@ -599,7 +697,7 @@ func place_building(owner_id: int, kind: String, world_point: Vector2, workers: 
 		if owner_id == 0: notify_player("建造资源不足")
 		return false
 	var building := spawn_building(owner_id, kind, world_point, true)
-	for worker in builders: worker.order_build(building)
+	for worker in builders: worker.issue_command("build", Vector2.INF, building, append_order)
 	if owner_id == 0: notify_player("%d 名村民正在建造%s" % [builders.size(), GameData.BUILDINGS[kind]["label"]])
 	return true
 
@@ -626,7 +724,8 @@ func nearest_enemy(unit: RtsUnit, max_distance: float) -> Node2D:
 	var best: Node2D
 	var distance_limit := max_distance * max_distance
 	for other in units:
-		if not is_instance_valid(other) or other == unit or other.owner_id == unit.owner_id: continue
+		if unit.kind == "battering_ram": break
+		if not is_instance_valid(other) or other == unit or other.owner_id == unit.owner_id or other.garrisoned_in != null: continue
 		if fog.active and not fog.can_see(unit.owner_id, other.position): continue
 		var d := unit.position.distance_squared_to(other.position)
 		if d < distance_limit:
@@ -705,7 +804,7 @@ func _cursor_state_at(world_point: Vector2, over_ui := false) -> String:
 	if over_ui: return "default"
 	if order_mode == "attack_move": return "attack_move"
 	if build_mode != "":
-		var cost: Dictionary = GameData.BUILDINGS[build_mode]["cost"]
+		var cost: Dictionary = RtsLandmarkCatalog.landmark(pending_landmark_id).get("cost", {}) if build_mode == "landmark" else GameData.BUILDINGS[build_mode]["cost"]
 		return "build_valid" if can_place(build_mode, world_point) and can_afford(0, cost) else "build_invalid"
 	if dragging and drag_start.distance_to(world_point) > 12.0: return "drag"
 	var entity := _entity_at(world_point)
@@ -756,11 +855,16 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			if event.pressed:
 				if order_mode == "attack_move":
-					_issue_attack_move(get_global_mouse_position())
+					_issue_attack_move(get_global_mouse_position(), event.shift_pressed)
 					return
 				if build_mode != "":
-					_confirm_build(get_global_mouse_position())
+					_confirm_build(get_global_mouse_position(), event.shift_pressed)
 					return
+				if event.double_click:
+					var clicked := _entity_at(get_viewport().get_canvas_transform().affine_inverse() * event.position)
+					if clicked is RtsUnit and clicked.owner_id == 0:
+						_select_same_type_visible(clicked, event.shift_pressed)
+						return
 				dragging = true
 				drag_start = get_global_mouse_position()
 				drag_current = drag_start
@@ -777,9 +881,10 @@ func _unhandled_input(event: InputEvent) -> void:
 				return
 			if build_mode != "":
 				build_mode = ""
+				pending_landmark_id = ""
 				notify_player("已取消建造")
 				return
-			_issue_order(get_global_mouse_position())
+			_issue_order(get_global_mouse_position(), event.shift_pressed)
 			return
 	if event is InputEventMouseMotion and dragging:
 		drag_current = get_global_mouse_position()
@@ -803,15 +908,27 @@ func _select_area(from: Vector2, to: Vector2, additive: bool) -> void:
 	else:
 		var area := Rect2(from, to - from).abs()
 		for unit in units:
-			if is_instance_valid(unit) and unit.owner_id == 0 and area.has_point(unit.position) and not selected.has(unit):
+			if is_instance_valid(unit) and unit.garrisoned_in == null and unit.owner_id == 0 and area.has_point(unit.position) and not selected.has(unit):
 				selected.append(unit)
+	_rebuild_actions()
+	_update_hud()
+	queue_redraw()
+
+func _select_same_type_visible(clicked: RtsUnit, additive: bool) -> void:
+	if not additive: selected.clear()
+	var screen_to_world := get_viewport().get_canvas_transform().affine_inverse()
+	var visible_area := Rect2(screen_to_world * Vector2.ZERO, screen_to_world * get_viewport_rect().size).abs()
+	for unit in units:
+		if not is_instance_valid(unit) or unit.is_queued_for_deletion() or unit.garrisoned_in != null: continue
+		if unit.owner_id == clicked.owner_id and unit.kind == clicked.kind and visible_area.has_point(unit.position) and not selected.has(unit):
+			selected.append(unit)
 	_rebuild_actions()
 	_update_hud()
 	queue_redraw()
 
 func _entity_at(point: Vector2) -> Node2D:
 	for unit in units:
-		if not is_instance_valid(unit) or unit.is_queued_for_deletion(): continue
+		if not is_instance_valid(unit) or unit.is_queued_for_deletion() or unit.garrisoned_in != null: continue
 		if unit.owner_id != 0 and fog.active and not fog.can_see(0, unit.position): continue
 		if is_instance_valid(unit) and unit.position.distance_to(point) <= unit.radius() + 5: return unit
 	for building in buildings:
@@ -826,7 +943,9 @@ func _resource_at(point: Vector2) -> RtsResource:
 			return resource
 	return null
 
-func _issue_order(point: Vector2) -> void:
+func _issue_order(point: Vector2, append_order := false) -> void:
+	var entity := _entity_at(point)
+	var resource := _resource_at(point)
 	var has_selected_unit := false
 	for subject in selected:
 		if is_instance_valid(subject) and subject is RtsUnit:
@@ -837,37 +956,38 @@ func _issue_order(point: Vector2) -> void:
 		for subject in selected:
 			if not is_instance_valid(subject) or not subject is RtsBuilding: continue
 			if subject.owner_id != 0 or not subject.is_complete() or not RtsTechTree.PRODUCTION.has(subject.kind): continue
-			subject.rally_point = point.clamp(Vector2(24, 24), WORLD_SIZE - Vector2(24, 24))
+			var rally_target: Node2D = resource if resource != null else entity if entity is RtsBuilding and entity.owner_id == 0 and entity.kind == "farm" else null
+			subject.set_rally(point.clamp(Vector2(24, 24), WORLD_SIZE - Vector2(24, 24)), rally_target)
 			assigned = true
 		if assigned:
-			notify_player("集结点已设置")
+			notify_player("资源集结点已设置；新村民自动采集" if resource != null or entity is RtsBuilding and entity.kind == "farm" else "集结点已设置")
 			queue_redraw()
 		return
-	var entity := _entity_at(point)
-	var resource := _resource_at(point)
 	var index := 0
 	for subject in selected:
 		if not is_instance_valid(subject) or not subject is RtsUnit: continue
 		if entity != null and entity.owner_id == 1:
-			subject.order_attack(entity)
+			subject.issue_command("attack", Vector2.INF, entity, append_order)
 		elif entity is RtsBuilding and entity.owner_id == 0 and not entity.is_complete() and subject.kind == "villager":
-			subject.order_build(entity)
+			subject.issue_command("build", Vector2.INF, entity, append_order)
 		elif resource != null and subject.kind == "villager":
-			subject.order_gather(resource)
+			subject.issue_command("gather", Vector2.INF, resource, append_order)
 		elif entity is RtsBuilding and entity.owner_id == 0 and entity.kind == "farm" and subject.kind == "villager":
-			subject.order_gather(entity)
+			subject.issue_command("gather", Vector2.INF, entity, append_order)
+		elif entity is RtsBuilding and entity.owner_id == 0 and entity.is_complete() and RtsSiegeRules.can_garrison(subject.stats, entity.kind):
+			subject.issue_command("garrison", Vector2.INF, entity, append_order)
 		else:
 			var offset := Vector2((index % 4) * 25 - 37, (index / 4) * 25 - 25)
-			subject.order_move(point + offset)
+			subject.issue_command("move", point + offset, null, append_order)
 		index += 1
 
-func _issue_attack_move(point: Vector2) -> void:
-	order_mode = ""
+func _issue_attack_move(point: Vector2, append_order := false) -> void:
+	if not append_order: order_mode = ""
 	var index := 0
 	for subject in selected:
 		if not is_instance_valid(subject) or not subject is RtsUnit or subject.kind == "villager": continue
 		var offset := Vector2((index % 4) * 25 - 37, (index / 4) * 25 - 25)
-		subject.order_attack_move(point + offset)
+		subject.issue_command("attack_move", point + offset, null, append_order)
 		index += 1
 	queue_redraw()
 
@@ -877,24 +997,32 @@ func _stop_selected_units() -> void:
 		if is_instance_valid(subject) and subject is RtsUnit: subject.order_stop()
 	notify_player("单位已停止")
 
-func _confirm_build(point: Vector2) -> void:
+func _confirm_build(point: Vector2, append_order := false) -> void:
 	var builders: Array[RtsUnit] = []
 	for entity in selected:
 		if is_instance_valid(entity) and entity is RtsUnit and entity.owner_id == 0 and entity.kind == "villager":
 			builders.append(entity)
 	if builders.is_empty():
-		build_mode = ""
+		for unit in units:
+			if is_instance_valid(unit) and unit.owner_id == 0 and unit.kind == "villager": builders.append(unit)
+		builders.sort_custom(func(a: RtsUnit, b: RtsUnit) -> bool: return a.position.distance_squared_to(point) < b.position.distance_squared_to(point))
+		if builders.size() > 2: builders.resize(2)
+	if builders.is_empty():
+		notify_player("需要村民建造")
 		return
-	if place_building(0, build_mode, point, builders):
+	var success := place_landmark(0, pending_landmark_id, point, builders, append_order) if build_mode == "landmark" else place_building(0, build_mode, point, builders, append_order)
+	if success and (not append_order or build_mode == "landmark"):
 		build_mode = ""
+		pending_landmark_id = ""
 		_rebuild_actions()
 	queue_redraw()
 
 func _update_hud() -> void:
 	if top_label == null or players.is_empty(): return
 	var bank := players[0]
-	top_label.text = "%s  ·  时代 %d     食物 %d    木材 %d    黄金 %d    石料 %d     人口 %d/%d     地图 %d" % [
-		GameData.CIVILIZATIONS[civilizations[0]]["label"], bank["age"], bank["food"], bank["wood"], bank["gold"], bank["stone"], population_used(0), population_cap(0), map_seed]
+	var dynasty_text := " · %s朝" % RtsLandmarkCatalog.DYNASTY_NAMES[bank["dynasty"]] if bank["dynasty"] != "" else ""
+	top_label.text = "%s · 时代 %d%s     食物 %d    木材 %d    黄金 %d    石料 %d     人口 %d/%d     %s     地图 %d" % [
+		GameData.CIVILIZATIONS[civilizations[0]]["label"], bank["age"], dynasty_text, bank["food"], bank["wood"], bank["gold"], bank["stone"], population_used(0), population_cap(0), objectives.status_text(0), map_seed]
 	_refresh_action_buttons()
 	selection_health.hide()
 	selection_progress.hide()
@@ -904,7 +1032,7 @@ func _update_hud() -> void:
 		selection_icon.text = "◆"
 		selection_icon.add_theme_color_override("font_color", Color("9da9a2"))
 		info_label.text = "未选择"
-		detail_label.text = "左键选择 · 右键下令 · Esc 暂停"
+		detail_label.text = "左键选择 · 双击同型单位 · 右键下令 · Esc 暂停"
 		return
 	var item := selected[0]
 	selection_icon.text = "⌂" if item is RtsBuilding else "◆"
@@ -914,13 +1042,13 @@ func _update_hud() -> void:
 		var counts: Dictionary = {}
 		for entity in selected:
 			if not is_instance_valid(entity): continue
-			var label_text: String = GameData.UNITS[entity.kind]["label"] if entity is RtsUnit else GameData.BUILDINGS[entity.kind]["label"]
+			var label_text: String = GameData.UNITS[entity.kind]["label"] if entity is RtsUnit else entity.display_label()
 			counts[label_text] = counts.get(label_text, 0) + 1
 		var parts: Array[String] = []
 		for label_text in counts: parts.append("%s ×%d" % [label_text, counts[label_text]])
 		detail_label.text = "  ".join(parts)
 		return
-	var name: String = GameData.UNITS[item.kind]["label"] if item is RtsUnit else GameData.BUILDINGS[item.kind]["label"]
+	var name: String = GameData.UNITS[item.kind]["label"] if item is RtsUnit else item.display_label()
 	info_label.text = name
 	selection_health.max_value = item.max_hp
 	selection_health.value = maxf(0.0, item.hp)
@@ -931,6 +1059,7 @@ func _update_hud() -> void:
 		detail_label.text = "生命 %.0f/%.0f   攻击 %.0f   近甲 %.0f   远甲 %.0f   射程 %.0f   移速 %.0f" % [item.hp, item.max_hp, stats["damage"], armor.get("melee", 0.0), armor.get("ranged", 0.0), stats["range"], stats["speed"]]
 	else:
 		detail_label.text = "生命 %.0f/%.0f   %s" % [item.hp, item.max_hp, "建造中" if not item.is_complete() else "已建成"]
+		if not item.garrisoned_units.is_empty(): detail_label.text += "   驻军 %d/%d" % [item.garrisoned_units.size(), RtsSiegeRules.garrison_capacity(item.kind)]
 		if item.is_complete() and RtsTechTree.PRODUCTION.has(item.kind):
 			detail_label.text += "   右键设置集结点"
 		if not item.is_complete():
@@ -979,16 +1108,20 @@ func _refresh_action_buttons() -> void:
 	var context := {
 		"civilization": civilizations[0], "age": players[0]["age"], "producer": producer,
 		"researched": players[0]["researched"], "queued_research": queued_research(0),
+		"landmarks": players[0]["landmarks"], "active_landmark": active_landmark_id(0),
+		"has_wonder": _has_wonder(0),
 		"resources": players[0], "population_used": population_used(0), "population_cap": population_cap(0),
 		"production_complete": complete,
 	}
 	for button in command_buttons:
 		if not is_instance_valid(button) or button.is_queued_for_deletion(): continue
 		var status := RtsActionAvailability.evaluate(button.get_meta("action_type"), button.get_meta("action_kind"), context)
-		if button.get_meta("action_type") == "age" and status["available"] and is_age_queued(0):
-			status["available"] = false
-			status["reason"] = "正在升级"
 		button.set_availability(status["available"], status["reason"], status["cost"])
+
+func _has_wonder(owner_id: int) -> bool:
+	for building in buildings:
+		if is_instance_valid(building) and building.owner_id == owner_id and building.kind == "wonder": return true
+	return false
 
 func _rebuild_actions() -> void:
 	if action_bar == null: return
@@ -998,7 +1131,7 @@ func _rebuild_actions() -> void:
 	command_title.text = "命令"
 	if selected.is_empty() or not is_instance_valid(selected[0]): return
 	var item := selected[0]
-	var keys := [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6]
+	var keys := [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9]
 	var action_index := 0
 	if item is RtsUnit:
 		var any_worker := false
@@ -1008,40 +1141,80 @@ func _rebuild_actions() -> void:
 			if unit.kind == "villager": any_worker = true
 			else: any_military = true
 		if any_worker:
-			command_title.text = "村民 · 建造"
-			for kind in RtsTechTree.all_buildings(civilizations[0]):
-				var cost: Dictionary = GameData.BUILDINGS[kind]["cost"]
-				_add_action(kind, GameData.BUILDINGS[kind]["label"], cost, keys[action_index], "build", func() -> void:
-					build_mode = kind
-					notify_player("点击地图放置%s；右键取消" % GameData.BUILDINGS[kind]["label"])
-				)
+			var pages := [
+				{"title": "经济", "kinds": ["house", "farm"]},
+				{"title": "军营", "kinds": ["barracks", "archery_range", "stable", "siege_workshop"]},
+				{"title": "防御", "kinds": ["outpost", "palisade_wall", "stone_wall", "keep"]},
+				{"title": "地标与奇观", "kinds": ["wonder"]},
+			]
+			if civilizations[0] == "Chinese": pages.append({"title": "王朝地标", "kinds": []})
+			build_page = posmod(build_page, pages.size())
+			var page: Dictionary = pages[build_page]
+			command_title.text = "村民 · %s (%d/%d)" % [page["title"], build_page + 1, pages.size()]
+			for kind in page["kinds"]:
+				_add_build_action(kind, keys[action_index])
 				action_index += 1
-		if any_military:
-			if not any_worker: command_title.text = "部队 · 命令"
-			_add_action("attack_move", "攻击移动", {}, KEY_6 if any_worker else KEY_1, "order", func() -> void:
+			if build_page == 3:
+				for choice in RtsLandmarkCatalog.choices_for(civilizations[0], players[0]["age"], players[0]["landmarks"]):
+					if int(choice["age"]) != players[0]["age"] + 1: continue
+					_add_landmark_action(choice, keys[action_index])
+					action_index += 1
+			if build_page == 4:
+				for choice in RtsLandmarkCatalog.choices_for(civilizations[0], players[0]["age"], players[0]["landmarks"]):
+					if int(choice["age"]) > players[0]["age"]: continue
+					_add_landmark_action(choice, keys[action_index])
+					action_index += 1
+			_add_action("next_page", "下一页", {}, KEY_5, "order", func() -> void:
+				build_page = (build_page + 1) % pages.size()
+				_rebuild_actions()
+			)
+		if any_military and not any_worker:
+			command_title.text = "部队 · 命令"
+			_add_action("attack_move", "攻击移动", {}, KEY_1, "order", func() -> void:
 				order_mode = "attack_move"
 				build_mode = ""
-				notify_player("点击地图指定攻击移动目标；右键取消")
+				notify_player("点击地图攻击移动；Shift 点击连续下令")
 			)
-		_add_action("stop", "停止", {}, KEY_7 if any_worker and any_military else KEY_6 if any_worker else KEY_2, "order", func() -> void: _stop_selected_units())
+		_add_action("stop", "停止", {}, KEY_6 if any_worker else KEY_2, "order", func() -> void: _stop_selected_units())
 	elif item is RtsBuilding:
-		command_title.text = "%s · 训练与研究" % GameData.BUILDINGS[item.kind]["label"]
+		command_title.text = "%s · 训练与研究" % item.display_label()
 		for kind in RtsTechTree.all_train_units(civilizations[0], item.kind):
 			var cost: Dictionary = GameData.UNITS[kind]["cost"]
-			_add_action(kind, GameData.UNITS[kind]["label"], cost, keys[action_index], "train", func() -> void: train_unit(item, kind))
+			_add_action(kind, GameData.UNITS[kind]["label"], cost, keys[action_index] if action_index < keys.size() else KEY_NONE, "train", func() -> void: train_unit(item, kind))
 			action_index += 1
 		for kind in RtsTechTree.all_researches(civilizations[0], item.kind):
 			var technology: Dictionary = RtsTechTree.TECHNOLOGIES[kind]
-			_add_action(kind, technology["label"], technology["cost"], keys[action_index], "research", func() -> void: research_technology(item, kind))
+			_add_action(kind, technology["label"], technology["cost"], keys[action_index] if action_index < keys.size() else KEY_NONE, "research", func() -> void: research_technology(item, kind))
 			action_index += 1
 		if item.kind == "town_center":
 			var age: int = players[0]["age"]
-			_add_action("age", "升级时代", RtsTechTree.age_cost(age), keys[action_index], "age", func() -> void: advance_age(0))
+			for choice in RtsLandmarkCatalog.choices_for(civilizations[0], age, players[0]["landmarks"]):
+				if int(choice["age"]) != age + 1: continue
+				_add_landmark_action(choice, keys[action_index] if action_index < keys.size() else KEY_NONE)
+				action_index += 1
+		if RtsSiegeRules.garrison_capacity(item.kind) > 0:
+			_add_action("ungarrison", "放出驻军", {}, keys[action_index] if action_index < keys.size() else KEY_NONE, "order", func() -> void: item.ungarrison_all())
 	_refresh_action_buttons()
+
+func _add_build_action(kind: String, keycode: int) -> void:
+	var cost: Dictionary = GameData.BUILDINGS[kind]["cost"]
+	_add_action(kind, GameData.BUILDINGS[kind]["label"], cost, keycode, "build", func() -> void:
+		build_mode = kind
+		pending_landmark_id = ""
+		notify_player("点击地图放置%s；Shift 连续建造" % GameData.BUILDINGS[kind]["label"])
+	)
+
+func _add_landmark_action(choice: Dictionary, keycode: int) -> void:
+	var choice_id: String = choice["id"]
+	_add_action(choice_id, choice["label"], choice["cost"], keycode, "landmark", func() -> void:
+		build_mode = "landmark"
+		pending_landmark_id = choice_id
+		notify_player("%s：%s。点击地图放置" % [choice["label"], choice["description"]])
+	)
 
 func _add_action(icon_kind: String, label_text: String, cost: Dictionary, keycode: int, action_type: String, callback: Callable) -> void:
 	var button := RtsCommandButton.new()
-	var key_text := OS.get_keycode_string(keycode)
+	var key_text := OS.get_keycode_string(keycode) if keycode != KEY_NONE else ""
 	button.configure(icon_kind, label_text, key_text, command_buttons.size())
 	button.set_meta("cost", cost)
 	button.set_meta("action_type", action_type)
@@ -1049,7 +1222,7 @@ func _add_action(icon_kind: String, label_text: String, cost: Dictionary, keycod
 	button.pressed.connect(callback)
 	action_bar.add_child(button)
 	command_buttons.append(button)
-	hotkey_buttons[keycode] = button
+	if keycode != KEY_NONE: hotkey_buttons[keycode] = button
 
 func _draw() -> void:
 	if not started:

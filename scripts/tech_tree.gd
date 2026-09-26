@@ -10,7 +10,7 @@ const AGE_ADVANCE_COSTS := {
 }
 const AGE_ADVANCE_TIMES := {1: 25.0, 2: 35.0, 3: 45.0}
 
-const BUILD_MENU := ["house", "farm", "barracks", "archery_range", "stable"]
+const BUILD_MENU := ["house", "farm", "barracks", "archery_range", "stable", "outpost", "palisade_wall", "stone_wall", "keep", "siege_workshop", "wonder"]
 const BUILDING_AGE := {
 	"town_center": 1,
 	"house": 1,
@@ -18,6 +18,12 @@ const BUILDING_AGE := {
 	"barracks": 2,
 	"archery_range": 2,
 	"stable": 2,
+	"outpost": 2,
+	"palisade_wall": 2,
+	"stone_wall": 3,
+	"keep": 3,
+	"siege_workshop": 3,
+	"wonder": 4,
 }
 
 # Base roster; civilization substitutions are declared in RtsUnitCatalog.
@@ -26,19 +32,24 @@ const PRODUCTION := {
 	"barracks": ["spearman", "man_at_arms"],
 	"archery_range": ["archer", "crossbowman"],
 	"stable": ["scout", "horseman", "knight"],
+	"siege_workshop": ["battering_ram", "trebuchet"],
 }
 const UNIT_AGE := {
 	"villager": 1,
 	"scout": 2,
 	"spearman": 2,
 	"man_at_arms": 3,
+	"palace_guard": 3,
 	"archer": 2,
+	"zhuge_nu": 2,
 	"longbow": 2,
 	"crossbowman": 3,
 	"arbaletrier": 3,
 	"horseman": 2,
 	"knight": 3,
 	"royal_knight": 2,
+	"battering_ram": 3,
+	"trebuchet": 3,
 }
 const UNIT_AGE_OVERRIDES := {
 	"English": {"man_at_arms": 2},
@@ -47,6 +58,8 @@ const UNIT_CIVILIZATION := {
 	"longbow": "English",
 	"arbaletrier": "French",
 	"royal_knight": "French",
+	"zhuge_nu": "Chinese",
+	"palace_guard": "Chinese",
 }
 const UNIT_REQUIRES := {} # Unit-specific research prerequisites can be added here.
 

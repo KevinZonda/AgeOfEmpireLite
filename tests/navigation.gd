@@ -11,6 +11,12 @@ func _run() -> void:
 	game.start_game("English", 4242)
 	var center: RtsBuilding = game._player_center(0)
 	var worker: RtsUnit = game.units[0]
+	var food_source: RtsResource = worker.target
+	var food_before := food_source.amount
+	for i in 150:
+		for villager in game.units:
+			if villager.kind == "villager" and villager.owner_id == 0: villager._process(0.05)
+	assert(food_source.amount < food_before, "villagers should start harvesting when they reach resource collision range")
 	assert(not game.navigation.can_occupy(center.position, worker.radius(), worker), "Town Center should block movement")
 	var destination := Vector2(330, 610)
 	var route: PackedVector2Array = game.navigation.path_between(worker.position, destination)
@@ -41,5 +47,21 @@ func _run() -> void:
 	blocker.position = blocker_destination
 	game.navigation.unit_moved(blocker, blocker_previous)
 	assert(not game.navigation.can_occupy(blocker_destination, worker.radius(), worker), "moved units should update collision cells immediately")
+	for unit in game.units: unit.order_stop()
+	worker.position = Vector2(330, 800)
+	game.navigation.invalidate_spatial_index()
+	worker.order_move(Vector2(888.2981, 291.3841))
+	assert(not game.navigation.path_between(worker.position, worker.destination).is_empty(), "move orders inside blocked terrain should snap to a reachable destination")
+	for i in 500:
+		worker._process(0.05)
+		if worker.order == "idle": break
+	assert(worker.order == "idle", "worker should reach the snapped destination")
+	worker.position = Vector2(330, 800)
+	game.navigation.invalidate_spatial_index()
+	worker.order_move(Vector2(1071.32, 1036.031))
+	for i in 500:
+		worker._process(0.05)
+		if worker.order == "idle": break
+	assert(worker.order == "idle", "worker should reach a goal near dense resources")
 	print("NAVIGATION_OK")
 	quit()

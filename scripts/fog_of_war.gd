@@ -76,7 +76,7 @@ func update_visibility() -> void:
 		var visible: PackedByteArray = visible_cells[owner_id]
 		visible.fill(0)
 		for unit in game.units:
-			if not is_instance_valid(unit) or unit.is_queued_for_deletion() or unit.owner_id != owner_id: continue
+			if not is_instance_valid(unit) or unit.is_queued_for_deletion() or unit.owner_id != owner_id or unit.garrisoned_in != null: continue
 			var radius := 360.0 if unit.kind == "scout" else 185.0 if unit.kind == "villager" else 250.0
 			_reveal_circle(visible, unit.position, radius)
 		for building in game.buildings:
@@ -130,7 +130,7 @@ func _line_of_sight(from: Vector2i, to: Vector2i) -> bool:
 func _update_entity_visibility() -> void:
 	for unit in game.units:
 		if not is_instance_valid(unit) or unit.is_queued_for_deletion(): continue
-		unit.visible = unit.owner_id == 0 or can_see(0, unit.position)
+		unit.visible = unit.garrisoned_in == null and (unit.owner_id == 0 or can_see(0, unit.position))
 	for building in game.buildings:
 		if not is_instance_valid(building) or building.is_queued_for_deletion(): continue
 		building.visible = building.owner_id == 0 or can_see(0, building.position)

@@ -1,0 +1,27 @@
+extends SceneTree
+
+const SiegeRules = preload("res://scripts/siege_rules.gd")
+const CombatRules = preload("res://scripts/combat_rules.gd")
+
+func _initialize() -> void:
+	assert(RtsTechTree.can_build("English", 2, "outpost"))
+	assert(not RtsTechTree.can_build("English", 2, "keep"))
+	assert(RtsTechTree.can_build("French", 4, "wonder"))
+	assert(RtsTechTree.can_train("English", 3, "siege_workshop", "battering_ram"))
+	assert(RtsTechTree.can_train("French", 3, "siege_workshop", "trebuchet"))
+	assert(SiegeRules.is_wall("stone_wall"))
+	assert(SiegeRules.is_siege("battering_ram"))
+	assert(SiegeRules.garrison_capacity("outpost") == 5)
+	assert(SiegeRules.can_garrison(GameData.UNITS["villager"], "town_center"))
+	assert(not SiegeRules.can_garrison(GameData.UNITS["battering_ram"], "keep"))
+	var empty_tower: Dictionary = SiegeRules.defense_stats("outpost")
+	var full_tower: Dictionary = SiegeRules.defense_stats("outpost", 5)
+	assert(full_tower["damage"] > empty_tower["damage"])
+	assert(SiegeRules.defense_stats("outpost", 100)["damage"] == full_tower["damage"])
+	assert(SiegeRules.defense_stats("house").is_empty())
+	assert(SiegeRules.can_attack_target(GameData.UNITS["trebuchet"], GameData.BUILDINGS["keep"], 100.0))
+	assert(not SiegeRules.can_attack_target(GameData.UNITS["trebuchet"], GameData.BUILDINGS["keep"], 50.0))
+	var ram_damage: float = CombatRules.damage(GameData.UNITS["battering_ram"], GameData.BUILDINGS["stone_wall"])
+	var ram_vs_unit: float = CombatRules.damage(GameData.UNITS["battering_ram"], GameData.UNITS["spearman"])
+	assert(ram_damage > ram_vs_unit * 3.0)
+	quit()

@@ -17,6 +17,7 @@ static func evaluate(action_type: String, kind: String, context: Dictionary) -> 
 			if GameData.BUILDINGS.has(kind):
 				cost = GameData.BUILDINGS[kind]["cost"]
 				status = RtsTechTree.building_status(civilization, age, kind)
+				if kind == "wonder" and context.get("has_wonder", false): status = {"available": false, "reason": "已有奇观"}
 		"train":
 			if GameData.UNITS.has(kind):
 				cost = GameData.UNITS[kind]["cost"]
@@ -28,9 +29,12 @@ static func evaluate(action_type: String, kind: String, context: Dictionary) -> 
 		"age":
 			cost = RtsTechTree.age_cost(age)
 			status = {"available": RtsTechTree.can_advance(age), "reason": "已达最高时代"}
+		"landmark":
+			cost = RtsLandmarkCatalog.landmark(kind).get("cost", {})
+			status = RtsLandmarkCatalog.choice_status(civilization, age, context.get("landmarks", []), kind, context.get("active_landmark", ""))
 	var reason: String = status.get("reason", "尚未解锁")
 	if not status.get("available", false): return {"available": false, "reason": reason, "cost": cost}
-	if (action_type == "train" or action_type == "research" or action_type == "age") and not context.get("production_complete", true):
+	if (action_type == "train" or action_type == "research" or action_type == "age" or action_type == "landmark" and producer != "") and not context.get("production_complete", true):
 		return {"available": false, "reason": "建筑尚未建成", "cost": cost}
 	if action_type == "research" and context.get("queued_research", []).has(kind):
 		return {"available": false, "reason": "正在研究", "cost": cost}

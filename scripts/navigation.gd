@@ -68,7 +68,7 @@ func _ensure_spatial_index() -> void:
 	resources_by_cell.clear()
 	max_dynamic_radius = 0.0
 	for unit in game.units:
-		if not is_instance_valid(unit) or unit.is_queued_for_deletion(): continue
+		if not is_instance_valid(unit) or unit.is_queued_for_deletion() or unit.garrisoned_in != null: continue
 		max_dynamic_radius = maxf(max_dynamic_radius, unit.radius())
 		var cell := _spatial_cell(unit.position)
 		if not units_by_cell.has(cell): units_by_cell[cell] = []
@@ -106,8 +106,7 @@ func _mark_rect(area: Rect2) -> void:
 		for x in range(first.x, last.x + 1):
 			var cell := Vector2i(x, y)
 			var center := world_map.cell_center(cell)
-			var tile := Rect2(center - Vector2.ONE * RtsWorldMap.CELL_SIZE * 0.5, Vector2.ONE * RtsWorldMap.CELL_SIZE)
-			if tile.intersects(area): pathfinder.set_point_solid(cell)
+			if area.has_point(center): pathfinder.set_point_solid(cell)
 
 func _mark_circle(center: Vector2, radius: float) -> void:
 	var first := world_map.cell_at(center - Vector2.ONE * radius)
@@ -115,8 +114,7 @@ func _mark_circle(center: Vector2, radius: float) -> void:
 	for y in range(first.y, last.y + 1):
 		for x in range(first.x, last.x + 1):
 			var cell := Vector2i(x, y)
-			var tile := Rect2(Vector2(cell) * RtsWorldMap.CELL_SIZE, Vector2.ONE * RtsWorldMap.CELL_SIZE)
-			if center.distance_to(center.clamp(tile.position, tile.end)) < radius:
+			if center.distance_to(world_map.cell_center(cell)) < radius:
 				pathfinder.set_point_solid(cell)
 
 func nearest_open_cell(point: Vector2) -> Vector2i:
@@ -144,15 +142,60 @@ func path_between(from: Vector2, to: Vector2) -> PackedVector2Array:
 	if pathfinder.is_point_solid(start) or pathfinder.is_point_solid(end): return PackedVector2Array()
 	return pathfinder.get_point_path(start, end)
 
-func nearest_walkable_point(point: Vector2, radius := CLEARANCE, self_unit: RtsUnit = null) -> Vector2:
+func path_to_range(from: Vector2, target: Vector2, reach: float, unit: RtsUnit) -> PackedVector2Array:
+	_ensure_current()
+	var start := nearest_open_cell(from)
+	if pathfinder.is_point_solid(start): return PackedVector2Array()
+	var direction := (from - target).normalized()
+	if direction.is_zero_approx(): direction = Vector2.RIGHT
+	for offset in [0.0, PI / 4.0, -PI / 4.0, PI / 2.0, -PI / 2.0, 3.0 * PI / 4.0, -3.0 * PI / 4.0, PI]:
+		var approach := target + direction.rotated(offset) * maxf(0.0, reach - 0.25)
+		if not can_occupy(approach, unit.radius(), unit): continue
+		var end := nearest_open_cell(approach)
+		if pathfinder.is_point_solid(end) or not _segment_clear(world_map.cell_center(end), approach, unit.radius(), unit): continue
+		var candidate := pathfinder.get_point_path(start, end)
+		if candidate.is_empty(): continue
+		candidate.append(approach)
+		return candidate
+	return PackedVector2Array()
+
+func nearest_walkable_point(point: Vector2, radius := CLEARANCE, self_unit: RtsUnit = null, require_path := false) -> Vector2:
 	_ensure_current()
 	var clamped := point.clamp(Vector2(24, 24), world_map.world_size - Vector2(24, 24))
-	if can_occupy(clamped, radius, self_unit): return clamped
-	for ring in range(1, 9):
+	var start := nearest_open_cell(self_unit.position) if require_path and self_unit != null else Vector2i(-1, -1)
+	if _valid_destination(clamped, radius, self_unit, start): return clamped
+	for ring in range(1, 17):
 		for i in 16:
-			var candidate := clamped + Vector2.from_angle(TAU * i / 16.0) * ring * radius * 2.0
-			if can_occupy(candidate, radius, self_unit): return candidate
+			var candidate := clamped + Vector2.from_angle(TAU * i / 16.0) * ring * maxf(radius, 12.0)
+			if _valid_destination(candidate, radius, self_unit, start): return candidate
+	if start.x >= 0:
+		var best := Vector2.INF
+		var best_distance := INF
+		for y in world_map.grid_size.y:
+			for x in world_map.grid_size.x:
+				var cell := Vector2i(x, y)
+				if pathfinder.is_point_solid(cell): continue
+				var candidate := world_map.cell_center(cell)
+				var distance := candidate.distance_squared_to(clamped)
+				if distance >= best_distance or not can_occupy(candidate, radius, self_unit): continue
+				if pathfinder.get_id_path(start, cell).is_empty(): continue
+				best = candidate
+				best_distance = distance
+		if best != Vector2.INF: return best
 	return world_map.cell_center(nearest_open_cell(clamped))
+
+func _valid_destination(point: Vector2, radius: float, self_unit: RtsUnit, start: Vector2i) -> bool:
+	if not can_occupy(point, radius, self_unit): return false
+	if start.x < 0: return true
+	var end := world_map.cell_at(point)
+	if pathfinder.is_point_solid(end) or pathfinder.get_id_path(start, end).is_empty(): return false
+	return _segment_clear(world_map.cell_center(end), point, radius, self_unit)
+
+func _segment_clear(from: Vector2, to: Vector2, radius: float, self_unit: RtsUnit) -> bool:
+	var samples := maxi(1, ceili(from.distance_to(to) / maxf(1.0, radius * 0.5)))
+	for i in range(samples + 1):
+		if not can_occupy(from.lerp(to, float(i) / samples), radius, self_unit): return false
+	return true
 
 func move_step(unit: RtsUnit, desired_position: Vector2) -> Vector2:
 	var movement := desired_position - unit.position
