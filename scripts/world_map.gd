@@ -8,14 +8,16 @@ var world_size := Vector2.ZERO
 var grid_size := Vector2i.ZERO
 var map_seed := 0
 var map_style := "balanced"
+var player_count := 2
 var cells := PackedByteArray()
 var plants: Array[Dictionary] = []
 var resource_specs: Array[Dictionary] = []
 var pathfinder := AStarGrid2D.new()
 var rng := RandomNumberGenerator.new()
 
-func generate(seed_value: int, map_size: Vector2, style := "balanced") -> void:
+func generate(seed_value: int, map_size: Vector2, style := "balanced", participants := 2) -> void:
 	map_seed = seed_value
+	player_count = clampi(participants, 2, 4)
 	map_style = style if ["balanced", "lakes", "highlands"].has(style) else "balanced"
 	world_size = map_size
 	grid_size = Vector2i(ceili(map_size.x / CELL_SIZE), ceili(map_size.y / CELL_SIZE))
@@ -71,9 +73,18 @@ func _is_road(point: Vector2) -> bool:
 	return absf(point.y - (750.0 + sin(point.x / 245.0) * 24.0)) <= 43.0
 
 func _is_corridor_clearance(point: Vector2) -> bool:
-	return point.y >= 550 and point.y <= 950
+	if point.y >= 550 and point.y <= 950: return true
+	if player_count <= 2: return false
+	for base: Vector2 in [Vector2(330, 420), Vector2(2070, 1080), Vector2(330, 1080), Vector2(2070, 420)]:
+		var to_center: Vector2 = Vector2(1200, 750) - base
+		var fraction := clampf((point - base).dot(to_center) / to_center.length_squared(), 0.0, 1.0)
+		if point.distance_to(base + to_center * fraction) < 65.0: return true
+	return false
 
 func _is_base_clearance(point: Vector2) -> bool:
+	if player_count > 2:
+		for base in [Vector2(330, 420), Vector2(2070, 1080), Vector2(330, 1080), Vector2(2070, 420)]:
+			if _ellipse(point, base, Vector2(280, 245)) < 1.0: return true
 	return _ellipse(point, Vector2(330, 720), Vector2(390, 335)) < 1.0 or _ellipse(point, Vector2(2070, 720), Vector2(390, 335)) < 1.0
 
 func _index(cell: Vector2i) -> int:
@@ -193,6 +204,21 @@ func _generate_resource_clusters() -> void:
 	for cluster in 3: _add_cluster("stone", "ore", rng.randi_range(2, 3), 500)
 
 func _generate_starter_resources() -> void:
+	if player_count > 2:
+		var bases := [Vector2(330, 420), Vector2(2070, 1080), Vector2(330, 1080), Vector2(2070, 420)]
+		for owner_id in player_count:
+			var base: Vector2 = bases[owner_id]
+			var outward := -1.0 if base.x < 1200.0 else 1.0
+			var vertical := -1.0 if base.y < 750.0 else 1.0
+			for i in 5:
+				resource_specs.append({"kind": "wood", "appearance": "tree", "position": _world_point(base + Vector2(outward * (170 + (i % 2) * 40), vertical * (20 + (i / 2) * 47))), "amount": 500})
+			for i in 4:
+				resource_specs.append({"kind": "food", "appearance": "berry", "position": _world_point(base + Vector2(-outward * (125 + (i % 2) * 43), vertical * (80 + (i / 2) * 40))), "amount": 420})
+			for i in 3:
+				resource_specs.append({"kind": "gold", "appearance": "ore", "position": _world_point(base + Vector2(outward * (60 + i * 48), -vertical * 190)), "amount": 580})
+			for i in 3:
+				resource_specs.append({"kind": "stone", "appearance": "ore", "position": _world_point(base + Vector2(-outward * (70 + i * 48), vertical * 180)), "amount": 560})
+		return
 	for side in [0, 1]:
 		var x := 330.0 if side == 0 else 2070.0
 		for i in 5:

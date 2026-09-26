@@ -1,0 +1,1965 @@
+{
+  "source_manifest": "res://docs/aoe4-units/manifest.json",
+  "distance_pixels_per_tile": 30,
+  "speed_pixels_per_tile_per_second": 80,
+  "time_scale": 0.55,
+  "units": {
+    "villager": {
+      "source_url": "https://seicing.com/html/aoe2/unitaoe4/村民.html?civ=chi",
+      "source_name": "村民",
+      "source_civilization": "chi",
+      "cost": {
+        "food": 50
+      },
+      "train_seconds": 20.0,
+      "move_tiles_per_second": 1.13,
+      "ranks": {
+        "1": {
+          "hp": 50.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 0.0,
+          "attacks": {
+            "melee": {
+              "damage": 6.0,
+              "damage_kind": "melee",
+              "range_tiles": 0.29,
+              "min_range_tiles": null,
+              "interval": 3.88,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            },
+            "hunt_melee": {
+              "damage": 12.0,
+              "damage_kind": "melee",
+              "range_tiles": 0.29,
+              "min_range_tiles": null,
+              "interval": 3.88,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            },
+            "hunt_ranged": {
+              "damage": 3.0,
+              "damage_kind": "ranged",
+              "range_tiles": 2.88,
+              "min_range_tiles": null,
+              "interval": 2.88,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            },
+            "torch": {
+              "damage": 10.0,
+              "damage_kind": "fire",
+              "range_tiles": 1.0,
+              "min_range_tiles": null,
+              "interval": 2.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            }
+          }
+        },
+        "2": {
+          "hp": 50.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 0.0,
+          "attacks": {
+            "melee": {
+              "damage": 6.0,
+              "damage_kind": "melee",
+              "range_tiles": 0.29,
+              "min_range_tiles": null,
+              "interval": 3.88,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            },
+            "hunt_melee": {
+              "damage": 12.0,
+              "damage_kind": "melee",
+              "range_tiles": 0.29,
+              "min_range_tiles": null,
+              "interval": 3.88,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            },
+            "hunt_ranged": {
+              "damage": 3.0,
+              "damage_kind": "ranged",
+              "range_tiles": 2.88,
+              "min_range_tiles": null,
+              "interval": 2.88,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            },
+            "torch": {
+              "damage": 10.0,
+              "damage_kind": "fire",
+              "range_tiles": 1.0,
+              "min_range_tiles": null,
+              "interval": 2.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            }
+          }
+        },
+        "3": {
+          "hp": 50.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 0.0,
+          "attacks": {
+            "melee": {
+              "damage": 6.0,
+              "damage_kind": "melee",
+              "range_tiles": 0.29,
+              "min_range_tiles": null,
+              "interval": 3.88,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            },
+            "hunt_melee": {
+              "damage": 12.0,
+              "damage_kind": "melee",
+              "range_tiles": 0.29,
+              "min_range_tiles": null,
+              "interval": 3.88,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            },
+            "hunt_ranged": {
+              "damage": 3.0,
+              "damage_kind": "ranged",
+              "range_tiles": 2.88,
+              "min_range_tiles": null,
+              "interval": 2.88,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            },
+            "torch": {
+              "damage": 10.0,
+              "damage_kind": "fire",
+              "range_tiles": 1.0,
+              "min_range_tiles": null,
+              "interval": 2.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            }
+          }
+        },
+        "4": {
+          "hp": 50.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 0.0,
+          "attacks": {
+            "melee": {
+              "damage": 6.0,
+              "damage_kind": "melee",
+              "range_tiles": 0.29,
+              "min_range_tiles": null,
+              "interval": 3.88,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            },
+            "hunt_melee": {
+              "damage": 12.0,
+              "damage_kind": "melee",
+              "range_tiles": 0.29,
+              "min_range_tiles": null,
+              "interval": 3.88,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            },
+            "hunt_ranged": {
+              "damage": 3.0,
+              "damage_kind": "ranged",
+              "range_tiles": 2.88,
+              "min_range_tiles": null,
+              "interval": 2.88,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            },
+            "torch": {
+              "damage": 10.0,
+              "damage_kind": "fire",
+              "range_tiles": 1.0,
+              "min_range_tiles": null,
+              "interval": 2.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            }
+          }
+        }
+      },
+      "abilities": [],
+      "upgrade_costs": {}
+    },
+    "scout": {
+      "source_url": "https://seicing.com/html/aoe2/unitaoe4/侦察兵.html?civ=eng",
+      "source_name": "侦察兵",
+      "source_civilization": "eng",
+      "cost": {
+        "food": 65
+      },
+      "train_seconds": 23.0,
+      "move_tiles_per_second": 1.625,
+      "ranks": {
+        "1": {
+          "hp": 110.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 0.0,
+          "attacks": {
+            "melee": {
+              "damage": 1.0,
+              "damage_kind": "melee",
+              "range_tiles": 0.29,
+              "min_range_tiles": null,
+              "interval": 1.88,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {
+                "对[侦察兵]加成": 10.0,
+                "对[攻城器]加成": 10.0
+              }
+            },
+            "ranged": {
+              "damage": 3.0,
+              "damage_kind": "ranged",
+              "range_tiles": 2.88,
+              "min_range_tiles": null,
+              "interval": 1.88,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            },
+            "torch": {
+              "damage": 10.0,
+              "damage_kind": "fire",
+              "range_tiles": 1.25,
+              "min_range_tiles": null,
+              "interval": 2.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            }
+          }
+        },
+        "2": {
+          "hp": 110.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 0.0,
+          "attacks": {
+            "melee": {
+              "damage": 1.0,
+              "damage_kind": "melee",
+              "range_tiles": 0.29,
+              "min_range_tiles": null,
+              "interval": 1.88,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {
+                "对[侦察兵]加成": 10.0,
+                "对[攻城器]加成": 10.0
+              }
+            },
+            "ranged": {
+              "damage": 3.0,
+              "damage_kind": "ranged",
+              "range_tiles": 2.88,
+              "min_range_tiles": null,
+              "interval": 1.88,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            },
+            "torch": {
+              "damage": 13.0,
+              "damage_kind": "fire",
+              "range_tiles": 1.25,
+              "min_range_tiles": null,
+              "interval": 2.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            }
+          }
+        },
+        "3": {
+          "hp": 110.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 0.0,
+          "attacks": {
+            "melee": {
+              "damage": 1.0,
+              "damage_kind": "melee",
+              "range_tiles": 0.29,
+              "min_range_tiles": null,
+              "interval": 1.88,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {
+                "对[侦察兵]加成": 10.0,
+                "对[攻城器]加成": 10.0
+              }
+            },
+            "ranged": {
+              "damage": 3.0,
+              "damage_kind": "ranged",
+              "range_tiles": 2.88,
+              "min_range_tiles": null,
+              "interval": 1.88,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            },
+            "torch": {
+              "damage": 17.0,
+              "damage_kind": "fire",
+              "range_tiles": 1.25,
+              "min_range_tiles": null,
+              "interval": 2.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            }
+          }
+        },
+        "4": {
+          "hp": 110.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 0.0,
+          "attacks": {
+            "melee": {
+              "damage": 1.0,
+              "damage_kind": "melee",
+              "range_tiles": 0.29,
+              "min_range_tiles": null,
+              "interval": 1.88,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {
+                "对[侦察兵]加成": 10.0,
+                "对[攻城器]加成": 10.0
+              }
+            },
+            "ranged": {
+              "damage": 3.0,
+              "damage_kind": "ranged",
+              "range_tiles": 2.88,
+              "min_range_tiles": null,
+              "interval": 1.88,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            },
+            "torch": {
+              "damage": 21.0,
+              "damage_kind": "fire",
+              "range_tiles": 1.25,
+              "min_range_tiles": null,
+              "interval": 2.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            }
+          }
+        }
+      },
+      "abilities": [
+        "预备营地：可使用预备营地，花费25木建造一个提供直径12格范围强化光环的营地，使单位视野+30%，村民狩猎效率+10%，最大建造5个"
+      ],
+      "upgrade_costs": {}
+    },
+    "spearman": {
+      "source_url": "https://seicing.com/html/aoe2/unitaoe4/长矛兵.html?civ=eng",
+      "source_name": "长矛兵",
+      "source_civilization": "eng",
+      "cost": {
+        "food": 60,
+        "wood": 20
+      },
+      "train_seconds": 15.0,
+      "move_tiles_per_second": 1.25,
+      "ranks": {
+        "2": {
+          "hp": 90.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 0.0,
+          "attacks": {
+            "melee": {
+              "damage": 8.0,
+              "damage_kind": "melee",
+              "range_tiles": 0.29,
+              "min_range_tiles": null,
+              "interval": 1.88,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {
+                "对[骑兵]加成": 20.0,
+                "对[大象]加成": 4.0
+              }
+            },
+            "torch": {
+              "damage": 13.0,
+              "damage_kind": "fire",
+              "range_tiles": 1.25,
+              "min_range_tiles": null,
+              "interval": 2.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            }
+          }
+        },
+        "3": {
+          "hp": 110.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 0.0,
+          "attacks": {
+            "melee": {
+              "damage": 9.0,
+              "damage_kind": "melee",
+              "range_tiles": 0.29,
+              "min_range_tiles": null,
+              "interval": 1.88,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {
+                "对[骑兵]加成": 23.0,
+                "对[大象]加成": 5.0
+              }
+            },
+            "torch": {
+              "damage": 17.0,
+              "damage_kind": "fire",
+              "range_tiles": 1.25,
+              "min_range_tiles": null,
+              "interval": 2.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            }
+          }
+        },
+        "4": {
+          "hp": 140.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 0.0,
+          "attacks": {
+            "melee": {
+              "damage": 11.0,
+              "damage_kind": "melee",
+              "range_tiles": 0.29,
+              "min_range_tiles": null,
+              "interval": 1.88,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {
+                "对[骑兵]加成": 28.0,
+                "对[大象]加成": 6.0
+              }
+            },
+            "torch": {
+              "damage": 21.0,
+              "damage_kind": "fire",
+              "range_tiles": 1.25,
+              "min_range_tiles": null,
+              "interval": 2.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            }
+          }
+        }
+      },
+      "abilities": [
+        "长矛墙：周围存在冲锋而来的骑兵时，长矛兵会架起长矛迎接冲击，对1.04格外的骑兵造成一次攻击伤害并使他们眩晕2.5秒，冷却时间0.25秒"
+      ],
+      "upgrade_costs": {
+        "3": {
+          "food": 100,
+          "gold": 250,
+          "seconds": 60.0
+        },
+        "4": {
+          "food": 300,
+          "gold": 700,
+          "seconds": 60.0
+        }
+      }
+    },
+    "man_at_arms": {
+      "source_url": "https://seicing.com/html/aoe2/unitaoe4/武士.html?civ=eng",
+      "source_name": "武士",
+      "source_civilization": "eng",
+      "cost": {
+        "food": 90,
+        "gold": 20
+      },
+      "train_seconds": 15.0,
+      "move_tiles_per_second": 1.125,
+      "ranks": {
+        "1": {
+          "hp": 100.0,
+          "melee_armor": 2.0,
+          "ranged_armor": 3.0,
+          "attacks": {
+            "melee": {
+              "damage": 8.0,
+              "damage_kind": "melee",
+              "range_tiles": 0.29,
+              "min_range_tiles": null,
+              "interval": 1.375,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            },
+            "torch": {
+              "damage": 10.0,
+              "damage_kind": "fire",
+              "range_tiles": 1.25,
+              "min_range_tiles": null,
+              "interval": 2.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            }
+          }
+        },
+        "2": {
+          "hp": 120.0,
+          "melee_armor": 3.0,
+          "ranged_armor": 3.0,
+          "attacks": {
+            "melee": {
+              "damage": 10.0,
+              "damage_kind": "melee",
+              "range_tiles": 0.29,
+              "min_range_tiles": null,
+              "interval": 1.375,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            },
+            "torch": {
+              "damage": 13.0,
+              "damage_kind": "fire",
+              "range_tiles": 1.25,
+              "min_range_tiles": null,
+              "interval": 2.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            }
+          }
+        },
+        "3": {
+          "hp": 155.0,
+          "melee_armor": 4.0,
+          "ranged_armor": 4.0,
+          "attacks": {
+            "melee": {
+              "damage": 12.0,
+              "damage_kind": "melee",
+              "range_tiles": 0.29,
+              "min_range_tiles": null,
+              "interval": 1.375,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            },
+            "torch": {
+              "damage": 17.0,
+              "damage_kind": "fire",
+              "range_tiles": 1.25,
+              "min_range_tiles": null,
+              "interval": 2.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            }
+          }
+        },
+        "4": {
+          "hp": 180.0,
+          "melee_armor": 5.0,
+          "ranged_armor": 6.0,
+          "attacks": {
+            "melee": {
+              "damage": 14.0,
+              "damage_kind": "melee",
+              "range_tiles": 0.29,
+              "min_range_tiles": null,
+              "interval": 1.375,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            },
+            "torch": {
+              "damage": 21.0,
+              "damage_kind": "fire",
+              "range_tiles": 1.25,
+              "min_range_tiles": null,
+              "interval": 2.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            }
+          }
+        }
+      },
+      "abilities": [
+        "预备营地：可使用预备营地，花费25木建造一个提供直径12格范围强化光环的营地，使单位视野+30%，村民狩猎效率+10%，最大建造5个"
+      ],
+      "upgrade_costs": {
+        "2": {
+          "food": 15,
+          "gold": 35,
+          "seconds": 15.0
+        },
+        "3": {
+          "food": 50,
+          "gold": 125,
+          "seconds": 30.0
+        },
+        "4": {
+          "food": 300,
+          "gold": 700,
+          "seconds": 60.0
+        }
+      }
+    },
+    "palace_guard": {
+      "source_url": "https://seicing.com/html/aoe2/unitaoe4/皇宫卫兵.html?civ=chi",
+      "source_name": "皇宫卫兵",
+      "source_civilization": "chi",
+      "cost": {
+        "food": 90,
+        "gold": 25
+      },
+      "train_seconds": 20.5,
+      "move_tiles_per_second": 1.375,
+      "ranks": {
+        "3": {
+          "hp": 155.0,
+          "melee_armor": 3.0,
+          "ranged_armor": 3.0,
+          "attacks": {
+            "melee": {
+              "damage": 12.0,
+              "damage_kind": "melee",
+              "range_tiles": 0.29,
+              "min_range_tiles": null,
+              "interval": 1.375,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            },
+            "torch": {
+              "damage": 17.0,
+              "damage_kind": "fire",
+              "range_tiles": 1.25,
+              "min_range_tiles": null,
+              "interval": 2.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            }
+          }
+        },
+        "4": {
+          "hp": 180.0,
+          "melee_armor": 4.0,
+          "ranged_armor": 5.0,
+          "attacks": {
+            "melee": {
+              "damage": 14.0,
+              "damage_kind": "melee",
+              "range_tiles": 0.29,
+              "min_range_tiles": null,
+              "interval": 1.375,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            },
+            "torch": {
+              "damage": 21.0,
+              "damage_kind": "fire",
+              "range_tiles": 1.25,
+              "min_range_tiles": null,
+              "interval": 2.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            }
+          }
+        }
+      },
+      "abilities": [],
+      "upgrade_costs": {
+        "3": {
+          "food": 50,
+          "gold": 125,
+          "seconds": 30.0
+        },
+        "4": {
+          "food": 300,
+          "gold": 700,
+          "seconds": 60.0
+        }
+      }
+    },
+    "archer": {
+      "source_url": "https://seicing.com/html/aoe2/unitaoe4/步弓手.html?civ=chi",
+      "source_name": "步弓手",
+      "source_civilization": "chi",
+      "cost": {
+        "food": 30,
+        "wood": 50
+      },
+      "train_seconds": 15.0,
+      "move_tiles_per_second": 1.25,
+      "ranks": {
+        "2": {
+          "hp": 70.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 0.0,
+          "attacks": {
+            "ranged": {
+              "damage": 5.0,
+              "damage_kind": "ranged",
+              "range_tiles": 5.0,
+              "min_range_tiles": null,
+              "interval": 1.625,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {
+                "对[轻型近战步兵]加成": 5.0,
+                "对[轻型火药步兵]加成": 5.0
+              }
+            }
+          }
+        },
+        "3": {
+          "hp": 80.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 0.0,
+          "attacks": {
+            "ranged": {
+              "damage": 7.0,
+              "damage_kind": "ranged",
+              "range_tiles": 5.0,
+              "min_range_tiles": null,
+              "interval": 1.625,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {
+                "对[轻型近战步兵]加成": 7.0,
+                "对[轻型火药步兵]加成": 7.0
+              }
+            }
+          }
+        },
+        "4": {
+          "hp": 95.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 0.0,
+          "attacks": {
+            "ranged": {
+              "damage": 8.0,
+              "damage_kind": "ranged",
+              "range_tiles": 5.0,
+              "min_range_tiles": null,
+              "interval": 1.625,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {
+                "对[轻型近战步兵]加成": 8.0,
+                "对[轻型火药步兵]加成": 8.0
+              }
+            },
+            "structure": {
+              "damage": 3.0,
+              "damage_kind": "siege",
+              "range_tiles": 5.0,
+              "min_range_tiles": null,
+              "interval": 1.625,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            }
+          }
+        }
+      },
+      "abilities": [],
+      "upgrade_costs": {
+        "3": {
+          "food": 100,
+          "gold": 250,
+          "seconds": 60.0
+        },
+        "4": {
+          "food": 300,
+          "gold": 700,
+          "seconds": 60.0
+        }
+      }
+    },
+    "longbow": {
+      "source_url": "https://seicing.com/html/aoe2/unitaoe4/长弓兵.html?civ=eng",
+      "source_name": "长弓兵",
+      "source_civilization": "eng",
+      "cost": {
+        "food": 40,
+        "wood": 50
+      },
+      "train_seconds": 15.0,
+      "move_tiles_per_second": 1.125,
+      "ranks": {
+        "2": {
+          "hp": 70.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 0.0,
+          "attacks": {
+            "ranged": {
+              "damage": 6.0,
+              "damage_kind": "ranged",
+              "range_tiles": 7.0,
+              "min_range_tiles": null,
+              "interval": 1.625,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {
+                "对[轻型近战步兵]加成": 6.0,
+                "对[轻型火药步兵]加成": 6.0
+              }
+            }
+          }
+        },
+        "3": {
+          "hp": 80.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 0.0,
+          "attacks": {
+            "ranged": {
+              "damage": 8.0,
+              "damage_kind": "ranged",
+              "range_tiles": 7.0,
+              "min_range_tiles": null,
+              "interval": 1.625,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {
+                "对[轻型近战步兵]加成": 8.0,
+                "对[轻型火药步兵]加成": 8.0
+              }
+            }
+          }
+        },
+        "4": {
+          "hp": 95.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 0.0,
+          "attacks": {
+            "ranged": {
+              "damage": 9.0,
+              "damage_kind": "ranged",
+              "range_tiles": 7.0,
+              "min_range_tiles": null,
+              "interval": 1.625,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {
+                "对[轻型近战步兵]加成": 9.0,
+                "对[轻型火药步兵]加成": 9.0
+              }
+            },
+            "structure": {
+              "damage": 3.0,
+              "damage_kind": "siege",
+              "range_tiles": 7.0,
+              "min_range_tiles": null,
+              "interval": 1.625,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            }
+          }
+        }
+      },
+      "abilities": [
+        "拒马：架设拒马抵挡骑兵，敌方骑兵在触碰长弓兵时眩晕2.5秒并受到19/24/30伤害，拒马在移动时消失，冷却时间30秒",
+        "万箭齐发：5秒内攻击速度+70%，冷却时间45秒"
+      ],
+      "upgrade_costs": {
+        "3": {
+          "food": 100,
+          "gold": 250,
+          "seconds": 60.0
+        },
+        "4": {
+          "food": 300,
+          "gold": 700,
+          "seconds": 60.0
+        }
+      }
+    },
+    "zhuge_nu": {
+      "source_url": "https://seicing.com/html/aoe2/unitaoe4/诸葛弩手.html?civ=chi",
+      "source_name": "诸葛弩手",
+      "source_civilization": "chi",
+      "cost": {
+        "food": 30,
+        "wood": 30,
+        "gold": 20
+      },
+      "train_seconds": 15.0,
+      "move_tiles_per_second": 1.125,
+      "ranks": {
+        "2": {
+          "hp": 70.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 0.0,
+          "attacks": {
+            "ranged": {
+              "damage": 4.0,
+              "damage_kind": "ranged",
+              "range_tiles": 4.5,
+              "min_range_tiles": null,
+              "interval": 1.75,
+              "hits": 3,
+              "splash_tiles": null,
+              "bonuses": {}
+            }
+          }
+        },
+        "3": {
+          "hp": 80.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 0.0,
+          "attacks": {
+            "ranged": {
+              "damage": 5.0,
+              "damage_kind": "ranged",
+              "range_tiles": 4.5,
+              "min_range_tiles": null,
+              "interval": 1.75,
+              "hits": 3,
+              "splash_tiles": null,
+              "bonuses": {}
+            }
+          }
+        },
+        "4": {
+          "hp": 95.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 0.0,
+          "attacks": {
+            "ranged": {
+              "damage": 6.0,
+              "damage_kind": "ranged",
+              "range_tiles": 4.5,
+              "min_range_tiles": null,
+              "interval": 1.75,
+              "hits": 3,
+              "splash_tiles": null,
+              "bonuses": {}
+            },
+            "structure": {
+              "damage": 3.0,
+              "damage_kind": "siege",
+              "range_tiles": 4.5,
+              "min_range_tiles": null,
+              "interval": 1.75,
+              "hits": 2,
+              "splash_tiles": null,
+              "bonuses": {}
+            }
+          }
+        }
+      },
+      "abilities": [],
+      "upgrade_costs": {
+        "3": {
+          "food": 100,
+          "gold": 250,
+          "seconds": 60.0
+        },
+        "4": {
+          "food": 300,
+          "gold": 700,
+          "seconds": 60.0
+        }
+      }
+    },
+    "fire_lancer": {
+      "source_url": "https://seicing.com/html/aoe2/unitaoe4/火长矛骑兵.html?civ=chi",
+      "source_name": "火长矛骑兵",
+      "source_civilization": "chi",
+      "cost": {
+        "food": 120,
+        "gold": 20,
+        "wood": 20
+      },
+      "train_seconds": 22.0,
+      "move_tiles_per_second": 1.625,
+      "ranks": {
+        "3": {
+          "hp": 155.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 1.0,
+          "attacks": {
+            "melee": {
+              "damage": 13.0,
+              "damage_kind": "melee",
+              "range_tiles": 0.38,
+              "min_range_tiles": null,
+              "interval": 1.625,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {
+                "对[攻城器]加成": 20.0
+              }
+            },
+            "torch": {
+              "damage": 30.0,
+              "damage_kind": "fire",
+              "range_tiles": 1.25,
+              "min_range_tiles": null,
+              "interval": 2.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            },
+            "charge": {
+              "damage": 15.0,
+              "damage_kind": "melee",
+              "range_tiles": 1.04,
+              "min_range_tiles": null,
+              "interval": 0.5,
+              "hits": 1,
+              "splash_tiles": 1.0,
+              "bonuses": {}
+            }
+          }
+        },
+        "4": {
+          "hp": 180.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 3.0,
+          "attacks": {
+            "melee": {
+              "damage": 16.0,
+              "damage_kind": "melee",
+              "range_tiles": 0.38,
+              "min_range_tiles": null,
+              "interval": 1.625,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {
+                "对[攻城器]加成": 20.0
+              }
+            },
+            "torch": {
+              "damage": 34.0,
+              "damage_kind": "fire",
+              "range_tiles": 1.25,
+              "min_range_tiles": null,
+              "interval": 2.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            },
+            "charge": {
+              "damage": 17.0,
+              "damage_kind": "melee",
+              "range_tiles": 1.04,
+              "min_range_tiles": null,
+              "interval": 0.5,
+              "hits": 1,
+              "splash_tiles": 1.0,
+              "bonuses": {}
+            }
+          }
+        }
+      },
+      "abilities": [],
+      "upgrade_costs": {
+        "4": {
+          "food": 300,
+          "gold": 700,
+          "seconds": 60.0
+        }
+      }
+    },
+    "grenadier": {
+      "source_url": "https://seicing.com/html/aoe2/unitaoe4/掷弹兵.html?civ=chi",
+      "source_name": "掷弹兵",
+      "source_civilization": "chi",
+      "cost": {
+        "food": 100,
+        "gold": 60,
+        "wood": 60
+      },
+      "train_seconds": 30.0,
+      "move_tiles_per_second": 1.25,
+      "ranks": {
+        "3": {
+          "hp": 110.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 0.0,
+          "attacks": {
+            "siege": {
+              "damage": 10.0,
+              "damage_kind": "siege",
+              "range_tiles": 3.5,
+              "min_range_tiles": null,
+              "interval": 1.625,
+              "hits": 1,
+              "splash_tiles": 0.625,
+              "bonuses": {
+                "对[建筑]加成": 15.0
+              }
+            }
+          }
+        },
+        "4": {
+          "hp": 150.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 0.0,
+          "attacks": {
+            "siege": {
+              "damage": 12.0,
+              "damage_kind": "siege",
+              "range_tiles": 3.5,
+              "min_range_tiles": null,
+              "interval": 1.625,
+              "hits": 1,
+              "splash_tiles": 0.625,
+              "bonuses": {
+                "对[建筑]加成": 20.0
+              }
+            }
+          }
+        }
+      },
+      "abilities": [],
+      "upgrade_costs": {
+        "4": {
+          "food": 150,
+          "gold": 350,
+          "seconds": 30.0
+        }
+      }
+    },
+    "crossbowman": {
+      "source_url": "https://seicing.com/html/aoe2/unitaoe4/弩手.html?civ=eng",
+      "source_name": "弩手",
+      "source_civilization": "eng",
+      "cost": {
+        "food": 80,
+        "gold": 40
+      },
+      "train_seconds": 22.5,
+      "move_tiles_per_second": 1.125,
+      "ranks": {
+        "3": {
+          "hp": 80.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 0.0,
+          "attacks": {
+            "ranged": {
+              "damage": 11.0,
+              "damage_kind": "ranged",
+              "range_tiles": 5.0,
+              "min_range_tiles": null,
+              "interval": 2.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {
+                "对[重型]加成": 10.0
+              }
+            }
+          }
+        },
+        "4": {
+          "hp": 95.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 0.0,
+          "attacks": {
+            "ranged": {
+              "damage": 14.0,
+              "damage_kind": "ranged",
+              "range_tiles": 5.0,
+              "min_range_tiles": null,
+              "interval": 2.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {
+                "对[重型]加成": 12.0
+              }
+            },
+            "structure": {
+              "damage": 4.0,
+              "damage_kind": "siege",
+              "range_tiles": 5.0,
+              "min_range_tiles": null,
+              "interval": 2.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            }
+          }
+        }
+      },
+      "abilities": [],
+      "upgrade_costs": {
+        "4": {
+          "food": 300,
+          "gold": 700,
+          "seconds": 60.0
+        }
+      }
+    },
+    "arbaletrier": {
+      "source_url": "https://seicing.com/html/aoe2/unitaoe4/弓弩手.html?civ=fre",
+      "source_name": "弓弩手",
+      "source_civilization": "fre",
+      "cost": {
+        "food": 80,
+        "gold": 40
+      },
+      "train_seconds": 22.0,
+      "move_tiles_per_second": 1.125,
+      "ranks": {
+        "3": {
+          "hp": 80.0,
+          "melee_armor": 1.0,
+          "ranged_armor": 0.0,
+          "attacks": {
+            "ranged": {
+              "damage": 11.0,
+              "damage_kind": "ranged",
+              "range_tiles": 5.0,
+              "min_range_tiles": null,
+              "interval": 2.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {
+                "对[重型]加成": 10.0
+              }
+            }
+          }
+        },
+        "4": {
+          "hp": 95.0,
+          "melee_armor": 2.0,
+          "ranged_armor": 0.0,
+          "attacks": {
+            "ranged": {
+              "damage": 14.0,
+              "damage_kind": "ranged",
+              "range_tiles": 5.0,
+              "min_range_tiles": null,
+              "interval": 2.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {
+                "对[重型]加成": 12.0
+              }
+            },
+            "structure": {
+              "damage": 4.0,
+              "damage_kind": "siege",
+              "range_tiles": 5.0,
+              "min_range_tiles": null,
+              "interval": 2.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            }
+          }
+        }
+      },
+      "abilities": [
+        "部署大盾：通过主动技能展开一张大盾获得5远程防御力和1攻击范围"
+      ],
+      "upgrade_costs": {
+        "4": {
+          "food": 300,
+          "gold": 700,
+          "seconds": 60.0
+        }
+      }
+    },
+    "horseman": {
+      "source_url": "https://seicing.com/html/aoe2/unitaoe4/骑手.html?civ=eng",
+      "source_name": "骑手",
+      "source_civilization": "eng",
+      "cost": {
+        "food": 100,
+        "wood": 20
+      },
+      "train_seconds": 22.5,
+      "move_tiles_per_second": 1.88,
+      "ranks": {
+        "2": {
+          "hp": 125.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 2.0,
+          "attacks": {
+            "melee": {
+              "damage": 9.0,
+              "damage_kind": "melee",
+              "range_tiles": 0.38,
+              "min_range_tiles": null,
+              "interval": 1.75,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {
+                "对[远程]加成": 9.0,
+                "对[攻城器]加成": 9.0
+              }
+            },
+            "torch": {
+              "damage": 13.0,
+              "damage_kind": "fire",
+              "range_tiles": 1.25,
+              "min_range_tiles": null,
+              "interval": 2.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            }
+          }
+        },
+        "3": {
+          "hp": 155.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 3.0,
+          "attacks": {
+            "melee": {
+              "damage": 11.0,
+              "damage_kind": "melee",
+              "range_tiles": 0.38,
+              "min_range_tiles": null,
+              "interval": 1.75,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {
+                "对[远程]加成": 11.0,
+                "对[攻城器]加成": 11.0
+              }
+            },
+            "torch": {
+              "damage": 17.0,
+              "damage_kind": "fire",
+              "range_tiles": 1.25,
+              "min_range_tiles": null,
+              "interval": 2.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            }
+          }
+        },
+        "4": {
+          "hp": 180.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 5.0,
+          "attacks": {
+            "melee": {
+              "damage": 13.0,
+              "damage_kind": "melee",
+              "range_tiles": 0.38,
+              "min_range_tiles": null,
+              "interval": 1.75,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {
+                "对[远程]加成": 13.0,
+                "对[攻城器]加成": 13.0
+              }
+            },
+            "torch": {
+              "damage": 21.0,
+              "damage_kind": "fire",
+              "range_tiles": 1.25,
+              "min_range_tiles": null,
+              "interval": 2.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            }
+          }
+        }
+      },
+      "abilities": [],
+      "upgrade_costs": {
+        "3": {
+          "food": 100,
+          "gold": 250,
+          "seconds": 60.0
+        },
+        "4": {
+          "food": 300,
+          "gold": 700,
+          "seconds": 60.0
+        }
+      }
+    },
+    "knight": {
+      "source_url": "https://seicing.com/html/aoe2/unitaoe4/骑士.html?civ=eng",
+      "source_name": "骑士",
+      "source_civilization": "eng",
+      "cost": {
+        "food": 140,
+        "gold": 100
+      },
+      "train_seconds": 35.0,
+      "move_tiles_per_second": 1.625,
+      "ranks": {
+        "3": {
+          "hp": 230.0,
+          "melee_armor": 4.0,
+          "ranged_armor": 4.0,
+          "attacks": {
+            "melee": {
+              "damage": 24.0,
+              "damage_kind": "melee",
+              "range_tiles": 0.29,
+              "min_range_tiles": null,
+              "interval": 1.5,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            },
+            "torch": {
+              "damage": 17.0,
+              "damage_kind": "fire",
+              "range_tiles": 1.25,
+              "min_range_tiles": null,
+              "interval": 2.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            },
+            "charge": {
+              "damage": 36.0,
+              "damage_kind": "melee",
+              "range_tiles": 1.04,
+              "min_range_tiles": null,
+              "interval": 0.52,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            }
+          }
+        },
+        "4": {
+          "hp": 270.0,
+          "melee_armor": 5.0,
+          "ranged_armor": 5.0,
+          "attacks": {
+            "melee": {
+              "damage": 29.0,
+              "damage_kind": "melee",
+              "range_tiles": 0.29,
+              "min_range_tiles": null,
+              "interval": 1.5,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            },
+            "torch": {
+              "damage": 21.0,
+              "damage_kind": "fire",
+              "range_tiles": 1.25,
+              "min_range_tiles": null,
+              "interval": 2.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            },
+            "charge": {
+              "damage": 43.0,
+              "damage_kind": "melee",
+              "range_tiles": 1.04,
+              "min_range_tiles": null,
+              "interval": 0.52,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            }
+          }
+        }
+      },
+      "abilities": [],
+      "upgrade_costs": {
+        "4": {
+          "food": 300,
+          "gold": 700,
+          "seconds": 60.0
+        }
+      }
+    },
+    "royal_knight": {
+      "source_url": "https://seicing.com/html/aoe2/unitaoe4/皇家骑士.html?civ=fre",
+      "source_name": "皇家骑士",
+      "source_civilization": "fre",
+      "cost": {
+        "food": 140,
+        "gold": 100
+      },
+      "train_seconds": 35.0,
+      "move_tiles_per_second": 1.625,
+      "ranks": {
+        "2": {
+          "hp": 190.0,
+          "melee_armor": 3.0,
+          "ranged_armor": 3.0,
+          "attacks": {
+            "melee": {
+              "damage": 19.0,
+              "damage_kind": "melee",
+              "range_tiles": 0.29,
+              "min_range_tiles": null,
+              "interval": 1.5,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            },
+            "torch": {
+              "damage": 13.0,
+              "damage_kind": "fire",
+              "range_tiles": 1.25,
+              "min_range_tiles": null,
+              "interval": 2.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            },
+            "charge": {
+              "damage": 29.0,
+              "damage_kind": "melee",
+              "range_tiles": 1.04,
+              "min_range_tiles": null,
+              "interval": 0.52,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            }
+          }
+        },
+        "3": {
+          "hp": 230.0,
+          "melee_armor": 4.0,
+          "ranged_armor": 4.0,
+          "attacks": {
+            "melee": {
+              "damage": 24.0,
+              "damage_kind": "melee",
+              "range_tiles": 0.29,
+              "min_range_tiles": null,
+              "interval": 1.5,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            },
+            "torch": {
+              "damage": 17.0,
+              "damage_kind": "fire",
+              "range_tiles": 1.25,
+              "min_range_tiles": null,
+              "interval": 2.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            },
+            "charge": {
+              "damage": 36.0,
+              "damage_kind": "melee",
+              "range_tiles": 1.04,
+              "min_range_tiles": null,
+              "interval": 0.52,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            }
+          }
+        },
+        "4": {
+          "hp": 270.0,
+          "melee_armor": 5.0,
+          "ranged_armor": 5.0,
+          "attacks": {
+            "melee": {
+              "damage": 29.0,
+              "damage_kind": "melee",
+              "range_tiles": 0.29,
+              "min_range_tiles": null,
+              "interval": 1.5,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            },
+            "torch": {
+              "damage": 21.0,
+              "damage_kind": "fire",
+              "range_tiles": 1.25,
+              "min_range_tiles": null,
+              "interval": 2.125,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            },
+            "charge": {
+              "damage": 43.0,
+              "damage_kind": "melee",
+              "range_tiles": 1.04,
+              "min_range_tiles": null,
+              "interval": 0.52,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            }
+          }
+        }
+      },
+      "abilities": [
+        "皇家骑士冲锋：成功冲锋后3秒内攻击力+3"
+      ],
+      "upgrade_costs": {
+        "3": {
+          "food": 50,
+          "gold": 125,
+          "seconds": 30.0
+        },
+        "4": {
+          "food": 300,
+          "gold": 700,
+          "seconds": 60.0
+        }
+      }
+    },
+    "battering_ram": {
+      "source_url": "https://seicing.com/html/aoe2/unitaoe4/攻城锤.html?civ=chi",
+      "source_name": "攻城锤",
+      "source_civilization": "chi",
+      "cost": {
+        "wood": 200
+      },
+      "train_seconds": 35.0,
+      "move_tiles_per_second": 0.75,
+      "ranks": {
+        "1": {
+          "hp": 370.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 95.0,
+          "fire_armor": 0.0,
+          "attacks": {
+            "siege": {
+              "damage": 200.0,
+              "damage_kind": "siege",
+              "range_tiles": 0.53,
+              "min_range_tiles": null,
+              "interval": 5.12,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {
+                "对[墙]加成": 300.0
+              }
+            }
+          }
+        },
+        "2": {
+          "hp": 370.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 95.0,
+          "fire_armor": 0.0,
+          "attacks": {
+            "siege": {
+              "damage": 200.0,
+              "damage_kind": "siege",
+              "range_tiles": 0.53,
+              "min_range_tiles": null,
+              "interval": 5.12,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {
+                "对[墙]加成": 300.0
+              }
+            }
+          }
+        },
+        "3": {
+          "hp": 370.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 95.0,
+          "fire_armor": 0.0,
+          "attacks": {
+            "siege": {
+              "damage": 200.0,
+              "damage_kind": "siege",
+              "range_tiles": 0.53,
+              "min_range_tiles": null,
+              "interval": 5.12,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {
+                "对[墙]加成": 300.0
+              }
+            }
+          }
+        },
+        "4": {
+          "hp": 370.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 95.0,
+          "fire_armor": 0.0,
+          "attacks": {
+            "siege": {
+              "damage": 200.0,
+              "damage_kind": "siege",
+              "range_tiles": 0.53,
+              "min_range_tiles": null,
+              "interval": 5.12,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {
+                "对[墙]加成": 300.0
+              }
+            }
+          }
+        }
+      },
+      "abilities": [
+        "易伤：受到的近战伤害+20%"
+      ],
+      "upgrade_costs": {}
+    },
+    "trebuchet": {
+      "source_url": "https://seicing.com/html/aoe2/unitaoe4/配重式巨型投石机.html?civ=eng",
+      "source_name": "配重式巨型投石机",
+      "source_civilization": "eng",
+      "cost": {
+        "wood": 400,
+        "gold": 150
+      },
+      "train_seconds": 30.0,
+      "move_tiles_per_second": 0.62,
+      "ranks": {
+        "3": {
+          "hp": 140.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 80.0,
+          "fire_armor": 0.0,
+          "attacks": {
+            "siege": {
+              "damage": 40.0,
+              "damage_kind": "siege",
+              "range_tiles": 16.0,
+              "min_range_tiles": 2.75,
+              "interval": 11.375,
+              "hits": 1,
+              "splash_tiles": 0.375,
+              "bonuses": {
+                "对[建筑]加成": 350.0,
+                "对[船]加成": 200.0
+              }
+            }
+          }
+        },
+        "4": {
+          "hp": 140.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 80.0,
+          "fire_armor": 0.0,
+          "attacks": {
+            "siege": {
+              "damage": 40.0,
+              "damage_kind": "siege",
+              "range_tiles": 16.0,
+              "min_range_tiles": 2.75,
+              "interval": 11.375,
+              "hits": 1,
+              "splash_tiles": 0.375,
+              "bonuses": {
+                "对[建筑]加成": 350.0,
+                "对[船]加成": 200.0
+              }
+            }
+          }
+        }
+      },
+      "abilities": [],
+      "upgrade_costs": {}
+    },
+    "fishing_boat": {
+      "source_url": "https://seicing.com/html/aoe2/unitaoe4/渔船.html?civ=chi",
+      "source_name": "渔船",
+      "source_civilization": "chi",
+      "cost": {
+        "wood": 75
+      },
+      "train_seconds": 30.0,
+      "move_tiles_per_second": 1.5,
+      "ranks": {
+        "1": {
+          "hp": 100.0,
+          "ranged_armor": 0.0,
+          "fire_armor": 0.0,
+          "attacks": {}
+        },
+        "2": {
+          "hp": 100.0,
+          "ranged_armor": 0.0,
+          "fire_armor": 0.0,
+          "attacks": {}
+        },
+        "3": {
+          "hp": 100.0,
+          "ranged_armor": 0.0,
+          "fire_armor": 0.0,
+          "attacks": {}
+        },
+        "4": {
+          "hp": 100.0,
+          "ranged_armor": 0.0,
+          "fire_armor": 0.0,
+          "attacks": {}
+        }
+      },
+      "abilities": [],
+      "upgrade_costs": {}
+    },
+    "warship": {
+      "source_url": "https://seicing.com/html/aoe2/unitaoe4/扭力弩炮船.html?civ=eng",
+      "source_name": "趸船",
+      "source_civilization": "eng",
+      "cost": {
+        "food": 110,
+        "wood": 200,
+        "gold": 30
+      },
+      "train_seconds": 30.0,
+      "move_tiles_per_second": 1.375,
+      "ranks": {
+        "2": {
+          "hp": 450.0,
+          "ranged_armor": 3.0,
+          "fire_armor": 0.0,
+          "attacks": {}
+        },
+        "3": {
+          "hp": 450.0,
+          "ranged_armor": 3.0,
+          "fire_armor": 0.0,
+          "attacks": {}
+        },
+        "4": {
+          "hp": 450.0,
+          "ranged_armor": 3.0,
+          "fire_armor": 0.0,
+          "attacks": {
+            "ranged": {
+              "damage": 15.0,
+              "damage_kind": "ranged",
+              "range_tiles": 6.0,
+              "min_range_tiles": null,
+              "interval": 3.0,
+              "hits": 1,
+              "splash_tiles": null,
+              "bonuses": {}
+            }
+          }
+        }
+      },
+      "abilities": [
+        "掌舵人：10秒内提高移动速度40%，进入战斗马上失效"
+      ],
+      "upgrade_costs": {}
+    },
+    "trader": {
+      "source_url": "https://seicing.com/html/aoe2/unitaoe4/商人.html?civ=chi",
+      "source_name": "商人",
+      "source_civilization": "chi",
+      "cost": {
+        "wood": 60,
+        "gold": 60
+      },
+      "train_seconds": 30.0,
+      "move_tiles_per_second": 1.0,
+      "ranks": {
+        "1": {
+          "hp": 90.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 0.0,
+          "attacks": {}
+        },
+        "2": {
+          "hp": 90.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 0.0,
+          "attacks": {}
+        },
+        "3": {
+          "hp": 90.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 0.0,
+          "attacks": {}
+        },
+        "4": {
+          "hp": 90.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 0.0,
+          "attacks": {}
+        }
+      },
+      "abilities": [],
+      "upgrade_costs": {}
+    },
+    "monk": {
+      "source_url": "https://seicing.com/html/aoe2/unitaoe4/僧侣.html?civ=chi",
+      "source_name": "僧侣",
+      "source_civilization": "chi",
+      "cost": {
+        "gold": 150
+      },
+      "train_seconds": 30.0,
+      "move_tiles_per_second": 1.125,
+      "ranks": {
+        "3": {
+          "hp": 90.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 0.0,
+          "attacks": {}
+        },
+        "4": {
+          "hp": 90.0,
+          "melee_armor": 0.0,
+          "ranged_armor": 0.0,
+          "attacks": {}
+        }
+      },
+      "abilities": [
+        "治疗：每秒治疗单个单位7生命值，战斗时效率会下降50%",
+        "圣物：拾取战场上的圣物，存放在修道院或是其他地方",
+        "招降：手持圣物才可以使用，吟唱一段时间后大范围招降敌军单位，120秒冷却时间(以单个圣物计算时间)"
+      ],
+      "upgrade_costs": {}
+    }
+  }
+}

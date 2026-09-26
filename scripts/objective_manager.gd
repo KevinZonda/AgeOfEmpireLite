@@ -19,6 +19,20 @@ var wonder_instance_ids := {0: 0, 1: 0}
 var _victory_emitted := false
 
 
+func _player_count() -> int:
+	if game == null: return 2
+	var configured: Variant = game.get("players")
+	if configured is Array and configured.size() > 0: return configured.size()
+	return game.civilizations.size()
+
+func _team(owner_id: int) -> int:
+	var configured: Variant = game.get("teams")
+	return configured[owner_id] if configured is Array and owner_id < configured.size() else owner_id
+
+func _is_enemy(a: int, b: int) -> bool:
+	if game != null and game.has_method("is_enemy"): return game.is_enemy(a, b)
+	return a != b
+
 func setup(game_ref: Node2D) -> void:
 	game = game_ref
 	sacred_sites.clear()
@@ -38,8 +52,11 @@ func reset() -> void:
 		site["contested"] = false
 	sacred_holder = -1
 	sacred_remaining = SACRED_VICTORY_TIME
-	wonder_remaining = {0: WONDER_VICTORY_TIME, 1: WONDER_VICTORY_TIME}
-	wonder_instance_ids = {0: 0, 1: 0}
+	wonder_remaining.clear()
+	wonder_instance_ids.clear()
+	for owner_id in _player_count():
+		wonder_remaining[owner_id] = WONDER_VICTORY_TIME
+		wonder_instance_ids[owner_id] = 0
 	_victory_emitted = false
 	queue_redraw()
 
@@ -56,29 +73,31 @@ func _process(delta: float) -> void:
 
 func _tick_site(index: int, delta: float) -> bool:
 	var site: Dictionary = sacred_sites[index]
-	var presence := [false, false]
-	var capturers := [false, false]
+	var presence: Dictionary = {}
+	var capturers: Dictionary = {}
 	for unit in game.units:
 		if not is_instance_valid(unit) or unit.is_queued_for_deletion() or unit.hp <= 0.0: continue
 		if unit is RtsUnit and unit.garrisoned_in != null: continue
-		if unit.owner_id < 0 or unit.owner_id > 1: continue
+		if unit.owner_id < 0 or unit.owner_id >= _player_count(): continue
 		var tags: Array = unit.stats.get("tags", [])
 		if not tags.has("military") and not tags.has("religious"): continue
 		if unit.position.distance_squared_to(site["position"]) <= SITE_RADIUS * SITE_RADIUS:
-			presence[unit.owner_id] = true
+			presence[_team(unit.owner_id)] = true
 			if tags.has("religious"): capturers[unit.owner_id] = true
-	var contested: bool = presence[0] and presence[1]
+	var contested: bool = presence.size() > 1
 	var changed: bool = site["contested"] != contested
 	site["contested"] = contested
 	if contested: return changed
-	var alone_owner := 0 if capturers[0] and not presence[1] else 1 if capturers[1] and not presence[0] else -1
+	var alone_owner := -1
+	for owner_id in capturers:
+		if alone_owner < 0 or owner_id == site["capture_owner"]: alone_owner = owner_id
 	if alone_owner < 0:
 		if site["capture_owner"] != -1 or site["capture_progress"] > 0.0:
 			site["capture_owner"] = -1
 			site["capture_progress"] = 0.0
 			return true
 		return changed
-	if alone_owner == site["owner_id"]:
+	if site["owner_id"] >= 0 and not _is_enemy(alone_owner, site["owner_id"]):
 		if site["capture_owner"] != -1 or site["capture_progress"] > 0.0:
 			site["capture_owner"] = -1
 			site["capture_progress"] = 0.0
@@ -100,7 +119,7 @@ func _tick_sacred_victory(delta: float) -> void:
 	if sacred_sites.size() != 3: return
 	var owner: int = sacred_sites[0]["owner_id"]
 	for site in sacred_sites:
-		if owner < 0 or site["owner_id"] != owner:
+		if owner < 0 or site["owner_id"] < 0 or _is_enemy(owner, site["owner_id"]):
 			sacred_holder = -1
 			sacred_remaining = SACRED_VICTORY_TIME
 			return
@@ -115,13 +134,14 @@ func _tick_sacred_victory(delta: float) -> void:
 
 
 func _tick_wonder_victory(delta: float) -> void:
-	var present := {0: 0, 1: 0}
+	var present: Dictionary = {}
+	for owner_id in _player_count(): present[owner_id] = 0
 	for building in game.buildings:
 		if not is_instance_valid(building) or building.is_queued_for_deletion(): continue
 		if building.kind != "wonder" or not building.is_complete(): continue
-		if building.owner_id < 0 or building.owner_id > 1: continue
+		if building.owner_id < 0 or building.owner_id >= _player_count(): continue
 		if present[building.owner_id] == 0: present[building.owner_id] = building.get_instance_id()
-	for owner_id in [0, 1]:
+	for owner_id in _player_count():
 		if present[owner_id] == 0:
 			wonder_instance_ids[owner_id] = 0
 			wonder_remaining[owner_id] = WONDER_VICTORY_TIME
@@ -134,7 +154,7 @@ func _tick_wonder_victory(delta: float) -> void:
 
 
 func on_building_destroyed(building: Node2D) -> void:
-	if building.kind != "wonder" or building.owner_id < 0 or building.owner_id > 1: return
+	if building.kind != "wonder" or building.owner_id < 0 or building.owner_id >= _player_count(): return
 	if wonder_instance_ids[building.owner_id] == building.get_instance_id():
 		wonder_instance_ids[building.owner_id] = 0
 		wonder_remaining[building.owner_id] = WONDER_VICTORY_TIME
@@ -143,11 +163,11 @@ func on_building_destroyed(building: Node2D) -> void:
 func status_for(owner_id: int) -> Dictionary:
 	var owned := 0
 	for site in sacred_sites:
-		if site["owner_id"] == owner_id: owned += 1
+		if site["owner_id"] >= 0 and not _is_enemy(owner_id, site["owner_id"]): owned += 1
 	return {
 		"sacred_owned": owned,
 		"sacred_holder": sacred_holder,
-		"sacred_remaining": sacred_remaining if sacred_holder == owner_id else SACRED_VICTORY_TIME,
+		"sacred_remaining": sacred_remaining if sacred_holder >= 0 and not _is_enemy(owner_id, sacred_holder) else SACRED_VICTORY_TIME,
 		"wonder_active": wonder_instance_ids.get(owner_id, 0) != 0,
 		"wonder_remaining": wonder_remaining.get(owner_id, WONDER_VICTORY_TIME),
 	}
@@ -156,7 +176,7 @@ func status_for(owner_id: int) -> Dictionary:
 func status_text(owner_id: int) -> String:
 	var status := status_for(owner_id)
 	var parts: Array[String] = ["圣地 %d/3" % status["sacred_owned"]]
-	if status["sacred_holder"] == owner_id: parts.append("圣地胜利 %ds" % ceili(status["sacred_remaining"]))
+	if status["sacred_holder"] >= 0 and not _is_enemy(owner_id, status["sacred_holder"]): parts.append("圣地胜利 %ds" % ceili(status["sacred_remaining"]))
 	if status["wonder_active"]: parts.append("奇观胜利 %ds" % ceili(status["wonder_remaining"]))
 	return "  ·  ".join(parts)
 
@@ -174,7 +194,7 @@ func _draw() -> void:
 		var center: Vector2 = site["position"]
 		var color := Color("b7b0a0")
 		if site["owner_id"] >= 0 and game != null:
-			color = GameData.CIVILIZATIONS[game.civilizations[site["owner_id"]]]["color"]
+			color = game.player_color(site["owner_id"]) if game.has_method("player_color") else GameData.CIVILIZATIONS[game.civilizations[site["owner_id"]]]["color"]
 		if site["contested"]: color = Color("ead667")
 		draw_circle(center, 28.0, Color(color, 0.2))
 		draw_arc(center, 31.0, 0.0, TAU, 36, color, 4.0)

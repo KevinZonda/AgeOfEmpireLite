@@ -3,26 +3,27 @@ extends RefCounted
 
 # English and French choose one landmark per age. China may complete the other
 # landmark later to unlock that age's dynasty.
-# The names evoke the civilizations, while the balance is specific to this game.
+# The displayed names follow the three reference civilizations. Roles and
+# timings are scaled for this game's existing economy and 2D battlefield.
 const LANDMARKS := {
-	"eng_council_hall": {"label": "议政厅", "civilization": "English", "age": 2, "description": "靶场训练速度提高 25%", "effects": {"production": {"archery_range": 0.75}}},
-	"eng_kings_mill": {"label": "王家磨坊", "civilization": "English", "age": 2, "description": "农田食物采集提高 25%", "effects": {"gather": {"farm_food": 1.25}}},
-	"eng_white_tower": {"label": "白塔", "civilization": "English", "age": 3, "description": "建筑生命值 +100，远程护甲 +2", "effects": {"building": {"all": {"hp": 100.0, "armor_ranged": 2.0}}}},
-	"eng_abbey": {"label": "修道院", "civilization": "English", "age": 3, "description": "步兵生命值 +15", "effects": {"unit": {"infantry": {"hp": 15.0}}}},
-	"eng_berkshire_fortress": {"label": "伯克郡堡垒", "civilization": "English", "age": 4, "description": "建筑生命值 +200，近战护甲 +2", "effects": {"building": {"all": {"hp": 200.0, "armor_melee": 2.0}}}},
-	"eng_wynguard_palace": {"label": "温加德宫殿", "civilization": "English", "age": 4, "description": "全军训练速度提高 10%，远程单位伤害 +2", "effects": {"production": {"all": 0.9}, "unit": {"ranged": {"damage": 2.0}}}},
-	"fr_school_of_cavalry": {"label": "骑兵学院", "civilization": "French", "age": 2, "description": "马厩训练速度提高 25%", "effects": {"production": {"stable": 0.75}}},
-	"fr_chamber_of_commerce": {"label": "商会", "civilization": "French", "age": 2, "description": "黄金采集提高 20%", "effects": {"gather": {"gold": 1.2}}},
-	"fr_royal_institute": {"label": "皇家学院", "civilization": "French", "age": 3, "description": "骑兵生命值 +15，马厩训练速度提高 10%", "effects": {"production": {"stable": 0.9}, "unit": {"cavalry": {"hp": 15.0}}}},
-	"fr_guild_hall": {"label": "行会大厅", "civilization": "French", "age": 3, "description": "石料采集提高 20%", "effects": {"gather": {"stone": 1.2}}},
-	"fr_red_palace": {"label": "红宫", "civilization": "French", "age": 4, "description": "建筑生命值 +150，远程护甲 +2", "effects": {"building": {"all": {"hp": 150.0, "armor_ranged": 2.0}}}},
-	"fr_college_of_artillery": {"label": "炮兵学院", "civilization": "French", "age": 4, "description": "军事单位伤害 +1，攻城单位额外伤害 +4", "effects": {"unit": {"military": {"damage": 1.0}, "siege": {"damage": 4.0}}}},
-	"zh_imperial_academy": {"label": "国子监", "civilization": "Chinese", "age": 2, "description": "黄金采集提高 10%", "effects": {"gather": {"gold": 1.1}}},
-	"zh_barbican": {"label": "边关箭楼", "civilization": "Chinese", "age": 2, "description": "建筑远程护甲 +1", "effects": {"building": {"all": {"armor_ranged": 1.0}}}},
-	"zh_clocktower": {"label": "工部钟楼", "civilization": "Chinese", "age": 3, "description": "攻城器械训练速度提高 15%", "effects": {"production": {"siege_workshop": 0.85}}},
-	"zh_imperial_palace": {"label": "皇城", "civilization": "Chinese", "age": 3, "description": "步兵生命值 +10", "effects": {"unit": {"infantry": {"hp": 10.0}}}},
-	"zh_gatehouse": {"label": "长城关楼", "civilization": "Chinese", "age": 4, "description": "建筑生命值 +100", "effects": {"building": {"all": {"hp": 100.0}}}},
-	"zh_spirit_way": {"label": "神机营", "civilization": "Chinese", "age": 4, "description": "远程单位伤害 +2", "effects": {"unit": {"ranged": {"damage": 2.0}}}},
+	"eng_council_hall": {"label": "议会厅", "civilization": "English", "age": 2, "description": "直接训练长弓兵与靶场单位", "producer": "archery_range", "training_rate": 0.5, "effects": {}},
+	"eng_kings_mill": {"label": "列王修道院", "civilization": "English", "age": 2, "description": "治疗附近脱离战斗的友军", "healing_aura": 160.0, "effects": {}},
+	"eng_white_tower": {"label": "白塔", "civilization": "English", "age": 3, "description": "兼具城堡防御与快速训练", "producer": "white_tower", "training_rate": 0.5, "defense_kind": "keep", "effects": {}},
+	"eng_abbey": {"label": "王宫", "civilization": "English", "age": 3, "description": "可训练村民的城镇中心", "producer": "town_center", "population": 10, "effects": {}},
+	"eng_berkshire_fortress": {"label": "伯克郡宫殿", "civilization": "English", "age": 4, "description": "远射程防御城堡", "defense_kind": "berkshire", "effects": {}},
+	"eng_wynguard_palace": {"label": "温嘉德宫殿", "civilization": "English", "age": 4, "description": "训练温嘉德军队", "producer": "wynguard", "effects": {}},
+	"fr_school_of_cavalry": {"label": "骑兵学校", "civilization": "French", "age": 2, "description": "直接训练骑兵且速度提高", "producer": "stable", "training_rate": 0.75, "effects": {}},
+	"fr_chamber_of_commerce": {"label": "商会", "civilization": "French", "age": 2, "description": "训练商人并提高贸易收益", "producer": "market", "trade_multiplier": 1.3, "effects": {}},
+	"fr_royal_institute": {"label": "皇家学院", "civilization": "French", "age": 3, "description": "研究军事科技，费用降低", "producer": "royal_institute", "research_discount": 0.5, "effects": {}},
+	"fr_guild_hall": {"label": "公会大厅", "civilization": "French", "age": 3, "description": "持续积累资源并可提取", "stockpile": true, "effects": {}},
+	"fr_red_palace": {"label": "红宫", "civilization": "French", "age": 4, "description": "强化防御城堡", "defense_kind": "red_palace", "effects": {}},
+	"fr_college_of_artillery": {"label": "炮兵学院", "civilization": "French", "age": 4, "description": "生产强化攻城器械", "producer": "siege_workshop", "produced_siege_hp": 1.3, "effects": {}},
+	"zh_imperial_academy": {"label": "翰林院", "civilization": "Chinese", "age": 2, "description": "附近经济建筑产生额外税金", "tax_radius": 180.0, "effects": {}},
+	"zh_barbican": {"label": "烈日瓮城", "civilization": "Chinese", "age": 2, "description": "可驻军的防御地标", "defense_kind": "barbican", "effects": {}},
+	"zh_clocktower": {"label": "天文钟楼", "civilization": "Chinese", "age": 3, "description": "生产更坚固的攻城器械", "producer": "siege_workshop", "produced_siege_hp": 1.5, "effects": {}},
+	"zh_imperial_palace": {"label": "皇宫", "civilization": "Chinese", "age": 3, "description": "主动侦察敌方村民", "active_ability": "spy", "effects": {}},
+	"zh_gatehouse": {"label": "长城门楼", "civilization": "Chinese", "age": 4, "description": "增强相邻石墙并防御敌军", "defense_kind": "gatehouse", "wall_aura": 120.0, "effects": {}},
+	"zh_spirit_way": {"label": "皇陵", "civilization": "Chinese", "age": 4, "description": "训练王朝单位", "producer": "spirit_way", "effects": {}},
 }
 const LANDMARK_HP := 1350.0
 const LANDMARK_SIZE := Vector2(110, 100)
@@ -37,7 +38,45 @@ static func landmark(landmark_id: String) -> Dictionary:
 	definition["time"] = RtsTechTree.age_time(int(definition["age"]) - 1)
 	definition["hp"] = LANDMARK_HP
 	definition["size"] = LANDMARK_SIZE
+	definition["defense"] = defense(landmark_id)
+	definition["garrison_capacity"] = 10 if not definition["defense"].is_empty() or definition.get("producer", "") == "town_center" else 0
+	definition["population"] = int(definition.get("population", 0))
 	return definition
+
+static func producer(landmark_id: String) -> String:
+	return str(LANDMARKS.get(landmark_id, {}).get("producer", ""))
+
+static func defense(landmark_id: String) -> Dictionary:
+	var role: String = LANDMARKS.get(landmark_id, {}).get("defense_kind", "")
+	if role.is_empty(): return {}
+	var base: Dictionary = GameData.BUILDINGS["keep"]["defense"].duplicate(true)
+	if role == "berkshire":
+		base["range"] = 300.0
+		base["damage"] = 23.0
+	elif role == "red_palace":
+		base["damage"] = 30.0
+	elif role == "barbican":
+		base["range"] = 205.0
+		base["damage"] = 16.0
+	elif role == "gatehouse":
+		base["range"] = 235.0
+		base["damage"] = 22.0
+	return base
+
+static func training_rate(landmark_id: String) -> float:
+	return float(LANDMARKS.get(landmark_id, {}).get("training_rate", 1.0))
+
+static func produced_siege_hp(landmark_id: String) -> float:
+	return float(LANDMARKS.get(landmark_id, {}).get("produced_siege_hp", 1.0))
+
+static func research_discount(landmark_id: String) -> float:
+	return float(LANDMARKS.get(landmark_id, {}).get("research_discount", 1.0))
+
+static func trade_multiplier(civilization: String, completed: Array) -> float:
+	var result := 1.0
+	for definition in _active_landmarks(civilization, completed):
+		result *= float(definition.get("trade_multiplier", 1.0))
+	return result
 
 
 static func choices_for(civilization: String, current_age: int, completed: Array = []) -> Array[Dictionary]:

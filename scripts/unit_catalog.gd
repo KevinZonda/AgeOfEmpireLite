@@ -6,7 +6,11 @@ extends RefCounted
 const REPLACEMENTS := {
 	"English": {"archer": "longbow"},
 	"French": {"crossbowman": "arbaletrier", "knight": "royal_knight"},
-	"Chinese": {"archer": "zhuge_nu", "man_at_arms": "palace_guard"},
+	"Chinese": {"man_at_arms": "palace_guard"},
+}
+
+const EXTRA_UNITS := {
+	"Chinese": {"archery_range": ["zhuge_nu", "grenadier"], "stable": ["fire_lancer"]},
 }
 
 const CIVILIZATION_BONUSES := {
@@ -24,19 +28,8 @@ static func base_unit_for(civilization: String, unit_kind: String) -> String:
 		if replacements[base_kind] == unit_kind: return str(base_kind)
 	return unit_kind
 
-static func unit_definition(civilization: String, unit_kind: String, researched: Array = []) -> Dictionary:
-	if not GameData.UNITS.has(unit_kind): return {}
-	var definition: Dictionary = GameData.UNITS[unit_kind].duplicate(true)
-	var bonuses: Dictionary = CIVILIZATION_BONUSES.get(civilization, {})
-	var unit_bonus: Dictionary = bonuses.get(unit_kind, {})
-	for stat in unit_bonus:
-		definition[stat] = float(definition.get(stat, 0.0)) + float(unit_bonus[stat])
-	for tech_id in researched:
-		if not RtsTechTree.TECHNOLOGIES.has(tech_id): continue
-		var technology: Dictionary = RtsTechTree.TECHNOLOGIES[tech_id]
-		if not _matches_tags(definition.get("tags", []), technology.get("target_tags", [])): continue
-		_apply_effects(definition, technology.get("effects", {}))
-	return definition
+static func unit_definition(civilization: String, unit_kind: String, researched: Array = [], age := 2, landmarks: Array = [], dynasty := "", producer_landmark_id := "") -> Dictionary:
+	return RtsStatResolver.unit(civilization, unit_kind, age, researched, landmarks, dynasty, producer_landmark_id)
 
 static func building_definition(building_kind: String) -> Dictionary:
 	if not GameData.BUILDINGS.has(building_kind): return {}

@@ -7,6 +7,7 @@ var shortcut_label := ""
 var slot_index := -1
 var availability_reason := ""
 var action_cost: Dictionary = {}
+var description := ""
 
 func configure(kind: String, label_text: String, key_text: String, slot: int = -1) -> void:
 	icon_kind = kind
@@ -24,9 +25,14 @@ func set_availability(available: bool, reason: String = "", cost: Dictionary = {
 	_refresh_tooltip()
 	queue_redraw()
 
+func set_description(value: String) -> void:
+	description = value
+	_refresh_tooltip()
+
 func _refresh_tooltip() -> void:
 	var lines: Array[String] = [caption]
 	if not action_cost.is_empty(): lines.append(GameData.cost_text(action_cost))
+	if not description.is_empty(): lines.append(description)
 	if not availability_reason.is_empty(): lines.append(availability_reason)
 	if not shortcut_label.is_empty(): lines.append("快捷键 %s" % shortcut_label)
 	tooltip_text = "\n".join(lines)

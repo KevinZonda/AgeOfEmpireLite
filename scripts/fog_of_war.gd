@@ -2,7 +2,6 @@ class_name RtsFogOfWar
 extends Node2D
 
 const UPDATE_INTERVAL := 0.15
-const PLAYER_COUNT := 2
 const UNEXPLORED_COLOR := Color(0.035, 0.055, 0.065, 1.0)
 const EXPLORED_COLOR := Color(0.035, 0.055, 0.065, 0.68)
 
@@ -14,17 +13,19 @@ var mask_texture: ImageTexture
 var mask_image: Image
 var update_timer := 0.0
 var active := false
+var spy_timers: Dictionary = {}
 
 func setup(game_ref: Node2D) -> void:
 	game = game_ref
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 
 func reset() -> void:
+	spy_timers.clear()
 	grid_size = game.world_map.grid_size
 	var cell_count := grid_size.x * grid_size.y
 	visible_cells.clear()
 	explored_cells.clear()
-	for owner_id in PLAYER_COUNT:
+	for owner_id in game.players.size():
 		var visible := PackedByteArray()
 		visible.resize(cell_count)
 		visible.fill(0)
@@ -41,6 +42,7 @@ func reset() -> void:
 	show()
 
 func clear() -> void:
+	spy_timers.clear()
 	active = false
 	hide()
 	mask_texture = null
@@ -50,6 +52,7 @@ func clear() -> void:
 
 func _process(delta: float) -> void:
 	if not active or not game.started or game.paused or game.game_over: return
+	for owner_id in spy_timers.keys(): spy_timers[owner_id] = maxf(0.0, float(spy_timers[owner_id]) - delta)
 	update_timer -= delta
 	if update_timer <= 0.0:
 		update_timer = UPDATE_INTERVAL
@@ -59,32 +62,55 @@ func _index(cell: Vector2i) -> int:
 	return cell.y * grid_size.x + cell.x
 
 func can_see(owner_id: int, point: Vector2) -> bool:
-	if not active or owner_id < 0 or owner_id >= PLAYER_COUNT: return false
+	if not active or owner_id < 0 or owner_id >= visible_cells.size(): return false
 	return visible_cells[owner_id][_index(game.world_map.cell_at(point))] != 0
 
 func is_explored(owner_id: int, point: Vector2) -> bool:
-	if not active or owner_id < 0 or owner_id >= PLAYER_COUNT: return false
+	if not active or owner_id < 0 or owner_id >= explored_cells.size(): return false
 	return explored_cells[owner_id][_index(game.world_map.cell_at(point))] != 0
 
 func can_show_resource(owner_id: int, resource: RtsResource) -> bool:
 	if resource.appearance == "deer": return can_see(owner_id, resource.position)
 	return is_explored(owner_id, resource.position)
 
+func reveal_enemy_villagers(owner_id: int, duration: float) -> void:
+	spy_timers[owner_id] = maxf(float(spy_timers.get(owner_id, 0.0)), duration)
+	update_visibility()
+
 func update_visibility() -> void:
 	if not active: return
-	for owner_id in PLAYER_COUNT:
+	for owner_id in game.players.size():
 		var visible: PackedByteArray = visible_cells[owner_id]
 		visible.fill(0)
 		for unit in game.units:
 			if not is_instance_valid(unit) or unit.is_queued_for_deletion() or unit.owner_id != owner_id or unit.garrisoned_in != null: continue
 			var radius := 360.0 if unit.kind == "scout" else 185.0 if unit.kind == "villager" else 250.0
+			for camp in game.buildings:
+				if is_instance_valid(camp) and camp.owner_id == owner_id and camp.kind == "scout_camp" and camp.position.distance_to(unit.position) <= 180.0:
+					radius *= 1.3
+					break
 			_reveal_circle(visible, unit.position, radius)
 		for building in game.buildings:
 			if not is_instance_valid(building) or building.is_queued_for_deletion() or building.owner_id != owner_id: continue
 			var radius := 310.0 if building.kind == "town_center" else 225.0
 			if not building.is_complete(): radius *= 0.55
 			_reveal_circle(visible, building.position, radius)
+		if float(spy_timers.get(owner_id, 0.0)) > 0.0:
+			for enemy in game.units:
+				if is_instance_valid(enemy) and enemy.kind == "villager" and game.is_enemy(owner_id, enemy.owner_id): _reveal_circle(visible, enemy.position, 42.0)
 		visible_cells[owner_id] = visible
+	# Teams share current vision, while each player's explored map persists.
+	var own_visibility := visible_cells.duplicate(true)
+	for owner_id in game.players.size():
+		var visible: PackedByteArray = visible_cells[owner_id]
+		for ally_id in game.players.size():
+			if ally_id == owner_id or game.is_enemy(owner_id, ally_id): continue
+			var ally_visible: PackedByteArray = own_visibility[ally_id]
+			for index in visible.size():
+				if ally_visible[index] != 0: visible[index] = 1
+		visible_cells[owner_id] = visible
+	for owner_id in game.players.size():
+		var visible: PackedByteArray = visible_cells[owner_id]
 		var explored: PackedByteArray = explored_cells[owner_id]
 		for index in visible.size():
 			if visible[index] != 0: explored[index] = 1

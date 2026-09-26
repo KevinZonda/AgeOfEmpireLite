@@ -10,6 +10,7 @@ var world_map: RtsWorldMap
 var pathfinder := AStarGrid2D.new()
 var enemy_pathfinder := AStarGrid2D.new()
 var water_pathfinder := AStarGrid2D.new()
+var owner_pathfinders: Array[AStarGrid2D] = []
 var obstacle_signature := -1
 var spatial_frame := -1
 var indexed_unit_count := -1
@@ -25,7 +26,13 @@ func _init(game_ref: Node2D, map_ref: RtsWorldMap) -> void:
 func refresh() -> void:
 	obstacle_signature = _obstacle_signature()
 	invalidate_spatial_index()
-	for grid in [pathfinder, enemy_pathfinder, water_pathfinder]:
+	owner_pathfinders.clear()
+	for owner_id in game.players.size(): owner_pathfinders.append(AStarGrid2D.new())
+	pathfinder = owner_pathfinders[0]
+	enemy_pathfinder = owner_pathfinders[1]
+	var grids: Array[AStarGrid2D] = owner_pathfinders.duplicate()
+	grids.append(water_pathfinder)
+	for grid in grids:
 		grid.clear()
 		grid.region = Rect2i(Vector2i.ZERO, world_map.grid_size)
 		grid.cell_size = Vector2(RtsWorldMap.CELL_SIZE, RtsWorldMap.CELL_SIZE)
@@ -37,25 +44,23 @@ func refresh() -> void:
 			var cell := Vector2i(x, y)
 			var center := world_map.cell_center(cell)
 			if not world_map.is_walkable(center):
-				pathfinder.set_point_solid(cell)
-				enemy_pathfinder.set_point_solid(cell)
+				for grid in owner_pathfinders: grid.set_point_solid(cell)
 			if not world_map.is_navigable(center): water_pathfinder.set_point_solid(cell)
 	for building in game.buildings:
 		if not is_instance_valid(building) or building.is_queued_for_deletion(): continue
 		var footprint := Rect2(building.position - building.size() * 0.5, building.size()).grow(CLEARANCE)
 		if building.kind.ends_with("_gate") and building.is_complete():
-			_mark_rect(footprint, enemy_pathfinder if building.owner_id == 0 else pathfinder)
+			for owner_id in owner_pathfinders.size():
+				if game.is_enemy(owner_id, building.owner_id): _mark_rect(footprint, owner_pathfinders[owner_id])
 		else:
-			_mark_rect(footprint, pathfinder)
-			_mark_rect(footprint, enemy_pathfinder)
+			for grid in owner_pathfinders: _mark_rect(footprint, grid)
 		_mark_rect(footprint, water_pathfinder)
 	for resource in game.resources:
 		if not is_instance_valid(resource) or resource.is_queued_for_deletion(): continue
-		for grid in [pathfinder, enemy_pathfinder, water_pathfinder]:
+		for grid in grids:
 			_mark_circle(resource.position, resource.radius + CLEARANCE, grid)
 	for building in game.buildings:
 		if not is_instance_valid(building) or building.is_queued_for_deletion() or not building.is_complete() or not building.kind.ends_with("_gate"): continue
-		var grid := pathfinder if building.owner_id == 0 else enemy_pathfinder
 		var first := world_map.cell_at(building.position - Vector2.ONE * RtsWorldMap.CELL_SIZE)
 		var last := world_map.cell_at(building.position + Vector2.ONE * RtsWorldMap.CELL_SIZE)
 		for y in range(first.y, last.y + 1):
@@ -65,13 +70,14 @@ func refresh() -> void:
 				var along := absf(delta.y) if building.wall_vertical else absf(delta.x)
 				var across := absf(delta.x) if building.wall_vertical else absf(delta.y)
 				if along <= RtsWorldMap.CELL_SIZE * 0.55 and across <= RtsWorldMap.CELL_SIZE * 1.1 and world_map.is_walkable(world_map.cell_center(cell)):
-					grid.set_point_solid(cell, false)
+					for owner_id in owner_pathfinders.size():
+						if not game.is_enemy(owner_id, building.owner_id): owner_pathfinders[owner_id].set_point_solid(cell, false)
 
 func _obstacle_signature() -> int:
 	var signature := 0
 	for building in game.buildings:
 		if is_instance_valid(building) and not building.is_queued_for_deletion():
-			signature = hash([signature, building.get_instance_id(), world_map.cell_at(building.position)])
+			signature = hash([signature, building.get_instance_id(), world_map.cell_at(building.position), building.is_complete()])
 	for resource in game.resources:
 		if is_instance_valid(resource) and not resource.is_queued_for_deletion():
 			signature = hash([signature, resource.get_instance_id(), world_map.cell_at(resource.position)])
@@ -144,7 +150,7 @@ func _mark_circle(center: Vector2, radius: float, grid: AStarGrid2D) -> void:
 
 func _grid_for(unit: RtsUnit) -> AStarGrid2D:
 	if unit != null and unit.stats.get("tags", []).has("naval"): return water_pathfinder
-	if unit != null and unit.owner_id == 1: return enemy_pathfinder
+	if unit != null and unit.owner_id >= 0 and unit.owner_id < owner_pathfinders.size(): return owner_pathfinders[unit.owner_id]
 	return pathfinder
 
 func nearest_open_cell(point: Vector2, grid: AStarGrid2D = null) -> Vector2i:
@@ -236,7 +242,8 @@ func move_step(unit: RtsUnit, desired_position: Vector2) -> Vector2:
 	if movement.is_zero_approx(): return unit.position
 	var direction := movement.normalized()
 	var distance := movement.length()
-	var candidates := [direction, direction.rotated(PI / 4.0), direction.rotated(-PI / 4.0), direction.rotated(PI / 2.0), direction.rotated(-PI / 2.0)]
+	var side := 1.0 if unit.get_instance_id() % 2 == 0 else -1.0
+	var candidates := [direction, direction.rotated(side * PI / 4.0), direction.rotated(-side * PI / 4.0), direction.rotated(side * PI / 2.0), direction.rotated(-side * PI / 2.0), direction.rotated(side * PI * 0.75), direction.rotated(-side * PI * 0.75)]
 	for candidate_direction in candidates:
 		var candidate: Vector2 = unit.position + candidate_direction * distance
 		if _motion_clear(unit, candidate): return candidate
@@ -259,7 +266,7 @@ func can_occupy(point: Vector2, radius: float, self_unit: RtsUnit) -> bool:
 		elif not world_map.is_walkable(point + offset): return false
 	for building in game.buildings:
 		if not is_instance_valid(building) or building.is_queued_for_deletion(): continue
-		if self_unit != null and building.owner_id == self_unit.owner_id and building.kind.ends_with("_gate") and building.is_complete(): continue
+		if self_unit != null and not game.is_enemy(self_unit.owner_id, building.owner_id) and building.kind.ends_with("_gate") and building.is_complete(): continue
 		if Rect2(building.position - building.size() * 0.5, building.size()).grow(radius).has_point(point): return false
 	var center_cell := _spatial_cell(point)
 	var search_radius := ceili((radius + max_dynamic_radius) / SPATIAL_CELL_SIZE)
@@ -271,6 +278,9 @@ func can_occupy(point: Vector2, radius: float, self_unit: RtsUnit) -> bool:
 				if point.distance_squared_to(resource.position) < pow(radius + resource.radius, 2): return false
 			for other in units_by_cell.get(cell, []):
 				if not is_instance_valid(other) or other.is_queued_for_deletion() or other == self_unit: continue
-				if point.distance_squared_to(other.position) < pow(radius + other.radius(), 2):
+				var personal_space: float = radius + other.radius()
+				if self_unit != null and self_unit.owner_id == other.owner_id and self_unit.movement_group != null and other.movement_group != null:
+					personal_space *= 0.8
+				if point.distance_squared_to(other.position) < personal_space * personal_space:
 					if self_unit == null or point.distance_squared_to(other.position) <= self_unit.position.distance_squared_to(other.position): return false
 	return true

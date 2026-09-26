@@ -47,7 +47,7 @@ func _draw() -> void:
 	if game.objectives != null:
 		for site in game.objectives.sacred_sites:
 			var site_color := Color("f1dfa0")
-			if site["owner_id"] >= 0: site_color = GameData.CIVILIZATIONS[game.civilizations[site["owner_id"]]]["color"].lightened(0.35)
+			if site["owner_id"] >= 0: site_color = game.player_color(site["owner_id"]).lightened(0.35)
 			draw_circle(world_to_map(site["position"]), 3.0, site_color)
 	for post in game.trade_posts:
 		if is_instance_valid(post) and (not game.fog.active or game.fog.is_explored(0, post.position)):
@@ -65,12 +65,12 @@ func _draw() -> void:
 	for building in game.buildings:
 		if not is_instance_valid(building): continue
 		if building.owner_id != 0 and game.fog.active and not game.fog.can_see(0, building.position): continue
-		var color: Color = GameData.CIVILIZATIONS[game.civilizations[building.owner_id]]["color"]
+		var color: Color = game.player_color(building.owner_id)
 		draw_rect(Rect2(world_to_map(building.position) - Vector2(3, 3), Vector2(6, 6)), color)
 	for unit in game.units:
 		if not is_instance_valid(unit) or unit.garrisoned_in != null: continue
 		if unit.owner_id != 0 and game.fog.active and not game.fog.can_see(0, unit.position): continue
-		var color: Color = GameData.CIVILIZATIONS[game.civilizations[unit.owner_id]]["color"].lightened(0.28)
+		var color: Color = game.player_color(unit.owner_id).lightened(0.28)
 		draw_circle(world_to_map(unit.position), 1.8, color)
 	var visible_size: Vector2 = get_viewport_rect().size / game.camera.zoom
 	var viewport_center: Vector2 = game.camera.get_screen_center_position()
