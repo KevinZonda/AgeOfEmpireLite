@@ -31,12 +31,30 @@ func _run() -> void:
 	assert(game._edge_pan_direction(Vector2(-2, 360), Vector2(1280, 720)) == Vector2.ZERO)
 	assert(game._cursor_state_at(game.units[0].position) == "select")
 	var center: RtsBuilding = game._player_center(0)
-	assert(game.train_unit(center, "villager"))
-	assert(center.training_queue.size() == 1)
+	game.selected.append(center)
+	game._rebuild_actions()
+	assert(game.command_buttons.size() == 2, "Town Center should have train and age-up commands")
+	assert(game.hotkey_buttons.has(KEY_1))
+	game.command_buttons[0].pressed.emit()
+	assert(center.training_queue.size() == 1, "train command should enqueue a villager")
+	game.selected.clear()
+	var midpoint: Vector2 = game.minimap.map_to_world(game.minimap.size * 0.5)
+	assert(midpoint.distance_to(game.world_size * 0.5) < 1.0)
+	var map_click := InputEventMouseButton.new()
+	map_click.button_index = MOUSE_BUTTON_LEFT
+	map_click.pressed = true
+	map_click.position = game.minimap.size * 0.5
+	game.minimap._gui_input(map_click)
+	assert(game.camera.position.distance_to(game.world_size * 0.5) < 1.0)
 	assert(game.advance_age(0))
 	assert(game.players[0]["age"] == 2)
 	var worker: RtsUnit = game.units[0]
 	game.selected.append(worker)
+	game._rebuild_actions()
+	assert(game.command_buttons.size() == 5, "villager should see all unlocked construction commands")
+	game.command_buttons[1].pressed.emit()
+	assert(game.build_mode == "farm", "second construction command should select a farm")
+	game.build_mode = ""
 	assert(game._cursor_state_at(game._player_center(1).position) == "attack")
 	assert(game._cursor_state_at(game.resources[0].position) == "gather")
 	assert(game._cursor_state_at(Vector2(700, 700)) == "move")

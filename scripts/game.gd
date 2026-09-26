@@ -31,8 +31,17 @@ var hit_lines: Array[Dictionary] = []
 
 var top_label: Label
 var info_label: Label
+var detail_label: Label
+var selection_icon: Label
+var selection_health: ProgressBar
+var selection_progress: ProgressBar
+var queue_label: Label
+var command_title: Label
 var notice_label: Label
-var action_bar: HBoxContainer
+var action_bar: GridContainer
+var command_buttons: Array[RtsCommandButton] = []
+var hotkey_buttons: Dictionary = {}
+var minimap: RtsMinimap
 var menu_panel: PanelContainer
 var result_panel: PanelContainer
 var pause_overlay: ColorRect
@@ -82,24 +91,92 @@ func _create_hud() -> void:
 	top.add_child(top_label)
 	var bottom := PanelContainer.new()
 	bottom.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	bottom.offset_top = -154
+	bottom.offset_top = -194
+	bottom.add_theme_stylebox_override("panel", _hud_panel_style(Color("192423"), 7))
 	root.add_child(bottom)
-	var dock := VBoxContainer.new()
-	dock.add_theme_constant_override("separation", 8)
+	var dock := HBoxContainer.new()
+	dock.add_theme_constant_override("separation", 9)
 	bottom.add_child(dock)
+	var command_panel := PanelContainer.new()
+	command_panel.custom_minimum_size.x = 368
+	command_panel.add_theme_stylebox_override("panel", _hud_panel_style(Color("111a1a"), 6))
+	dock.add_child(command_panel)
+	var command_column := VBoxContainer.new()
+	command_column.add_theme_constant_override("separation", 6)
+	command_panel.add_child(command_column)
+	command_title = Label.new()
+	command_title.text = "命令"
+	command_title.add_theme_font_size_override("font_size", 17)
+	command_column.add_child(command_title)
+	action_bar = GridContainer.new()
+	action_bar.columns = 3
+	action_bar.add_theme_constant_override("h_separation", 6)
+	action_bar.add_theme_constant_override("v_separation", 5)
+	command_column.add_child(action_bar)
+	var selection_panel := PanelContainer.new()
+	selection_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	selection_panel.add_theme_stylebox_override("panel", _hud_panel_style(Color("172322"), 7))
+	dock.add_child(selection_panel)
+	var selection_row := HBoxContainer.new()
+	selection_row.add_theme_constant_override("separation", 10)
+	selection_panel.add_child(selection_row)
+	selection_icon = Label.new()
+	selection_icon.custom_minimum_size.x = 58
+	selection_icon.custom_minimum_size.y = 58
+	selection_icon.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	selection_icon.text = "◆"
+	selection_icon.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	selection_icon.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+	selection_icon.add_theme_font_size_override("font_size", 36)
+	selection_row.add_child(selection_icon)
+	var selection_column := VBoxContainer.new()
+	selection_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	selection_column.add_theme_constant_override("separation", 7)
+	selection_row.add_child(selection_column)
 	info_label = Label.new()
-	info_label.add_theme_font_size_override("font_size", 17)
-	info_label.text = "左键选择 / 框选  ·  右键下令  ·  WASD 或鼠标靠边移动画面  ·  滚轮缩放"
-	dock.add_child(info_label)
-	action_bar = HBoxContainer.new()
-	action_bar.add_theme_constant_override("separation", 7)
-	dock.add_child(action_bar)
-	var spacer := Control.new()
-	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	dock.add_child(spacer)
+	info_label.text = "未选择"
+	info_label.add_theme_font_size_override("font_size", 19)
+	selection_column.add_child(info_label)
+	detail_label = Label.new()
+	detail_label.text = "左键选择 · 右键下令"
+	detail_label.add_theme_font_size_override("font_size", 14)
+	selection_column.add_child(detail_label)
+	selection_health = ProgressBar.new()
+	selection_health.show_percentage = false
+	selection_health.custom_minimum_size = Vector2(285, 11)
+	selection_health.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	_style_progress_bar(selection_health, Color("80c47f"))
+	selection_health.hide()
+	selection_column.add_child(selection_health)
+	selection_progress = ProgressBar.new()
+	selection_progress.show_percentage = false
+	selection_progress.custom_minimum_size = Vector2(285, 9)
+	selection_progress.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	_style_progress_bar(selection_progress, Color("dcc778"))
+	selection_progress.hide()
+	selection_column.add_child(selection_progress)
+	queue_label = Label.new()
+	queue_label.add_theme_font_size_override("font_size", 13)
+	selection_column.add_child(queue_label)
 	notice_label = Label.new()
 	notice_label.add_theme_color_override("font_color", Color("f0d783"))
-	dock.add_child(notice_label)
+	notice_label.add_theme_font_size_override("font_size", 13)
+	selection_column.add_child(notice_label)
+	var map_panel := PanelContainer.new()
+	map_panel.custom_minimum_size.x = 220
+	map_panel.add_theme_stylebox_override("panel", _hud_panel_style(Color("111a1a"), 5))
+	dock.add_child(map_panel)
+	var map_column := VBoxContainer.new()
+	map_column.add_theme_constant_override("separation", 5)
+	map_panel.add_child(map_column)
+	var map_title := Label.new()
+	map_title.text = "小地图  ·  点击定位"
+	map_title.add_theme_font_size_override("font_size", 15)
+	map_column.add_child(map_title)
+	minimap = RtsMinimap.new()
+	map_column.add_child(minimap)
+	minimap.setup(self)
+
 	menu_panel = PanelContainer.new()
 	menu_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	menu_panel.custom_minimum_size = Vector2(460, 300)
@@ -140,6 +217,23 @@ func _create_hud() -> void:
 	_add_pause_button(pause_box, "重新开始", func() -> void: start_game(selected_civ))
 	_add_pause_button(pause_box, "返回文明选择", func() -> void: _return_to_menu())
 	_add_pause_button(pause_box, "退出游戏", func() -> void: get_tree().quit())
+
+func _hud_panel_style(color: Color, margin: float) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = color
+	style.content_margin_left = margin
+	style.content_margin_right = margin
+	style.content_margin_top = margin
+	style.content_margin_bottom = margin
+	return style
+
+func _style_progress_bar(bar: ProgressBar, fill_color: Color) -> void:
+	var background := StyleBoxFlat.new()
+	background.bg_color = Color("35413e")
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = fill_color
+	bar.add_theme_stylebox_override("background", background)
+	bar.add_theme_stylebox_override("fill", fill)
 
 func _add_pause_button(parent: Node, label_text: String, action: Callable) -> void:
 	var button := Button.new()
@@ -553,6 +647,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		drag_current = get_global_mouse_position()
 		queue_redraw()
 	if event is InputEventKey and event.pressed and not event.echo:
+		if hotkey_buttons.has(event.keycode):
+			var button: RtsCommandButton = hotkey_buttons[event.keycode]
+			if is_instance_valid(button) and not button.disabled:
+				button.pressed.emit()
+				get_viewport().set_input_as_handled()
+			return
 		if event.keycode == KEY_DELETE:
 			for entity in selected.duplicate():
 				if entity is RtsBuilding and entity.kind != "town_center": entity_destroyed(entity)
@@ -619,47 +719,112 @@ func _update_hud() -> void:
 	var bank := players[0]
 	top_label.text = "%s  ·  时代 %d     食物 %d    木材 %d    黄金 %d    石料 %d     人口 %d/%d" % [
 		GameData.CIVILIZATIONS[civilizations[0]]["label"], bank["age"], bank["food"], bank["wood"], bank["gold"], bank["stone"], population_used(0), population_cap(0)]
-	if not selected.is_empty():
-		var item := selected[0]
-		if is_instance_valid(item):
-			var name: String = GameData.UNITS[item.kind]["label"] if item is RtsUnit else GameData.BUILDINGS[item.kind]["label"]
-			info_label.text = "%s ×%d  ·  生命 %.0f/%.0f%s" % [name, selected.size(), item.hp, item.max_hp, "  ·  建造中" if item is RtsBuilding and not item.is_complete() else ""]
+	_refresh_action_buttons()
+	selection_health.hide()
+	selection_progress.hide()
+	queue_label.text = ""
+	if selected.is_empty() or not is_instance_valid(selected[0]):
+		selection_icon.text = "◆"
+		selection_icon.add_theme_color_override("font_color", Color("9da9a2"))
+		info_label.text = "未选择"
+		detail_label.text = "左键选择 · 右键下令 · Esc 暂停"
+		return
+	var item := selected[0]
+	selection_icon.text = "⌂" if item is RtsBuilding else "◆"
+	selection_icon.add_theme_color_override("font_color", GameData.CIVILIZATIONS[civilizations[0]]["color"].lightened(0.35))
+	if selected.size() > 1:
+		info_label.text = "已选中 %d 个单位" % selected.size()
+		var counts: Dictionary = {}
+		for entity in selected:
+			if not is_instance_valid(entity): continue
+			var label_text: String = GameData.UNITS[entity.kind]["label"] if entity is RtsUnit else GameData.BUILDINGS[entity.kind]["label"]
+			counts[label_text] = counts.get(label_text, 0) + 1
+		var parts: Array[String] = []
+		for label_text in counts: parts.append("%s ×%d" % [label_text, counts[label_text]])
+		detail_label.text = "  ".join(parts)
+		return
+	var name: String = GameData.UNITS[item.kind]["label"] if item is RtsUnit else GameData.BUILDINGS[item.kind]["label"]
+	info_label.text = name
+	selection_health.max_value = item.max_hp
+	selection_health.value = maxf(0.0, item.hp)
+	selection_health.show()
+	if item is RtsUnit:
+		var stats: Dictionary = GameData.UNITS[item.kind]
+		detail_label.text = "生命 %.0f/%.0f   攻击 %.0f   射程 %.0f   移速 %.0f" % [item.hp, item.max_hp, stats["damage"], stats["range"], stats["speed"]]
 	else:
-		info_label.text = "左键选择 / 框选  ·  右键下令  ·  WASD 或鼠标靠边移动画面  ·  滚轮缩放"
+		detail_label.text = "生命 %.0f/%.0f   %s" % [item.hp, item.max_hp, "建造中" if not item.is_complete() else "已建成"]
+		if not item.is_complete():
+			selection_progress.max_value = maxf(0.1, item.build_total)
+			selection_progress.value = item.build_total - item.build_remaining
+			selection_progress.show()
+			queue_label.text = "施工进度 %d%%" % int(100.0 * selection_progress.value / selection_progress.max_value)
+		elif not item.training_queue.is_empty():
+			var unit_kind: String = item.training_queue[0]
+			selection_progress.max_value = GameData.training_time(civilizations[0], item.kind, unit_kind)
+			selection_progress.value = selection_progress.max_value - item.training_remaining
+			selection_progress.show()
+			queue_label.text = "训练中：%s   队列 %d" % [GameData.UNITS[unit_kind]["label"], item.training_queue.size()]
+
+func _refresh_action_buttons() -> void:
+	for button in command_buttons:
+		if not is_instance_valid(button) or button.is_queued_for_deletion(): continue
+		var cost: Dictionary = button.get_meta("cost")
+		var available := can_afford(0, cost)
+		if button.get_meta("action_type") == "train":
+			available = available and population_used(0) < population_cap(0)
+		button.disabled = not available
+		button.queue_redraw()
 
 func _rebuild_actions() -> void:
 	if action_bar == null: return
 	for child in action_bar.get_children(): child.queue_free()
+	command_buttons.clear()
+	hotkey_buttons.clear()
+	command_title.text = "命令"
 	if selected.is_empty() or not is_instance_valid(selected[0]): return
 	var item := selected[0]
+	var keys := [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6]
+	var action_index := 0
 	if item is RtsUnit:
 		var any_worker := false
 		for unit in selected:
 			if is_instance_valid(unit) and unit is RtsUnit and unit.kind == "villager": any_worker = true
 		if any_worker:
+			command_title.text = "村民 · 建造"
 			for kind in ["house", "farm", "barracks", "archery_range", "stable"]:
 				if players[0]["age"] < GameData.BUILDINGS[kind]["age"]: continue
-				var text_value := "建造%s (%s)" % [GameData.BUILDINGS[kind]["label"], GameData.cost_text(GameData.BUILDINGS[kind]["cost"])]
-				_add_action(text_value, func() -> void:
+				var cost: Dictionary = GameData.BUILDINGS[kind]["cost"]
+				_add_action(kind, GameData.BUILDINGS[kind]["label"], cost, keys[action_index], "build", func() -> void:
 					build_mode = kind
 					notify_player("点击地图放置%s；右键取消" % GameData.BUILDINGS[kind]["label"])
 				)
+				action_index += 1
+		else:
+			command_title.text = "部队 · 右键下令"
 	elif item is RtsBuilding and item.is_complete():
+		command_title.text = "%s · 训练" % GameData.BUILDINGS[item.kind]["label"]
 		for kind in GameData.BUILDINGS[item.kind]["trains"]:
 			if not GameData.can_use_unit(civilizations[0], kind): continue
 			if players[0]["age"] < GameData.UNITS[kind]["age"]: continue
-			var text_value := "训练%s (%s)" % [GameData.UNITS[kind]["label"], GameData.cost_text(GameData.UNITS[kind]["cost"])]
-			_add_action(text_value, func() -> void: train_unit(item, kind))
+			var cost: Dictionary = GameData.UNITS[kind]["cost"]
+			_add_action(kind, GameData.UNITS[kind]["label"], cost, keys[action_index], "train", func() -> void: train_unit(item, kind))
+			action_index += 1
 		if item.kind == "town_center" and players[0]["age"] < 4:
 			var age: int = players[0]["age"]
-			_add_action("升级时代 (%s)" % GameData.cost_text(GameData.age_cost(age)), func() -> void: advance_age(0))
+			_add_action("age", "升级", GameData.age_cost(age), keys[action_index], "age", func() -> void: advance_age(0))
+	_refresh_action_buttons()
 
-func _add_action(label_text: String, callback: Callable) -> void:
-	var button := Button.new()
-	button.text = label_text
-	button.custom_minimum_size.y = 42
+func _add_action(icon_kind: String, label_text: String, cost: Dictionary, keycode: int, action_type: String, callback: Callable) -> void:
+	var button := RtsCommandButton.new()
+	var key_text := OS.get_keycode_string(keycode)
+	button.configure(icon_kind, label_text, key_text)
+	button.tooltip_text = "%s\n%s\n快捷键 %s" % [label_text, GameData.cost_text(cost), key_text]
+	button.set_meta("cost", cost)
+	button.set_meta("action_type", action_type)
 	button.pressed.connect(callback)
 	action_bar.add_child(button)
+	command_buttons.append(button)
+	hotkey_buttons[keycode] = button
 
 func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, WORLD_SIZE), Color("638b5c"))
