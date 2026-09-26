@@ -42,7 +42,11 @@ func _draw() -> void:
 		"wood": color = Color("397948")
 		"gold": color = Color("e4c359")
 		"stone": color = Color("9b9f9e")
-	if appearance == "deer":
+	if appearance == "fish":
+		draw_colored_polygon(PackedVector2Array([Vector2(-16, 0), Vector2(4, -7), Vector2(16, 0), Vector2(4, 7)]), Color("c5d9cf"))
+		draw_colored_polygon(PackedVector2Array([Vector2(-16, 0), Vector2(-24, -7), Vector2(-24, 7)]), Color("9fc9cc"))
+		draw_circle(Vector2(9, -2), 1.5, Color("253947"))
+	elif appearance == "deer":
 		draw_ellipse_shape()
 	elif kind == "wood":
 		draw_circle(Vector2(0, 8), 9, Color("6d4a31"))

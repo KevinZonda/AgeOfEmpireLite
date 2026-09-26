@@ -13,6 +13,11 @@ static func evaluate(action_type: String, kind: String, context: Dictionary) -> 
 	match action_type:
 		"order":
 			status = {"available": true, "reason": ""}
+		"convert_gate":
+			if producer.ends_with("_wall") and kind == ("stone_gate" if producer == "stone_wall" else "palisade_gate"):
+				var resource := "stone" if kind == "stone_gate" else "wood"
+				cost = {resource: GameData.BUILDINGS[kind]["cost"][resource] - GameData.BUILDINGS[producer]["cost"][resource]}
+				status = {"available": context.get("production_complete", false), "reason": "城墙尚未建成"}
 		"build":
 			if GameData.BUILDINGS.has(kind):
 				cost = GameData.BUILDINGS[kind]["cost"]

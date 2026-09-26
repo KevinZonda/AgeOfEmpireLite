@@ -14,6 +14,8 @@ var players: Array[Dictionary] = []
 var units: Array[RtsUnit] = []
 var buildings: Array[RtsBuilding] = []
 var resources: Array[RtsResource] = []
+var trade_posts: Array[RtsTradePost] = []
+var relics: Array[RtsRelic] = []
 var selected: Array[Node2D] = []
 var camera: Camera2D
 var world_map: RtsWorldMap
@@ -22,6 +24,12 @@ var weather: RtsWeather
 var fog: RtsFogOfWar
 var objectives: RtsObjectiveManager
 var map_seed := 0
+var map_style := "balanced"
+var selected_map_size := WORLD_SIZE
+var selected_map_style := "balanced"
+var map_size_choice: OptionButton
+var map_style_choice: OptionButton
+var map_seed_input: LineEdit
 var started := false
 var game_over := false
 var paused := false
@@ -32,6 +40,10 @@ var pending_landmark_id := ""
 var build_page := 0
 var order_mode := ""
 var dragging := false
+var wall_dragging := false
+var wall_vertical := false
+var wall_start := Vector2.ZERO
+var wall_end := Vector2.ZERO
 var drag_start := Vector2.ZERO
 var drag_current := Vector2.ZERO
 var ai_timer := 0.0
@@ -224,11 +236,11 @@ func _create_hud() -> void:
 
 	menu_panel = PanelContainer.new()
 	menu_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	menu_panel.custom_minimum_size = Vector2(500, 375)
+	menu_panel.custom_minimum_size = Vector2(500, 480)
 	menu_panel.offset_left = -250
-	menu_panel.offset_top = -187
+	menu_panel.offset_top = -240
 	menu_panel.offset_right = 250
-	menu_panel.offset_bottom = 188
+	menu_panel.offset_bottom = 240
 	root.add_child(menu_panel)
 	result_panel = PanelContainer.new()
 	result_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
@@ -297,12 +309,34 @@ func _show_menu() -> void:
 	box.add_theme_constant_override("separation", 14)
 	menu_panel.add_child(box)
 	_add_menu_label(box, "AGE OF EMPIRE LITE", 27)
-	_add_menu_label(box, "选择文明，开始与电脑进行一场即时战略对战。", 17)
+	_add_menu_label(box, "选择地图与文明，开始与电脑进行即时战略对战。", 17)
+	var options := HBoxContainer.new()
+	box.add_child(options)
+	map_size_choice = OptionButton.new()
+	map_size_choice.add_item("标准地图", 0)
+	map_size_choice.add_item("大型地图", 1)
+	map_size_choice.selected = 1 if selected_map_size.x > WORLD_SIZE.x else 0
+	options.add_child(map_size_choice)
+	map_style_choice = OptionButton.new()
+	map_style_choice.add_item("平衡", 0)
+	map_style_choice.add_item("大湖", 1)
+	map_style_choice.add_item("高地", 2)
+	map_style_choice.selected = ["balanced", "lakes", "highlands"].find(selected_map_style)
+	options.add_child(map_style_choice)
+	map_seed_input = LineEdit.new()
+	map_seed_input.placeholder_text = "地图种子（留空随机）"
+	map_seed_input.custom_minimum_size.x = 170
+	options.add_child(map_seed_input)
 	for civ in GameData.CIVILIZATIONS:
 		var button := Button.new()
 		button.text = "%s · %s" % [GameData.CIVILIZATIONS[civ]["label"], GameData.CIVILIZATIONS[civ]["description"]]
 		button.custom_minimum_size.y = 44
-		button.pressed.connect(func() -> void: start_game(civ))
+		button.pressed.connect(func() -> void:
+			selected_map_size = Vector2(3000, 1800) if map_size_choice.selected == 1 else WORLD_SIZE
+			selected_map_style = ["balanced", "lakes", "highlands"][map_style_choice.selected]
+			var requested := int(map_seed_input.text) if map_seed_input.text.is_valid_int() else -1
+			start_game(civ, requested)
+		)
 		box.add_child(button)
 	_add_menu_label(box, "目标：摧毁城镇中心和地标、控制圣地，或建造奇观。", 14)
 	menu_panel.show()
@@ -332,24 +366,29 @@ func start_game(civ: String, requested_seed := -1, opponent_civ := "") -> void:
 	started = true
 	game_over = false
 	map_seed = requested_seed if requested_seed >= 0 else randi_range(1, 2147483647)
-	world_map.generate(map_seed, WORLD_SIZE)
+	world_size = selected_map_size
+	map_style = selected_map_style
+	camera.limit_right = int(world_size.x)
+	camera.limit_bottom = int(world_size.y)
+	world_map.generate(map_seed, world_size, map_style)
 	world_map.show()
-	weather.setup(self, map_seed, WORLD_SIZE)
+	weather.setup(self, map_seed, world_size)
 	weather.show()
 	build_mode = ""
 	pending_landmark_id = ""
 	build_page = 0
 	order_mode = ""
 	ai_timer = 0.0
-	camera.position = Vector2(630, 720)
+	camera.position = _scaled_point(Vector2(630, 720))
 	menu_panel.hide()
 	result_panel.hide()
 	Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
 	cursor.show()
 	_spawn_map_resources()
 	objectives.setup(self)
+	_spawn_neutral_sites()
 	for owner_id in 2:
-		var base := Vector2(330, 720) if owner_id == 0 else Vector2(2070, 720)
+		var base := _scaled_point(Vector2(330, 720) if owner_id == 0 else Vector2(2070, 720))
 		spawn_building(owner_id, "town_center", base)
 		for i in 5:
 			var worker := spawn_unit(owner_id, "villager", base + Vector2((i % 3) * 29 - 30, 80 + (i / 3) * 28))
@@ -368,12 +407,32 @@ func _clear_world() -> void:
 	for unit in units: if is_instance_valid(unit): unit.queue_free()
 	for building in buildings: if is_instance_valid(building): building.queue_free()
 	for resource in resources: if is_instance_valid(resource): resource.queue_free()
+	for post in trade_posts: if is_instance_valid(post): post.queue_free()
+	for relic in relics: if is_instance_valid(relic): relic.queue_free()
 	units.clear()
 	buildings.clear()
 	resources.clear()
+	trade_posts.clear()
+	relics.clear()
 	if objectives != null: objectives.reset()
 	selected.clear()
 	hit_lines.clear()
+
+func _scaled_point(point: Vector2) -> Vector2:
+	return point * Vector2(world_size.x / WORLD_SIZE.x, world_size.y / WORLD_SIZE.y)
+
+func _spawn_neutral_sites() -> void:
+	for desired in [_scaled_point(Vector2(1200, 190)), _scaled_point(Vector2(1200, 1310))]:
+		var post := RtsTradePost.new()
+		post.position = world_map.nearest_walkable_point(desired)
+		add_child(post)
+		trade_posts.append(post)
+	for site in objectives.sacred_sites:
+		var relic := RtsRelic.new()
+		relic.position = world_map.nearest_walkable_point(site["position"] + Vector2(70, 45))
+		relic.game = self
+		add_child(relic)
+		relics.append(relic)
 
 func _set_paused(value: bool) -> void:
 	if not started or game_over: return
@@ -413,14 +472,18 @@ func spawn_resource(kind: String, world_point: Vector2, amount: int, appearance 
 
 func spawn_unit(owner_id: int, kind: String, world_point: Vector2, rally := Vector2.INF, rally_target: Node2D = null, rally_resource_kind := "") -> RtsUnit:
 	var unit: RtsUnit = UNIT_SCENE.new()
-	unit.position = world_map.nearest_walkable_point(world_point)
+	unit.position = world_map.nearest_water_point(world_point) if GameData.UNITS[kind]["tags"].has("naval") else world_map.nearest_walkable_point(world_point)
 	add_child(unit)
 	unit.setup(self, owner_id, kind)
 	unit.position = navigation.nearest_walkable_point(unit.position, unit.radius(), unit)
 	units.append(unit)
 	navigation.invalidate_spatial_index()
 	if rally != Vector2.INF:
-		if kind == "villager" and is_instance_valid(rally_target) and not rally_target.is_queued_for_deletion() and (rally_target is RtsResource or rally_target is RtsBuilding and rally_target.kind == "farm" and rally_target.is_complete()):
+		if kind == "trader" and rally_target is RtsTradePost:
+			unit.issue_command("trade", Vector2.INF, rally_target)
+		elif kind == "fishing_boat" and rally_target is RtsResource and rally_target.appearance == "fish":
+			unit.issue_command("gather", Vector2.INF, rally_target)
+		elif kind == "villager" and is_instance_valid(rally_target) and not rally_target.is_queued_for_deletion() and (rally_target is RtsResource or rally_target is RtsBuilding and rally_target.kind == "farm" and rally_target.is_complete()):
 			unit.issue_command("gather", Vector2.INF, rally_target)
 		elif kind == "villager" and rally_resource_kind != "":
 			var replacement := find_nearest_resource(rally, rally_resource_kind, 220.0, owner_id)
@@ -430,9 +493,10 @@ func spawn_unit(owner_id: int, kind: String, world_point: Vector2, rally := Vect
 	_update_hud()
 	return unit
 
-func spawn_building(owner_id: int, kind: String, world_point: Vector2, under_construction := false, landmark_id := "") -> RtsBuilding:
+func spawn_building(owner_id: int, kind: String, world_point: Vector2, under_construction := false, landmark_id := "", vertical := false) -> RtsBuilding:
 	var building: RtsBuilding = BUILDING_SCENE.new()
 	building.position = world_point
+	building.wall_vertical = vertical
 	add_child(building)
 	building.setup(self, owner_id, kind, under_construction, landmark_id)
 	buildings.append(building)
@@ -440,10 +504,12 @@ func spawn_building(owner_id: int, kind: String, world_point: Vector2, under_con
 	return building
 
 func find_spawn_position(building: RtsBuilding) -> Vector2:
+	if building.kind == "dock": return world_map.nearest_water_point(building.position)
 	var direction := 1 if building.owner_id == 0 else -1
 	return building.position + Vector2(direction * (building.size().x * 0.5 + 27), randf_range(-25, 25))
 
 func building_completed(building: RtsBuilding) -> void:
+	if building.kind.ends_with("_gate"): navigation.refresh()
 	if building.kind == "landmark":
 		complete_age(building.owner_id, int(RtsLandmarkCatalog.landmark(building.landmark_id).get("age", 0)), building.landmark_id)
 	if building.owner_id == 0: notify_player("%s建造完成" % building.display_label())
@@ -457,6 +523,11 @@ func entity_destroyed(entity: Node2D) -> void:
 		units.erase(entity)
 		navigation.invalidate_spatial_index()
 	elif entity is RtsBuilding:
+		for relic in entity.relics:
+			if is_instance_valid(relic):
+				relic.stored_in = null
+				relic.position = world_map.nearest_walkable_point(entity.position + Vector2(65, 0))
+		entity.relics.clear()
 		entity.ungarrison_all()
 		objectives.on_building_destroyed(entity)
 		buildings.erase(entity)
@@ -664,21 +735,29 @@ func _cancel_selected_job() -> void:
 	var building: RtsBuilding = selected[0]
 	if building.owner_id == 0: cancel_production_job(building, queue_choice.get_selected_id())
 
-func can_place(kind: String, world_point: Vector2) -> bool:
-	var half: Vector2 = GameData.BUILDINGS[kind]["size"] * 0.5
+func can_place(kind: String, world_point: Vector2, vertical := false) -> bool:
+	var dimensions: Vector2 = GameData.BUILDINGS[kind]["size"]
+	if vertical and (kind.ends_with("_wall") or kind.ends_with("_gate")): dimensions = Vector2(dimensions.y, dimensions.x)
+	var half: Vector2 = dimensions * 0.5
 	if world_point.x < half.x + 20 or world_point.y < half.y + 70: return false
-	if world_point.x > WORLD_SIZE.x - half.x - 20 or world_point.y > WORLD_SIZE.y - half.y - 20: return false
-	var footprint := Rect2(world_point - half - Vector2(9, 9), half * 2 + Vector2(18, 18))
+	if world_point.x > world_size.x - half.x - 20 or world_point.y > world_size.y - half.y - 20: return false
+	var padding := 0.0 if kind.ends_with("_wall") or kind.ends_with("_gate") else 9.0
+	var footprint := Rect2(world_point - half - Vector2.ONE * padding, dimensions + Vector2.ONE * padding * 2.0)
 	if world_map != null and not world_map.is_area_buildable(footprint): return false
+	if kind == "dock" and not world_map.has_adjacent_water(world_point): return false
 	for building in buildings:
 		if is_instance_valid(building):
 			var other := Rect2(building.position - building.size() * 0.5, building.size())
 			if footprint.intersects(other): return false
 	for resource in resources:
 		if is_instance_valid(resource) and footprint.grow(resource.radius * 0.5).has_point(resource.position): return false
+	for post in trade_posts:
+		if is_instance_valid(post) and footprint.grow(28).has_point(post.position): return false
+	for relic in relics:
+		if is_instance_valid(relic) and relic.available() and footprint.grow(18).has_point(relic.position): return false
 	return true
 
-func place_building(owner_id: int, kind: String, world_point: Vector2, workers: Array[RtsUnit], append_order := false) -> bool:
+func place_building(owner_id: int, kind: String, world_point: Vector2, workers: Array[RtsUnit], append_order := false, vertical := false) -> bool:
 	if not RtsTechTree.can_build(civilizations[owner_id], players[owner_id]["age"], kind): return false
 	if kind == "wonder":
 		for existing in buildings:
@@ -690,15 +769,29 @@ func place_building(owner_id: int, kind: String, world_point: Vector2, workers: 
 		if is_instance_valid(worker) and worker.owner_id == owner_id and worker.kind == "villager":
 			builders.append(worker)
 	if builders.is_empty(): return false
-	if not can_place(kind, world_point):
+	if not can_place(kind, world_point, vertical):
 		if owner_id == 0: notify_player("这里不能建造")
 		return false
 	if not spend(owner_id, GameData.BUILDINGS[kind]["cost"]):
 		if owner_id == 0: notify_player("建造资源不足")
 		return false
-	var building := spawn_building(owner_id, kind, world_point, true)
+	var building := spawn_building(owner_id, kind, world_point, true, "", vertical)
 	for worker in builders: worker.issue_command("build", Vector2.INF, building, append_order)
 	if owner_id == 0: notify_player("%d 名村民正在建造%s" % [builders.size(), GameData.BUILDINGS[kind]["label"]])
+	return true
+
+func convert_wall_to_gate(building: RtsBuilding) -> bool:
+	if not is_instance_valid(building) or not building.is_complete() or not building.kind.ends_with("_wall"): return false
+	var gate_kind := "stone_gate" if building.kind == "stone_wall" else "palisade_gate"
+	var resource := "stone" if gate_kind == "stone_gate" else "wood"
+	var extra: int = GameData.BUILDINGS[gate_kind]["cost"][resource] - GameData.BUILDINGS[building.kind]["cost"][resource]
+	if not spend(building.owner_id, {resource: extra}): return false
+	building.kind = gate_kind
+	building.refresh_stats()
+	navigation.refresh()
+	if building.owner_id == 0:
+		notify_player("城墙已改建为城门")
+		_rebuild_actions()
 	return true
 
 func count_builders(building: RtsBuilding) -> int:
@@ -708,16 +801,28 @@ func count_builders(building: RtsBuilding) -> int:
 			count += 1
 	return count
 
-func find_nearest_resource(world_point: Vector2, kind: String, max_distance := INF, viewer_id := -1) -> RtsResource:
+func find_nearest_resource(world_point: Vector2, kind: String, max_distance := INF, viewer_id := -1, naval := false) -> RtsResource:
 	var nearest: RtsResource
 	var shortest := max_distance * max_distance
 	for resource in resources:
 		if not is_instance_valid(resource) or resource.is_queued_for_deletion() or resource.kind != kind: continue
+		if naval != (resource.appearance == "fish"): continue
 		if viewer_id >= 0 and fog.active and not fog.can_show_resource(viewer_id, resource): continue
 		var distance := world_point.distance_squared_to(resource.position)
 		if distance < shortest:
 			shortest = distance
 			nearest = resource
+	return nearest
+
+func find_nearest_owned_building(owner_id: int, kind: String, point: Vector2) -> RtsBuilding:
+	var nearest: RtsBuilding
+	var best := INF
+	for building in buildings:
+		if not is_instance_valid(building) or building.is_queued_for_deletion() or building.owner_id != owner_id or building.kind != kind or not building.is_complete(): continue
+		var distance := point.distance_squared_to(building.position)
+		if distance < best:
+			nearest = building
+			best = distance
 	return nearest
 
 func nearest_enemy(unit: RtsUnit, max_distance: float) -> Node2D:
@@ -781,8 +886,8 @@ func _pan_camera(delta: float) -> void:
 
 func _move_camera_screen_delta(screen_delta: Vector2) -> void:
 	var half_view := get_viewport_rect().size * 0.5 / camera.zoom.x
-	var min_center := half_view.min(WORLD_SIZE * 0.5)
-	camera.position = (camera.position + screen_delta / camera.zoom.x).clamp(min_center, WORLD_SIZE - min_center)
+	var min_center := half_view.min(world_size * 0.5)
+	camera.position = (camera.position + screen_delta / camera.zoom.x).clamp(min_center, world_size - min_center)
 
 func _edge_pan_direction(screen_point: Vector2, viewport_size: Vector2) -> Vector2:
 	if not Rect2(Vector2.ZERO, viewport_size).has_point(screen_point): return Vector2.ZERO
@@ -805,10 +910,12 @@ func _cursor_state_at(world_point: Vector2, over_ui := false) -> String:
 	if order_mode == "attack_move": return "attack_move"
 	if build_mode != "":
 		var cost: Dictionary = RtsLandmarkCatalog.landmark(pending_landmark_id).get("cost", {}) if build_mode == "landmark" else GameData.BUILDINGS[build_mode]["cost"]
-		return "build_valid" if can_place(build_mode, world_point) and can_afford(0, cost) else "build_invalid"
+		return "build_valid" if can_place(build_mode, world_point, wall_vertical) and can_afford(0, cost) else "build_invalid"
 	if dragging and drag_start.distance_to(world_point) > 12.0: return "drag"
 	var entity := _entity_at(world_point)
 	var resource := _resource_at(world_point)
+	var post := _trade_post_at(world_point)
+	var relic := _relic_at(world_point)
 	var has_unit := false
 	var has_worker := false
 	var has_producer := false
@@ -821,7 +928,10 @@ func _cursor_state_at(world_point: Vector2, over_ui := false) -> String:
 			has_producer = true
 	if entity != null and entity.owner_id == 1 and has_unit: return "attack"
 	if has_worker and entity is RtsBuilding and entity.owner_id == 0 and not entity.is_complete(): return "construct"
-	if has_worker and (resource != null or entity is RtsBuilding and entity.kind == "farm"): return "gather"
+	if has_worker and (resource != null and resource.appearance != "fish" or entity is RtsBuilding and entity.kind == "farm"): return "gather"
+	if resource != null and resource.appearance == "fish" and not selected.is_empty() and selected[0] is RtsUnit and selected[0].kind == "fishing_boat": return "gather"
+	if post != null and not selected.is_empty() and selected[0] is RtsUnit and selected[0].kind == "trader": return "trade"
+	if relic != null and not selected.is_empty() and selected[0] is RtsUnit and selected[0].kind == "monk": return "relic"
 	if entity != null and entity.owner_id == 0: return "select"
 	if has_unit: return "move"
 	if has_producer: return "rally"
@@ -836,6 +946,10 @@ func _input(event: InputEvent) -> void:
 	if not started or game_over: return
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
 		_set_paused(not paused)
+		get_viewport().set_input_as_handled()
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_R and (build_mode.ends_with("_wall") or build_mode.ends_with("_gate")):
+		wall_vertical = not wall_vertical
+		queue_redraw()
 		get_viewport().set_input_as_handled()
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -858,7 +972,12 @@ func _unhandled_input(event: InputEvent) -> void:
 					_issue_attack_move(get_global_mouse_position(), event.shift_pressed)
 					return
 				if build_mode != "":
-					_confirm_build(get_global_mouse_position(), event.shift_pressed)
+					if build_mode.ends_with("_wall"):
+						wall_dragging = true
+						wall_start = get_global_mouse_position()
+						wall_end = wall_start
+					else:
+						_confirm_build(get_global_mouse_position(), event.shift_pressed)
 					return
 				if event.double_click:
 					var clicked := _entity_at(get_viewport().get_canvas_transform().affine_inverse() * event.position)
@@ -869,6 +988,10 @@ func _unhandled_input(event: InputEvent) -> void:
 				drag_start = get_global_mouse_position()
 				drag_current = drag_start
 			else:
+				if wall_dragging:
+					wall_dragging = false
+					_confirm_wall_line(wall_start, get_global_mouse_position(), event.shift_pressed)
+					return
 				if dragging:
 					dragging = false
 					_select_area(drag_start, get_global_mouse_position(), event.shift_pressed)
@@ -881,6 +1004,7 @@ func _unhandled_input(event: InputEvent) -> void:
 				return
 			if build_mode != "":
 				build_mode = ""
+				wall_dragging = false
 				pending_landmark_id = ""
 				notify_player("已取消建造")
 				return
@@ -888,6 +1012,9 @@ func _unhandled_input(event: InputEvent) -> void:
 			return
 	if event is InputEventMouseMotion and dragging:
 		drag_current = get_global_mouse_position()
+		queue_redraw()
+	if event is InputEventMouseMotion and wall_dragging:
+		wall_end = get_global_mouse_position()
 		queue_redraw()
 	if event is InputEventKey and event.pressed and not event.echo:
 		if hotkey_buttons.has(event.keycode):
@@ -943,9 +1070,21 @@ func _resource_at(point: Vector2) -> RtsResource:
 			return resource
 	return null
 
+func _trade_post_at(point: Vector2) -> RtsTradePost:
+	for post in trade_posts:
+		if is_instance_valid(post) and (not fog.active or fog.is_explored(0, post.position)) and post.contains(point): return post
+	return null
+
+func _relic_at(point: Vector2) -> RtsRelic:
+	for relic in relics:
+		if is_instance_valid(relic) and relic.available() and (not fog.active or fog.can_see(0, relic.position)) and relic.position.distance_to(point) <= 20.0: return relic
+	return null
+
 func _issue_order(point: Vector2, append_order := false) -> void:
 	var entity := _entity_at(point)
 	var resource := _resource_at(point)
+	var post := _trade_post_at(point)
+	var relic := _relic_at(point)
 	var has_selected_unit := false
 	for subject in selected:
 		if is_instance_valid(subject) and subject is RtsUnit:
@@ -956,8 +1095,8 @@ func _issue_order(point: Vector2, append_order := false) -> void:
 		for subject in selected:
 			if not is_instance_valid(subject) or not subject is RtsBuilding: continue
 			if subject.owner_id != 0 or not subject.is_complete() or not RtsTechTree.PRODUCTION.has(subject.kind): continue
-			var rally_target: Node2D = resource if resource != null else entity if entity is RtsBuilding and entity.owner_id == 0 and entity.kind == "farm" else null
-			subject.set_rally(point.clamp(Vector2(24, 24), WORLD_SIZE - Vector2(24, 24)), rally_target)
+			var rally_target: Node2D = resource if resource != null else post if post != null else entity if entity is RtsBuilding and entity.owner_id == 0 and entity.kind == "farm" else null
+			subject.set_rally(point.clamp(Vector2(24, 24), world_size - Vector2(24, 24)), rally_target)
 			assigned = true
 		if assigned:
 			notify_player("资源集结点已设置；新村民自动采集" if resource != null or entity is RtsBuilding and entity.kind == "farm" else "集结点已设置")
@@ -966,11 +1105,17 @@ func _issue_order(point: Vector2, append_order := false) -> void:
 	var index := 0
 	for subject in selected:
 		if not is_instance_valid(subject) or not subject is RtsUnit: continue
-		if entity != null and entity.owner_id == 1:
+		if post != null and subject.kind == "trader":
+			subject.issue_command("trade", Vector2.INF, post, append_order)
+		elif relic != null and subject.kind == "monk":
+			subject.issue_command("relic", Vector2.INF, relic, append_order)
+		elif entity is RtsBuilding and entity.owner_id == 0 and entity.kind == "monastery" and subject.kind == "monk" and subject.carried_relic != null:
+			subject.issue_command("deposit_relic", Vector2.INF, entity, append_order)
+		elif entity != null and entity.owner_id == 1:
 			subject.issue_command("attack", Vector2.INF, entity, append_order)
 		elif entity is RtsBuilding and entity.owner_id == 0 and not entity.is_complete() and subject.kind == "villager":
 			subject.issue_command("build", Vector2.INF, entity, append_order)
-		elif resource != null and subject.kind == "villager":
+		elif resource != null and (subject.kind == "villager" and resource.appearance != "fish" or subject.kind == "fishing_boat" and resource.appearance == "fish"):
 			subject.issue_command("gather", Vector2.INF, resource, append_order)
 		elif entity is RtsBuilding and entity.owner_id == 0 and entity.kind == "farm" and subject.kind == "villager":
 			subject.issue_command("gather", Vector2.INF, entity, append_order)
@@ -985,7 +1130,7 @@ func _issue_attack_move(point: Vector2, append_order := false) -> void:
 	if not append_order: order_mode = ""
 	var index := 0
 	for subject in selected:
-		if not is_instance_valid(subject) or not subject is RtsUnit or subject.kind == "villager": continue
+		if not is_instance_valid(subject) or not subject is RtsUnit or not subject.stats.get("tags", []).has("military"): continue
 		var offset := Vector2((index % 4) * 25 - 37, (index / 4) * 25 - 25)
 		subject.issue_command("attack_move", point + offset, null, append_order)
 		index += 1
@@ -1010,10 +1155,47 @@ func _confirm_build(point: Vector2, append_order := false) -> void:
 	if builders.is_empty():
 		notify_player("需要村民建造")
 		return
-	var success := place_landmark(0, pending_landmark_id, point, builders, append_order) if build_mode == "landmark" else place_building(0, build_mode, point, builders, append_order)
+	var success := place_landmark(0, pending_landmark_id, point, builders, append_order) if build_mode == "landmark" else place_building(0, build_mode, point, builders, append_order, wall_vertical)
 	if success and (not append_order or build_mode == "landmark"):
 		build_mode = ""
 		pending_landmark_id = ""
+		_rebuild_actions()
+	queue_redraw()
+
+func _wall_positions(from: Vector2, to: Vector2) -> Array[Vector2]:
+	var positions: Array[Vector2] = []
+	var delta := to - from
+	var vertical := absf(delta.y) > absf(delta.x) if delta.length() > 20.0 else wall_vertical
+	var length := absf(delta.y) if vertical else absf(delta.x)
+	var count := clampi(roundi(length / 68.0) + 1, 1, 24)
+	var sign_value := signf(delta.y if vertical else delta.x)
+	if is_zero_approx(sign_value): sign_value = 1.0
+	for index in count:
+		positions.append(from + (Vector2.DOWN if vertical else Vector2.RIGHT) * sign_value * index * 68.0)
+	return positions
+
+func _confirm_wall_line(from: Vector2, to: Vector2, append_order := false) -> void:
+	var vertical := absf(to.y - from.y) > absf(to.x - from.x) if from.distance_to(to) > 20.0 else wall_vertical
+	var positions := _wall_positions(from, to)
+	var builders: Array[RtsUnit] = []
+	for entity in selected:
+		if entity is RtsUnit and entity.owner_id == 0 and entity.kind == "villager": builders.append(entity)
+	if builders.is_empty():
+		notify_player("需要村民建墙")
+		return
+	var cost: Dictionary = GameData.BUILDINGS[build_mode]["cost"]
+	for resource in cost:
+		if players[0][resource] < cost[resource] * positions.size():
+			notify_player("整段城墙所需资源不足")
+			return
+	for point in positions:
+		if not can_place(build_mode, point, vertical):
+			notify_player("城墙经过不可建造的位置")
+			return
+	for index in positions.size():
+		place_building(0, build_mode, positions[index], builders, append_order or index > 0, vertical)
+	if not append_order:
+		build_mode = ""
 		_rebuild_actions()
 	queue_redraw()
 
@@ -1057,8 +1239,12 @@ func _update_hud() -> void:
 		var stats: Dictionary = item.stats
 		var armor: Dictionary = stats.get("armor", {})
 		detail_label.text = "生命 %.0f/%.0f   攻击 %.0f   近甲 %.0f   远甲 %.0f   射程 %.0f   移速 %.0f" % [item.hp, item.max_hp, stats["damage"], armor.get("melee", 0.0), armor.get("ranged", 0.0), stats["range"], stats["speed"]]
+		if item.kind == "trader": detail_label.text += "   右键贸易站往返交易"
+		if item.kind == "monk": detail_label.text += "   携带圣物" if item.carried_relic != null else "   可占圣地、拾取圣物"
+		if item.kind == "fishing_boat": detail_label.text += "   右键鱼群捕鱼"
 	else:
 		detail_label.text = "生命 %.0f/%.0f   %s" % [item.hp, item.max_hp, "建造中" if not item.is_complete() else "已建成"]
+		if item.kind == "monastery": detail_label.text += "   圣物 %d（每 4 秒每件 +12 黄金）" % item.relics.size()
 		if not item.garrisoned_units.is_empty(): detail_label.text += "   驻军 %d/%d" % [item.garrisoned_units.size(), RtsSiegeRules.garrison_capacity(item.kind)]
 		if item.is_complete() and RtsTechTree.PRODUCTION.has(item.kind):
 			detail_label.text += "   右键设置集结点"
@@ -1139,7 +1325,7 @@ func _rebuild_actions() -> void:
 		for unit in selected:
 			if not is_instance_valid(unit) or not unit is RtsUnit: continue
 			if unit.kind == "villager": any_worker = true
-			else: any_military = true
+			if unit.stats.get("tags", []).has("military"): any_military = true
 		if any_worker:
 			var pages := [
 				{"title": "经济", "kinds": ["house", "farm"]},
@@ -1148,6 +1334,7 @@ func _rebuild_actions() -> void:
 				{"title": "地标与奇观", "kinds": ["wonder"]},
 			]
 			if civilizations[0] == "Chinese": pages.append({"title": "王朝地标", "kinds": []})
+			pages.append({"title": "港口与贸易", "kinds": ["market", "dock", "monastery", "palisade_gate", "stone_gate"]})
 			build_page = posmod(build_page, pages.size())
 			var page: Dictionary = pages[build_page]
 			command_title.text = "村民 · %s (%d/%d)" % [page["title"], build_page + 1, pages.size()]
@@ -1159,12 +1346,12 @@ func _rebuild_actions() -> void:
 					if int(choice["age"]) != players[0]["age"] + 1: continue
 					_add_landmark_action(choice, keys[action_index])
 					action_index += 1
-			if build_page == 4:
+			if civilizations[0] == "Chinese" and build_page == 4:
 				for choice in RtsLandmarkCatalog.choices_for(civilizations[0], players[0]["age"], players[0]["landmarks"]):
 					if int(choice["age"]) > players[0]["age"]: continue
 					_add_landmark_action(choice, keys[action_index])
 					action_index += 1
-			_add_action("next_page", "下一页", {}, KEY_5, "order", func() -> void:
+			_add_action("next_page", "下一页", {}, KEY_9 if page["kinds"].size() >= 5 else KEY_5, "order", func() -> void:
 				build_page = (build_page + 1) % pages.size()
 				_rebuild_actions()
 			)
@@ -1178,6 +1365,12 @@ func _rebuild_actions() -> void:
 		_add_action("stop", "停止", {}, KEY_6 if any_worker else KEY_2, "order", func() -> void: _stop_selected_units())
 	elif item is RtsBuilding:
 		command_title.text = "%s · 训练与研究" % item.display_label()
+		if item.kind.ends_with("_wall"):
+			var gate_kind := "stone_gate" if item.kind == "stone_wall" else "palisade_gate"
+			var resource := "stone" if gate_kind == "stone_gate" else "wood"
+			var extra: int = GameData.BUILDINGS[gate_kind]["cost"][resource] - GameData.BUILDINGS[item.kind]["cost"][resource]
+			_add_action(gate_kind, "改建城门", {resource: extra}, KEY_1, "convert_gate", func() -> void: convert_wall_to_gate(item))
+			action_index += 1
 		for kind in RtsTechTree.all_train_units(civilizations[0], item.kind):
 			var cost: Dictionary = GameData.UNITS[kind]["cost"]
 			_add_action(kind, GameData.UNITS[kind]["label"], cost, keys[action_index] if action_index < keys.size() else KEY_NONE, "train", func() -> void: train_unit(item, kind))
@@ -1201,7 +1394,7 @@ func _add_build_action(kind: String, keycode: int) -> void:
 	_add_action(kind, GameData.BUILDINGS[kind]["label"], cost, keycode, "build", func() -> void:
 		build_mode = kind
 		pending_landmark_id = ""
-		notify_player("点击地图放置%s；Shift 连续建造" % GameData.BUILDINGS[kind]["label"])
+		notify_player("拖拽铺设%s；R 旋转；Shift 连续建造" % GameData.BUILDINGS[kind]["label"] if kind.ends_with("_wall") else "点击地图放置%s；R 旋转墙门；Shift 连续建造" % GameData.BUILDINGS[kind]["label"])
 	)
 
 func _add_landmark_action(choice: Dictionary, keycode: int) -> void:
@@ -1244,9 +1437,16 @@ func _draw() -> void:
 		draw_rect(Rect2(drag_start, drag_current - drag_start).abs(), Color("f5e597"), false, 2)
 	if build_mode != "":
 		var mouse := get_global_mouse_position()
-		var valid := can_place(build_mode, mouse)
-		var size: Vector2 = GameData.BUILDINGS[build_mode]["size"]
-		draw_rect(Rect2(mouse - size * 0.5, size), Color(0.25, 0.9, 0.4, 0.35) if valid else Color(0.9, 0.2, 0.2, 0.35))
+		var vertical := wall_vertical
+		var preview_positions: Array[Vector2] = [mouse]
+		if wall_dragging:
+			preview_positions = _wall_positions(wall_start, wall_end)
+			vertical = absf(wall_end.y - wall_start.y) > absf(wall_end.x - wall_start.x) if wall_start.distance_to(wall_end) > 20.0 else wall_vertical
+		for preview in preview_positions:
+			var valid := can_place(build_mode, preview, vertical)
+			var dimensions: Vector2 = GameData.BUILDINGS[build_mode]["size"]
+			if vertical and (build_mode.ends_with("_wall") or build_mode.ends_with("_gate")): dimensions = Vector2(dimensions.y, dimensions.x)
+			draw_rect(Rect2(preview - dimensions * 0.5, dimensions), Color(0.25, 0.9, 0.4, 0.35) if valid else Color(0.9, 0.2, 0.2, 0.35))
 	for line in hit_lines:
 		if fog.active and line["owner"] != 0 and not fog.can_see(0, line["to"]): continue
 		var color: Color = GameData.CIVILIZATIONS[civilizations[line["owner"]]]["color"].lightened(0.45)

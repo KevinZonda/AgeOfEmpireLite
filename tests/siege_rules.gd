@@ -10,6 +10,7 @@ func _initialize() -> void:
 	assert(RtsTechTree.can_train("English", 3, "siege_workshop", "battering_ram"))
 	assert(RtsTechTree.can_train("French", 3, "siege_workshop", "trebuchet"))
 	assert(SiegeRules.is_wall("stone_wall"))
+	assert(SiegeRules.is_wall("stone_gate"))
 	assert(SiegeRules.is_siege("battering_ram"))
 	assert(SiegeRules.garrison_capacity("outpost") == 5)
 	assert(SiegeRules.can_garrison(GameData.UNITS["villager"], "town_center"))

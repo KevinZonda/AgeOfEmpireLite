@@ -12,11 +12,20 @@ func _run() -> void:
 		assert(map.cells.has(RtsWorldMap.Terrain.MOUNTAIN))
 		assert(map.plants.size() > 100)
 		assert(not map.path_between(Vector2(330, 720), Vector2(2070, 720)).is_empty())
+		var west_starters := {"wood": 0, "food": 0, "gold": 0, "stone": 0}
+		var east_starters := {"wood": 0, "food": 0, "gold": 0, "stone": 0}
+		for index in 15:
+			west_starters[map.resource_specs[index]["kind"]] += 1
+			east_starters[map.resource_specs[index + 15]["kind"]] += 1
+		assert(west_starters == east_starters and west_starters == {"wood": 5, "food": 4, "gold": 3, "stone": 3})
 		var deer_count := 0
 		for spec in map.resource_specs:
 			if spec["appearance"] == "deer": deer_count += 1
-			assert(map.is_walkable(spec["position"]))
-			assert(not map.path_between(Vector2(1200, 750), spec["position"]).is_empty())
+			if spec["appearance"] == "fish":
+				assert(map.is_navigable(spec["position"]))
+			else:
+				assert(map.is_walkable(spec["position"]))
+				assert(not map.path_between(Vector2(1200, 750), spec["position"]).is_empty())
 		assert(deer_count >= 12)
 	matching_map.generate(map.map_seed, Vector2(2400, 1500))
 	assert(matching_map.cells == map.cells)

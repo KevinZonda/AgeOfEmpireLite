@@ -49,6 +49,12 @@ func _draw() -> void:
 			var site_color := Color("f1dfa0")
 			if site["owner_id"] >= 0: site_color = GameData.CIVILIZATIONS[game.civilizations[site["owner_id"]]]["color"].lightened(0.35)
 			draw_circle(world_to_map(site["position"]), 3.0, site_color)
+	for post in game.trade_posts:
+		if is_instance_valid(post) and (not game.fog.active or game.fog.is_explored(0, post.position)):
+			draw_rect(Rect2(world_to_map(post.position) - Vector2(2, 2), Vector2(4, 4)), Color("d4af71"))
+	for relic in game.relics:
+		if is_instance_valid(relic) and relic.available() and (not game.fog.active or game.fog.can_see(0, relic.position)):
+			draw_circle(world_to_map(relic.position), 2.0, Color("f4e8ae"))
 	for resource in game.resources:
 		if not is_instance_valid(resource) or resource.is_queued_for_deletion(): continue
 		if game.fog.active and not game.fog.can_show_resource(0, resource): continue

@@ -7,14 +7,16 @@ enum Terrain {GRASS, MEADOW, WATER, MOUNTAIN, ROAD}
 var world_size := Vector2.ZERO
 var grid_size := Vector2i.ZERO
 var map_seed := 0
+var map_style := "balanced"
 var cells := PackedByteArray()
 var plants: Array[Dictionary] = []
 var resource_specs: Array[Dictionary] = []
 var pathfinder := AStarGrid2D.new()
 var rng := RandomNumberGenerator.new()
 
-func generate(seed_value: int, map_size: Vector2) -> void:
+func generate(seed_value: int, map_size: Vector2, style := "balanced") -> void:
 	map_seed = seed_value
+	map_style = style if ["balanced", "lakes", "highlands"].has(style) else "balanced"
 	world_size = map_size
 	grid_size = Vector2i(ceili(map_size.x / CELL_SIZE), ceili(map_size.y / CELL_SIZE))
 	rng.seed = seed_value
@@ -28,16 +30,16 @@ func generate(seed_value: int, map_size: Vector2) -> void:
 	noise.fractal_octaves = 3
 	for y in grid_size.y:
 		for x in grid_size.x:
-			var point := cell_center(Vector2i(x, y))
+			var point := _reference_point(cell_center(Vector2i(x, y)))
 			var variation := noise.get_noise_2d(point.x, point.y)
 			var terrain := Terrain.GRASS
 			if _is_road(point):
 				terrain = Terrain.ROAD
 			elif _is_base_clearance(point) or _is_corridor_clearance(point):
 				terrain = Terrain.MEADOW if variation > 0.13 else Terrain.GRASS
-			elif _ellipse(point, Vector2(790, 255), Vector2(285, 205)) < 1.0 + variation * 0.24 or _ellipse(point, Vector2(1660, 265), Vector2(270, 195)) < 1.0 + variation * 0.22:
+			elif _ellipse(point, Vector2(790, 255), Vector2(285, 205) * _mountain_scale()) < 1.0 + variation * 0.24 or _ellipse(point, Vector2(1660, 265), Vector2(270, 195) * _mountain_scale()) < 1.0 + variation * 0.22:
 				terrain = Terrain.MOUNTAIN
-			elif _ellipse(point, Vector2(800, 1220), Vector2(270, 195)) < 1.0 - variation * 0.25 or _ellipse(point, Vector2(1580, 1190), Vector2(290, 205)) < 1.0 - variation * 0.25:
+			elif _ellipse(point, Vector2(800, 1220), Vector2(270, 195) * _water_scale()) < 1.0 - variation * 0.25 or _ellipse(point, Vector2(1580, 1190), Vector2(290, 205) * _water_scale()) < 1.0 - variation * 0.25:
 				terrain = Terrain.WATER
 			elif variation > 0.13:
 				terrain = Terrain.MEADOW
@@ -46,7 +48,20 @@ func generate(seed_value: int, map_size: Vector2) -> void:
 	_generate_plants()
 	_generate_starter_resources()
 	_generate_resource_clusters()
+	_generate_fish()
 	queue_redraw()
+
+func _reference_point(point: Vector2) -> Vector2:
+	return point * Vector2(2400.0 / world_size.x, 1500.0 / world_size.y)
+
+func _world_point(point: Vector2) -> Vector2:
+	return point * Vector2(world_size.x / 2400.0, world_size.y / 1500.0)
+
+func _mountain_scale() -> float:
+	return 1.3 if map_style == "highlands" else 0.85 if map_style == "lakes" else 1.0
+
+func _water_scale() -> float:
+	return 1.35 if map_style == "lakes" else 0.8 if map_style == "highlands" else 1.0
 
 func _ellipse(point: Vector2, center: Vector2, radius: Vector2) -> float:
 	var delta := (point - center) / radius
@@ -76,6 +91,34 @@ func terrain_at(point: Vector2) -> int:
 func is_walkable(point: Vector2) -> bool:
 	var terrain := terrain_at(point)
 	return terrain != Terrain.WATER and terrain != Terrain.MOUNTAIN
+
+func is_navigable(point: Vector2) -> bool:
+	return terrain_at(point) == Terrain.WATER
+
+func nearest_water_point(point: Vector2) -> Vector2:
+	var origin := cell_at(point)
+	if is_navigable(cell_center(origin)): return cell_center(origin)
+	for radius in range(1, maxi(grid_size.x, grid_size.y)):
+		var best := Vector2.INF
+		var best_distance := INF
+		for y in range(maxi(0, origin.y - radius), mini(grid_size.y - 1, origin.y + radius) + 1):
+			for x in range(maxi(0, origin.x - radius), mini(grid_size.x - 1, origin.x + radius) + 1):
+				if absi(x - origin.x) != radius and absi(y - origin.y) != radius: continue
+				var candidate := cell_center(Vector2i(x, y))
+				if not is_navigable(candidate): continue
+				var distance := point.distance_squared_to(candidate)
+				if distance < best_distance:
+					best = candidate
+					best_distance = distance
+		if best != Vector2.INF: return best
+	return point
+
+func has_adjacent_water(point: Vector2) -> bool:
+	var cell := cell_at(point)
+	for y in range(maxi(0, cell.y - 2), mini(grid_size.y - 1, cell.y + 2) + 1):
+		for x in range(maxi(0, cell.x - 2), mini(grid_size.x - 1, cell.x + 2) + 1):
+			if cells[_index(Vector2i(x, y))] == Terrain.WATER: return true
+	return false
 
 func is_area_buildable(area: Rect2) -> bool:
 	var first := cell_at(area.position)
@@ -126,10 +169,10 @@ func path_between(from: Vector2, to: Vector2) -> PackedVector2Array:
 func _random_open_point() -> Vector2:
 	for attempt in 160:
 		var point := Vector2(rng.randf_range(110, world_size.x - 110), rng.randf_range(100, world_size.y - 100))
-		if _is_corridor_clearance(point) or _is_base_clearance(point) or not is_walkable(point): continue
-		if path_between(Vector2(1200, 750), point).is_empty(): continue
+		if _is_corridor_clearance(_reference_point(point)) or _is_base_clearance(_reference_point(point)) or not is_walkable(point): continue
+		if path_between(_world_point(Vector2(1200, 750)), point).is_empty(): continue
 		return point
-	return Vector2(1200, 520)
+	return _world_point(Vector2(1200, 520))
 
 func _generate_plants() -> void:
 	for group in 28:
@@ -153,17 +196,17 @@ func _generate_starter_resources() -> void:
 	for side in [0, 1]:
 		var x := 330.0 if side == 0 else 2070.0
 		for i in 5:
-			resource_specs.append({"kind": "wood", "appearance": "tree", "position": Vector2(x + (-270 if side == 0 else 270) + (i % 2) * 52, 570 + (i / 2) * 57), "amount": 500})
+			resource_specs.append({"kind": "wood", "appearance": "tree", "position": _world_point(Vector2(x + (-270 if side == 0 else 270) + (i % 2) * 52, 570 + (i / 2) * 57)), "amount": 500})
 		for i in 4:
-			resource_specs.append({"kind": "food", "appearance": "berry", "position": Vector2(x + (120 if side == 0 else -120) + (i % 2) * 55, 560 + (i / 2) * 55), "amount": 420})
+			resource_specs.append({"kind": "food", "appearance": "berry", "position": _world_point(Vector2(x + (120 if side == 0 else -120) + (i % 2) * 55, 560 + (i / 2) * 55)), "amount": 420})
 		for i in 3:
-			resource_specs.append({"kind": "gold", "appearance": "ore", "position": Vector2(x + (-180 if side == 0 else 180) + i * 50, 930), "amount": 580})
+			resource_specs.append({"kind": "gold", "appearance": "ore", "position": _world_point(Vector2(x + (-180 if side == 0 else 180) + i * 50, 930)), "amount": 580})
 		for i in 3:
-			resource_specs.append({"kind": "stone", "appearance": "ore", "position": Vector2(x + (100 if side == 0 else -100) + i * 50, 970), "amount": 560})
+			resource_specs.append({"kind": "stone", "appearance": "ore", "position": _world_point(Vector2(x + (100 if side == 0 else -100) + i * 50, 970)), "amount": 560})
 	for i in 7:
-		resource_specs.append({"kind": "wood", "appearance": "tree", "position": Vector2(1100 + (i % 3) * 60, 350 + (i / 3) * 60), "amount": 550})
+		resource_specs.append({"kind": "wood", "appearance": "tree", "position": _world_point(Vector2(1100 + (i % 3) * 60, 350 + (i / 3) * 60)), "amount": 550})
 	for i in 5:
-		resource_specs.append({"kind": "gold", "appearance": "ore", "position": Vector2(1100 + (i % 3) * 60, 1130 + (i / 3) * 60), "amount": 550})
+		resource_specs.append({"kind": "gold", "appearance": "ore", "position": _world_point(Vector2(1100 + (i % 3) * 60, 1130 + (i / 3) * 60)), "amount": 550})
 
 func _add_cluster(kind: String, appearance: String, count: int, amount: int) -> void:
 	for retry in 16:
@@ -173,8 +216,8 @@ func _add_cluster(kind: String, appearance: String, count: int, amount: int) -> 
 			if pending.size() >= count: break
 			var point := center + Vector2.from_angle(rng.randf_range(0, TAU)) * rng.randf_range(12, 105)
 			if point.x < 40 or point.y < 40 or point.x > world_size.x - 40 or point.y > world_size.y - 40: continue
-			if not is_area_buildable(Rect2(point - Vector2(24, 24), Vector2(48, 48))) or _is_corridor_clearance(point) or _is_base_clearance(point): continue
-			if path_between(Vector2(1200, 750), point).is_empty(): continue
+			if not is_area_buildable(Rect2(point - Vector2(24, 24), Vector2(48, 48))) or _is_corridor_clearance(_reference_point(point)) or _is_base_clearance(_reference_point(point)): continue
+			if path_between(_world_point(Vector2(1200, 750)), point).is_empty(): continue
 			var clear := true
 			for spec in resource_specs + pending:
 				if point.distance_squared_to(spec["position"]) < 38.0 * 38.0:
@@ -184,6 +227,23 @@ func _add_cluster(kind: String, appearance: String, count: int, amount: int) -> 
 		if pending.size() == count:
 			resource_specs.append_array(pending)
 			return
+
+func _generate_fish() -> void:
+	for center: Vector2 in [_world_point(Vector2(800, 1220)), _world_point(Vector2(1580, 1190))]:
+		var placed := 0
+		for attempt in 70:
+			if placed >= 7: break
+			var point := center + Vector2.from_angle(rng.randf_range(0.0, TAU)) * rng.randf_range(20.0, 125.0)
+			point = nearest_water_point(point)
+			if not is_navigable(point): continue
+			var clear := true
+			for spec in resource_specs:
+				if spec["appearance"] == "fish" and point.distance_squared_to(spec["position"]) < 48.0 * 48.0:
+					clear = false
+					break
+			if clear:
+				resource_specs.append({"kind": "food", "appearance": "fish", "position": point, "amount": 420})
+				placed += 1
 
 func _draw() -> void:
 	for y in grid_size.y:

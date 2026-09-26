@@ -8,6 +8,8 @@ const SPATIAL_CELL_SIZE := 64.0
 var game: Node2D
 var world_map: RtsWorldMap
 var pathfinder := AStarGrid2D.new()
+var enemy_pathfinder := AStarGrid2D.new()
+var water_pathfinder := AStarGrid2D.new()
 var obstacle_signature := -1
 var spatial_frame := -1
 var indexed_unit_count := -1
@@ -23,24 +25,47 @@ func _init(game_ref: Node2D, map_ref: RtsWorldMap) -> void:
 func refresh() -> void:
 	obstacle_signature = _obstacle_signature()
 	invalidate_spatial_index()
-	pathfinder.clear()
-	pathfinder.region = Rect2i(Vector2i.ZERO, world_map.grid_size)
-	pathfinder.cell_size = Vector2(RtsWorldMap.CELL_SIZE, RtsWorldMap.CELL_SIZE)
-	pathfinder.offset = Vector2.ONE * RtsWorldMap.CELL_SIZE * 0.5
-	pathfinder.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES
-	pathfinder.update()
+	for grid in [pathfinder, enemy_pathfinder, water_pathfinder]:
+		grid.clear()
+		grid.region = Rect2i(Vector2i.ZERO, world_map.grid_size)
+		grid.cell_size = Vector2(RtsWorldMap.CELL_SIZE, RtsWorldMap.CELL_SIZE)
+		grid.offset = Vector2.ONE * RtsWorldMap.CELL_SIZE * 0.5
+		grid.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES
+		grid.update()
 	for y in world_map.grid_size.y:
 		for x in world_map.grid_size.x:
 			var cell := Vector2i(x, y)
-			if not world_map.is_walkable(world_map.cell_center(cell)):
+			var center := world_map.cell_center(cell)
+			if not world_map.is_walkable(center):
 				pathfinder.set_point_solid(cell)
+				enemy_pathfinder.set_point_solid(cell)
+			if not world_map.is_navigable(center): water_pathfinder.set_point_solid(cell)
 	for building in game.buildings:
 		if not is_instance_valid(building) or building.is_queued_for_deletion(): continue
 		var footprint := Rect2(building.position - building.size() * 0.5, building.size()).grow(CLEARANCE)
-		_mark_rect(footprint)
+		if building.kind.ends_with("_gate") and building.is_complete():
+			_mark_rect(footprint, enemy_pathfinder if building.owner_id == 0 else pathfinder)
+		else:
+			_mark_rect(footprint, pathfinder)
+			_mark_rect(footprint, enemy_pathfinder)
+		_mark_rect(footprint, water_pathfinder)
 	for resource in game.resources:
 		if not is_instance_valid(resource) or resource.is_queued_for_deletion(): continue
-		_mark_circle(resource.position, resource.radius + CLEARANCE)
+		for grid in [pathfinder, enemy_pathfinder, water_pathfinder]:
+			_mark_circle(resource.position, resource.radius + CLEARANCE, grid)
+	for building in game.buildings:
+		if not is_instance_valid(building) or building.is_queued_for_deletion() or not building.is_complete() or not building.kind.ends_with("_gate"): continue
+		var grid := pathfinder if building.owner_id == 0 else enemy_pathfinder
+		var first := world_map.cell_at(building.position - Vector2.ONE * RtsWorldMap.CELL_SIZE)
+		var last := world_map.cell_at(building.position + Vector2.ONE * RtsWorldMap.CELL_SIZE)
+		for y in range(first.y, last.y + 1):
+			for x in range(first.x, last.x + 1):
+				var cell := Vector2i(x, y)
+				var delta: Vector2 = world_map.cell_center(cell) - building.position
+				var along := absf(delta.y) if building.wall_vertical else absf(delta.x)
+				var across := absf(delta.x) if building.wall_vertical else absf(delta.y)
+				if along <= RtsWorldMap.CELL_SIZE * 0.55 and across <= RtsWorldMap.CELL_SIZE * 1.1 and world_map.is_walkable(world_map.cell_center(cell)):
+					grid.set_point_solid(cell, false)
 
 func _obstacle_signature() -> int:
 	var signature := 0
@@ -99,27 +124,33 @@ func _move_in_index(index: Dictionary, entity: Node2D, previous_position: Vector
 	if not index.has(new_cell): index[new_cell] = []
 	index[new_cell].append(entity)
 
-func _mark_rect(area: Rect2) -> void:
+func _mark_rect(area: Rect2, grid: AStarGrid2D) -> void:
 	var first := world_map.cell_at(area.position)
 	var last := world_map.cell_at(area.end)
 	for y in range(first.y, last.y + 1):
 		for x in range(first.x, last.x + 1):
 			var cell := Vector2i(x, y)
 			var center := world_map.cell_center(cell)
-			if area.has_point(center): pathfinder.set_point_solid(cell)
+			if area.has_point(center): grid.set_point_solid(cell)
 
-func _mark_circle(center: Vector2, radius: float) -> void:
+func _mark_circle(center: Vector2, radius: float, grid: AStarGrid2D) -> void:
 	var first := world_map.cell_at(center - Vector2.ONE * radius)
 	var last := world_map.cell_at(center + Vector2.ONE * radius)
 	for y in range(first.y, last.y + 1):
 		for x in range(first.x, last.x + 1):
 			var cell := Vector2i(x, y)
 			if center.distance_to(world_map.cell_center(cell)) < radius:
-				pathfinder.set_point_solid(cell)
+				grid.set_point_solid(cell)
 
-func nearest_open_cell(point: Vector2) -> Vector2i:
+func _grid_for(unit: RtsUnit) -> AStarGrid2D:
+	if unit != null and unit.stats.get("tags", []).has("naval"): return water_pathfinder
+	if unit != null and unit.owner_id == 1: return enemy_pathfinder
+	return pathfinder
+
+func nearest_open_cell(point: Vector2, grid: AStarGrid2D = null) -> Vector2i:
+	if grid == null: grid = pathfinder
 	var origin := world_map.cell_at(point)
-	if not pathfinder.is_point_solid(origin): return origin
+	if not grid.is_point_solid(origin): return origin
 	var best := Vector2i(-1, -1)
 	var best_distance := INF
 	for radius in range(1, maxi(world_map.grid_size.x, world_map.grid_size.y)):
@@ -127,7 +158,7 @@ func nearest_open_cell(point: Vector2) -> Vector2i:
 			for x in range(maxi(0, origin.x - radius), mini(world_map.grid_size.x - 1, origin.x + radius) + 1):
 				if absi(x - origin.x) != radius and absi(y - origin.y) != radius: continue
 				var cell := Vector2i(x, y)
-				if pathfinder.is_point_solid(cell): continue
+				if grid.is_point_solid(cell): continue
 				var distance := point.distance_squared_to(world_map.cell_center(cell))
 				if distance < best_distance:
 					best = cell
@@ -135,25 +166,27 @@ func nearest_open_cell(point: Vector2) -> Vector2i:
 		if best.x >= 0: return best
 	return origin
 
-func path_between(from: Vector2, to: Vector2) -> PackedVector2Array:
+func path_between(from: Vector2, to: Vector2, unit: RtsUnit = null) -> PackedVector2Array:
 	_ensure_current()
-	var start := nearest_open_cell(from)
-	var end := nearest_open_cell(to)
-	if pathfinder.is_point_solid(start) or pathfinder.is_point_solid(end): return PackedVector2Array()
-	return pathfinder.get_point_path(start, end)
+	var grid := _grid_for(unit)
+	var start := nearest_open_cell(from, grid)
+	var end := nearest_open_cell(to, grid)
+	if grid.is_point_solid(start) or grid.is_point_solid(end): return PackedVector2Array()
+	return grid.get_point_path(start, end)
 
 func path_to_range(from: Vector2, target: Vector2, reach: float, unit: RtsUnit) -> PackedVector2Array:
 	_ensure_current()
-	var start := nearest_open_cell(from)
-	if pathfinder.is_point_solid(start): return PackedVector2Array()
+	var grid := _grid_for(unit)
+	var start := nearest_open_cell(from, grid)
+	if grid.is_point_solid(start): return PackedVector2Array()
 	var direction := (from - target).normalized()
 	if direction.is_zero_approx(): direction = Vector2.RIGHT
 	for offset in [0.0, PI / 4.0, -PI / 4.0, PI / 2.0, -PI / 2.0, 3.0 * PI / 4.0, -3.0 * PI / 4.0, PI]:
 		var approach := target + direction.rotated(offset) * maxf(0.0, reach - 0.25)
 		if not can_occupy(approach, unit.radius(), unit): continue
-		var end := nearest_open_cell(approach)
-		if pathfinder.is_point_solid(end) or not _segment_clear(world_map.cell_center(end), approach, unit.radius(), unit): continue
-		var candidate := pathfinder.get_point_path(start, end)
+		var end := nearest_open_cell(approach, grid)
+		if grid.is_point_solid(end) or not _segment_clear(world_map.cell_center(end), approach, unit.radius(), unit): continue
+		var candidate := grid.get_point_path(start, end)
 		if candidate.is_empty(): continue
 		candidate.append(approach)
 		return candidate
@@ -161,34 +194,35 @@ func path_to_range(from: Vector2, target: Vector2, reach: float, unit: RtsUnit) 
 
 func nearest_walkable_point(point: Vector2, radius := CLEARANCE, self_unit: RtsUnit = null, require_path := false) -> Vector2:
 	_ensure_current()
+	var grid := _grid_for(self_unit)
 	var clamped := point.clamp(Vector2(24, 24), world_map.world_size - Vector2(24, 24))
-	var start := nearest_open_cell(self_unit.position) if require_path and self_unit != null else Vector2i(-1, -1)
-	if _valid_destination(clamped, radius, self_unit, start): return clamped
+	var start := nearest_open_cell(self_unit.position, grid) if require_path and self_unit != null else Vector2i(-1, -1)
+	if _valid_destination(clamped, radius, self_unit, start, grid): return clamped
 	for ring in range(1, 17):
 		for i in 16:
 			var candidate := clamped + Vector2.from_angle(TAU * i / 16.0) * ring * maxf(radius, 12.0)
-			if _valid_destination(candidate, radius, self_unit, start): return candidate
+			if _valid_destination(candidate, radius, self_unit, start, grid): return candidate
 	if start.x >= 0:
 		var best := Vector2.INF
 		var best_distance := INF
 		for y in world_map.grid_size.y:
 			for x in world_map.grid_size.x:
 				var cell := Vector2i(x, y)
-				if pathfinder.is_point_solid(cell): continue
+				if grid.is_point_solid(cell): continue
 				var candidate := world_map.cell_center(cell)
 				var distance := candidate.distance_squared_to(clamped)
 				if distance >= best_distance or not can_occupy(candidate, radius, self_unit): continue
-				if pathfinder.get_id_path(start, cell).is_empty(): continue
+				if grid.get_id_path(start, cell).is_empty(): continue
 				best = candidate
 				best_distance = distance
 		if best != Vector2.INF: return best
-	return world_map.cell_center(nearest_open_cell(clamped))
+	return world_map.cell_center(nearest_open_cell(clamped, grid))
 
-func _valid_destination(point: Vector2, radius: float, self_unit: RtsUnit, start: Vector2i) -> bool:
+func _valid_destination(point: Vector2, radius: float, self_unit: RtsUnit, start: Vector2i, grid: AStarGrid2D) -> bool:
 	if not can_occupy(point, radius, self_unit): return false
 	if start.x < 0: return true
 	var end := world_map.cell_at(point)
-	if pathfinder.is_point_solid(end) or pathfinder.get_id_path(start, end).is_empty(): return false
+	if grid.is_point_solid(end) or grid.get_id_path(start, end).is_empty(): return false
 	return _segment_clear(world_map.cell_center(end), point, radius, self_unit)
 
 func _segment_clear(from: Vector2, to: Vector2, radius: float, self_unit: RtsUnit) -> bool:
@@ -220,9 +254,12 @@ func can_occupy(point: Vector2, radius: float, self_unit: RtsUnit) -> bool:
 	if point.x < radius or point.y < radius or point.x > world_map.world_size.x - radius or point.y > world_map.world_size.y - radius: return false
 	for sample in 9:
 		var offset := Vector2.ZERO if sample == 0 else Vector2.from_angle(TAU * (sample - 1) / 8.0) * radius
-		if not world_map.is_walkable(point + offset): return false
+		if self_unit != null and self_unit.stats.get("tags", []).has("naval"):
+			if not world_map.is_navigable(point + offset): return false
+		elif not world_map.is_walkable(point + offset): return false
 	for building in game.buildings:
 		if not is_instance_valid(building) or building.is_queued_for_deletion(): continue
+		if self_unit != null and building.owner_id == self_unit.owner_id and building.kind.ends_with("_gate") and building.is_complete(): continue
 		if Rect2(building.position - building.size() * 0.5, building.size()).grow(radius).has_point(point): return false
 	var center_cell := _spatial_cell(point)
 	var search_radius := ceili((radius + max_dynamic_radius) / SPATIAL_CELL_SIZE)

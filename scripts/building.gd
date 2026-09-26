@@ -24,6 +24,9 @@ var rally_target: Node2D
 var rally_resource_kind := ""
 var garrisoned_units: Array[RtsUnit] = []
 var defense_timer := 0.0
+var wall_vertical := false
+var relics: Array[RtsRelic] = []
+var relic_income_timer := 4.0
 
 func setup(game_ref: Node2D, player_id: int, building_kind: String, under_construction := false, chosen_landmark := "") -> void:
 	game = game_ref
@@ -70,7 +73,8 @@ func refresh_stats(preserve_damage := true) -> void:
 	queue_redraw()
 
 func size() -> Vector2:
-	return stats.get("size", GameData.BUILDINGS[kind]["size"])
+	var dimensions: Vector2 = stats.get("size", GameData.BUILDINGS[kind]["size"])
+	return Vector2(dimensions.y, dimensions.x) if wall_vertical and (kind.ends_with("_wall") or kind.ends_with("_gate")) else dimensions
 
 func contains(world_point: Vector2) -> bool:
 	return Rect2(position - size() * 0.5, size()).has_point(world_point)
@@ -208,6 +212,11 @@ func _process_defense(delta: float) -> void:
 
 func _process(delta: float) -> void:
 	if not game.started or game.paused or game.game_over: return
+	if kind == "monastery" and is_complete() and not relics.is_empty():
+		relic_income_timer -= delta
+		if relic_income_timer <= 0.0:
+			game.credit_resource(owner_id, "gold", relics.size() * 12)
+			relic_income_timer += 4.0
 	if is_complete(): _process_defense(delta)
 	if not is_complete() or production_queue.is_empty(): return
 	production_remaining = maxf(0.0, production_remaining - delta)
@@ -237,7 +246,13 @@ func _draw() -> void:
 	if not is_complete(): color = color.darkened(0.45)
 	draw_rect(bounds, Color("272d2a"))
 	draw_rect(bounds.grow(-4), color)
-	if kind == "farm":
+	if kind.ends_with("_gate"):
+		var opening := Rect2(-size() * 0.22, size() * 0.44)
+		draw_rect(opening, Color("314638"))
+		draw_line(opening.position, opening.end, Color("d8c88e"), 2)
+	elif kind.ends_with("_wall"):
+		draw_line(Vector2(-size().x * 0.4, 0), Vector2(size().x * 0.4, 0), Color("d5d0b3"), 3)
+	elif kind == "farm":
 		for x in range(-17, 25, 11):
 			draw_line(Vector2(x, -22), Vector2(x - 7, 22), Color("d4bd73"), 3)
 	elif kind == "town_center":

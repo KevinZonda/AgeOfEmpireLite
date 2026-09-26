@@ -137,6 +137,10 @@ func _update_entity_visibility() -> void:
 	for resource in game.resources:
 		if not is_instance_valid(resource) or resource.is_queued_for_deletion(): continue
 		resource.visible = can_show_resource(0, resource)
+	for post in game.trade_posts:
+		if is_instance_valid(post): post.visible = is_explored(0, post.position)
+	for relic in game.relics:
+		if is_instance_valid(relic): relic.visible = relic.stored_in == null and can_see(0, relic.position)
 
 func _update_mask() -> void:
 	var image := Image.create(grid_size.x, grid_size.y, false, Image.FORMAT_RGBA8)

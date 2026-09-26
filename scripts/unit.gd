@@ -25,6 +25,10 @@ var route_goal := Vector2.INF
 var route_retry := 0.0
 var command_queue: Array[Dictionary] = []
 var garrisoned_in: RtsBuilding
+var trade_post: RtsTradePost
+var trade_home: RtsBuilding
+var trade_returning := false
+var carried_relic: RtsRelic
 
 func setup(game_ref: Node2D, player_id: int, unit_kind: String) -> void:
 	game = game_ref
@@ -62,6 +66,7 @@ func order_move(world_point: Vector2) -> void:
 	_reset_route()
 
 func order_attack(enemy: Node2D) -> void:
+	if float(stats.get("damage", 0.0)) <= 0.0: return
 	order = "attack"
 	target = enemy
 	charging = float(stats.get("charge_bonus", 0.0)) > 0.0
@@ -99,14 +104,37 @@ func issue_command(command_type: String, world_point := Vector2.INF, target_ref:
 func _start_command(command: Dictionary) -> bool:
 	match command["type"]:
 		"move": order_move(command["point"])
-		"attack_move": order_attack_move(command["point"])
+		"attack_move":
+			if not stats.get("tags", []).has("military"): return false
+			order_attack_move(command["point"])
 		"attack":
 			if not is_instance_valid(command["target"]) or command["target"].is_queued_for_deletion(): return false
+			if float(stats.get("damage", 0.0)) <= 0.0: return false
 			if kind == "battering_ram" and command["target"] is RtsUnit: return false
 			order_attack(command["target"])
 		"gather":
-			if kind != "villager" or not is_instance_valid(command["target"]) or command["target"].is_queued_for_deletion(): return false
+			if not ["villager", "fishing_boat"].has(kind) or not is_instance_valid(command["target"]) or command["target"].is_queued_for_deletion(): return false
+			if kind == "fishing_boat" and (not command["target"] is RtsResource or command["target"].appearance != "fish"): return false
+			if kind == "villager" and command["target"] is RtsResource and command["target"].appearance == "fish": return false
 			order_gather(command["target"])
+		"trade":
+			if kind != "trader" or not command["target"] is RtsTradePost: return false
+			trade_home = game.find_nearest_owned_building(owner_id, "market", position)
+			if trade_home == null: return false
+			trade_post = command["target"]
+			trade_returning = false
+			order = "trade"
+			_reset_route()
+		"relic":
+			if kind != "monk" or carried_relic != null or not command["target"] is RtsRelic or not command["target"].available(): return false
+			order = "relic"
+			target = command["target"]
+			_reset_route()
+		"deposit_relic":
+			if kind != "monk" or carried_relic == null or not command["target"] is RtsBuilding or command["target"].kind != "monastery" or command["target"].owner_id != owner_id: return false
+			order = "deposit_relic"
+			target = command["target"]
+			_reset_route()
 		"build":
 			if kind != "villager" or not is_instance_valid(command["target"]) or command["target"].is_queued_for_deletion() or command["target"].is_complete(): return false
 			order_build(command["target"])
@@ -134,7 +162,7 @@ func is_braced() -> bool:
 	return false
 
 func order_gather(resource: Node2D) -> void:
-	if kind != "villager": return
+	if not ["villager", "fishing_boat"].has(kind): return
 	order = "gather"
 	target = resource
 	resume_destination = Vector2.INF
@@ -146,7 +174,7 @@ func order_gather(resource: Node2D) -> void:
 func _continue_gather() -> void:
 	var next_resource: RtsResource
 	if gather_kind != "":
-		next_resource = game.find_nearest_resource(gather_location, gather_kind, AUTO_GATHER_RADIUS, owner_id)
+		next_resource = game.find_nearest_resource(gather_location, gather_kind, AUTO_GATHER_RADIUS, owner_id, kind == "fishing_boat")
 	if next_resource != null:
 		order_gather(next_resource)
 	else:
@@ -172,7 +200,7 @@ func _process(delta: float) -> void:
 	work_timer = maxf(0.0, work_timer - delta)
 	if order == "idle":
 		var enemy: Node2D = game.nearest_enemy(self, 115.0)
-		if enemy != null and kind != "villager": order_attack(enemy)
+		if enemy != null and stats.get("tags", []).has("military"): order_attack(enemy)
 		return
 	if order == "attack_move":
 		var nearby_enemy: Node2D = game.nearest_enemy(self, 155.0)
@@ -187,6 +215,40 @@ func _process(delta: float) -> void:
 	if order == "move":
 		_move_toward(destination, delta, 6.0)
 		if position.distance_to(destination) < 7.0: _advance_command()
+		return
+	if order == "trade":
+		if not is_instance_valid(trade_post) or not is_instance_valid(trade_home) or trade_home.is_queued_for_deletion():
+			_advance_command()
+			return
+		var goal: Vector2 = trade_home.position if trade_returning else trade_post.position
+		if _move_toward(goal, delta, 46.0):
+			if trade_returning:
+				var gold := maxi(12, roundi(trade_home.position.distance_to(trade_post.position) / 18.0))
+				game.credit_resource(owner_id, "gold", gold)
+			trade_returning = not trade_returning
+			_reset_route()
+		return
+	if order == "relic":
+		if not is_instance_valid(target) or not target is RtsRelic or not target.available():
+			_advance_command()
+			return
+		if _move_toward(target.position, delta, 18.0):
+			carried_relic = target
+			carried_relic.carried_by = self
+			var monastery: RtsBuilding = game.find_nearest_owned_building(owner_id, "monastery", position)
+			if monastery != null: issue_command("deposit_relic", Vector2.INF, monastery)
+			else: _advance_command()
+		return
+	if order == "deposit_relic":
+		if carried_relic == null or not is_instance_valid(target) or target.is_queued_for_deletion() or not target.is_complete():
+			_advance_command()
+			return
+		if _move_toward(target.position, delta, target.size().x * 0.5 + radius() + 4.0):
+			carried_relic.carried_by = null
+			carried_relic.stored_in = target
+			target.relics.append(carried_relic)
+			carried_relic = null
+			_advance_command()
 		return
 	if order == "gather":
 		if not is_instance_valid(target):
@@ -214,7 +276,7 @@ func _process(delta: float) -> void:
 		if not _move_toward(target.position, delta, gathering_distance): return
 		if work_timer <= 0.0:
 			var resource_kind: String = "food" if target is RtsBuilding else target.kind
-			var amount := GameData.gathered_amount(game.civilizations[owner_id], resource_kind, target is RtsBuilding)
+			var amount := 12 if kind == "fishing_boat" else GameData.gathered_amount(game.civilizations[owner_id], resource_kind, target is RtsBuilding)
 			amount = maxi(1, roundi(amount * RtsLandmarkCatalog.gather_multiplier(game.civilizations[owner_id], game.players[owner_id].get("landmarks", []), resource_kind, target is RtsBuilding)))
 			if target is RtsResource: amount = target.harvest(amount)
 			if amount > 0: game.credit_resource(owner_id, resource_kind, amount)
@@ -259,10 +321,10 @@ func _move_toward(point: Vector2, delta: float, stop_distance: float) -> bool:
 	if distance <= stop_distance + 0.5: return true
 	route_retry = maxf(0.0, route_retry - delta)
 	if route_goal == Vector2.INF or route_goal.distance_to(point) > RtsWorldMap.CELL_SIZE * 0.5 or route_retry <= 0.0:
-		if order == "gather" or order == "build" or order == "attack" or order == "garrison":
+		if ["gather", "build", "attack", "garrison", "trade", "deposit_relic"].has(order):
 			route = game.navigation.path_to_range(position, point, stop_distance, self)
 		else:
-			route = game.navigation.path_between(position, point)
+			route = game.navigation.path_between(position, point, self)
 		route_index = 1 if route.size() > 1 else route.size()
 		route_goal = point
 		route_retry = 0.7
@@ -284,7 +346,12 @@ func _move_toward(point: Vector2, delta: float, stop_distance: float) -> bool:
 func take_damage(damage: float) -> void:
 	hp -= damage
 	queue_redraw()
-	if hp <= 0.0: game.entity_destroyed(self)
+	if hp <= 0.0:
+		if carried_relic != null:
+			carried_relic.carried_by = null
+			carried_relic.position = position
+			carried_relic = null
+		game.entity_destroyed(self)
 
 func _draw() -> void:
 	var color: Color = GameData.CIVILIZATIONS[game.civilizations[owner_id]]["color"]
@@ -292,6 +359,14 @@ func _draw() -> void:
 	draw_circle(Vector2.ZERO, radius(), color)
 	if kind == "villager":
 		draw_circle(Vector2(0, -2), 4, Color("e8cfab"))
+	elif kind == "fishing_boat" or kind == "warship":
+		draw_colored_polygon(PackedVector2Array([Vector2(-radius(), -3), Vector2(radius(), -3), Vector2(radius() * 0.6, 8), Vector2(-radius() * 0.6, 8)]), Color("d5bc83"))
+		draw_line(Vector2.ZERO, Vector2(0, -radius()), Color("eee4cb"), 2)
+	elif kind == "monk":
+		draw_line(Vector2(0, -8), Vector2(0, 8), Color("f4e5aa"), 3)
+		draw_line(Vector2(-5, -2), Vector2(5, -2), Color("f4e5aa"), 3)
+	elif kind == "trader":
+		draw_rect(Rect2(-6, -4, 12, 8), Color("e7c97d"))
 	elif stats.get("tags", []).has("cavalry"):
 		draw_rect(Rect2(-5, -3, 10, 6), Color("f1e6c6"))
 	elif kind == "archer" or kind == "longbow":

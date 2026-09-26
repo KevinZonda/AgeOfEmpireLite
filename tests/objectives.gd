@@ -47,6 +47,7 @@ func _initialize() -> void:
 	objectives.victory.connect(func(owner_id: int, reason: String) -> void: victories.append({"owner": owner_id, "reason": reason}))
 	objectives.site_captured.connect(func(index: int, owner_id: int) -> void: captures.append({"index": index, "owner": owner_id}))
 	var blue := UnitStub.new()
+	blue.stats = {"tags": ["religious"]}
 	var red := UnitStub.new()
 	red.owner_id = 1
 	game.add_child(blue)

@@ -57,18 +57,21 @@ func _process(delta: float) -> void:
 func _tick_site(index: int, delta: float) -> bool:
 	var site: Dictionary = sacred_sites[index]
 	var presence := [false, false]
+	var capturers := [false, false]
 	for unit in game.units:
 		if not is_instance_valid(unit) or unit.is_queued_for_deletion() or unit.hp <= 0.0: continue
 		if unit is RtsUnit and unit.garrisoned_in != null: continue
 		if unit.owner_id < 0 or unit.owner_id > 1: continue
-		if not unit.stats.get("tags", []).has("military"): continue
+		var tags: Array = unit.stats.get("tags", [])
+		if not tags.has("military") and not tags.has("religious"): continue
 		if unit.position.distance_squared_to(site["position"]) <= SITE_RADIUS * SITE_RADIUS:
 			presence[unit.owner_id] = true
+			if tags.has("religious"): capturers[unit.owner_id] = true
 	var contested: bool = presence[0] and presence[1]
 	var changed: bool = site["contested"] != contested
 	site["contested"] = contested
 	if contested: return changed
-	var alone_owner := 0 if presence[0] else 1 if presence[1] else -1
+	var alone_owner := 0 if capturers[0] and not presence[1] else 1 if capturers[1] and not presence[0] else -1
 	if alone_owner < 0:
 		if site["capture_owner"] != -1 or site["capture_progress"] > 0.0:
 			site["capture_owner"] = -1

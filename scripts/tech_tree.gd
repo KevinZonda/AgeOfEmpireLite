@@ -10,17 +10,22 @@ const AGE_ADVANCE_COSTS := {
 }
 const AGE_ADVANCE_TIMES := {1: 25.0, 2: 35.0, 3: 45.0}
 
-const BUILD_MENU := ["house", "farm", "barracks", "archery_range", "stable", "outpost", "palisade_wall", "stone_wall", "keep", "siege_workshop", "wonder"]
+const BUILD_MENU := ["house", "farm", "market", "dock", "barracks", "archery_range", "stable", "monastery", "outpost", "palisade_wall", "palisade_gate", "stone_wall", "stone_gate", "keep", "siege_workshop", "wonder"]
 const BUILDING_AGE := {
 	"town_center": 1,
 	"house": 1,
 	"farm": 1,
+	"market": 2,
+	"dock": 2,
 	"barracks": 2,
 	"archery_range": 2,
 	"stable": 2,
+	"monastery": 3,
 	"outpost": 2,
 	"palisade_wall": 2,
+	"palisade_gate": 2,
 	"stone_wall": 3,
+	"stone_gate": 3,
 	"keep": 3,
 	"siege_workshop": 3,
 	"wonder": 4,
@@ -29,6 +34,9 @@ const BUILDING_AGE := {
 # Base roster; civilization substitutions are declared in RtsUnitCatalog.
 const PRODUCTION := {
 	"town_center": ["villager"],
+	"market": ["trader"],
+	"dock": ["fishing_boat", "warship"],
+	"monastery": ["monk"],
 	"barracks": ["spearman", "man_at_arms"],
 	"archery_range": ["archer", "crossbowman"],
 	"stable": ["scout", "horseman", "knight"],
@@ -50,6 +58,10 @@ const UNIT_AGE := {
 	"royal_knight": 2,
 	"battering_ram": 3,
 	"trebuchet": 3,
+	"trader": 2,
+	"fishing_boat": 2,
+	"warship": 2,
+	"monk": 3,
 }
 const UNIT_AGE_OVERRIDES := {
 	"English": {"man_at_arms": 2},

@@ -12,7 +12,16 @@ func tick() -> void:
 	for unit in game.units:
 		if not is_instance_valid(unit) or unit.owner_id != 1 or unit.garrisoned_in != null: continue
 		if unit.kind == "villager": workers.append(unit)
-		else: army.append(unit)
+		elif unit.kind == "warship":
+			if unit.order == "idle":
+				var target: Node2D = game.nearest_enemy(unit, 350.0)
+				if target != null: unit.order_attack(target)
+		elif unit.stats.get("tags", []).has("military"): army.append(unit)
+		elif unit.kind == "trader" and unit.order == "idle" and not game.trade_posts.is_empty(): unit.issue_command("trade", Vector2.INF, game.trade_posts[0])
+		elif unit.kind == "fishing_boat" and unit.order == "idle":
+			var fish: RtsResource = game.find_nearest_resource(unit.position, "food", INF, 1, true)
+			if fish != null: unit.issue_command("gather", Vector2.INF, fish)
+		elif unit.kind == "monk" and unit.order == "idle": _assign_monk(unit)
 	_resume_construction(workers)
 	for worker in workers:
 		if worker.order == "idle":
@@ -45,6 +54,12 @@ func tick() -> void:
 		_construct("outpost", workers[0])
 	if not workers.is_empty() and age >= 3 and not _has_building("siege_workshop") and game.can_afford(1, GameData.BUILDINGS["siege_workshop"]["cost"]):
 		_construct("siege_workshop", workers[0])
+	if not workers.is_empty() and age >= 2 and not _has_building("market") and game.can_afford(1, GameData.BUILDINGS["market"]["cost"]):
+		_construct("market", workers[0])
+	if not workers.is_empty() and age >= 2 and not _has_building("dock") and game.can_afford(1, GameData.BUILDINGS["dock"]["cost"]):
+		_construct_dock(workers[0])
+	if not workers.is_empty() and age >= 3 and not _has_building("monastery") and game.can_afford(1, GameData.BUILDINGS["monastery"]["cost"]):
+		_construct("monastery", workers[0])
 	var enemy_profile := _enemy_profile()
 	for building in game.buildings:
 		if not is_instance_valid(building) or building.owner_id != 1 or not building.is_complete(): continue
@@ -67,6 +82,14 @@ func tick() -> void:
 			game.train_unit(building, cavalry_kind)
 		if building.kind == "siege_workshop" and game.can_afford(1, GameData.UNITS["battering_ram"]["cost"]):
 			game.train_unit(building, "battering_ram")
+		if building.kind == "market" and _unit_count("trader") < 1:
+			game.train_unit(building, "trader")
+		if building.kind == "dock" and _unit_count("fishing_boat") < 2:
+			game.train_unit(building, "fishing_boat")
+		if building.kind == "dock" and _unit_count("fishing_boat") >= 1 and _unit_count("warship") < 1:
+			game.train_unit(building, "warship")
+		if building.kind == "monastery" and _unit_count("monk") < 3:
+			game.train_unit(building, "monk")
 	if army.size() >= 4:
 		var enemy_center: RtsBuilding = game._player_center(0)
 		var target: RtsBuilding = enemy_center
@@ -93,6 +116,28 @@ func _has_building(kind: String) -> bool:
 		if is_instance_valid(building) and building.owner_id == 1 and building.kind == kind: return true
 	return false
 
+func _unit_count(kind: String) -> int:
+	var count := 0
+	for unit in game.units:
+		if is_instance_valid(unit) and unit.owner_id == 1 and unit.kind == kind: count += 1
+	for building in game.buildings:
+		if is_instance_valid(building) and building.owner_id == 1: count += building.training_queue.count(kind)
+	return count
+
+func _assign_monk(monk: RtsUnit) -> void:
+	if monk.carried_relic != null:
+		var monastery: RtsBuilding = game.find_nearest_owned_building(1, "monastery", monk.position)
+		if monastery != null: monk.issue_command("deposit_relic", Vector2.INF, monastery)
+		return
+	for relic in game.relics:
+		if is_instance_valid(relic) and relic.available() and monk.position.distance_to(relic.position) < 460.0:
+			monk.issue_command("relic", Vector2.INF, relic)
+			return
+	for site in game.objectives.sacred_sites:
+		if site["owner_id"] != 1:
+			monk.issue_command("move", site["position"])
+			return
+
 func _resume_construction(workers: Array[RtsUnit]) -> void:
 	for building in game.buildings:
 		if not is_instance_valid(building) or building.owner_id != 1 or building.is_complete(): continue
@@ -104,10 +149,21 @@ func _resume_construction(workers: Array[RtsUnit]) -> void:
 
 func _construct(kind: String, worker: RtsUnit) -> void:
 	if worker.order == "build" or not game.can_afford(1, GameData.BUILDINGS[kind]["cost"]): return
-	var base := Vector2(2070, 720)
+	var base: Vector2 = game._scaled_point(Vector2(2070, 720))
 	for attempt in 24:
 		var point := base + Vector2(-randf_range(90, 380), randf_range(-300, 300))
 		if game.can_place(kind, point):
 			var builders: Array[RtsUnit] = [worker]
 			game.place_building(1, kind, point, builders)
 			return
+
+func _construct_dock(worker: RtsUnit) -> void:
+	var lake_center: Vector2 = game._scaled_point(Vector2(1580, 1190))
+	var scale: float = game.world_size.x / game.WORLD_SIZE.x
+	for radius in [180.0, 220.0, 260.0, 300.0, 340.0, 390.0, 440.0]:
+		for step in 16:
+			var point: Vector2 = lake_center + Vector2.from_angle(TAU * step / 16.0) * float(radius) * scale
+			if game.can_place("dock", point) and not game.navigation.path_between(worker.position, point, worker).is_empty():
+				var builders: Array[RtsUnit] = [worker]
+				game.place_building(1, "dock", point, builders)
+				return
