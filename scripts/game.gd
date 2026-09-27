@@ -11,6 +11,7 @@ const EDGE_SCROLL_MARGIN := 28.0
 const UNIT_SCENE := preload("res://scripts/entities/unit.gd")
 const BUILDING_SCENE := preload("res://scripts/entities/building.gd")
 const RESOURCE_SCENE := preload("res://scripts/entities/resource_node.gd")
+const BUILD_GRID_SIZE := 25.0 # Half a terrain cell keeps existing building art near its current scale.
 const SELECTION_PORTRAIT := preload("res://scripts/ui/selection_portrait.gd")
 const MENU_BACKDROP := preload("res://scripts/ui/menu_backdrop.gd")
 const TECH_TREE_PAGE := preload("res://scripts/ui/tech_tree_page.gd")
@@ -1210,7 +1211,7 @@ func spawn_unit(owner_id: int, kind: String, world_point: Vector2, rally := Vect
 
 func spawn_building(owner_id: int, kind: String, world_point: Vector2, under_construction := false, landmark_id := "", vertical := false) -> RtsBuilding:
 	var building: RtsBuilding = BUILDING_SCENE.new()
-	building.position = world_point
+	building.position = snap_build_point(kind, world_point, vertical)
 	building.wall_vertical = vertical
 	add_child(building)
 	building.setup(self, owner_id, kind, under_construction, landmark_id)
@@ -1519,6 +1520,7 @@ func active_landmark_id(owner_id: int) -> String:
 	return ""
 
 func place_landmark(owner_id: int, landmark_id: String, world_point: Vector2, workers: Array[RtsUnit], append_order := false) -> bool:
+	world_point = snap_build_point("landmark", world_point)
 	var status := RtsLandmarkCatalog.choice_status(civilizations[owner_id], players[owner_id]["age"], players[owner_id]["landmarks"], landmark_id, active_landmark_id(owner_id))
 	if not status["available"]:
 		if owner_id == 0: notify_player(status["reason"])
@@ -1621,19 +1623,31 @@ func _cancel_selected_job() -> void:
 	var building: RtsBuilding = selected[0]
 	if building.owner_id == 0: cancel_production_job(building, queue_choice.get_selected_id())
 
-func can_place(kind: String, world_point: Vector2, vertical := false) -> bool:
+func build_footprint_size(kind: String, vertical := false) -> Vector2:
 	var dimensions: Vector2 = GameData.BUILDINGS[kind]["size"]
 	if vertical and (kind.ends_with("_wall") or kind.ends_with("_gate")): dimensions = Vector2(dimensions.y, dimensions.x)
-	var half: Vector2 = dimensions * 0.5
-	if world_point.x < half.x + 20 or world_point.y < half.y + 70: return false
-	if world_point.x > world_size.x - half.x - 20 or world_point.y > world_size.y - half.y - 20: return false
 	var padding := 0.0 if kind.ends_with("_wall") or kind.ends_with("_gate") else 9.0
-	var footprint := Rect2(world_point - half - Vector2.ONE * padding, dimensions + Vector2.ONE * padding * 2.0)
+	dimensions += Vector2.ONE * padding * 2.0
+	return Vector2(ceili(dimensions.x / BUILD_GRID_SIZE), ceili(dimensions.y / BUILD_GRID_SIZE)) * BUILD_GRID_SIZE
+
+func snap_build_point(kind: String, world_point: Vector2, vertical := false) -> Vector2:
+	var half := build_footprint_size(kind, vertical) * 0.5
+	return (world_point - half).snapped(Vector2.ONE * BUILD_GRID_SIZE) + half
+
+func build_footprint_rect(kind: String, world_point: Vector2, vertical := false) -> Rect2:
+	var dimensions := build_footprint_size(kind, vertical)
+	return Rect2(world_point - dimensions * 0.5, dimensions)
+
+func can_place(kind: String, world_point: Vector2, vertical := false) -> bool:
+	var snapped := snap_build_point(kind, world_point, vertical)
+	var footprint := build_footprint_rect(kind, snapped, vertical)
+	if footprint.position.x < 20 or footprint.position.y < 70: return false
+	if footprint.end.x > world_size.x - 20 or footprint.end.y > world_size.y - 20: return false
 	if world_map != null and not world_map.is_area_buildable(footprint): return false
-	if kind == "dock" and not world_map.has_adjacent_water(world_point): return false
+	if kind == "dock" and not world_map.has_adjacent_water(snapped): return false
 	for building in buildings:
 		if is_instance_valid(building):
-			var other := Rect2(building.position - building.size() * 0.5, building.size())
+			var other := build_footprint_rect(building.kind, building.position, building.wall_vertical)
 			if footprint.intersects(other): return false
 	for resource in resources:
 		if is_instance_valid(resource) and footprint.grow(resource.radius * 0.5).has_point(resource.position): return false
@@ -1644,6 +1658,7 @@ func can_place(kind: String, world_point: Vector2, vertical := false) -> bool:
 	return true
 
 func place_building(owner_id: int, kind: String, world_point: Vector2, workers: Array[RtsUnit], append_order := false, vertical := false) -> bool:
+	world_point = snap_build_point(kind, world_point, vertical)
 	if not RtsTechTree.can_build(civilizations[owner_id], players[owner_id]["age"], kind): return false
 	if kind == "wonder":
 		for existing in buildings:
@@ -2156,21 +2171,24 @@ func _confirm_build(point: Vector2, append_order := false) -> void:
 		_rebuild_actions()
 	queue_redraw()
 
-func _wall_positions(from: Vector2, to: Vector2) -> Array[Vector2]:
+func _wall_positions(from: Vector2, to: Vector2, kind := "palisade_wall") -> Array[Vector2]:
 	var positions: Array[Vector2] = []
 	var delta := to - from
 	var vertical := absf(delta.y) > absf(delta.x) if delta.length() > 20.0 else wall_vertical
-	var length := absf(delta.y) if vertical else absf(delta.x)
-	var count := clampi(roundi(length / 68.0) + 1, 1, 24)
+	var start := snap_build_point(kind, from, vertical)
+	var end := snap_build_point(kind, to, vertical)
+	var spacing := build_footprint_size(kind, vertical).y if vertical else build_footprint_size(kind, vertical).x
+	var length := absf(end.y - start.y) if vertical else absf(end.x - start.x)
+	var count := clampi(roundi(length / spacing) + 1, 1, 24)
 	var sign_value := signf(delta.y if vertical else delta.x)
 	if is_zero_approx(sign_value): sign_value = 1.0
 	for index in count:
-		positions.append(from + (Vector2.DOWN if vertical else Vector2.RIGHT) * sign_value * index * 68.0)
+		positions.append(start + (Vector2.DOWN if vertical else Vector2.RIGHT) * sign_value * index * spacing)
 	return positions
 
 func _confirm_wall_line(from: Vector2, to: Vector2, append_order := false) -> void:
 	var vertical := absf(to.y - from.y) > absf(to.x - from.x) if from.distance_to(to) > 20.0 else wall_vertical
-	var positions := _wall_positions(from, to)
+	var positions := _wall_positions(from, to, build_mode)
 	var builders: Array[RtsUnit] = []
 	for entity in selected:
 		if entity is RtsUnit and entity.owner_id == 0 and entity.kind == "villager": builders.append(entity)
@@ -2792,13 +2810,21 @@ func _draw() -> void:
 		var vertical := wall_vertical
 		var preview_positions: Array[Vector2] = [mouse]
 		if wall_dragging:
-			preview_positions = _wall_positions(wall_start, wall_end)
+			preview_positions = _wall_positions(wall_start, wall_end, build_mode)
 			vertical = absf(wall_end.y - wall_start.y) > absf(wall_end.x - wall_start.x) if wall_start.distance_to(wall_end) > 20.0 else wall_vertical
 		for preview in preview_positions:
 			var valid := can_place(build_mode, preview, vertical)
-			var dimensions: Vector2 = GameData.BUILDINGS[build_mode]["size"]
-			if vertical and (build_mode.ends_with("_wall") or build_mode.ends_with("_gate")): dimensions = Vector2(dimensions.y, dimensions.x)
-			draw_rect(Rect2(preview - dimensions * 0.5, dimensions), Color(0.25, 0.9, 0.4, 0.35) if valid else Color(0.9, 0.2, 0.2, 0.35))
+			var snapped := snap_build_point(build_mode, preview, vertical)
+			var footprint := build_footprint_rect(build_mode, snapped, vertical)
+			var color := Color(0.25, 0.9, 0.4, 0.35) if valid else Color(0.9, 0.2, 0.2, 0.35)
+			draw_rect(footprint, color)
+			draw_rect(footprint, color.darkened(0.25), false, 2.0)
+			for x in range(1, roundi(footprint.size.x / BUILD_GRID_SIZE)):
+				var grid_x := footprint.position.x + x * BUILD_GRID_SIZE
+				draw_line(Vector2(grid_x, footprint.position.y), Vector2(grid_x, footprint.end.y), color.darkened(0.2), 1.0)
+			for y in range(1, roundi(footprint.size.y / BUILD_GRID_SIZE)):
+				var grid_y := footprint.position.y + y * BUILD_GRID_SIZE
+				draw_line(Vector2(footprint.position.x, grid_y), Vector2(footprint.end.x, grid_y), color.darkened(0.2), 1.0)
 	for line in hit_lines:
 		if fog.active and line["owner"] != 0 and not fog.can_see(0, line["to"]): continue
 		var progress := clampf(float(line["time"]) / 0.24, 0.0, 1.0)
