@@ -23,6 +23,7 @@ const LABELS := {
 }
 
 var state := "default"
+var context_text := ""
 var click_time := 0.0
 
 func _ready() -> void:
@@ -33,6 +34,11 @@ func _ready() -> void:
 func set_state(value: String) -> void:
 	if state == value: return
 	state = value
+	queue_redraw()
+
+func set_context(value: String) -> void:
+	if context_text == value: return
+	context_text = value
 	queue_redraw()
 
 func flash() -> void:
@@ -81,6 +87,13 @@ func _draw() -> void:
 		if font != null:
 			draw_string(font, Vector2(38, 31), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color("151d20"))
 			draw_string(font, Vector2(37, 30), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, accent)
+	if context_text != "":
+		var font := ThemeDB.fallback_font
+		if font != null:
+			var width := font.get_string_size(context_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 13).x + 16.0
+			draw_rect(Rect2(18, 43, width, 25), Color("2c241b", 0.94))
+			draw_rect(Rect2(18, 43, width, 25), Color("b79759"), false, 1)
+			draw_string(font, Vector2(26, 60), context_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color("f3dfb4"))
 	if click_time > 0.0:
 		var progress := 1.0 - click_time / 0.2
 		draw_arc(Vector2.ZERO, 8.0 + progress * 12.0, 0, TAU, 28, Color(accent, 1.0 - progress), 2)

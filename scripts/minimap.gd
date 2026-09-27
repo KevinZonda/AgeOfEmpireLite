@@ -9,7 +9,7 @@ var cached_size := Vector2i.ZERO
 
 func setup(game_ref: Node2D) -> void:
 	game = game_ref
-	custom_minimum_size = Vector2(208, 208)
+	custom_minimum_size = Vector2(164, 164)
 	clip_contents = true
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
@@ -71,7 +71,9 @@ func _draw() -> void:
 		draw_rect(Rect2(world_to_map(building.position) - Vector2(3, 3), Vector2(6, 6)), color)
 	for unit in game.units:
 		if not is_instance_valid(unit) or unit.garrisoned_in != null: continue
-		if unit.owner_id != 0 and game.fog.active and not game.fog.can_see(0, unit.position): continue
+		if unit.owner_id != 0 and game.fog.active:
+			if game.is_enemy(0, unit.owner_id) and not game.fog.can_detect_unit(0, unit): continue
+			if not game.is_enemy(0, unit.owner_id) and not game.fog.can_see(0, unit.position): continue
 		var color: Color = game.player_color(unit.owner_id).lightened(0.28)
 		draw_circle(world_to_map(unit.position), 1.8, color)
 	var inverse: Transform2D = get_viewport().get_canvas_transform().affine_inverse()

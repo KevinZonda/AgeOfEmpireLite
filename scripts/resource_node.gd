@@ -160,10 +160,6 @@ func _draw() -> void:
 		var points := PackedVector2Array([Vector2(-22, 14), Vector2(-16, -10), Vector2(2, -20), Vector2(22, -8), Vector2(20, 17)])
 		draw_colored_polygon(points, color)
 		draw_line(Vector2(-16, -10), Vector2(2, -20), color.lightened(0.25), 2)
-	if isometric: draw_set_transform_matrix(RtsIsoProjection.upright(canvas, RtsIsoProjection.ground_lift(game, position)))
-	var font := ThemeDB.fallback_font
-	if font != null:
-		draw_string(font, Vector2(-18, 36 if not isometric else 20), str(amount), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color.WHITE)
 	if isometric: draw_set_transform_matrix(Transform2D.IDENTITY)
 
 func draw_ellipse_shape() -> void:

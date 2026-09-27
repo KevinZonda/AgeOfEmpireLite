@@ -1,6 +1,7 @@
 extends Node2D
 
 const WORLD_SIZE := Vector2(2400, 2400)
+const START_CAMERA_POINT := Vector2(630, 820)
 const WINDOW_RESOLUTIONS := [Vector2i(1280, 720), Vector2i(1440, 810), Vector2i(1600, 900), Vector2i(1920, 1080), Vector2i(2560, 1440)]
 const DISPLAY_SETTINGS_PATH := "user://display.cfg"
 const CAMERA_PAN_SPEED := 570.0
@@ -9,6 +10,7 @@ const EDGE_SCROLL_MARGIN := 28.0
 const UNIT_SCENE := preload("res://scripts/unit.gd")
 const BUILDING_SCENE := preload("res://scripts/building.gd")
 const RESOURCE_SCENE := preload("res://scripts/resource_node.gd")
+const SELECTION_PORTRAIT := preload("res://scripts/selection_portrait.gd")
 const MENU_BACKDROP := preload("res://scripts/menu_backdrop.gd")
 const UNIT_ABILITY_ACTIONS := [
 	{"id": "palings", "label": "架设拒马", "kinds": ["longbow"]},
@@ -102,7 +104,7 @@ var menu_backdrop: Control
 var idle_villager_button: Button
 var info_label: Label
 var detail_label: Label
-var selection_icon: Label
+var selection_portrait
 var selection_health: ProgressBar
 var selection_progress: ProgressBar
 var queue_label: Label
@@ -135,7 +137,7 @@ func _ready() -> void:
 	world_map.hide()
 	navigation = RtsNavigation.new(self, world_map)
 	camera = Camera2D.new()
-	camera.position = Vector2(630, 720)
+	camera.position = START_CAMERA_POINT
 	# We clamp the rotated viewport ourselves. Camera2D's axis-aligned limits
 	# would otherwise pin the projected view against the map edge.
 	camera.limit_left = -100000
@@ -256,7 +258,7 @@ func _create_hud() -> void:
 	var bottom := PanelContainer.new()
 	hud_bottom = bottom
 	bottom.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	bottom.offset_top = -270
+	bottom.offset_top = -230
 	bottom.add_theme_stylebox_override("panel", _hud_panel_style(Color("241d16"), 7))
 	root.add_child(bottom)
 	var dock := HBoxContainer.new()
@@ -290,16 +292,9 @@ func _create_hud() -> void:
 	var selection_row := HBoxContainer.new()
 	selection_row.add_theme_constant_override("separation", 10)
 	selection_panel.add_child(selection_row)
-	selection_icon = Label.new()
-	selection_icon.custom_minimum_size.x = 58
-	selection_icon.custom_minimum_size.y = 58
-	selection_icon.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-	selection_icon.text = "◆"
-	selection_icon.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	selection_icon.vertical_alignment = VERTICAL_ALIGNMENT_TOP
-	selection_icon.add_theme_font_size_override("font_size", 36)
-	selection_icon.add_theme_color_override("font_color", Color("d8bf80"))
-	selection_row.add_child(selection_icon)
+	selection_portrait = SELECTION_PORTRAIT.new()
+	selection_portrait.custom_minimum_size = Vector2(102, 142)
+	selection_row.add_child(selection_portrait)
 	var selection_column := VBoxContainer.new()
 	selection_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	selection_column.add_theme_constant_override("separation", 7)
@@ -317,7 +312,7 @@ func _create_hud() -> void:
 	detail_label.custom_minimum_size.x = 420
 	detail_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var detail_scroll := ScrollContainer.new()
-	detail_scroll.custom_minimum_size.y = 85
+	detail_scroll.custom_minimum_size.y = 62
 	detail_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	detail_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	selection_column.add_child(detail_scroll)
@@ -357,7 +352,7 @@ func _create_hud() -> void:
 	notice_label.add_theme_font_size_override("font_size", 13)
 	selection_column.add_child(notice_label)
 	var map_panel := PanelContainer.new()
-	map_panel.custom_minimum_size.x = 220
+	map_panel.custom_minimum_size.x = 180
 	map_panel.add_theme_stylebox_override("panel", _hud_panel_style(Color("30261b"), 7))
 	dock.add_child(map_panel)
 	var map_column := VBoxContainer.new()
@@ -399,11 +394,11 @@ func _create_hud() -> void:
 	root.add_child(pause_overlay)
 	var pause_panel := PanelContainer.new()
 	pause_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	pause_panel.custom_minimum_size = Vector2(380, 280)
+	pause_panel.custom_minimum_size = Vector2(380, 340)
 	pause_panel.offset_left = -190
-	pause_panel.offset_top = -140
+	pause_panel.offset_top = -170
 	pause_panel.offset_right = 190
-	pause_panel.offset_bottom = 140
+	pause_panel.offset_bottom = 170
 	pause_panel.add_theme_stylebox_override("panel", _hud_panel_style(Color("30271c"), 20))
 	pause_overlay.add_child(pause_panel)
 	var pause_box := VBoxContainer.new()
@@ -934,7 +929,7 @@ func start_game(civ: String, requested_seed := -1, opponent_civ := "") -> void:
 	build_page = 0
 	order_mode = ""
 	ai_think_timers.clear()
-	camera.position = _scaled_point(Vector2(630, 720))
+	camera.position = _scaled_point(START_CAMERA_POINT)
 	menu_panel.hide()
 	menu_backdrop.hide()
 	hud_top.show()
@@ -950,10 +945,13 @@ func start_game(civ: String, requested_seed := -1, opponent_civ := "") -> void:
 		spawn_building(owner_id, "town_center", base)
 		for i in 5:
 			var worker := spawn_unit(owner_id, "villager", base + Vector2((i % 3) * 29 - 30, 80 + (i / 3) * 28))
-			var resource := find_nearest_resource(worker.position, "food" if i < 2 else "wood" if i < 4 else "gold")
+			var resource := find_nearest_resource(worker.position, "food" if i < 2 else "wood" if i < 4 else "gold", INF, -1, false, worker)
 			if resource != null: worker.order_gather(resource)
 	for owner_id in player_count:
 		spawn_unit(owner_id, "scout", spawn_point_for(owner_id) + Vector2(-100, -90))
+	selected.clear()
+	var home_center := _player_center(0)
+	if home_center != null: selected.append(home_center)
 	navigation.refresh()
 	fog.reset()
 	match_statistics.reset(self)
@@ -1812,7 +1810,7 @@ func _clamp_camera_position() -> void:
 	camera.position = camera.position.clamp(margin, world_size - margin)
 
 func _toggle_view_mode() -> void:
-	var at_starting_camera := started and match_statistics.elapsed < 2.0 and camera.position.distance_to(_scaled_point(Vector2(630, 720))) < 2.0
+	var at_starting_camera := started and match_statistics.elapsed < 2.0 and camera.position.distance_to(_scaled_point(START_CAMERA_POINT)) < 2.0
 	view_mode_25d = not view_mode_25d
 	world_map.isometric_view = view_mode_25d
 	world_map.queue_redraw()
@@ -1876,7 +1874,14 @@ func _update_cursor() -> void:
 	cursor.position = screen_point
 	var hovered := get_viewport().gui_get_hovered_control()
 	var over_ui := hovered != null and hovered != cursor
-	cursor.set_state(_cursor_state_at(get_global_mouse_position(), over_ui))
+	var world_point := get_global_mouse_position()
+	cursor.set_state(_cursor_state_at(world_point, over_ui))
+	var resource := _resource_at(world_point) if not over_ui and build_mode == "" else null
+	var context := ""
+	if resource != null:
+		context = GameData.RESOURCE_LABELS[resource.kind]
+		context += " · %d" % resource.amount if not fog.active or fog.can_see(0, resource.position) else " · 未在视野内"
+	cursor.set_context(context)
 
 func _cursor_state_at(world_point: Vector2, over_ui := false) -> String:
 	if over_ui: return "default"
@@ -2286,15 +2291,16 @@ func issue_group_order(movers: Array[RtsUnit], point: Vector2, attack_move := fa
 		if absf(front_a - front_b) > 25.0: return front_a > front_b
 		return ac.dot(lateral) < bc.dot(lateral)
 	)
-	var columns := mini(3, maxi(1, ceili(sqrt(float(squads.size())))))
+	var columns := mini(6 if squads.size() > 12 else 3, maxi(1, ceili(sqrt(float(squads.size())))))
 	var rows := ceili(float(squads.size()) / columns)
+	var squad_spacing := 140.0 if squads.size() > 12 else 200.0
 	for index in squads.size():
 		var squad: Array[RtsUnit] = squads[index]
 		var group_point := point
 		if squads.size() > 1:
 			var row := index / columns
 			var col := index % columns
-			group_point += heading * (float(rows - 1) * 0.5 - float(row)) * 200.0 + lateral * (float(col) - float(columns - 1) * 0.5) * 200.0
+			group_point += heading * (float(rows - 1) * 0.5 - float(row)) * squad_spacing + lateral * (float(col) - float(columns - 1) * 0.5) * squad_spacing
 		var group := RtsMovementGroup.new(self, squad, group_point, formation_mode, formation_width)
 		for unit in squad:
 			unit.issue_command("group_attack_move" if attack_move else "group_move", group_point, null, append_order, group)
@@ -2409,14 +2415,12 @@ func _update_selection_hud() -> void:
 	queue_label.text = ""
 	queue_controls.hide()
 	if selected.is_empty() or not is_instance_valid(selected[0]):
-		selection_icon.text = "◆"
-		selection_icon.add_theme_color_override("font_color", Color("9da9a2"))
+		selection_portrait.show_subject(null)
 		info_label.text = "未选择"
 		detail_label.text = "左键选择 · 双击同型单位 · 右键下令 · Esc 暂停"
 		return
 	var item := selected[0]
-	selection_icon.text = "⌂" if item is RtsBuilding else "◆"
-	selection_icon.add_theme_color_override("font_color", player_color(item.owner_id).lightened(0.35))
+	selection_portrait.show_subject(item, player_color(item.owner_id))
 	if selected.size() > 1:
 		info_label.text = "已选中 %d 个单位" % selected.size()
 		var counts: Dictionary = {}
@@ -2495,7 +2499,7 @@ func _select_next_idle_villager() -> void:
 	var idle := idle_villagers()
 	if idle.is_empty(): return
 	var index := 0
-	if selected.size() == 1:
+	if selected.size() == 1 and selected[0] is RtsUnit:
 		var previous := idle.find(selected[0])
 		if previous >= 0: index = (previous + 1) % idle.size()
 	selected.clear()

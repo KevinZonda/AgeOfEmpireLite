@@ -421,6 +421,8 @@ func _neighbor_level(x: int, y: int) -> int:
 	return elevation_levels[_index(Vector2i(x, y))]
 
 func _draw() -> void:
+	if isometric_view:
+		draw_rect(Rect2(-world_size * 2.0, world_size * 5.0), RtsFogOfWar.UNEXPLORED_COLOR)
 	for y in grid_size.y:
 		for x in grid_size.x:
 			var cell := Vector2i(x, y)

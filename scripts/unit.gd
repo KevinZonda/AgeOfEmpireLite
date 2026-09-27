@@ -39,6 +39,7 @@ var route_goal := Vector2.INF
 var route_retry := 0.0
 var movement_group: RtsMovementGroup
 var group_stuck_time := 0.0
+var avoidance_cooldown := 0.0
 var group_last_position := Vector2.INF
 var command_queue: Array[Dictionary] = []
 var garrisoned_in: Node2D
@@ -947,6 +948,7 @@ func _move_toward(point: Vector2, delta: float, stop_distance: float) -> bool:
 
 func _move_with_group(delta: float) -> void:
 	var point := movement_group.target_for(self)
+	avoidance_cooldown = maxf(0.0, avoidance_cooldown - delta)
 	# Direct local steering shares the squad path. Only a genuinely stuck member
 	# pays for its own A* route around a corner or a crowded gate.
 	var old_position := position

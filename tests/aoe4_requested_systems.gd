@@ -8,7 +8,7 @@ func _run() -> void:
 	root.add_child(game)
 	await process_frame
 	game.start_game("English", 44127, "French")
-	assert(game.top_label.text.contains("人口") and game.top_label.text.contains("空余"))
+	assert(game.population_label.text.contains("人口") and game.population_label.tooltip_text.contains("空余"))
 	var worker: RtsUnit = game.units[0]
 	worker.order_stop()
 	game._update_hud()

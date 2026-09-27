@@ -19,6 +19,7 @@ make run
 - Ctrl+数字键保存编组，数字键选中编组，Shift+数字键追加选择；连续按两次数字键可将镜头移到编组。双击己方建筑可选中屏幕内同类建筑，多选生产建筑后训练命令会向所有合格建筑下达。
 - 选择一名或多名村民后在底部切换经济、军营、防御和特殊建造页，再点击地图放置建筑；所有选中的村民会共同施工。Shift 点击可连续放置建筑并排队施工。
 - 主界面点击「开始游戏」进入对局设置。左侧可添加至多 4 位玩家，为电脑选择简单／普通／困难强度，并为每位玩家分别选择文明和队伍；同队共享视野及胜负，至少需要两个队伍。右侧可设置地图类型与大小、2D／2.5D 视角、初始资源及地图种子。村民的「港口与贸易」页可以建造市场、码头、修道院和城门。
+- 主界面和暂停菜单的「显示设置」可选择 1280×720、1440×810、1600×900、1920×1080 或 2560×1440 窗口分辨率；高于当前显示器可用尺寸的选项不会显示，应用后会保存到下次启动。
 - 选中村民选择木墙或石墙后，在地图上拖拽可连续铺设一段城墙；按 R 旋转单段墙或城门。选中已建好的墙可付差价改建城门，己方单位能通行。军队可从相邻己方石门登上石墙；攻城塔靠近敌方石墙后，步兵也可登墙。墙上单位获得远程护甲并可向地面射击。
 - 码头只能建在岸边，可训练渔船和战船。渔船右键点击鱼群自动捕鱼；战船只能在水上移动和作战。
 - 码头还能训练箭船、弩炮船、火攻船与运输船。弩炮船克制重型船，火攻船接触敌舰后爆炸；选中陆军右键运输船登船，选中载兵运输船右键陆地登陆。选择「群岛」地图可进行跨水域进攻。
@@ -42,7 +43,7 @@ make run
 - 野外资源点耗尽时，村民会自动转向附近的同类资源点继续采集。
 - 每局会生成新地图，并检查双方起始资源数量与距离。山地不可通行，陆军会绕开水域，船只则在水域航行；鹿会躲避军队，野猪需要击杀后才能采集，鱼群可由渔船采集。高地可扩大视野，潜伏森林能遮蔽其中的单位，近距离侦察可发现他们。
 - 单位和建筑提供视野；未探索区域全黑，探索后失去视野的区域变暗，山地会挡住视线。敌军与鹿群只有在当前视野内才会显示。
-- 底部命令网格显示各按钮快捷键；底部中间显示选中单位的生命、护甲、攻击档案、射程与攻击间隔，村民采集时还显示当前资源与每秒采集效率。点击可见的敌方单位可查看其数值，离开视野或隐蔽后面板会清除该单位。顶部显示人口已用／上限（及空余），「空闲村民」按钮或句号键可循环选中空闲村民；右下角小地图可点击定位。
+- 底部命令网格显示各按钮快捷键；开局选中城镇中心，信息栏用单位或建筑肖像显示当前对象，并列出生命、护甲、攻击档案、射程与攻击间隔。资源剩余量在鼠标悬停时显示。点击可见的敌方单位可查看其数值，离开视野或隐蔽后面板会清除该单位，小地图也不会泄露隐蔽敌军。顶部显示人口已用／上限（及空余），「空闲村民」按钮或句号键可循环选中空闲村民；右下角小地图可点击定位。
 - WASD / 方向键、鼠标移到窗口边缘或 Mac 触控板双指滑动可移动镜头，四角可斜向移动；滚轮缩放。
 - 顶部「切换 2.5D」按钮或 V 键可在俯视 2D 与 2:1 菱形等距视角之间切换；两种视角共用同一地图和指令。2.5D 下山体与山脚高地分层抬升，单位和建筑随地面高度显示并按深度遮挡，地图文字与血条保持正向，框选沿屏幕矩形生效。镜头可沿屏幕方向移动，滚轮缩放保持鼠标指向的地图位置，小地图用旋转后的四角显示当前视野。
 - 按 Esc 打开或关闭暂停菜单；暂停时显示系统鼠标，可移出游戏窗口。
@@ -55,7 +56,7 @@ make run
 - 共享兵种分为侦察兵、长矛兵、重装步兵、弓箭手、弩手、轻骑兵与重骑士。英格兰以长弓兵替换弓箭手，法兰西以弩炮手和皇家骑士替换对应兵种；中国保留普通弓箭手，王朝解锁诸葛弩、火长矛骑兵和掷弹兵。
 - 战斗按攻击档案处理目标加成、多段伤害、近远程护甲、攻城器械远程减伤、穿透、冲锋与范围伤害。长弓兵可架设拒马或发动万箭齐发；法兰西弩炮手可部署大盾，军学院火炮可使用炮击齐射；战船可短时加速，携圣物修士可招降敌军并治疗友军。英格兰侦察兵可花木材建预备营地。科技升级会更新已有单位的数值。
 - 地标可直接生产、研究、驻军、防御、积累资源或侦察；中国第二座地标解锁王朝。未满足要求的兵种和科技继续显示在面板并说明原因。
-- 电脑对手能够采集、选择并建造地标升级、研究、建造、根据敌方兵种训练部队；在多人局中会支援受攻击的盟友并集结进攻敌方城镇中心。
+- 电脑对手能够采集、选择并建造地标升级、研究、建造、根据敌方兵种训练部队；在多人局中会支援受攻击的盟友并集结进攻敌方城镇中心。简单／普通／困难使用不同的村民目标、出兵门槛、升时代时机和思考间隔；长局中会继续建房与农田，资源不足时通过市场交易，并为升时代保留资源。卡住的施工会更换工人或重新选址。
 - 地图由种子生成山地、湖泊、草地、植物群、树林、矿点与鹿群；雨会周期性出现。可用 `start_game("English", 12345)` 复现指定地图。
 - 地图还生成鱼群、中立贸易站与圣物；标准地图为 2400×2400，大型地图为 3000×3000，支持四种地形类型。陆军、水军分别寻路，港口生产水军。
 - 市场贸易、修士占领圣地与存放圣物、拖拽式连续墙段和可通行城门均已接入玩家与电脑对局。
@@ -68,6 +69,7 @@ make run
 ```sh
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/smoke.gd
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/selection.gd
+/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/isometric_view.gd
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/chinese.gd
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/extended_systems.gd
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/map_generator.gd
@@ -83,6 +85,7 @@ make run
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/siege_rules.gd
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/objectives.gd
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/strategic_expansion.gd
+/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/ai_long_match.gd
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/aoe4_requested_systems.gd
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/battle_experience.gd
 RTS_BENCH_UNITS=200 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/performance_400.gd

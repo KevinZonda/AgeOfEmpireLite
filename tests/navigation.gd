@@ -13,10 +13,17 @@ func _run() -> void:
 	var worker: RtsUnit = game.units[0]
 	var food_source: RtsResource = worker.target
 	var food_before := food_source.amount
+	var worker_start := worker.position
+	worker.position = game.navigation.nearest_walkable_point(food_source.position + Vector2(food_source.radius + worker.radius() + 5.0, 0), worker.radius(), worker)
+	game.navigation.invalidate_spatial_index()
+	worker.order_gather(food_source)
 	for i in 150:
 		for villager in game.units:
 			if villager.kind == "villager" and villager.owner_id == 0: villager._process(0.05)
 	assert(food_source.amount < food_before, "villagers should start harvesting when they reach resource collision range")
+	worker.order_stop()
+	worker.position = worker_start
+	game.navigation.invalidate_spatial_index()
 	assert(not game.navigation.can_occupy(center.position, worker.radius(), worker), "Town Center should block movement")
 	var destination := Vector2(330, 610)
 	var route: PackedVector2Array = game.navigation.path_between(worker.position, destination)

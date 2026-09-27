@@ -305,6 +305,9 @@ func move_step(unit: RtsUnit, desired_position: Vector2) -> Vector2:
 	var direction := movement.normalized()
 	var distance := movement.length()
 	if _motion_clear(unit, desired_position): return desired_position
+	if unit.movement_group != null:
+		if unit.avoidance_cooldown > 0.0: return unit.position
+		unit.avoidance_cooldown = 0.08
 	var side := 1.0 if unit.get_instance_id() % 2 == 0 else -1.0
 	for offset in [side * PI / 4.0, -side * PI / 4.0, side * PI / 2.0, -side * PI / 2.0, side * PI * 0.75, -side * PI * 0.75]:
 		var candidate_direction := direction.rotated(offset)
