@@ -12,6 +12,12 @@ func _run() -> void:
 	var wall_x := 21
 	for y in game.world_map.grid_size.y:
 		game.world_map.cells[y * game.world_map.grid_size.x + wall_x] = RtsWorldMap.Terrain.GRASS if y in [14, 15, 16] else RtsWorldMap.Terrain.MOUNTAIN
+	for x in range(wall_x - 3, wall_x + 4):
+		for y in [14, 15, 16]: game.world_map.cells[y * game.world_map.grid_size.x + x] = RtsWorldMap.Terrain.GRASS
+	for resource in game.resources.duplicate():
+		if resource.position.x >= 875.0 and resource.position.x <= 1275.0 and resource.position.y >= 650.0 and resource.position.y <= 875.0:
+			game.resources.erase(resource)
+			resource.queue_free()
 	game.world_map._setup_pathfinder()
 	game.navigation.refresh()
 	var squad: Array[RtsUnit] = []
