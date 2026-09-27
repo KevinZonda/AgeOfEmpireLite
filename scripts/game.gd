@@ -941,6 +941,7 @@ func _show_tech_tree(civilization: String) -> void:
 	var unique_units: Array[String] = []
 	for building_kind in RtsTechTree.PRODUCTION:
 		for unit_kind in RtsTechTree.all_train_units(civilization, building_kind):
+			if not _tech_tree_unit_matches_civ(civilization, unit_kind): continue
 			if GameData.UNITS[unit_kind]["tags"].has("unique") and not unique_units.has(unit_kind): unique_units.append(unit_kind)
 	for unit_kind in unique_units:
 		_tech_tree_label(sidebar, "◆ %s" % GameData.UNITS[unit_kind]["label"], 14, Color("b9d4f0"))
@@ -986,12 +987,15 @@ func _build_tech_tree_age(parent: HBoxContainer, civilization: String, age: int)
 		if building_age > age: continue
 		var units: Array[String] = []
 		for unit_kind in RtsTechTree.all_train_units(civilization, building_kind):
+			if not _tech_tree_unit_matches_civ(civilization, unit_kind): continue
 			var unit_age: int = maxi(int(RtsTechTree.UNIT_AGE.get(unit_kind, 99)), building_age)
 			unit_age = int(RtsTechTree.UNIT_AGE_OVERRIDES.get(civilization, {}).get(unit_kind, unit_age))
 			if unit_age == age: units.append(unit_kind)
 		var researches: Array[String] = []
 		for tech_id in RtsTechTree.all_researches(civilization, building_kind):
-			if int(RtsTechTree.get_technology(tech_id).get("age", 99)) == age: researches.append(tech_id)
+			var tech: Dictionary = RtsTechTree.get_technology(tech_id)
+			if tech.has("rank_unit") and not _tech_tree_unit_matches_civ(civilization, str(tech["rank_unit"])): continue
+			if int(tech.get("age", 99)) == age: researches.append(tech_id)
 		if building_age != age and units.is_empty() and researches.is_empty(): continue
 		var building: Dictionary = GameData.BUILDINGS[building_kind]
 		var card := _tech_tree_card(column, str(building["label"]), "建造费用：%s" % (GameData.cost_text(building["cost"]) if not building["cost"].is_empty() else "初始建筑"), Color("edc781"))
@@ -1010,6 +1014,9 @@ func _build_tech_tree_age(parent: HBoxContainer, civilization: String, age: int)
 			var tooltip := "研究费用：%s" % GameData.cost_text(tech["cost"])
 			if not requirements.is_empty(): tooltip += "\n前置科技：%s" % "、".join(requirements)
 			_tech_tree_entry(card, str(tech["label"]), Color("a9d8ae"), tooltip)
+
+func _tech_tree_unit_matches_civ(civilization: String, unit_kind: String) -> bool:
+	return not RtsTechTree.UNIT_CIVILIZATION.has(unit_kind) or RtsTechTree.UNIT_CIVILIZATION[unit_kind] == civilization
 
 func _tech_tree_card(parent: VBoxContainer, heading: String, tooltip: String, accent: Color) -> VBoxContainer:
 	var panel := PanelContainer.new()

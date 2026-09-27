@@ -70,6 +70,7 @@ make run
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/smoke.gd
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/selection.gd
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/isometric_view.gd
+/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/tech_tree_page.gd
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/chinese.gd
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/extended_systems.gd
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/map_generator.gd
