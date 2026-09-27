@@ -429,32 +429,7 @@ func _reset_route() -> void:
 
 func _process(delta: float) -> void:
 	if not game.started or game.paused or game.game_over or garrisoned_in != null: return
-	attack_timer = maxf(0.0, attack_timer - delta)
-	work_timer = maxf(0.0, work_timer - delta)
-	charge_cooldown = maxf(0.0, charge_cooldown - delta)
-	stun_timer = maxf(0.0, stun_timer - delta)
-	momentum_timer = maxf(0.0, momentum_timer - delta)
-	paling_timer = maxf(0.0, paling_timer - delta)
-	paling_cooldown = maxf(0.0, paling_cooldown - delta)
-	volley_timer = maxf(0.0, volley_timer - delta)
-	volley_cooldown = maxf(0.0, volley_cooldown - delta)
-	helm_timer = maxf(0.0, helm_timer - delta)
-	helm_cooldown = maxf(0.0, helm_cooldown - delta)
-	conversion_cooldown = maxf(0.0, conversion_cooldown - delta)
-	artillery_shot_cooldown = maxf(0.0, artillery_shot_cooldown - delta)
-	revealed_timer = maxf(0.0, revealed_timer - delta)
-	if spirit_buff_timer > 0.0:
-		spirit_buff_timer = maxf(0.0, spirit_buff_timer - delta)
-		hp = minf(max_hp, hp + 2.0 * delta)
-	if conversion_timer > 0.0:
-		conversion_timer = maxf(0.0, conversion_timer - delta)
-		if conversion_timer <= 0.0: _finish_conversion()
-		return
-	if kind == "monk": _heal_ally(delta)
-	if charging:
-		charge_elapsed += delta
-		if charge_elapsed >= 7.0: charging = false
-	if stun_timer > 0.0: return
+	if _tick_status(delta): return
 	if order == "hold":
 		if position.distance_to(hold_position) > 6.0:
 			_move_toward(hold_position, delta, 4.0)
@@ -491,19 +466,7 @@ func _process(delta: float) -> void:
 		return
 	if order == "siege_tower_docked": return
 	if order == "idle":
-		if kind == "imperial_official":
-			var taxable: RtsBuilding
-			var nearest := INF
-			for building in game.buildings:
-				if not is_instance_valid(building) or building.owner_id != owner_id or building.tax_stockpile < 4: continue
-				var distance := position.distance_squared_to(building.position)
-				if distance < nearest:
-					nearest = distance
-					taxable = building
-			if taxable != null: issue_command("collect_tax", Vector2.INF, taxable)
-			return
-		var enemy: Node2D = game.nearest_enemy(self, maxf(115.0, float(stats.get("range", 0.0)) + 45.0))
-		if enemy != null and stats.get("tags", []).has("military"): order_attack(enemy)
+		_process_idle_order()
 		return
 	if order == "attack_move":
 		var nearby_enemy: Node2D = game.nearest_enemy(self, 155.0)
@@ -541,18 +504,7 @@ func _process(delta: float) -> void:
 			_advance_command()
 		return
 	if order == "trade":
-		if not is_instance_valid(trade_post) or not is_instance_valid(trade_home) or trade_home.is_queued_for_deletion():
-			_advance_command()
-			return
-		var goal: Vector2 = trade_home.position if trade_returning else trade_post.position
-		if _move_toward(goal, delta, 46.0):
-			if trade_returning:
-				var gold := maxi(12, roundi(trade_home.position.distance_to(trade_post.position) / 18.0))
-				gold = roundi(gold * RtsLandmarkCatalog.trade_multiplier(game.civilizations[owner_id], game.players[owner_id].get("landmarks", [])))
-				if game.civilizations[owner_id] == "French": gold = roundi(gold * 1.15)
-				game.credit_resource(owner_id, trade_resource_kind if game.civilizations[owner_id] == "French" else "gold", gold)
-			trade_returning = not trade_returning
-			_reset_route()
+		_process_trade_order(delta)
 		return
 	if order in ["supervise", "collect_tax"]:
 		if not is_instance_valid(target) or target.is_queued_for_deletion() or not target is RtsBuilding or not target.is_complete():
@@ -626,104 +578,166 @@ func _process(delta: float) -> void:
 		if _move_toward(target.position, delta, 78.0) and not target.garrison_unit(self): _advance_command()
 		return
 	if order == "gather":
-		var gathering_distance: float = target.radius + radius() + 2.0 if target is RtsResource else target.size().x * 0.5 + radius() + 2.0
-		if not _move_toward(target.position, delta, gathering_distance): return
-		if kind == "villager" and target is RtsBuilding and target.kind == "farm" and game.civilizations[owner_id] == "English" and game.players[owner_id]["researched"].has("enclosures"):
-			enclosure_timer -= delta
-			if enclosure_timer <= 0.0:
-				game.credit_resource(owner_id, "gold", 2)
-				enclosure_timer += 5.0
-		else:
-			enclosure_timer = 5.0
-		if work_timer <= 0.0:
-			var resource_kind: String = "food" if target is RtsBuilding else target.kind
-			var amount := gathering_amount()
-			if target is RtsResource: amount = target.harvest(amount)
-			if amount > 0: game.credit_resource(owner_id, resource_kind, amount)
-			work_timer = 1.1
-			if target is RtsResource and target.amount <= 0: _continue_gather()
+		_process_gather_order(delta)
 		return
 	if order == "build":
 		if not _move_toward(target.position, delta, target.size().x * 0.6 + radius()): return
 		target.advance_construction(delta * GameData.construction_multiplier(game.civilizations[owner_id]))
 		if target.is_complete(): _advance_command()
 		return
-	if order == "attack":
-		if resume_order == "patrol" and position.distance_to(Geometry2D.get_closest_point_to_segment(position, patrol_origin, patrol_destination)) > 240.0:
-			order = "patrol"
-			destination = resume_destination
-			resume_destination = Vector2.INF
-			resume_order = ""
-			target = null
-			_reset_route()
-			return
-		if resume_order == "hold" and position.distance_to(hold_position) > 6.0:
-			order = "hold"
-			resume_order = ""
-			target = null
-			return
-		var target_radius := 18.0
-		if target is RtsUnit: target_radius = target.radius()
-		if target is RtsBuilding: target_radius = maxf(target.size().x, target.size().y) * 0.5 + radius() + 3.0
-		var defender_stats: Dictionary = target.stats if target is RtsUnit or target is RtsBuilding else {}
-		var charged := charging and charge_distance >= 60.0
-		var profile := RtsStatResolver.attack_profile(stats, defender_stats, charged)
-		if profile.is_empty(): return
-		if target is RtsUnit and is_instance_valid(target.wall_host) and target.wall_host != wall_host and profile.get("damage_kind", "melee") == "melee":
+	if order == "attack": _process_attack_order(delta)
+
+func _tick_status(delta: float) -> bool:
+	attack_timer = maxf(0.0, attack_timer - delta)
+	work_timer = maxf(0.0, work_timer - delta)
+	charge_cooldown = maxf(0.0, charge_cooldown - delta)
+	stun_timer = maxf(0.0, stun_timer - delta)
+	momentum_timer = maxf(0.0, momentum_timer - delta)
+	paling_timer = maxf(0.0, paling_timer - delta)
+	paling_cooldown = maxf(0.0, paling_cooldown - delta)
+	volley_timer = maxf(0.0, volley_timer - delta)
+	volley_cooldown = maxf(0.0, volley_cooldown - delta)
+	helm_timer = maxf(0.0, helm_timer - delta)
+	helm_cooldown = maxf(0.0, helm_cooldown - delta)
+	conversion_cooldown = maxf(0.0, conversion_cooldown - delta)
+	artillery_shot_cooldown = maxf(0.0, artillery_shot_cooldown - delta)
+	revealed_timer = maxf(0.0, revealed_timer - delta)
+	if spirit_buff_timer > 0.0:
+		spirit_buff_timer = maxf(0.0, spirit_buff_timer - delta)
+		hp = minf(max_hp, hp + 2.0 * delta)
+	if conversion_timer > 0.0:
+		conversion_timer = maxf(0.0, conversion_timer - delta)
+		if conversion_timer <= 0.0: _finish_conversion()
+		return true
+	if kind == "monk": _heal_ally(delta)
+	if charging:
+		charge_elapsed += delta
+		if charge_elapsed >= 7.0: charging = false
+	return stun_timer > 0.0
+
+func _process_idle_order() -> void:
+	if kind == "imperial_official":
+		var taxable: RtsBuilding
+		var nearest := INF
+		for building in game.buildings:
+			if not is_instance_valid(building) or building.owner_id != owner_id or building.tax_stockpile < 4: continue
+			var distance := position.distance_squared_to(building.position)
+			if distance < nearest:
+				nearest = distance
+				taxable = building
+		if taxable != null: issue_command("collect_tax", Vector2.INF, taxable)
+		return
+	var enemy: Node2D = game.nearest_enemy(self, maxf(115.0, float(stats.get("range", 0.0)) + 45.0))
+	if enemy != null and stats.get("tags", []).has("military"): order_attack(enemy)
+
+func _process_trade_order(delta: float) -> void:
+	if not is_instance_valid(trade_post) or not is_instance_valid(trade_home) or trade_home.is_queued_for_deletion():
+		_advance_command()
+		return
+	var goal: Vector2 = trade_home.position if trade_returning else trade_post.position
+	if _move_toward(goal, delta, 46.0):
+		if trade_returning:
+			var gold := maxi(12, roundi(trade_home.position.distance_to(trade_post.position) / 18.0))
+			gold = roundi(gold * RtsLandmarkCatalog.trade_multiplier(game.civilizations[owner_id], game.players[owner_id].get("landmarks", [])))
+			if game.civilizations[owner_id] == "French": gold = roundi(gold * 1.15)
+			game.credit_resource(owner_id, trade_resource_kind if game.civilizations[owner_id] == "French" else "gold", gold)
+		trade_returning = not trade_returning
+		_reset_route()
+
+func _process_gather_order(delta: float) -> void:
+	var gathering_distance: float = target.radius + radius() + 2.0 if target is RtsResource else target.size().x * 0.5 + radius() + 2.0
+	if not _move_toward(target.position, delta, gathering_distance): return
+	if kind == "villager" and target is RtsBuilding and target.kind == "farm" and game.civilizations[owner_id] == "English" and game.players[owner_id]["researched"].has("enclosures"):
+		enclosure_timer -= delta
+		if enclosure_timer <= 0.0:
+			game.credit_resource(owner_id, "gold", 2)
+			enclosure_timer += 5.0
+	else:
+		enclosure_timer = 5.0
+	if work_timer <= 0.0:
+		var resource_kind: String = "food" if target is RtsBuilding else target.kind
+		var amount := gathering_amount()
+		if target is RtsResource: amount = target.harvest(amount)
+		if amount > 0: game.credit_resource(owner_id, resource_kind, amount)
+		work_timer = 1.1
+		if target is RtsResource and target.amount <= 0: _continue_gather()
+
+func _process_attack_order(delta: float) -> void:
+	if resume_order == "patrol" and position.distance_to(Geometry2D.get_closest_point_to_segment(position, patrol_origin, patrol_destination)) > 240.0:
+		order = "patrol"
+		destination = resume_destination
+		resume_destination = Vector2.INF
+		resume_order = ""
+		target = null
+		_reset_route()
+		return
+	if resume_order == "hold" and position.distance_to(hold_position) > 6.0:
+		order = "hold"
+		resume_order = ""
+		target = null
+		return
+	var target_radius := 18.0
+	if target is RtsUnit: target_radius = target.radius()
+	if target is RtsBuilding: target_radius = maxf(target.size().x, target.size().y) * 0.5 + radius() + 3.0
+	var defender_stats: Dictionary = target.stats if target is RtsUnit or target is RtsBuilding else {}
+	var charged := charging and charge_distance >= 60.0
+	var profile := RtsStatResolver.attack_profile(stats, defender_stats, charged)
+	if profile.is_empty(): return
+	if target is RtsUnit and is_instance_valid(target.wall_host) and target.wall_host != wall_host and profile.get("damage_kind", "melee") == "melee":
+		_advance_command()
+		return
+	var reach: float = float(profile.get("range", stats["range"])) + target_radius
+	var min_reach: float = float(profile.get("min_range", stats.get("min_range", 0.0))) + target_radius
+	if min_reach > 0.0 and position.distance_to(target.position) < min_reach:
+		if is_instance_valid(wall_host):
 			_advance_command()
 			return
-		var reach: float = float(profile.get("range", stats["range"])) + target_radius
-		var min_reach: float = float(profile.get("min_range", stats.get("min_range", 0.0))) + target_radius
-		if min_reach > 0.0 and position.distance_to(target.position) < min_reach:
-			if is_instance_valid(wall_host):
-				_advance_command()
-				return
-			var away := (position - target.position).normalized()
-			if away.is_zero_approx(): away = Vector2.RIGHT
-			_move_toward(target.position + away * (min_reach + 10.0), delta, 6.0)
+		var away := (position - target.position).normalized()
+		if away.is_zero_approx(): away = Vector2.RIGHT
+		_move_toward(target.position + away * (min_reach + 10.0), delta, 6.0)
+		return
+	if is_instance_valid(wall_host):
+		if position.distance_to(target.position) > reach:
+			_advance_command()
 			return
-		if is_instance_valid(wall_host):
-			if position.distance_to(target.position) > reach:
-				_advance_command()
-				return
-		elif not _move_toward(target.position, delta, reach): return
-		if attack_timer > 0.0: return
-		charged = charging and charge_distance >= 60.0
-		profile = RtsStatResolver.attack_profile(stats, defender_stats, charged)
-		if charged and target is RtsUnit and target.is_braced() and stats.get("tags", []).has("cavalry"):
-			var brace_damage := 19.0 + 5.0 * maxi(0, int(target.stats.get("rank_age", 2)) - 2) if target.kind == "longbow" else RtsCombatRules.profile_damage(target.stats, stats, RtsStatResolver.attack_profile(target.stats, stats), {"brace_impact": true})
-			take_damage(brace_damage)
-			stun_timer = 2.5
-			charging = false
-			charge_cooldown = 10.0
-			return
-		if artillery_shot_ready:
-			profile = profile.duplicate(true)
-			profile["bonuses"] = []
-			profile["splash_radius"] = maxf(65.0, float(profile.get("splash_radius", 0.0)))
-			artillery_shot_ready = false
-			artillery_shot_cooldown = 35.0
-		var modifiers := {"extra_damage": 3.0 if kind == "royal_knight" and momentum_timer > 0.0 else 0.0, "multiplier": RtsCivilizationRules.wall_ranged_multiplier(game, self) if profile.get("damage_kind", "") == "ranged" else 1.0}
-		var damage: float = RtsCombatRules.volley_damage(stats, defender_stats, profile, modifiers)
-		if charged:
-			charge_cooldown = 10.0
-			if kind == "royal_knight": momentum_timer = 3.0
+	elif not _move_toward(target.position, delta, reach): return
+	if attack_timer > 0.0: return
+	charged = charging and charge_distance >= 60.0
+	profile = RtsStatResolver.attack_profile(stats, defender_stats, charged)
+	if charged and target is RtsUnit and target.is_braced() and stats.get("tags", []).has("cavalry"):
+		var brace_damage := 19.0 + 5.0 * maxi(0, int(target.stats.get("rank_age", 2)) - 2) if target.kind == "longbow" else RtsCombatRules.profile_damage(target.stats, stats, RtsStatResolver.attack_profile(target.stats, stats), {"brace_impact": true})
+		take_damage(brace_damage)
+		stun_timer = 2.5
 		charging = false
-		revealed_timer = 2.0
-		if profile.get("damage_kind") == "ranged" or stats.get("primary_profile") == "siege" and float(profile.get("range", 0.0)) > 70.0:
-			var projectile := RtsProjectile.new()
-			projectile.setup(game, owner_id, global_position, target, damage, float(stats.get("projectile_speed", 350.0)), float(profile.get("splash_radius", 0.0)), stats, profile)
-			game.add_child(projectile)
-		else:
-			var impact_point: Vector2 = target.position
-			target.take_damage(damage)
-			if charged and float(profile.get("splash_radius", 0.0)) > 0.0:
-				for other in game.units:
-					if not is_instance_valid(other) or other == target or other.is_queued_for_deletion() or not game.is_enemy(owner_id, other.owner_id) or other.garrisoned_in != null: continue
-					if other.position.distance_to(impact_point) <= float(profile["splash_radius"]): other.take_damage(RtsCombatRules.volley_damage(stats, other.stats, profile) * 0.5)
-			game.show_hit(position, impact_point, owner_id)
-		attack_timer = float(profile.get("cooldown", stats["cooldown"])) / (RtsCivilizationRules.english_network_rate(game, self) * (1.2 if spirit_buff_timer > 0.0 else 1.0))
-		if volley_timer > 0.0: attack_timer /= 1.7
+		charge_cooldown = 10.0
+		return
+	if artillery_shot_ready:
+		profile = profile.duplicate(true)
+		profile["bonuses"] = []
+		profile["splash_radius"] = maxf(65.0, float(profile.get("splash_radius", 0.0)))
+		artillery_shot_ready = false
+		artillery_shot_cooldown = 35.0
+	var modifiers := {"extra_damage": 3.0 if kind == "royal_knight" and momentum_timer > 0.0 else 0.0, "multiplier": RtsCivilizationRules.wall_ranged_multiplier(game, self) if profile.get("damage_kind", "") == "ranged" else 1.0}
+	var damage: float = RtsCombatRules.volley_damage(stats, defender_stats, profile, modifiers)
+	if charged:
+		charge_cooldown = 10.0
+		if kind == "royal_knight": momentum_timer = 3.0
+	charging = false
+	revealed_timer = 2.0
+	if profile.get("damage_kind") == "ranged" or stats.get("primary_profile") == "siege" and float(profile.get("range", 0.0)) > 70.0:
+		var projectile := RtsProjectile.new()
+		projectile.setup(game, owner_id, global_position, target, damage, float(stats.get("projectile_speed", 350.0)), float(profile.get("splash_radius", 0.0)), stats, profile)
+		game.add_child(projectile)
+	else:
+		var impact_point: Vector2 = target.position
+		target.take_damage(damage)
+		if charged and float(profile.get("splash_radius", 0.0)) > 0.0:
+			for other in game.units:
+				if not is_instance_valid(other) or other == target or other.is_queued_for_deletion() or not game.is_enemy(owner_id, other.owner_id) or other.garrisoned_in != null: continue
+				if other.position.distance_to(impact_point) <= float(profile["splash_radius"]): other.take_damage(RtsCombatRules.volley_damage(stats, other.stats, profile) * 0.5)
+		game.show_hit(position, impact_point, owner_id)
+	attack_timer = float(profile.get("cooldown", stats["cooldown"])) / (RtsCivilizationRules.english_network_rate(game, self) * (1.2 if spirit_buff_timer > 0.0 else 1.0))
+	if volley_timer > 0.0: attack_timer /= 1.7
 
 func _heal_ally(delta: float) -> void:
 	heal_timer = maxf(0.0, heal_timer - delta)

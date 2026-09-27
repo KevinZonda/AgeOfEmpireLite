@@ -46,10 +46,7 @@ static func evaluate(action_type: String, kind: String, context: Dictionary) -> 
 		"research":
 			var technology := RtsTechTree.get_technology(kind)
 			if not technology.is_empty():
-				cost = technology["cost"].duplicate(true)
-				var discount := RtsLandmarkCatalog.research_discount(context.get("landmark_id", ""))
-				if civilization == "French" and technology.get("economy", false): discount *= 0.7
-				for resource in cost: cost[resource] = ceili(float(cost[resource]) * discount)
+				cost = RtsCivilizationRules.research_cost(civilization, context.get("landmark_id", ""), technology)
 				status = RtsTechTree.research_status(civilization, age, producer, kind, researched)
 		"age":
 			cost = RtsTechTree.age_cost(age)

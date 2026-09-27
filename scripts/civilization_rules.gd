@@ -30,6 +30,13 @@ static func training_cost(game: Node2D, producer: RtsBuilding, unit_kind: String
 		for resource in cost: cost[resource] = ceili(float(cost[resource]) * 0.8)
 	return cost
 
+static func research_cost(civilization: String, landmark_id: String, technology: Dictionary) -> Dictionary:
+	var cost: Dictionary = technology.get("cost", {}).duplicate(true)
+	var discount := RtsLandmarkCatalog.research_discount(landmark_id)
+	if civilization == "French" and technology.get("economy", false): discount *= 0.7
+	for resource in cost: cost[resource] = ceili(float(cost[resource]) * discount)
+	return cost
+
 static func english_network_rate(game: Node2D, unit: RtsUnit) -> float:
 	if game.civilizations[unit.owner_id] != "English" or not unit.stats.get("tags", []).has("military") or unit.stats.get("tags", []).has("siege"): return 1.0
 	for building in game.buildings:
