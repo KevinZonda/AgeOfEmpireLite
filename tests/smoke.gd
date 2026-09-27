@@ -9,6 +9,7 @@ func _run() -> void:
 	root.add_child(game)
 	await process_frame
 	game.start_game("English", 12345)
+	if DisplayServer.get_name() != "headless": assert(Input.mouse_mode == Input.MOUSE_MODE_CONFINED_HIDDEN)
 	assert(game.map_seed == 12345)
 	var terrain_map: RtsWorldMap = game.world_map
 	assert(terrain_map.cells.has(RtsWorldMap.Terrain.WATER), "map should contain water")
@@ -47,11 +48,29 @@ func _run() -> void:
 	assert(game.units[0].position == frozen_position)
 	game._input(escape)
 	assert(not game.paused and not game.pause_overlay.visible)
+	if DisplayServer.get_name() != "headless": assert(Input.mouse_mode == Input.MOUSE_MODE_CONFINED_HIDDEN)
 	assert(game.cursor.visible)
 	assert(game._edge_pan_direction(Vector2(640, 360), Vector2(1280, 720)) == Vector2.ZERO)
 	assert(game._edge_pan_direction(Vector2(2, 360), Vector2(1280, 720)) == Vector2.LEFT)
 	assert(game._edge_pan_direction(Vector2(1278, 718), Vector2(1280, 720)) == Vector2(1, 1))
-	assert(game._edge_pan_direction(Vector2(-2, 360), Vector2(1280, 720)) == Vector2.ZERO)
+	assert(game._edge_pan_direction(Vector2(-2, 360), Vector2(1280, 720)) == Vector2.LEFT)
+	assert(game._edge_pan_direction(Vector2(1280, 720), Vector2(1280, 720)) == Vector2(1, 1))
+	assert(game._edge_pan_direction(Vector2(1282, 360), Vector2(1280, 720)) == Vector2.RIGHT)
+	game.dragging = true
+	game.drag_start_screen = Vector2(100, 100)
+	game.drag_current_screen = Vector2(108, 108)
+	assert(not game._selection_drag_active(), "small trackpad motion should remain a click candidate")
+	game.drag_current_screen = Vector2(113, 100)
+	assert(game._selection_drag_active(), "selection rectangle should activate after the drag threshold")
+	var drag_motion := InputEventMouseMotion.new()
+	drag_motion.position = Vector2(124, 100)
+	game._input(drag_motion)
+	assert(game.drag_current_screen == drag_motion.position, "active drags should keep receiving motion before the HUD")
+	var drag_release := InputEventMouseButton.new()
+	drag_release.button_index = MOUSE_BUTTON_LEFT
+	drag_release.position = drag_motion.position
+	game._input(drag_release)
+	assert(not game.dragging, "active drags should receive release before the HUD")
 	assert(game._cursor_state_at(game.units[0].position) == "select")
 	game._select_area(game.units[0].position, game.units[0].position, false)
 	assert(game.info_label.text == "村民", "selection details should update immediately")

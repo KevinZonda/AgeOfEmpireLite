@@ -4,6 +4,7 @@ extends RefCounted
 # Terrain is owned by RtsWorldMap. This layer adds changing entity footprints.
 const CLEARANCE := 16.0
 const SPATIAL_CELL_SIZE := 64.0
+const SMOOTH_LOOKAHEAD := 8
 
 var game: Node2D
 var world_map: RtsWorldMap
@@ -234,13 +235,51 @@ func nearest_open_cell(point: Vector2, grid: AStarGrid2D = null) -> Vector2i:
 		if best.x >= 0: return best
 	return origin
 
-func path_between(from: Vector2, to: Vector2, unit: RtsUnit = null) -> PackedVector2Array:
+func path_between(from: Vector2, to: Vector2, unit: RtsUnit = null, smooth := true) -> PackedVector2Array:
 	_ensure_current()
 	var grid := _grid_for(unit)
 	var start := nearest_open_cell(from, grid)
 	var end := nearest_open_cell(to, grid)
 	if grid.is_point_solid(start) or grid.is_point_solid(end): return PackedVector2Array()
-	return grid.get_point_path(start, end)
+	if smooth and _static_segment_clear(from, to, unit.radius() if unit != null else CLEARANCE, unit):
+		return PackedVector2Array([from, to]) if from.distance_squared_to(to) > 1.0 else PackedVector2Array([from])
+	var raw := grid.get_point_path(start, end)
+	return _simplify_path(raw, from, to, unit) if smooth else raw
+
+func _simplify_path(raw: PackedVector2Array, from: Vector2, to: Vector2, unit: RtsUnit) -> PackedVector2Array:
+	if raw.is_empty(): return raw
+	var radius := unit.radius() if unit != null else CLEARANCE
+	var points := PackedVector2Array()
+	if _static_segment_clear(from, raw[0], radius, unit) and from.distance_squared_to(raw[0]) > 1.0:
+		points.append(from)
+	points.append_array(raw)
+	if _static_segment_clear(raw[raw.size() - 1], to, radius, unit) and to.distance_squared_to(raw[raw.size() - 1]) > 1.0:
+		points.append(to)
+	if points.size() <= 2: return points
+	if _static_segment_clear(points[0], points[points.size() - 1], radius, unit):
+		return PackedVector2Array([points[0], points[points.size() - 1]])
+	# Keep the search bounded when many units request long paths together.
+	var result := PackedVector2Array([points[0]])
+	var anchor := 0
+	while anchor < points.size() - 1:
+		var furthest := anchor + 1
+		for candidate in range(anchor + 2, mini(points.size(), anchor + SMOOTH_LOOKAHEAD + 1)):
+			if not _static_segment_clear(points[anchor], points[candidate], radius, unit): break
+			furthest = candidate
+		result.append(points[furthest])
+		anchor = furthest
+	return result
+
+func _static_segment_clear(from: Vector2, to: Vector2, radius: float, unit: RtsUnit) -> bool:
+	var samples := maxi(1, ceili(from.distance_to(to) / maxf(6.0, minf(12.0, radius * 0.75))))
+	for i in range(samples + 1):
+		if not can_occupy(from.lerp(to, float(i) / samples), radius, unit, false): return false
+	return true
+
+func _path_length(path: PackedVector2Array) -> float:
+	var length := 0.0
+	for i in range(1, path.size()): length += path[i - 1].distance_to(path[i])
+	return length
 
 func path_to_range(from: Vector2, target: Vector2, reach: float, unit: RtsUnit) -> PackedVector2Array:
 	_ensure_current()
@@ -249,16 +288,27 @@ func path_to_range(from: Vector2, target: Vector2, reach: float, unit: RtsUnit) 
 	if grid.is_point_solid(start): return PackedVector2Array()
 	var direction := (from - target).normalized()
 	if direction.is_zero_approx(): direction = Vector2.RIGHT
+	var approaches: Array[Vector2] = []
 	for offset in [0.0, PI / 4.0, -PI / 4.0, PI / 2.0, -PI / 2.0, 3.0 * PI / 4.0, -3.0 * PI / 4.0, PI]:
-		var approach := target + direction.rotated(offset) * maxf(0.0, reach - 0.25)
+		approaches.append(target + direction.rotated(offset) * maxf(0.0, reach - 0.25))
+	approaches.sort_custom(func(a: Vector2, b: Vector2) -> bool: return from.distance_squared_to(a) < from.distance_squared_to(b))
+	var best := PackedVector2Array()
+	var best_length := INF
+	for approach in approaches:
+		if from.distance_to(approach) >= best_length: break
 		if not can_occupy(approach, unit.radius(), unit): continue
 		var end := nearest_open_cell(approach, grid)
 		if grid.is_point_solid(end) or not _segment_clear(world_map.cell_center(end), approach, unit.radius(), unit): continue
-		var candidate := grid.get_point_path(start, end)
+		if _static_segment_clear(from, approach, unit.radius(), unit):
+			return PackedVector2Array([from, approach])
+		var candidate := _simplify_path(grid.get_point_path(start, end), from, approach, unit)
 		if candidate.is_empty(): continue
-		candidate.append(approach)
-		return candidate
-	return PackedVector2Array()
+		if candidate[candidate.size() - 1].distance_squared_to(approach) > 1.0: candidate.append(approach)
+		var length := from.distance_to(candidate[0]) + _path_length(candidate)
+		if length < best_length:
+			best = candidate
+			best_length = length
+	return best
 
 func nearest_walkable_point(point: Vector2, radius := CLEARANCE, self_unit: RtsUnit = null, require_path := false) -> Vector2:
 	_ensure_current()
@@ -334,7 +384,7 @@ func _motion_clear(unit: RtsUnit, destination: Vector2) -> bool:
 		if not can_occupy(unit.position.lerp(destination, fraction), unit.radius(), unit): return false
 	return true
 
-func can_occupy(point: Vector2, radius: float, self_unit: RtsUnit) -> bool:
+func can_occupy(point: Vector2, radius: float, self_unit: RtsUnit, include_units := true) -> bool:
 	_ensure_spatial_index()
 	if point.x < radius or point.y < radius or point.x > world_map.world_size.x - radius or point.y > world_map.world_size.y - radius: return false
 	var naval: bool = self_unit != null and self_unit.stats.get("tags", []).has("naval")
@@ -362,6 +412,7 @@ func can_occupy(point: Vector2, radius: float, self_unit: RtsUnit) -> bool:
 				if not is_instance_valid(resource) or resource.is_queued_for_deletion(): continue
 				var distance_limit: float = radius + resource.radius
 				if point.distance_squared_to(resource.position) < distance_limit * distance_limit: return false
+			if not include_units: continue
 			for other in units_by_cell.get(cell, []):
 				if not is_instance_valid(other) or other.is_queued_for_deletion() or other == self_unit: continue
 				var personal_space: float = radius + other.radius()

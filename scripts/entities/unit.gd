@@ -746,7 +746,7 @@ func _move_toward(point: Vector2, delta: float, stop_distance: float) -> bool:
 			route = game.navigation.path_to_range(position, point, stop_distance, self)
 		else:
 			route = game.navigation.path_between(position, point, self)
-		route_index = 1 if route.size() > 1 else route.size()
+		route_index = 1 if route.size() > 1 and position.distance_to(route[0]) < 8.0 else 0
 		route_goal = point
 		route_retry = 0.7
 	if route.is_empty(): return false

@@ -8,10 +8,11 @@ const LEGACY_DISPLAY_SETTINGS_PATH := "user://display.cfg"
 const CAMERA_PAN_SPEED := 570.0
 const GESTURE_PAN_PIXELS := 32.0
 const EDGE_SCROLL_MARGIN := 28.0
+const SELECTION_DRAG_THRESHOLD := 12.0
 const UNIT_SCENE := preload("res://scripts/entities/unit.gd")
 const BUILDING_SCENE := preload("res://scripts/entities/building.gd")
-const RESOURCE_SCENE := preload("res://scripts/entities/resource_node.gd")
 const BUILD_GRID_SIZE := 25.0 # Half a terrain cell keeps existing building art near its current scale.
+const RESOURCE_SCENE := preload("res://scripts/entities/resource_node.gd")
 const SELECTION_PORTRAIT := preload("res://scripts/ui/selection_portrait.gd")
 const MENU_BACKDROP := preload("res://scripts/ui/menu_backdrop.gd")
 const TECH_TREE_PAGE := preload("res://scripts/ui/tech_tree_page.gd")
@@ -28,6 +29,11 @@ const UNIT_ABILITY_ACTIONS := [
 	{"id": "convert", "label": "招降", "kinds": ["monk"]},
 	{"id": "camp", "label": "预备营地", "kinds": ["scout", "man_at_arms"], "civilization": "English"},
 	{"id": "artillery_shot", "label": "炮击齐射", "kinds": ["cannon"], "producer_landmark": "fr_college_of_artillery"},
+]
+const PLAYER_COLOR_NAMES := ["蓝色", "红色", "黄色", "绿色", "青色", "紫色", "橙色", "粉色"]
+const PLAYER_COLORS := [
+	Color("4e9bea"), Color("e65852"), Color("e5c44b"), Color("4ac57b"),
+	Color("4ac5c5"), Color("a77bd8"), Color("e5ae4b"), Color("e58fba"),
 ]
 
 var world_size := WORLD_SIZE
@@ -66,8 +72,8 @@ var add_player_button: Button
 var setup_start_button: Button
 var setup_warning_label: Label
 var lobby_players: Array[Dictionary] = [
-	{"civilization": "English", "difficulty": "human", "team": 1},
-	{"civilization": "French", "difficulty": "normal", "team": 2},
+	{"civilization": "English", "difficulty": "human", "team": 1, "color": 0},
+	{"civilization": "French", "difficulty": "normal", "team": 2, "color": 1},
 ]
 var use_lobby_setup := false
 var selected_initial_resources := 1
@@ -138,8 +144,12 @@ var result_panel: PanelContainer
 var pause_overlay: ColorRect
 var settings_overlay: ColorRect
 var settings_tabs: TabContainer
+var settings_tab_buttons: Array[Button] = []
+var window_mode_choice: OptionButton
 var resolution_choice: OptionButton
 var resolution_values: Array[Vector2i] = []
+var windowed_resolution := Vector2i.ZERO
+var fullscreen_enabled := false
 var edge_scroll_toggle: CheckButton
 var edge_scroll_enabled := true
 var zoom_gesture_toggle: CheckButton
@@ -543,10 +553,10 @@ func _create_settings(parent: Control) -> void:
 	parent.add_child(settings_overlay)
 	var panel := PanelContainer.new()
 	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	panel.custom_minimum_size = Vector2(520, 430)
-	panel.offset_left = -260
+	panel.custom_minimum_size = Vector2(620, 430)
+	panel.offset_left = -310
 	panel.offset_top = -215
-	panel.offset_right = 260
+	panel.offset_right = 310
 	panel.offset_bottom = 215
 	panel.add_theme_stylebox_override("panel", _hud_panel_style(Color("30271c"), 20))
 	settings_overlay.add_child(panel)
@@ -554,14 +564,31 @@ func _create_settings(parent: Control) -> void:
 	box.add_theme_constant_override("separation", 16)
 	panel.add_child(box)
 	_add_menu_label(box, "设置", 27)
+	var settings_layout := HBoxContainer.new()
+	settings_layout.add_theme_constant_override("separation", 12)
+	settings_layout.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	box.add_child(settings_layout)
+	var sidebar := VBoxContainer.new()
+	sidebar.custom_minimum_size.x = 126
+	sidebar.add_theme_constant_override("separation", 8)
+	settings_layout.add_child(sidebar)
 	settings_tabs = TabContainer.new()
-	settings_tabs.custom_minimum_size = Vector2(460, 275)
+	settings_tabs.tabs_visible = false
+	settings_tabs.custom_minimum_size = Vector2(420, 275)
+	settings_tabs.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	settings_tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	box.add_child(settings_tabs)
+	settings_layout.add_child(settings_tabs)
 	var display_tab := VBoxContainer.new()
 	display_tab.name = "显示设置"
 	display_tab.add_theme_constant_override("separation", 12)
 	settings_tabs.add_child(display_tab)
+	_add_menu_label(display_tab, "显示模式", 17)
+	window_mode_choice = OptionButton.new()
+	window_mode_choice.add_item("窗口化")
+	window_mode_choice.add_item("全屏")
+	window_mode_choice.custom_minimum_size.y = 42
+	_style_button(window_mode_choice)
+	display_tab.add_child(window_mode_choice)
 	_add_menu_label(display_tab, "窗口分辨率", 17)
 	resolution_choice = OptionButton.new()
 	resolution_choice.custom_minimum_size.y = 42
@@ -591,6 +618,17 @@ func _create_settings(parent: Control) -> void:
 	zoom_gesture_toggle.custom_minimum_size.y = 42
 	zoom_gesture_toggle.add_theme_color_override("font_color", Color("f5e4bf"))
 	controls_tab.add_child(zoom_gesture_toggle)
+	settings_tab_buttons.clear()
+	for tab_index in settings_tabs.get_tab_count():
+		var tab_button := Button.new()
+		tab_button.text = settings_tabs.get_tab_title(tab_index)
+		tab_button.custom_minimum_size.y = 46
+		var index := tab_index
+		tab_button.pressed.connect(func() -> void: settings_tabs.current_tab = index)
+		sidebar.add_child(tab_button)
+		settings_tab_buttons.append(tab_button)
+	settings_tabs.tab_changed.connect(_update_settings_tab_buttons)
+	_update_settings_tab_buttons(settings_tabs.current_tab)
 	_add_menu_label(box, "保存后立即生效，下次启动仍会保留。", 14)
 	var buttons := HBoxContainer.new()
 	buttons.add_theme_constant_override("separation", 12)
@@ -608,7 +646,12 @@ func _create_settings(parent: Control) -> void:
 	apply_button.pressed.connect(func() -> void:
 		var index := resolution_choice.selected
 		if index < 0 or index >= resolution_values.size(): return
-		_apply_window_resolution(resolution_values[index], false)
+		var resolution := resolution_values[index]
+		if window_mode_choice.selected == 1:
+			windowed_resolution = resolution
+			_apply_window_mode(true, false)
+		else:
+			_apply_window_resolution(resolution, false)
 		edge_scroll_enabled = edge_scroll_toggle.button_pressed
 		zoom_gesture_enabled = zoom_gesture_toggle.button_pressed
 		selected_view_mode_25d = projection_choice.selected == 1
@@ -619,9 +662,15 @@ func _create_settings(parent: Control) -> void:
 	buttons.add_child(apply_button)
 	settings_overlay.hide()
 
+func _update_settings_tab_buttons(active_tab: int) -> void:
+	for index in settings_tab_buttons.size():
+		_style_menu_button(settings_tab_buttons[index], index == active_tab)
+
 func _show_settings(from_pause := false) -> void:
 	settings_from_pause = from_pause
+	if not _window_is_fullscreen(): windowed_resolution = get_window().size
 	_refresh_resolution_options()
+	window_mode_choice.select(1 if _window_is_fullscreen() else 0)
 	edge_scroll_toggle.button_pressed = edge_scroll_enabled
 	zoom_gesture_toggle.button_pressed = zoom_gesture_enabled
 	projection_choice.select(1 if selected_view_mode_25d else 0)
@@ -642,7 +691,7 @@ func _close_settings() -> void:
 func _refresh_resolution_options() -> void:
 	resolution_choice.clear()
 	resolution_values.clear()
-	var current := get_window().size
+	var current := windowed_resolution if _window_is_fullscreen() else get_window().size
 	var usable := DisplayServer.screen_get_usable_rect(get_window().current_screen).size
 	for resolution in WINDOW_RESOLUTIONS:
 		if DisplayServer.get_name() != "headless" and resolution != current and (resolution.x > usable.x or resolution.y > usable.y): continue
@@ -654,25 +703,42 @@ func _refresh_resolution_options() -> void:
 	resolution_choice.select(resolution_values.find(current))
 
 func _apply_window_resolution(resolution: Vector2i, save_setting := true) -> void:
-	if not WINDOW_RESOLUTIONS.has(resolution) and resolution != get_window().size: return
+	if not WINDOW_RESOLUTIONS.has(resolution) and resolution != windowed_resolution and resolution != get_window().size: return
 	var window := get_window()
 	window.mode = Window.MODE_WINDOWED
 	window.size = resolution
+	windowed_resolution = resolution
+	fullscreen_enabled = false
 	if DisplayServer.get_name() != "headless":
 		var usable := DisplayServer.screen_get_usable_rect(window.current_screen)
 		window.position = usable.position + (usable.size - resolution) / 2
 	if started: call_deferred("_clamp_camera_position")
 	if save_setting: _save_settings()
 
+func _window_is_fullscreen() -> bool:
+	if DisplayServer.get_name() == "headless": return fullscreen_enabled
+	return get_window().mode in [Window.MODE_FULLSCREEN, Window.MODE_EXCLUSIVE_FULLSCREEN]
+
+func _apply_window_mode(fullscreen: bool, save_setting := true) -> void:
+	fullscreen_enabled = fullscreen
+	if fullscreen:
+		get_window().mode = Window.MODE_FULLSCREEN
+	else:
+		_apply_window_resolution(windowed_resolution, false)
+	if started: call_deferred("_clamp_camera_position")
+	if save_setting: _save_settings()
+
 func _save_settings() -> void:
 	var config := ConfigFile.new()
-	config.set_value("display", "window_size", get_window().size)
+	config.set_value("display", "window_size", windowed_resolution)
+	config.set_value("display", "fullscreen", _window_is_fullscreen())
 	config.set_value("display", "view_mode_25d", selected_view_mode_25d)
 	config.set_value("controls", "edge_scroll_enabled", edge_scroll_enabled)
 	config.set_value("controls", "zoom_gesture_enabled", zoom_gesture_enabled)
 	config.save(SETTINGS_PATH)
 
 func _load_settings() -> void:
+	windowed_resolution = get_window().size
 	if DisplayServer.get_name() == "headless": return
 	var config := ConfigFile.new()
 	if config.load(SETTINGS_PATH) != OK and config.load(LEGACY_DISPLAY_SETTINGS_PATH) != OK: return
@@ -680,10 +746,12 @@ func _load_settings() -> void:
 	edge_scroll_enabled = bool(config.get_value("controls", "edge_scroll_enabled", true))
 	zoom_gesture_enabled = bool(config.get_value("controls", "zoom_gesture_enabled", true))
 	var resolution: Variant = config.get_value("display", "window_size", Vector2i.ZERO)
-	if not resolution is Vector2i or not WINDOW_RESOLUTIONS.has(resolution): return
-	var usable := DisplayServer.screen_get_usable_rect(get_window().current_screen).size
-	if resolution.x <= usable.x and resolution.y <= usable.y:
-		_apply_window_resolution(resolution, false)
+	if resolution is Vector2i and WINDOW_RESOLUTIONS.has(resolution):
+		var usable := DisplayServer.screen_get_usable_rect(get_window().current_screen).size
+		if resolution.x <= usable.x and resolution.y <= usable.y:
+			_apply_window_resolution(resolution, false)
+	if bool(config.get_value("display", "fullscreen", false)):
+		_apply_window_mode(true, false)
 
 func _show_menu() -> void:
 	paused = false
@@ -751,7 +819,7 @@ func _show_home_menu() -> void:
 	menu_panel.show()
 
 func _show_setup_menu() -> void:
-	_menu_panel_size(Vector2(1050, 610))
+	_menu_panel_size(Vector2(1150, 610))
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 10)
 	menu_panel.add_child(box)
@@ -769,7 +837,7 @@ func _show_setup_menu() -> void:
 	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	body.add_theme_constant_override("separation", 14)
 	box.add_child(body)
-	var players_column := _menu_section(body, "玩家信息", 575)
+	var players_column := _menu_section(body, "玩家信息", 665)
 	var heading := HBoxContainer.new()
 	heading.add_theme_constant_override("separation", 6)
 	players_column.add_child(heading)
@@ -779,7 +847,9 @@ func _show_setup_menu() -> void:
 	difficulty_heading.custom_minimum_size.x = 100
 	var nation_heading := _menu_ink_label(heading, "国家", 14)
 	nation_heading.custom_minimum_size.x = 115
-	_menu_ink_label(heading, "队伍", 14)
+	var team_heading := _menu_ink_label(heading, "队伍", 14)
+	team_heading.custom_minimum_size.x = 58
+	_menu_ink_label(heading, "颜色", 14)
 	player_list = VBoxContainer.new()
 	player_list.add_theme_constant_override("separation", 7)
 	players_column.add_child(player_list)
@@ -790,7 +860,7 @@ func _show_setup_menu() -> void:
 	add_player_button.pressed.connect(func() -> void:
 		if lobby_players.size() >= 4: return
 		var civilization_ids := GameData.CIVILIZATIONS.keys()
-		lobby_players.append({"civilization": civilization_ids[lobby_players.size() % civilization_ids.size()], "difficulty": "normal", "team": lobby_players.size() + 1})
+		lobby_players.append({"civilization": civilization_ids[lobby_players.size() % civilization_ids.size()], "difficulty": "normal", "team": mini(lobby_players.size() + 1, 3), "color": lobby_players.size()})
 		_refresh_player_rows()
 	)
 	players_column.add_child(add_player_button)
@@ -883,15 +953,26 @@ func _refresh_player_rows() -> void:
 		_style_menu_button(civilization)
 		row.add_child(civilization)
 		var team := OptionButton.new()
-		team.custom_minimum_size.x = 75
-		for team_id in range(1, 5): team.add_item("队伍 %d" % team_id)
-		team.selected = clampi(int(lobby_players[slot].get("team", slot + 1)) - 1, 0, 3)
+		team.custom_minimum_size.x = 58
+		for team_id in range(1, 4): team.add_item(str(team_id))
+		team.selected = clampi(int(lobby_players[slot].get("team", slot + 1)) - 1, 0, 2)
 		team.item_selected.connect(func(value: int) -> void:
 			lobby_players[slot]["team"] = value + 1
 			_update_lobby_team_state()
 		)
 		_style_menu_button(team)
 		row.add_child(team)
+		var color_choice := OptionButton.new()
+		color_choice.custom_minimum_size.x = 92
+		for color_index in PLAYER_COLORS.size():
+			color_choice.add_item(PLAYER_COLOR_NAMES[color_index])
+			color_choice.set_item_icon(color_index, _color_swatch(PLAYER_COLORS[color_index]))
+		color_choice.selected = clampi(int(lobby_players[slot].get("color", slot)), 0, PLAYER_COLORS.size() - 1)
+		color_choice.item_selected.connect(func(value: int) -> void:
+			_set_lobby_player_color(slot, value)
+		)
+		_style_menu_button(color_choice)
+		row.add_child(color_choice)
 		var tree_button := Button.new()
 		tree_button.text = "查看科技树"
 		tree_button.custom_minimum_size.x = 96
@@ -911,6 +992,20 @@ func _refresh_player_rows() -> void:
 		row.add_child(remove_button)
 	add_player_button.disabled = lobby_players.size() >= 4
 	_update_lobby_team_state()
+
+func _color_swatch(color: Color) -> ImageTexture:
+	var swatch := Image.create(14, 14, false, Image.FORMAT_RGBA8)
+	swatch.fill(color)
+	return ImageTexture.create_from_image(swatch)
+
+func _set_lobby_player_color(slot: int, color_index: int) -> void:
+	var previous_color := int(lobby_players[slot].get("color", slot))
+	for other_slot in lobby_players.size():
+		if other_slot != slot and int(lobby_players[other_slot].get("color", other_slot)) == color_index:
+			lobby_players[other_slot]["color"] = previous_color
+			break
+	lobby_players[slot]["color"] = color_index
+	_refresh_player_rows()
 
 func _show_tech_tree(civilization: String) -> void:
 	if not GameData.CIVILIZATIONS.has(civilization): return
@@ -1027,7 +1122,7 @@ func start_game(civ: String, requested_seed := -1, opponent_civ := "") -> void:
 	hud_top.show()
 	hud_bottom.show()
 	result_panel.hide()
-	Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
+	Input.mouse_mode = Input.MOUSE_MODE_CONFINED_HIDDEN
 	cursor.show()
 	_spawn_map_resources()
 	objectives.setup(self)
@@ -1091,6 +1186,8 @@ func is_enemy(a: int, b: int) -> bool:
 	return a >= 0 and b >= 0 and a < teams.size() and b < teams.size() and teams[a] != teams[b]
 
 func player_color(owner_id: int) -> Color:
+	if use_lobby_setup and owner_id >= 0 and owner_id < lobby_players.size():
+		return PLAYER_COLORS[clampi(int(lobby_players[owner_id].get("color", owner_id)), 0, PLAYER_COLORS.size() - 1)]
 	if players.size() <= 2: return GameData.CIVILIZATIONS[civilizations[owner_id]]["color"]
 	return [Color("4e9bea"), Color("e65852"), Color("4ac59a"), Color("e5ae4b")][owner_id]
 
@@ -1152,9 +1249,10 @@ func _set_paused(value: bool) -> void:
 	if not started or game_over: return
 	paused = value
 	dragging = false
+	wall_dragging = false
 	pause_overlay.visible = value
 	if not value and settings_overlay != null: settings_overlay.hide()
-	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if value else Input.MOUSE_MODE_HIDDEN
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if value else Input.MOUSE_MODE_CONFINED_HIDDEN
 	cursor.visible = not value
 	queue_redraw()
 
@@ -1819,7 +1917,7 @@ func _process(delta: float) -> void:
 	order_markers = order_markers.filter(func(marker: Dictionary) -> bool: return marker["time"] > 0.0)
 	for effect in world_effects: effect["time"] -= delta
 	world_effects = world_effects.filter(func(effect: Dictionary) -> bool: return effect["time"] > 0.0)
-	if dragging or build_mode != "" or not hit_lines.is_empty() or not order_markers.is_empty() or not world_effects.is_empty() or selected.any(func(entity: Node2D) -> bool: return is_instance_valid(entity) and entity is RtsUnit): queue_redraw()
+	if _selection_drag_active() or build_mode != "" or not hit_lines.is_empty() or not order_markers.is_empty() or not world_effects.is_empty() or selected.any(func(entity: Node2D) -> bool: return is_instance_valid(entity) and entity is RtsUnit): queue_redraw()
 
 func _pan_camera(delta: float) -> void:
 	var direction := Vector2.ZERO
@@ -1907,13 +2005,19 @@ func _adjust_zoom(factor: float, screen_anchor := Vector2.INF) -> void:
 
 func _edge_pan_direction(screen_point: Vector2, viewport_size: Vector2) -> Vector2:
 	if not edge_scroll_enabled: return Vector2.ZERO
-	if not Rect2(Vector2.ZERO, viewport_size).has_point(screen_point): return Vector2.ZERO
+	if viewport_size.x <= 0.0 or viewport_size.y <= 0.0: return Vector2.ZERO
+	# Confined mouse coordinates can land exactly on the right or bottom edge.
+	# Clamping also keeps edge scrolling continuous during a focus transition.
+	var point := screen_point.clamp(Vector2.ZERO, (viewport_size - Vector2.ONE).max(Vector2.ZERO))
 	var direction := Vector2.ZERO
-	if screen_point.x <= EDGE_SCROLL_MARGIN: direction.x -= 1
-	if screen_point.x >= viewport_size.x - EDGE_SCROLL_MARGIN: direction.x += 1
-	if screen_point.y <= EDGE_SCROLL_MARGIN: direction.y -= 1
-	if screen_point.y >= viewport_size.y - EDGE_SCROLL_MARGIN: direction.y += 1
+	if point.x <= EDGE_SCROLL_MARGIN: direction.x -= 1
+	if point.x >= viewport_size.x - EDGE_SCROLL_MARGIN: direction.x += 1
+	if point.y <= EDGE_SCROLL_MARGIN: direction.y -= 1
+	if point.y >= viewport_size.y - EDGE_SCROLL_MARGIN: direction.y += 1
 	return direction
+
+func _selection_drag_active() -> bool:
+	return dragging and drag_start_screen.distance_to(drag_current_screen) > SELECTION_DRAG_THRESHOLD
 
 func _update_cursor() -> void:
 	var screen_point := get_viewport().get_mouse_position()
@@ -1937,7 +2041,7 @@ func _cursor_state_at(world_point: Vector2, over_ui := false) -> String:
 	if build_mode != "":
 		var cost: Dictionary = RtsLandmarkCatalog.landmark(pending_landmark_id).get("cost", {}) if build_mode == "landmark" else RtsCivilizationRules.building_cost(civilizations[0], build_mode)
 		return "build_valid" if can_place(build_mode, world_point, wall_vertical) and can_afford(0, cost) else "build_invalid"
-	if dragging and drag_start_screen.distance_to(get_viewport().get_mouse_position()) > 12.0: return "drag"
+	if _selection_drag_active(): return "drag"
 	var entity := _entity_at(world_point)
 	var resource := _resource_at(world_point)
 	var post := _trade_post_at(world_point)
@@ -1983,6 +2087,21 @@ func _input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 		return
 	if not started or game_over: return
+	# Once a world drag has started, keep tracking it before GUI controls can
+	# consume motion or release events when the pointer crosses the HUD.
+	if event is InputEventMouseMotion:
+		if dragging:
+			var was_drag_active := _selection_drag_active()
+			drag_current = get_global_mouse_position()
+			drag_current_screen = event.position
+			if was_drag_active or _selection_drag_active(): queue_redraw()
+		if wall_dragging:
+			wall_end = get_global_mouse_position()
+			queue_redraw()
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
+		if _finish_left_drag(event):
+			get_viewport().set_input_as_handled()
+			return
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
 		_set_paused(not paused)
 		get_viewport().set_input_as_handled()
@@ -1996,6 +2115,18 @@ func _input(event: InputEvent) -> void:
 		wall_vertical = not wall_vertical
 		queue_redraw()
 		get_viewport().set_input_as_handled()
+
+func _finish_left_drag(event: InputEventMouseButton) -> bool:
+	if wall_dragging:
+		wall_dragging = false
+		_confirm_wall_line(wall_start, get_global_mouse_position(), event.shift_pressed)
+		return true
+	if dragging:
+		dragging = false
+		_select_screen_area(drag_start_screen, event.position, event.shift_pressed)
+		queue_redraw()
+		return true
+	return false
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not started or game_over or paused: return
@@ -2017,40 +2148,33 @@ func _unhandled_input(event: InputEvent) -> void:
 			_adjust_zoom(1.0 / 1.1, event.position)
 			return
 		if event.button_index == MOUSE_BUTTON_LEFT:
-			if event.pressed:
-				if order_mode != "":
-					_issue_mode_order(get_global_mouse_position(), event.shift_pressed)
+			if not event.pressed:
+				_finish_left_drag(event)
+				return
+			if order_mode != "":
+				_issue_mode_order(get_global_mouse_position(), event.shift_pressed)
+				return
+			if build_mode != "":
+				if build_mode.ends_with("_wall"):
+					wall_dragging = true
+					wall_start = get_global_mouse_position()
+					wall_end = wall_start
+				else:
+					_confirm_build(get_global_mouse_position(), event.shift_pressed)
+				return
+			if event.double_click:
+				var clicked := _entity_at(get_viewport().get_canvas_transform().affine_inverse() * event.position)
+				if clicked is RtsUnit and clicked.owner_id == 0:
+					_select_same_type_visible(clicked, event.shift_pressed)
 					return
-				if build_mode != "":
-					if build_mode.ends_with("_wall"):
-						wall_dragging = true
-						wall_start = get_global_mouse_position()
-						wall_end = wall_start
-					else:
-						_confirm_build(get_global_mouse_position(), event.shift_pressed)
+				if clicked is RtsBuilding and clicked.owner_id == 0:
+					_select_same_buildings_visible(clicked, event.shift_pressed)
 					return
-				if event.double_click:
-					var clicked := _entity_at(get_viewport().get_canvas_transform().affine_inverse() * event.position)
-					if clicked is RtsUnit and clicked.owner_id == 0:
-						_select_same_type_visible(clicked, event.shift_pressed)
-						return
-					if clicked is RtsBuilding and clicked.owner_id == 0:
-						_select_same_buildings_visible(clicked, event.shift_pressed)
-						return
-				dragging = true
-				drag_start = get_global_mouse_position()
-				drag_current = drag_start
-				drag_start_screen = event.position
-				drag_current_screen = event.position
-			else:
-				if wall_dragging:
-					wall_dragging = false
-					_confirm_wall_line(wall_start, get_global_mouse_position(), event.shift_pressed)
-					return
-				if dragging:
-					dragging = false
-					_select_screen_area(drag_start_screen, event.position, event.shift_pressed)
-					queue_redraw()
+			dragging = true
+			drag_start = get_global_mouse_position()
+			drag_current = drag_start
+			drag_start_screen = event.position
+			drag_current_screen = event.position
 			return
 		if event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
 			if order_mode != "":
@@ -2065,13 +2189,6 @@ func _unhandled_input(event: InputEvent) -> void:
 				return
 			_issue_order(get_global_mouse_position(), event.shift_pressed)
 			return
-	if event is InputEventMouseMotion and dragging:
-		drag_current = get_global_mouse_position()
-		drag_current_screen = event.position
-		queue_redraw()
-	if event is InputEventMouseMotion and wall_dragging:
-		wall_end = get_global_mouse_position()
-		queue_redraw()
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_PERIOD:
 			_select_next_idle_villager()
@@ -2798,7 +2915,7 @@ func _draw() -> void:
 				draw_arc(marker, 9, 0, TAU, 24, marker_color, 2)
 				draw_line(marker + Vector2(0, 12), marker + Vector2(0, -14), marker_color, 2)
 				draw_colored_polygon(PackedVector2Array([marker + Vector2(0, -14), marker + Vector2(15, -9), marker + Vector2(0, -4)]), marker_color)
-	if dragging:
+	if _selection_drag_active():
 		var projection := get_viewport().get_canvas_transform()
 		var inverse := projection.affine_inverse()
 		var screen_rect := Rect2(drag_start_screen, drag_current_screen - drag_start_screen).abs()

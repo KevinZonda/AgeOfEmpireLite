@@ -83,10 +83,10 @@ func _replan() -> void:
 			leader = member
 			break
 	goal = game.navigation.nearest_walkable_point(goal, leader.radius(), leader, false)
-	route = game.navigation.path_between(center, goal, leader)
+	route = game.navigation.path_between(center, goal, leader, false)
 	if route.is_empty():
 		goal = game.navigation.nearest_walkable_point(goal, leader.radius(), leader, true)
-		route = game.navigation.path_between(center, goal, leader)
+		route = game.navigation.path_between(center, goal, leader, false)
 	route_index = 1 if route.size() > 1 else 0
 	member_route_index.clear()
 	for unit in members:
