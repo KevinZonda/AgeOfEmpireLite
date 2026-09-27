@@ -16,7 +16,10 @@ func _process(_delta: float) -> void:
 		visible = game.fog.can_see(0, position)
 
 func _draw() -> void:
+	if game != null and game.view_mode_25d:
+		draw_set_transform_matrix(RtsIsoProjection.upright(get_viewport().get_canvas_transform(), Vector2.ZERO, game.camera.zoom.x))
 	draw_circle(Vector2.ZERO, 14, Color("e6d28d", 0.25))
 	draw_rect(Rect2(-5, -11, 10, 21), Color("d6bc65"))
 	draw_rect(Rect2(-11, -4, 22, 8), Color("eee2a5"))
 	draw_arc(Vector2.ZERO, 18, 0, TAU, 24, Color("f0e4aa"), 2)
+	if game != null and game.view_mode_25d: draw_set_transform_matrix(Transform2D.IDENTITY)

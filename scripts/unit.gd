@@ -981,6 +981,9 @@ func take_damage(damage: float) -> void:
 		game.entity_destroyed(self)
 
 func _draw() -> void:
+	if game.view_mode_25d:
+		_draw_isometric()
+		return
 	var color: Color = game.player_color(owner_id)
 	draw_circle(Vector2(1, 3), radius() + 2, Color("20292a"))
 	draw_circle(Vector2.ZERO, radius(), color)
@@ -1008,3 +1011,38 @@ func _draw() -> void:
 		draw_line(Vector2(0, -8), Vector2(0, 8), Color("eee6c9"), 2)
 	draw_rect(Rect2(-radius(), -radius() - 7, radius() * 2, 3), Color("422f2d"))
 	draw_rect(Rect2(-radius(), -radius() - 7, radius() * 2 * clampf(hp / max_hp, 0.0, 1.0), 3), Color("82dd8b"))
+
+func _draw_isometric() -> void:
+	var color: Color = game.player_color(owner_id)
+	var canvas := get_viewport().get_canvas_transform()
+	# The footprint follows the ground projection; the figure faces the screen.
+	draw_circle(Vector2.ZERO, radius() + 3.0, Color("1c2928", 0.62))
+	draw_set_transform_matrix(RtsIsoProjection.upright(canvas, Vector2.ZERO, game.camera.zoom.x))
+	if stats.get("tags", []).has("naval"):
+		draw_colored_polygon(PackedVector2Array([Vector2(-radius(), -7), Vector2(radius(), -7), Vector2(radius() * 0.65, 3), Vector2(-radius() * 0.65, 3)]), Color("765839"))
+		draw_colored_polygon(PackedVector2Array([Vector2(-radius() * 0.7, -10), Vector2(radius() * 0.7, -10), Vector2(radius() * 0.45, -6), Vector2(-radius() * 0.45, -6)]), color)
+		draw_line(Vector2(0, -9), Vector2(0, -26), Color("e6d3a5"), 2.0)
+		draw_colored_polygon(PackedVector2Array([Vector2(1, -25), Vector2(11, -15), Vector2(1, -14)]), Color("eee4cc"))
+		if kind == "transport_ship": draw_string(ThemeDB.fallback_font, Vector2(-5, -2), str(passengers.size()), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color.WHITE)
+	else:
+		var body_half := 7.0 if stats.get("tags", []).has("cavalry") else 5.5
+		var body_bottom := -3.0
+		var body_top := -17.0 if stats.get("tags", []).has("cavalry") else -15.0
+		draw_colored_polygon(PackedVector2Array([Vector2(-body_half, body_top), Vector2(body_half, body_top), Vector2(body_half + 2, body_bottom), Vector2(-body_half - 2, body_bottom)]), color.darkened(0.18))
+		draw_line(Vector2(-4, body_bottom), Vector2(-5, 2), Color("302f2a"), 2.5)
+		draw_line(Vector2(4, body_bottom), Vector2(5, 2), Color("302f2a"), 2.5)
+		draw_circle(Vector2(0, body_top - 5), 5.0, Color("e7d1ac"))
+		if kind == "monk":
+			draw_line(Vector2(9, -24), Vector2(9, 0), Color("e9dca6"), 2.0)
+			draw_line(Vector2(5, -19), Vector2(13, -19), Color("e9dca6"), 2.0)
+		elif kind == "archer" or kind == "longbow":
+			draw_arc(Vector2(9, -12), 8, -PI * 0.6, PI * 0.6, 12, Color("eee6c9"), 2.0)
+		elif stats.get("tags", []).has("cavalry"):
+			draw_colored_polygon(PackedVector2Array([Vector2(-13, -5), Vector2(12, -5), Vector2(15, 0), Vector2(-12, 0)]), Color("a1835c"))
+		elif kind == "villager":
+			draw_rect(Rect2(7, -11, 6, 6), Color("b6a07a"))
+	draw_set_transform_matrix(RtsIsoProjection.upright(canvas, Vector2.ZERO))
+	var bar_width := maxf(18.0, radius() * 2.0)
+	draw_rect(Rect2(-bar_width * 0.5, -38, bar_width, 4), Color("422f2d"))
+	draw_rect(Rect2(-bar_width * 0.5, -38, bar_width * clampf(hp / max_hp, 0.0, 1.0), 4), Color("82dd8b"))
+	draw_set_transform_matrix(Transform2D.IDENTITY)

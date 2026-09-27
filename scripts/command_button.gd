@@ -15,8 +15,21 @@ func configure(kind: String, label_text: String, key_text: String, slot: int = -
 	shortcut_label = key_text
 	slot_index = slot
 	custom_minimum_size = Vector2(108, 69)
+	add_theme_stylebox_override("normal", _tile_style(Color("473725"), Color("8d7549")))
+	add_theme_stylebox_override("hover", _tile_style(Color("634a29"), Color("ebca7c")))
+	add_theme_stylebox_override("pressed", _tile_style(Color("2f281c"), Color("f4d58a")))
+	add_theme_stylebox_override("disabled", _tile_style(Color("2d2a24"), Color("5f594a")))
+	focus_mode = Control.FOCUS_NONE
 	_refresh_tooltip()
 	queue_redraw()
+
+func _tile_style(fill: Color, edge: Color) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = fill
+	style.border_color = edge
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(2)
+	return style
 
 func set_availability(available: bool, reason: String = "", cost: Dictionary = {}) -> void:
 	disabled = not available
@@ -38,15 +51,19 @@ func _refresh_tooltip() -> void:
 	tooltip_text = "\n".join(lines)
 
 func _draw() -> void:
-	var color := Color("e9d69d") if not disabled else Color("8b9291")
-	_draw_icon(Vector2(24, 29), color)
+	var color := Color("f1d99b") if not disabled else Color("8b8679")
+	draw_rect(Rect2(5, 9, 34, 34), Color("211d16") if not disabled else Color("272722"))
+	draw_rect(Rect2(5, 9, 34, 34), Color("a68b53") if not disabled else Color("59574d"), false, 1)
+	_draw_icon(Vector2(22, 26), color)
 	var font := ThemeDB.fallback_font
 	if font == null: return
-	draw_string(font, Vector2(46, 26), caption, HORIZONTAL_ALIGNMENT_LEFT, 59, 11 if caption.length() > 4 else 14, color)
+	draw_string(font, Vector2(45, 28), caption, HORIZONTAL_ALIGNMENT_LEFT, 60, 11 if caption.length() > 4 else 13, color)
 	if not shortcut_label.is_empty():
-		draw_string(font, Vector2(46, 45), "[%s]" % shortcut_label, HORIZONTAL_ALIGNMENT_LEFT, 55, 11, color.darkened(0.15))
+		draw_rect(Rect2(5, 49, 22, 16), Color("211b14"))
+		draw_rect(Rect2(5, 49, 22, 16), Color("a68b53"), false, 1)
+		draw_string(font, Vector2(10, 61), shortcut_label, HORIZONTAL_ALIGNMENT_LEFT, 16, 11, color)
 	if disabled and not availability_reason.is_empty():
-		draw_string(font, Vector2(5, 63), availability_reason, HORIZONTAL_ALIGNMENT_LEFT, 98, 10, Color("d9a99a"))
+		draw_string(font, Vector2(33, 60), availability_reason, HORIZONTAL_ALIGNMENT_LEFT, 70, 10, Color("d8a48d"))
 
 func _draw_icon(center: Vector2, color: Color) -> void:
 	match icon_kind:

@@ -93,6 +93,29 @@ func size() -> Vector2:
 func contains(world_point: Vector2) -> bool:
 	return Rect2(position - size() * 0.5, size()).has_point(world_point)
 
+func isometric_height() -> float:
+	if kind == "farm": return 0.0
+	if kind.ends_with("_wall") or kind.ends_with("_gate"): return 11.0
+	if kind in ["town_center", "landmark", "keep", "wonder"]: return 42.0
+	return 26.0
+
+func contains_isometric_visual(world_point: Vector2, canvas: Transform2D) -> bool:
+	if contains(world_point): return true
+	var bounds := Rect2(-size() * 0.5, size())
+	var nw := bounds.position
+	var ne := Vector2(bounds.end.x, bounds.position.y)
+	var se := bounds.end
+	var sw := Vector2(bounds.position.x, bounds.end.y)
+	var lift := RtsIsoProjection.world_delta(canvas, Vector2(0, -isometric_height() * game.camera.zoom.x))
+	var local_point := world_point - position
+	for polygon in [
+		PackedVector2Array([nw + lift, ne + lift, se + lift, sw + lift]),
+		PackedVector2Array([ne + lift, se + lift, se, ne]),
+		PackedVector2Array([sw + lift, se + lift, se, sw]),
+	]:
+		if Geometry2D.is_point_in_polygon(local_point, polygon): return true
+	return false
+
 func is_complete() -> bool:
 	return build_remaining <= 0.0
 
@@ -314,6 +337,9 @@ func take_damage(damage: float) -> void:
 		game.entity_destroyed(self)
 
 func _draw() -> void:
+	if game.view_mode_25d:
+		_draw_isometric()
+		return
 	var bounds := Rect2(-size() * 0.5, size())
 	var color: Color = game.player_color(owner_id)
 	if not is_complete(): color = color.darkened(0.45)
@@ -346,3 +372,48 @@ func _draw() -> void:
 		draw_arc(Vector2.ZERO, 14, 0, TAU * (1.0 - build_remaining / maxf(build_total, 0.1)), 20, Color.WHITE, 3)
 	if not production_queue.is_empty():
 		draw_circle(Vector2(size().x * 0.5 - 4, -size().y * 0.5 + 4), 8, Color("e5c45d"))
+
+func _draw_isometric() -> void:
+	var bounds := Rect2(-size() * 0.5, size())
+	var color: Color = game.player_color(owner_id)
+	if not is_complete(): color = color.darkened(0.45)
+	var nw := bounds.position
+	var ne := Vector2(bounds.end.x, bounds.position.y)
+	var se := bounds.end
+	var sw := Vector2(bounds.position.x, bounds.end.y)
+	var height := isometric_height()
+	var canvas := get_viewport().get_canvas_transform()
+	var lift := RtsIsoProjection.world_delta(canvas, Vector2(0, -height * game.camera.zoom.x))
+	draw_colored_polygon(PackedVector2Array([nw, ne, se, sw]), Color("273a30", 0.65))
+	if height > 0.0:
+		draw_colored_polygon(PackedVector2Array([ne + lift, se + lift, se, ne]), color.darkened(0.5))
+		draw_colored_polygon(PackedVector2Array([sw + lift, se + lift, se, sw]), color.darkened(0.35))
+		if kind.ends_with("_gate"):
+			var gate_mid := (sw + se) * 0.5
+			draw_line(gate_mid + lift * 0.2, gate_mid + lift * 0.78, Color("202a29"), 7.0)
+	var roof_color := Color("6b4b3d") if kind in ["town_center", "landmark", "keep", "wonder"] else color.darkened(0.18)
+	if kind == "farm": roof_color = Color("957d48")
+	if kind.ends_with("_wall") or kind.ends_with("_gate"): roof_color = color.lightened(0.13)
+	draw_colored_polygon(PackedVector2Array([nw + lift, ne + lift, se + lift, sw + lift]), roof_color)
+	draw_polyline(PackedVector2Array([nw + lift, ne + lift, se + lift, sw + lift, nw + lift]), Color("1f2929"), 2.0)
+	if kind == "farm":
+		for portion in [0.25, 0.5, 0.75]:
+			draw_line(nw.lerp(sw, portion), ne.lerp(se, portion), Color("c3a763"), 2.0)
+	elif not kind.ends_with("_wall") and not kind.ends_with("_gate"):
+		var roof_middle := (nw + ne + se + sw) * 0.25 + lift
+		draw_line(nw + lift, se + lift, roof_color.lightened(0.25), 2.0)
+		draw_circle(roof_middle, 4.0, Color("d8bd80"))
+	# Labels and status bars are drawn in screen space so they stay legible.
+	draw_set_transform_matrix(RtsIsoProjection.upright(canvas, Vector2.ZERO))
+	var font := ThemeDB.fallback_font
+	if font != null:
+		var label := display_label()
+		var label_width := font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 13).x
+		draw_string(font, Vector2(-label_width * 0.5, size().y * 0.28 + 22.0), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color.WHITE)
+	var bar_width := minf(72.0, size().x * 0.8)
+	var bar_y: float = -height * game.camera.zoom.x - size().y * 0.25 - 16.0
+	draw_rect(Rect2(-bar_width * 0.5, bar_y, bar_width, 5), Color("422f2d"))
+	draw_rect(Rect2(-bar_width * 0.5, bar_y, bar_width * clampf(hp / max_hp, 0.0, 1.0), 5), Color("7fd47a"))
+	if not is_complete(): draw_arc(Vector2.ZERO, 14, 0, TAU * (1.0 - build_remaining / maxf(build_total, 0.1)), 20, Color.WHITE, 3)
+	if not production_queue.is_empty(): draw_circle(Vector2(bar_width * 0.5 + 5, bar_y + 2), 6, Color("e5c45d"))
+	draw_set_transform_matrix(Transform2D.IDENTITY)

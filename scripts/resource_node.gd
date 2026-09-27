@@ -121,6 +121,11 @@ func harvest(quantity: int) -> int:
 	return taken
 
 func _draw() -> void:
+	var isometric: bool = game != null and game.view_mode_25d
+	var canvas := get_viewport().get_canvas_transform()
+	if isometric and appearance != "fish":
+		draw_circle(Vector2.ZERO, radius * 0.75, Color("1f302a", 0.45))
+		draw_set_transform_matrix(RtsIsoProjection.upright(canvas, Vector2.ZERO, game.camera.zoom.x))
 	var color := Color("82ba62")
 	match kind:
 		"wood": color = Color("397948")
@@ -153,9 +158,11 @@ func _draw() -> void:
 		var points := PackedVector2Array([Vector2(-22, 14), Vector2(-16, -10), Vector2(2, -20), Vector2(22, -8), Vector2(20, 17)])
 		draw_colored_polygon(points, color)
 		draw_line(Vector2(-16, -10), Vector2(2, -20), color.lightened(0.25), 2)
+	if isometric: draw_set_transform_matrix(RtsIsoProjection.upright(canvas, Vector2.ZERO))
 	var font := ThemeDB.fallback_font
 	if font != null:
-		draw_string(font, Vector2(-18, 36), str(amount), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color.WHITE)
+		draw_string(font, Vector2(-18, 36 if not isometric else 20), str(amount), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color.WHITE)
+	if isometric: draw_set_transform_matrix(Transform2D.IDENTITY)
 
 func draw_ellipse_shape() -> void:
 	draw_colored_polygon(PackedVector2Array([Vector2(-18, -4), Vector2(12, -8), Vector2(21, 1), Vector2(5, 9), Vector2(-15, 8)]), Color("a8794e"))

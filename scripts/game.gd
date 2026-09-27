@@ -7,6 +7,7 @@ const EDGE_SCROLL_MARGIN := 28.0
 const UNIT_SCENE := preload("res://scripts/unit.gd")
 const BUILDING_SCENE := preload("res://scripts/building.gd")
 const RESOURCE_SCENE := preload("res://scripts/resource_node.gd")
+const MENU_BACKDROP := preload("res://scripts/menu_backdrop.gd")
 const UNIT_ABILITY_ACTIONS := [
 	{"id": "palings", "label": "架设拒马", "kinds": ["longbow"]},
 	{"id": "volley", "label": "万箭齐发", "kinds": ["longbow"]},
@@ -21,7 +22,7 @@ var world_size := WORLD_SIZE
 var civilizations := ["English", "French"]
 var teams: Array[int] = [0, 1]
 var match_mode := "duel"
-var match_choice: OptionButton
+var team_choice: OptionButton
 var defeated_players: Array[int] = []
 var players: Array[Dictionary] = []
 var units: Array[RtsUnit] = []
@@ -47,6 +48,17 @@ var selected_map_style := "balanced"
 var map_size_choice: OptionButton
 var map_style_choice: OptionButton
 var map_seed_input: LineEdit
+var projection_choice: OptionButton
+var initial_resources_choice: OptionButton
+var player_list: VBoxContainer
+var add_player_button: Button
+var lobby_players: Array[Dictionary] = [
+	{"civilization": "English", "difficulty": "human"},
+	{"civilization": "French", "difficulty": "normal"},
+]
+var use_lobby_setup := false
+var selected_initial_resources := 1
+var selected_view_mode_25d := false
 var started := false
 var game_over := false
 var paused := false
@@ -66,7 +78,8 @@ var wall_start := Vector2.ZERO
 var wall_end := Vector2.ZERO
 var drag_start := Vector2.ZERO
 var drag_current := Vector2.ZERO
-var ai_timer := 0.0
+var ai_think_timers: Dictionary = {}
+var iso_sort_timer := 0.0
 var ai: RtsAiController
 var ai_controllers: Array[RtsAiController] = []
 var hud_timer := 0.0
@@ -75,6 +88,11 @@ var hit_lines: Array[Dictionary] = []
 var match_statistics := RtsMatchStatistics.new()
 
 var top_label: Label
+var resource_readouts: Dictionary = {}
+var population_label: Label
+var hud_top: PanelContainer
+var hud_bottom: PanelContainer
+var menu_backdrop: Control
 var idle_villager_button: Button
 var info_label: Label
 var detail_label: Label
@@ -117,11 +135,11 @@ func _ready() -> void:
 	add_child(camera)
 	camera.make_current()
 	weather = RtsWeather.new()
-	weather.z_index = 10
+	weather.z_index = 3100
 	add_child(weather)
 	weather.hide()
 	fog = RtsFogOfWar.new()
-	fog.z_index = 20
+	fog.z_index = 3200
 	add_child(fog)
 	fog.setup(self)
 	fog.hide()
@@ -157,32 +175,57 @@ func _create_hud() -> void:
 	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(root)
+	menu_backdrop = MENU_BACKDROP.new()
+	menu_backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	menu_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(menu_backdrop)
 	var top := PanelContainer.new()
+	hud_top = top
 	top.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
-	top.offset_bottom = 68
+	top.offset_bottom = 66
+	top.add_theme_stylebox_override("panel", _hud_panel_style(Color("251e17"), 8))
 	root.add_child(top)
 	var top_row := HBoxContainer.new()
-	top_row.add_theme_constant_override("separation", 10)
+	top_row.add_theme_constant_override("separation", 5)
 	top.add_child(top_row)
 	top_label = Label.new()
-	top_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	top_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	top_label.add_theme_font_size_override("font_size", 14)
+	top_label.custom_minimum_size.x = 170
+	top_label.add_theme_font_size_override("font_size", 16)
+	top_label.add_theme_color_override("font_color", Color("f4dfaa"))
 	top_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	top_row.add_child(top_label)
+	for spec in [
+		["food", "粮", Color("d8a65d")],
+		["wood", "木", Color("8eaa73")],
+		["gold", "金", Color("e3c26b")],
+		["stone", "石", Color("a9b5b0")],
+	]:
+		_add_resource_readout(top_row, spec[0], spec[1], spec[2])
+	population_label = Label.new()
+	population_label.custom_minimum_size.x = 102
+	population_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	population_label.add_theme_font_size_override("font_size", 15)
+	population_label.add_theme_color_override("font_color", Color("eee2c7"))
+	top_row.add_child(population_label)
 	var top_tools := HBoxContainer.new()
+	top_tools.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	top_tools.alignment = BoxContainer.ALIGNMENT_END
+	top_tools.add_theme_constant_override("separation", 5)
 	top_row.add_child(top_tools)
 	var global_queue_button := Button.new()
-	global_queue_button.text = "全部队列 [F]"
+	global_queue_button.text = "队列 [F]"
+	_style_button(global_queue_button)
 	global_queue_button.pressed.connect(_toggle_global_queue)
 	top_tools.add_child(global_queue_button)
 	idle_villager_button = Button.new()
-	idle_villager_button.text = "空闲村民 0"
+	idle_villager_button.text = "村民 0"
+	_style_button(idle_villager_button)
 	idle_villager_button.tooltip_text = "选中下一个空闲村民（句号键）"
 	idle_villager_button.pressed.connect(_select_next_idle_villager)
 	top_tools.add_child(idle_villager_button)
 	view_button = Button.new()
-	view_button.text = "切换 2.5D"
+	view_button.text = "2.5D 视角"
+	_style_button(view_button)
 	view_button.pressed.connect(_toggle_view_mode)
 	top_tools.add_child(view_button)
 	global_queue_panel = PanelContainer.new()
@@ -191,7 +234,7 @@ func _create_hud() -> void:
 	global_queue_panel.offset_right = -8
 	global_queue_panel.offset_top = 70
 	global_queue_panel.offset_bottom = 415
-	global_queue_panel.add_theme_stylebox_override("panel", _hud_panel_style(Color("182422"), 8))
+	global_queue_panel.add_theme_stylebox_override("panel", _hud_panel_style(Color("2c241b"), 12))
 	root.add_child(global_queue_panel)
 	var queue_scroll := ScrollContainer.new()
 	global_queue_panel.add_child(queue_scroll)
@@ -200,16 +243,17 @@ func _create_hud() -> void:
 	queue_scroll.add_child(global_queue_list)
 	global_queue_panel.hide()
 	var bottom := PanelContainer.new()
+	hud_bottom = bottom
 	bottom.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	bottom.offset_top = -194
-	bottom.add_theme_stylebox_override("panel", _hud_panel_style(Color("192423"), 7))
+	bottom.offset_top = -200
+	bottom.add_theme_stylebox_override("panel", _hud_panel_style(Color("241d16"), 7))
 	root.add_child(bottom)
 	var dock := HBoxContainer.new()
 	dock.add_theme_constant_override("separation", 9)
 	bottom.add_child(dock)
 	var command_panel := PanelContainer.new()
 	command_panel.custom_minimum_size.x = 368
-	command_panel.add_theme_stylebox_override("panel", _hud_panel_style(Color("111a1a"), 6))
+	command_panel.add_theme_stylebox_override("panel", _hud_panel_style(Color("30261b"), 7))
 	dock.add_child(command_panel)
 	var command_column := VBoxContainer.new()
 	command_column.add_theme_constant_override("separation", 6)
@@ -217,6 +261,7 @@ func _create_hud() -> void:
 	command_title = Label.new()
 	command_title.text = "命令"
 	command_title.add_theme_font_size_override("font_size", 17)
+	command_title.add_theme_color_override("font_color", Color("e8cb85"))
 	command_column.add_child(command_title)
 	var action_scroll := ScrollContainer.new()
 	action_scroll.custom_minimum_size = Vector2(350, 155)
@@ -229,7 +274,7 @@ func _create_hud() -> void:
 	action_scroll.add_child(action_bar)
 	var selection_panel := PanelContainer.new()
 	selection_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	selection_panel.add_theme_stylebox_override("panel", _hud_panel_style(Color("172322"), 7))
+	selection_panel.add_theme_stylebox_override("panel", _hud_panel_style(Color("30271c"), 8))
 	dock.add_child(selection_panel)
 	var selection_row := HBoxContainer.new()
 	selection_row.add_theme_constant_override("separation", 10)
@@ -242,6 +287,7 @@ func _create_hud() -> void:
 	selection_icon.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	selection_icon.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 	selection_icon.add_theme_font_size_override("font_size", 36)
+	selection_icon.add_theme_color_override("font_color", Color("d8bf80"))
 	selection_row.add_child(selection_icon)
 	var selection_column := VBoxContainer.new()
 	selection_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -250,10 +296,12 @@ func _create_hud() -> void:
 	info_label = Label.new()
 	info_label.text = "未选择"
 	info_label.add_theme_font_size_override("font_size", 19)
+	info_label.add_theme_color_override("font_color", Color("f0dfb6"))
 	selection_column.add_child(info_label)
 	detail_label = Label.new()
 	detail_label.text = "左键选择 · 右键下令"
 	detail_label.add_theme_font_size_override("font_size", 13)
+	detail_label.add_theme_color_override("font_color", Color("d3c5a8"))
 	detail_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	var detail_scroll := ScrollContainer.new()
 	detail_scroll.custom_minimum_size.y = 85
@@ -265,27 +313,30 @@ func _create_hud() -> void:
 	selection_health.show_percentage = false
 	selection_health.custom_minimum_size = Vector2(285, 11)
 	selection_health.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	_style_progress_bar(selection_health, Color("80c47f"))
+	_style_progress_bar(selection_health, Color("80ad68"))
 	selection_health.hide()
 	selection_column.add_child(selection_health)
 	selection_progress = ProgressBar.new()
 	selection_progress.show_percentage = false
 	selection_progress.custom_minimum_size = Vector2(285, 9)
 	selection_progress.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	_style_progress_bar(selection_progress, Color("dcc778"))
+	_style_progress_bar(selection_progress, Color("d4af62"))
 	selection_progress.hide()
 	selection_column.add_child(selection_progress)
 	queue_label = Label.new()
 	queue_label.add_theme_font_size_override("font_size", 13)
+	queue_label.add_theme_color_override("font_color", Color("e5d1a1"))
 	selection_column.add_child(queue_label)
 	queue_controls = HBoxContainer.new()
 	queue_controls.hide()
 	selection_column.add_child(queue_controls)
 	queue_choice = OptionButton.new()
 	queue_choice.custom_minimum_size.x = 205
+	_style_button(queue_choice)
 	queue_controls.add_child(queue_choice)
 	cancel_queue_button = Button.new()
 	cancel_queue_button.text = "取消并退款"
+	_style_button(cancel_queue_button)
 	cancel_queue_button.pressed.connect(_cancel_selected_job)
 	queue_controls.add_child(cancel_queue_button)
 	notice_label = Label.new()
@@ -294,7 +345,7 @@ func _create_hud() -> void:
 	selection_column.add_child(notice_label)
 	var map_panel := PanelContainer.new()
 	map_panel.custom_minimum_size.x = 220
-	map_panel.add_theme_stylebox_override("panel", _hud_panel_style(Color("111a1a"), 5))
+	map_panel.add_theme_stylebox_override("panel", _hud_panel_style(Color("30261b"), 7))
 	dock.add_child(map_panel)
 	var map_column := VBoxContainer.new()
 	map_column.add_theme_constant_override("separation", 5)
@@ -302,6 +353,7 @@ func _create_hud() -> void:
 	var map_title := Label.new()
 	map_title.text = "小地图  ·  点击定位"
 	map_title.add_theme_font_size_override("font_size", 15)
+	map_title.add_theme_color_override("font_color", Color("e8cb85"))
 	map_column.add_child(map_title)
 	minimap = RtsMinimap.new()
 	map_column.add_child(minimap)
@@ -309,11 +361,12 @@ func _create_hud() -> void:
 
 	menu_panel = PanelContainer.new()
 	menu_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	menu_panel.custom_minimum_size = Vector2(500, 480)
-	menu_panel.offset_left = -250
-	menu_panel.offset_top = -240
-	menu_panel.offset_right = 250
-	menu_panel.offset_bottom = 240
+	menu_panel.custom_minimum_size = Vector2(1050, 610)
+	menu_panel.offset_left = -525
+	menu_panel.offset_top = -305
+	menu_panel.offset_right = 525
+	menu_panel.offset_bottom = 305
+	menu_panel.add_theme_stylebox_override("panel", _parchment_style(Color("d1bb8c"), 23))
 	root.add_child(menu_panel)
 	result_panel = PanelContainer.new()
 	result_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
@@ -322,10 +375,11 @@ func _create_hud() -> void:
 	result_panel.offset_top = -110
 	result_panel.offset_right = 200
 	result_panel.offset_bottom = 110
+	result_panel.add_theme_stylebox_override("panel", _hud_panel_style(Color("30271c"), 18))
 	result_panel.hide()
 	root.add_child(result_panel)
 	pause_overlay = ColorRect.new()
-	pause_overlay.color = Color(0.06, 0.09, 0.10, 0.67)
+	pause_overlay.color = Color(0.08, 0.06, 0.04, 0.72)
 	pause_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	pause_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 	pause_overlay.hide()
@@ -337,6 +391,7 @@ func _create_hud() -> void:
 	pause_panel.offset_top = -140
 	pause_panel.offset_right = 190
 	pause_panel.offset_bottom = 140
+	pause_panel.add_theme_stylebox_override("panel", _hud_panel_style(Color("30271c"), 20))
 	pause_overlay.add_child(pause_panel)
 	var pause_box := VBoxContainer.new()
 	pause_box.add_theme_constant_override("separation", 12)
@@ -345,21 +400,98 @@ func _create_hud() -> void:
 	_add_menu_label(pause_box, "按 Esc 继续游戏", 16)
 	_add_pause_button(pause_box, "继续游戏", func() -> void: _set_paused(false))
 	_add_pause_button(pause_box, "重新开始", func() -> void: start_game(selected_civ, -1, selected_opponent_civ))
-	_add_pause_button(pause_box, "返回文明选择", func() -> void: _return_to_menu())
+	_add_pause_button(pause_box, "返回主界面", func() -> void: _return_to_menu())
 	_add_pause_button(pause_box, "退出游戏", func() -> void: get_tree().quit())
 
 func _hud_panel_style(color: Color, margin: float) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
 	style.bg_color = color
+	style.border_color = Color("a7894f")
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(3)
+	style.shadow_color = Color(0.0, 0.0, 0.0, 0.38)
+	style.shadow_size = 5
 	style.content_margin_left = margin
 	style.content_margin_right = margin
 	style.content_margin_top = margin
 	style.content_margin_bottom = margin
 	return style
 
+func _add_resource_readout(parent: HBoxContainer, kind: String, glyph: String, accent: Color) -> void:
+	var chip := PanelContainer.new()
+	chip.custom_minimum_size.x = 92
+	chip.add_theme_stylebox_override("panel", _hud_panel_style(Color("352b1e"), 5))
+	parent.add_child(chip)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 4)
+	chip.add_child(row)
+	var icon := Label.new()
+	icon.text = glyph
+	icon.add_theme_font_size_override("font_size", 19)
+	icon.add_theme_color_override("font_color", accent)
+	icon.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	row.add_child(icon)
+	var value := Label.new()
+	value.text = "0"
+	value.add_theme_font_size_override("font_size", 17)
+	value.add_theme_color_override("font_color", Color("f4e6c4"))
+	value.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	row.add_child(value)
+	resource_readouts[kind] = value
+	chip.tooltip_text = GameData.RESOURCE_LABELS[kind]
+
+func _button_style(fill: Color, border: Color) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = fill
+	style.border_color = border
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(2)
+	style.content_margin_left = 10
+	style.content_margin_right = 10
+	style.content_margin_top = 6
+	style.content_margin_bottom = 6
+	return style
+
+func _parchment_style(fill: Color, margin: float) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = fill
+	style.border_color = Color("4a321d")
+	style.set_border_width_all(5)
+	style.set_corner_radius_all(3)
+	style.shadow_color = Color(0, 0, 0, 0.55)
+	style.shadow_size = 12
+	style.content_margin_left = margin
+	style.content_margin_right = margin
+	style.content_margin_top = margin
+	style.content_margin_bottom = margin
+	return style
+
+func _style_menu_button(button: BaseButton, selected := false) -> void:
+	var fill := Color("5a3b22") if selected else Color("e5d4a9")
+	var edge := Color("b98c48") if selected else Color("9b784b")
+	button.add_theme_stylebox_override("normal", _button_style(fill, edge))
+	button.add_theme_stylebox_override("hover", _button_style(fill.lightened(0.08), Color("d3a85f")))
+	button.add_theme_stylebox_override("pressed", _button_style(fill.darkened(0.12), Color("ad854e")))
+	button.add_theme_color_override("font_color", Color("f7e8bd") if selected else Color("3d2b1d"))
+	button.add_theme_color_override("font_hover_color", Color("fff1cf") if selected else Color("3d2b1d"))
+	button.add_theme_color_override("font_pressed_color", Color("f7e8bd") if selected else Color("3d2b1d"))
+
+func _style_button(button: BaseButton, primary := false) -> void:
+	var base := Color("715028") if primary else Color("3d3224")
+	button.add_theme_stylebox_override("normal", _button_style(base, Color("a88b56")))
+	button.add_theme_stylebox_override("hover", _button_style(base.lightened(0.14), Color("dfc584")))
+	button.add_theme_stylebox_override("pressed", _button_style(base.darkened(0.16), Color("f0d791")))
+	button.add_theme_stylebox_override("disabled", _button_style(Color("302b24"), Color("615844")))
+	button.add_theme_color_override("font_color", Color("f5e4bf"))
+	button.add_theme_color_override("font_hover_color", Color("fff2d2"))
+	button.add_theme_color_override("font_pressed_color", Color("ffe4a3"))
+	button.add_theme_color_override("font_disabled_color", Color("948876"))
+
 func _style_progress_bar(bar: ProgressBar, fill_color: Color) -> void:
 	var background := StyleBoxFlat.new()
-	background.bg_color = Color("35413e")
+	background.bg_color = Color("1a1712")
+	background.border_color = Color("8d7448")
+	background.set_border_width_all(1)
 	var fill := StyleBoxFlat.new()
 	fill.bg_color = fill_color
 	bar.add_theme_stylebox_override("background", background)
@@ -369,75 +501,269 @@ func _add_pause_button(parent: Node, label_text: String, action: Callable) -> vo
 	var button := Button.new()
 	button.text = label_text
 	button.custom_minimum_size.y = 36
+	_style_button(button)
 	button.pressed.connect(action)
 	parent.add_child(button)
 
 func _show_menu() -> void:
 	paused = false
+	use_lobby_setup = false
 	if pause_overlay != null: pause_overlay.hide()
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	if cursor != null: cursor.hide()
-	for child in menu_panel.get_children(): child.queue_free()
+	menu_backdrop.show()
+	hud_top.hide()
+	hud_bottom.hide()
+	global_queue_panel.hide()
+	_show_home_menu()
+
+func _menu_panel_size(dimensions: Vector2) -> void:
+	menu_panel.custom_minimum_size = dimensions
+	menu_panel.offset_left = -dimensions.x * 0.5
+	menu_panel.offset_top = -dimensions.y * 0.5
+	menu_panel.offset_right = dimensions.x * 0.5
+	menu_panel.offset_bottom = dimensions.y * 0.5
+	for child in menu_panel.get_children():
+		menu_panel.remove_child(child)
+		child.queue_free()
+
+func _show_home_menu() -> void:
+	_menu_panel_size(Vector2(600, 470))
 	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 14)
+	box.alignment = BoxContainer.ALIGNMENT_CENTER
+	box.add_theme_constant_override("separation", 20)
 	menu_panel.add_child(box)
-	_add_menu_label(box, "AGE OF EMPIRE LITE", 27)
-	_add_menu_label(box, "选择地图与文明，开始与电脑进行即时战略对战。", 17)
-	var options := HBoxContainer.new()
-	box.add_child(options)
-	map_size_choice = OptionButton.new()
-	map_size_choice.add_item("标准地图", 0)
-	map_size_choice.add_item("大型地图", 1)
-	map_size_choice.selected = 1 if selected_map_size.x > WORLD_SIZE.x else 0
-	options.add_child(map_size_choice)
-	map_style_choice = OptionButton.new()
-	map_style_choice.add_item("平衡", 0)
-	map_style_choice.add_item("大湖", 1)
-	map_style_choice.add_item("高地", 2)
-	map_style_choice.add_item("群岛", 3)
-	map_style_choice.selected = ["balanced", "lakes", "highlands", "islands"].find(selected_map_style)
-	options.add_child(map_style_choice)
-	match_choice = OptionButton.new()
-	for option in ["1 对 1", "三方混战", "四方混战", "2 对 2"]: match_choice.add_item(option)
-	match_choice.selected = ["duel", "ffa3", "ffa4", "team2"].find(match_mode)
-	options.add_child(match_choice)
-	map_seed_input = LineEdit.new()
-	map_seed_input.placeholder_text = "地图种子（留空随机）"
-	map_seed_input.custom_minimum_size.x = 170
-	options.add_child(map_seed_input)
-	for civ in GameData.CIVILIZATIONS:
-		var button := Button.new()
-		button.text = "%s · %s" % [GameData.CIVILIZATIONS[civ]["label"], GameData.CIVILIZATIONS[civ]["description"]]
-		button.custom_minimum_size.y = 44
-		button.pressed.connect(func() -> void:
-			match_mode = ["duel", "ffa3", "ffa4", "team2"][match_choice.selected]
-			selected_map_size = Vector2(3000, 1800) if map_size_choice.selected == 1 else WORLD_SIZE
-			selected_map_style = ["balanced", "lakes", "highlands", "islands"][map_style_choice.selected]
-			var requested := int(map_seed_input.text) if map_seed_input.text.is_valid_int() else -1
-			start_game(civ, requested)
-		)
-		box.add_child(button)
-	_add_menu_label(box, "目标：摧毁城镇中心和地标、控制圣地，或建造奇观。", 14)
+	var title := _menu_ink_label(box, "帝 国 时 代", 42)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var subtitle := _menu_ink_label(box, "AGE OF EMPIRE LITE", 18)
+	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var rule := ColorRect.new()
+	rule.color = Color("88663d")
+	rule.custom_minimum_size.y = 2
+	box.add_child(rule)
+	var description := _menu_ink_label(box, "建立帝国，探索战场，争夺胜利。", 17)
+	description.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var start_button := Button.new()
+	start_button.text = "开 始 游 戏"
+	start_button.custom_minimum_size.y = 55
+	_style_button(start_button, true)
+	start_button.pressed.connect(_show_setup_menu)
+	box.add_child(start_button)
+	var quit_button := Button.new()
+	quit_button.text = "退 出 游 戏"
+	quit_button.custom_minimum_size.y = 43
+	_style_menu_button(quit_button)
+	quit_button.pressed.connect(func() -> void: get_tree().quit())
+	box.add_child(quit_button)
 	menu_panel.show()
+
+func _show_setup_menu() -> void:
+	_menu_panel_size(Vector2(1050, 610))
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 10)
+	menu_panel.add_child(box)
+	var header := HBoxContainer.new()
+	box.add_child(header)
+	var title := _menu_ink_label(header, "对 局 设 置", 30)
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var subtitle := _menu_ink_label(header, "SKIRMISH SETUP", 13)
+	subtitle.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+	var divider := ColorRect.new()
+	divider.color = Color("80613a")
+	divider.custom_minimum_size.y = 2
+	box.add_child(divider)
+	var body := HBoxContainer.new()
+	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	body.add_theme_constant_override("separation", 14)
+	box.add_child(body)
+	var players_column := _menu_section(body, "玩家信息", 575)
+	var heading := HBoxContainer.new()
+	heading.add_theme_constant_override("separation", 8)
+	players_column.add_child(heading)
+	var player_heading := _menu_ink_label(heading, "玩家", 14)
+	player_heading.custom_minimum_size.x = 128
+	var difficulty_heading := _menu_ink_label(heading, "AI 强度", 14)
+	difficulty_heading.custom_minimum_size.x = 140
+	_menu_ink_label(heading, "国家", 14)
+	player_list = VBoxContainer.new()
+	player_list.add_theme_constant_override("separation", 7)
+	players_column.add_child(player_list)
+	add_player_button = Button.new()
+	add_player_button.text = "+  新增玩家"
+	add_player_button.custom_minimum_size.y = 40
+	_style_menu_button(add_player_button)
+	add_player_button.pressed.connect(func() -> void:
+		if lobby_players.size() >= 4: return
+		var civilization_ids := GameData.CIVILIZATIONS.keys()
+		lobby_players.append({"civilization": civilization_ids[lobby_players.size() % civilization_ids.size()], "difficulty": "normal"})
+		_refresh_player_rows()
+	)
+	players_column.add_child(add_player_button)
+	var player_hint := _menu_ink_label(players_column, "最多 4 位玩家；玩家 1 由你控制。", 13)
+	player_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	var settings_column := _menu_section(body, "对局设置", 0)
+	_menu_ink_label(settings_column, "地图选择", 14)
+	map_style_choice = OptionButton.new()
+	for option in ["平衡", "大湖", "高地", "群岛"]: map_style_choice.add_item(option)
+	map_style_choice.selected = ["balanced", "lakes", "highlands", "islands"].find(selected_map_style)
+	_style_menu_button(map_style_choice)
+	settings_column.add_child(map_style_choice)
+	_menu_ink_label(settings_column, "地图大小", 14)
+	map_size_choice = OptionButton.new()
+	map_size_choice.add_item("标准地图")
+	map_size_choice.add_item("大型地图")
+	map_size_choice.selected = 1 if selected_map_size.x > WORLD_SIZE.x else 0
+	_style_menu_button(map_size_choice)
+	settings_column.add_child(map_size_choice)
+	_menu_ink_label(settings_column, "视角", 14)
+	projection_choice = OptionButton.new()
+	projection_choice.add_item("2D 俯视")
+	projection_choice.add_item("2.5D 斜视")
+	projection_choice.selected = 1 if selected_view_mode_25d else 0
+	_style_menu_button(projection_choice)
+	settings_column.add_child(projection_choice)
+	_menu_ink_label(settings_column, "初始资源", 14)
+	initial_resources_choice = OptionButton.new()
+	for option in ["较少", "标准", "丰富"]: initial_resources_choice.add_item(option)
+	initial_resources_choice.selected = selected_initial_resources
+	_style_menu_button(initial_resources_choice)
+	settings_column.add_child(initial_resources_choice)
+	_menu_ink_label(settings_column, "队伍", 14)
+	team_choice = OptionButton.new()
+	team_choice.add_item("自由混战")
+	team_choice.add_item("2 对 2")
+	team_choice.selected = 1 if match_mode == "team2" else 0
+	_style_menu_button(team_choice)
+	settings_column.add_child(team_choice)
+	_menu_ink_label(settings_column, "地图种子", 14)
+	map_seed_input = LineEdit.new()
+	map_seed_input.placeholder_text = "留空则随机生成"
+	map_seed_input.add_theme_stylebox_override("normal", _button_style(Color("eadbb4"), Color("9b784b")))
+	map_seed_input.add_theme_color_override("font_color", Color("3d2b1d"))
+	map_seed_input.add_theme_color_override("font_placeholder_color", Color("826949"))
+	settings_column.add_child(map_seed_input)
+	var footer := HBoxContainer.new()
+	footer.add_theme_constant_override("separation", 16)
+	box.add_child(footer)
+	var back_button := Button.new()
+	back_button.text = "返 回"
+	back_button.custom_minimum_size = Vector2(160, 47)
+	_style_menu_button(back_button)
+	back_button.pressed.connect(_show_home_menu)
+	footer.add_child(back_button)
+	var spacer := Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	footer.add_child(spacer)
+	var start_button := Button.new()
+	start_button.text = "开 始 对 局"
+	start_button.custom_minimum_size = Vector2(210, 47)
+	_style_button(start_button, true)
+	start_button.pressed.connect(_begin_menu_match)
+	footer.add_child(start_button)
+	_refresh_player_rows()
+	menu_panel.show()
+
+func _refresh_player_rows() -> void:
+	if player_list == null: return
+	for child in player_list.get_children():
+		player_list.remove_child(child)
+		child.queue_free()
+	var civilization_ids := GameData.CIVILIZATIONS.keys()
+	for index in lobby_players.size():
+		var slot := index
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 8)
+		player_list.add_child(row)
+		var player_name := _menu_ink_label(row, "玩家 %d%s" % [slot + 1, " (你)" if slot == 0 else ""], 15)
+		player_name.custom_minimum_size.x = 128
+		player_name.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		var difficulty := OptionButton.new()
+		difficulty.custom_minimum_size.x = 140
+		if slot == 0:
+			difficulty.add_item("人类")
+			difficulty.disabled = true
+		else:
+			for label in ["简单", "普通", "困难"]: difficulty.add_item(label)
+			difficulty.selected = ["easy", "normal", "hard"].find(lobby_players[slot]["difficulty"])
+			difficulty.item_selected.connect(func(value: int) -> void:
+				lobby_players[slot]["difficulty"] = ["easy", "normal", "hard"][value]
+			)
+		_style_menu_button(difficulty)
+		row.add_child(difficulty)
+		var civilization := OptionButton.new()
+		civilization.custom_minimum_size.x = 155
+		for civ in civilization_ids: civilization.add_item(GameData.CIVILIZATIONS[civ]["label"])
+		civilization.selected = civilization_ids.find(lobby_players[slot]["civilization"])
+		civilization.item_selected.connect(func(value: int) -> void:
+			lobby_players[slot]["civilization"] = civilization_ids[value]
+		)
+		_style_menu_button(civilization)
+		row.add_child(civilization)
+		var remove_button := Button.new()
+		remove_button.text = "×"
+		remove_button.custom_minimum_size.x = 37
+		remove_button.disabled = slot == 0 or lobby_players.size() <= 2
+		remove_button.tooltip_text = "移除玩家"
+		_style_menu_button(remove_button)
+		remove_button.pressed.connect(func() -> void:
+			lobby_players.remove_at(slot)
+			_refresh_player_rows()
+		)
+		row.add_child(remove_button)
+	add_player_button.disabled = lobby_players.size() >= 4
+	team_choice.disabled = lobby_players.size() != 4
+	if team_choice.disabled: team_choice.selected = 0
+
+func _menu_ink_label(parent: Node, value: String, size: int) -> Label:
+	var label := Label.new()
+	label.text = value
+	label.add_theme_font_size_override("font_size", size)
+	label.add_theme_color_override("font_color", Color("3a2a1b"))
+	parent.add_child(label)
+	return label
+
+func _menu_section(parent: HBoxContainer, heading: String, width: float) -> VBoxContainer:
+	var panel := PanelContainer.new()
+	if width > 0: panel.custom_minimum_size.x = width
+	else: panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	panel.add_theme_stylebox_override("panel", _parchment_style(Color("deca9e"), 14))
+	parent.add_child(panel)
+	var column := VBoxContainer.new()
+	column.add_theme_constant_override("separation", 7)
+	panel.add_child(column)
+	_menu_ink_label(column, heading, 20)
+	return column
+
+func _begin_menu_match() -> void:
+	var count := lobby_players.size()
+	match_mode = "duel" if count == 2 else "ffa3" if count == 3 else "team2" if team_choice.selected == 1 else "ffa4"
+	selected_map_size = Vector2(3000, 1800) if map_size_choice.selected == 1 else WORLD_SIZE
+	selected_map_style = ["balanced", "lakes", "highlands", "islands"][map_style_choice.selected]
+	selected_initial_resources = initial_resources_choice.selected
+	selected_view_mode_25d = projection_choice.selected == 1
+	var requested := int(map_seed_input.text) if map_seed_input.text.is_valid_int() else -1
+	use_lobby_setup = true
+	start_game(lobby_players[0]["civilization"], requested, lobby_players[1]["civilization"])
 
 func _add_menu_label(parent: Node, value: String, size: int) -> void:
 	var label := Label.new()
 	label.text = value
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.add_theme_font_size_override("font_size", size)
+	label.add_theme_color_override("font_color", Color("f0ddb1"))
 	parent.add_child(label)
 
 func start_game(civ: String, requested_seed := -1, opponent_civ := "") -> void:
 	if not GameData.CIVILIZATIONS.has(civ): return
 	var civilization_ids := GameData.CIVILIZATIONS.keys()
-	if opponent_civ == "" or opponent_civ == civ or not GameData.CIVILIZATIONS.has(opponent_civ):
+	if opponent_civ == "" or not GameData.CIVILIZATIONS.has(opponent_civ):
 		opponent_civ = civilization_ids[(civilization_ids.find(civ) + 1) % civilization_ids.size()]
 	_clear_world()
 	paused = false
 	pause_overlay.hide()
 	selected_civ = civ
 	selected_opponent_civ = opponent_civ
-	var player_count := 2 if match_mode == "duel" else 3 if match_mode == "ffa3" else 4
+	var player_count := lobby_players.size() if use_lobby_setup else 2 if match_mode == "duel" else 3 if match_mode == "ffa3" else 4
 	teams.clear()
 	civilizations.clear()
 	players.clear()
@@ -445,8 +771,16 @@ func start_game(civ: String, requested_seed := -1, opponent_civ := "") -> void:
 	market_supply = {"food": 0, "wood": 0, "stone": 0}
 	for owner_id in player_count:
 		teams.append(0 if owner_id == 0 or match_mode == "team2" and owner_id == 2 else 1 if match_mode == "team2" else owner_id)
-		civilizations.append(civ if owner_id == 0 else civilization_ids[(civilization_ids.find(opponent_civ) + owner_id - 1) % civilization_ids.size()])
-		players.append({"food": 340 if owner_id == 0 else 420, "wood": 360 if owner_id == 0 else 420, "gold": 150 if owner_id == 0 else 170, "stone": 100, "age": 1, "researched": [], "landmarks": [], "dynasty": ""})
+		civilizations.append(lobby_players[owner_id]["civilization"] if use_lobby_setup else civ if owner_id == 0 else civilization_ids[(civilization_ids.find(opponent_civ) + owner_id - 1) % civilization_ids.size()])
+		var bank := {"food": 340 if owner_id == 0 else 420, "wood": 360 if owner_id == 0 else 420, "gold": 150 if owner_id == 0 else 170, "stone": 100, "age": 1, "researched": [], "landmarks": [], "dynasty": ""}
+		if use_lobby_setup:
+			var presets := [
+				{"food": 200, "wood": 220, "gold": 100, "stone": 0},
+				{"food": 340, "wood": 360, "gold": 150, "stone": 100},
+				{"food": 700, "wood": 700, "gold": 400, "stone": 300},
+			]
+			bank.merge(presets[clampi(selected_initial_resources, 0, 2)], true)
+		players.append(bank)
 	started = true
 	game_over = false
 	map_seed = requested_seed if requested_seed >= 0 else randi_range(1, 2147483647)
@@ -460,9 +794,12 @@ func start_game(civ: String, requested_seed := -1, opponent_civ := "") -> void:
 	pending_landmark_id = ""
 	build_page = 0
 	order_mode = ""
-	ai_timer = 0.0
+	ai_think_timers.clear()
 	camera.position = _scaled_point(Vector2(630, 720))
 	menu_panel.hide()
+	menu_backdrop.hide()
+	hud_top.show()
+	hud_bottom.show()
 	result_panel.hide()
 	Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
 	cursor.show()
@@ -482,8 +819,11 @@ func start_game(civ: String, requested_seed := -1, opponent_civ := "") -> void:
 	fog.reset()
 	match_statistics.reset(self)
 	ai_controllers.clear()
-	for owner_id in range(1, player_count): ai_controllers.append(RtsAiController.new(self, owner_id))
+	for owner_id in range(1, player_count):
+		ai_controllers.append(RtsAiController.new(self, owner_id))
+		ai_think_timers[owner_id] = 0.0
 	ai = ai_controllers[0]
+	if use_lobby_setup and view_mode_25d != selected_view_mode_25d: _toggle_view_mode()
 	_update_hud()
 	_rebuild_actions()
 	queue_redraw()
@@ -565,6 +905,7 @@ func strategic_target_for(owner_id: int) -> Node2D:
 func _spawn_neutral_sites() -> void:
 	for desired in [_scaled_point(Vector2(1200, 190)), _scaled_point(Vector2(1200, 1310))]:
 		var post := RtsTradePost.new()
+		post.game = self
 		post.position = world_map.nearest_walkable_point(desired)
 		add_child(post)
 		trade_posts.append(post)
@@ -1257,16 +1598,24 @@ func notify_player(message: String) -> void:
 func _process(delta: float) -> void:
 	if not started or game_over or paused: return
 	match_statistics.tick(delta)
+	if view_mode_25d:
+		iso_sort_timer -= delta
+		if iso_sort_timer <= 0.0:
+			_update_iso_depths()
+			iso_sort_timer = 0.1
 	_pan_camera(delta)
 	_update_cursor()
 	if notice_timer > 0.0:
 		notice_timer -= delta
 		if notice_timer <= 0.0: notice_label.text = ""
-	ai_timer -= delta
-	if ai_timer <= 0.0:
-		for controller in ai_controllers:
-			if not defeated_players.has(controller.owner_id): controller.tick()
-		ai_timer = 3.0
+	for controller in ai_controllers:
+		if defeated_players.has(controller.owner_id): continue
+		var owner_id := controller.owner_id
+		ai_think_timers[owner_id] = float(ai_think_timers.get(owner_id, 0.0)) - delta
+		if ai_think_timers[owner_id] <= 0.0:
+			controller.tick()
+			var difficulty: String = lobby_players[owner_id]["difficulty"] if use_lobby_setup else "normal"
+			ai_think_timers[owner_id] = {"easy": 6.0, "normal": 3.0, "hard": 1.5}.get(difficulty, 3.0)
 	hud_timer -= delta
 	if hud_timer <= 0.0:
 		_update_hud()
@@ -1305,23 +1654,48 @@ func _toggle_view_mode() -> void:
 	view_mode_25d = not view_mode_25d
 	var base_zoom := camera.zoom.x
 	camera.rotation = -PI / 4.0 if view_mode_25d else 0.0
-	camera.zoom = Vector2(base_zoom, base_zoom * 0.66 if view_mode_25d else base_zoom)
+	camera.zoom = Vector2(base_zoom, base_zoom * 0.5 if view_mode_25d else base_zoom)
 	_clamp_camera_position()
-	view_button.text = "切换 2D" if view_mode_25d else "切换 2.5D"
+	view_button.text = "2D 视角" if view_mode_25d else "2.5D 视角"
+	_redraw_projected_entities()
+	_update_iso_depths()
+	queue_redraw()
+
+func _redraw_projected_entities() -> void:
 	for building in buildings:
 		if is_instance_valid(building): building.queue_redraw()
-	queue_redraw()
+	for unit in units:
+		if is_instance_valid(unit): unit.queue_redraw()
+	for resource in resources:
+		if is_instance_valid(resource): resource.queue_redraw()
+	for post in trade_posts: post.queue_redraw()
+	for relic in relics: relic.queue_redraw()
+
+func _update_iso_depths() -> void:
+	for building in buildings:
+		if is_instance_valid(building): building.z_index = clampi(roundi((building.position.x + building.position.y) * 0.5), 0, 2800) if view_mode_25d else 0
+	for resource in resources:
+		if is_instance_valid(resource): resource.z_index = clampi(roundi((resource.position.x + resource.position.y) * 0.5), 0, 2800) if view_mode_25d else 0
+	for post in trade_posts:
+		if is_instance_valid(post): post.z_index = clampi(roundi((post.position.x + post.position.y) * 0.5), 0, 2800) if view_mode_25d else 0
+	for relic in relics:
+		if is_instance_valid(relic): relic.z_index = clampi(roundi((relic.position.x + relic.position.y) * 0.5), 0, 2800) if view_mode_25d else 0
+	for unit in units:
+		if is_instance_valid(unit):
+			unit.z_index = clampi(roundi((unit.position.x + unit.position.y) * 0.5), 0, 2800) + (8 if is_instance_valid(unit.wall_host) else 0) if view_mode_25d else (3 if is_instance_valid(unit.wall_host) else 0)
 
 func _adjust_zoom(factor: float, screen_anchor := Vector2.INF) -> void:
 	if screen_anchor == Vector2.INF: screen_anchor = get_viewport_rect().size * 0.5
 	camera.force_update_scroll()
 	var anchor_world := get_viewport().get_canvas_transform().affine_inverse() * screen_anchor
 	var base_zoom := clampf(camera.zoom.x * factor, 0.7, 1.65)
-	camera.zoom = Vector2(base_zoom, base_zoom * 0.66 if view_mode_25d else base_zoom)
+	camera.zoom = Vector2(base_zoom, base_zoom * 0.5 if view_mode_25d else base_zoom)
 	camera.force_update_scroll()
 	var shifted_world := get_viewport().get_canvas_transform().affine_inverse() * screen_anchor
 	camera.position += anchor_world - shifted_world
 	_clamp_camera_position()
+	if view_mode_25d: _redraw_projected_entities()
+	queue_redraw()
 
 func _edge_pan_direction(screen_point: Vector2, viewport_size: Vector2) -> Vector2:
 	if not Rect2(Vector2.ZERO, viewport_size).has_point(screen_point): return Vector2.ZERO
@@ -1485,13 +1859,14 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _select_area(from: Vector2, to: Vector2, additive: bool) -> void:
 	if not additive: selected.clear()
-	if from.distance_to(to) < 12:
+	var world_to_screen := get_viewport().get_canvas_transform()
+	var screen_area := Rect2(world_to_screen * from, world_to_screen * to - world_to_screen * from).abs()
+	if screen_area.size.length() < 12:
 		var entity := _entity_at(to)
 		if entity != null and entity.owner_id == 0 and not selected.has(entity): selected.append(entity)
 	else:
-		var area := Rect2(from, to - from).abs()
 		for unit in units:
-			if is_instance_valid(unit) and unit.garrisoned_in == null and unit.owner_id == 0 and area.has_point(unit.position) and not selected.has(unit):
+			if is_instance_valid(unit) and unit.garrisoned_in == null and unit.owner_id == 0 and screen_area.has_point(world_to_screen * unit.position) and not selected.has(unit):
 				selected.append(unit)
 	_rebuild_actions()
 	_update_hud()
@@ -1551,30 +1926,46 @@ func _handle_control_group(event: InputEventKey) -> void:
 	queue_redraw()
 
 func _entity_at(point: Vector2) -> Node2D:
-	for unit in navigation.nearby_units(point, 36.0):
+	var canvas := get_viewport().get_canvas_transform()
+	for unit in navigation.nearby_units(point, 75.0 if view_mode_25d else 36.0):
 		if not is_instance_valid(unit) or unit.is_queued_for_deletion() or unit.garrisoned_in != null: continue
 		if unit.owner_id != 0 and fog.active and not fog.can_detect_unit(0, unit): continue
+		if view_mode_25d:
+			var screen_delta := canvas.basis_xform(point - unit.position)
+			if absf(screen_delta.x) <= (unit.radius() + 5.0) * camera.zoom.x and screen_delta.y >= -34.0 * camera.zoom.x and screen_delta.y <= 6.0 * camera.zoom.x: return unit
 		if is_instance_valid(unit) and unit.position.distance_to(point) <= unit.radius() + 5: return unit
-	for building in navigation.nearby_buildings(point, 50.0):
+	for building in navigation.nearby_buildings(point, 160.0 if view_mode_25d else 50.0):
 		if not is_instance_valid(building) or building.is_queued_for_deletion(): continue
 		if building.owner_id != 0 and fog.active and not fog.can_see(0, building.position): continue
-		if is_instance_valid(building) and building.contains(point): return building
+		if building.contains(point) or view_mode_25d and building.contains_isometric_visual(point, canvas): return building
 	return null
 
 func _resource_at(point: Vector2) -> RtsResource:
-	for resource in navigation.nearby_resources(point, 35.0):
-		if is_instance_valid(resource) and not resource.is_queued_for_deletion() and (not fog.active or fog.can_show_resource(0, resource)) and resource.position.distance_to(point) < resource.radius + 6:
-			return resource
+	var canvas := get_viewport().get_canvas_transform()
+	for resource in navigation.nearby_resources(point, 90.0 if view_mode_25d else 35.0):
+		if not is_instance_valid(resource) or resource.is_queued_for_deletion() or fog.active and not fog.can_show_resource(0, resource): continue
+		if view_mode_25d and resource.appearance != "fish":
+			var screen_delta := canvas.basis_xform(point - resource.position)
+			if absf(screen_delta.x) <= (resource.radius + 8.0) * camera.zoom.x and screen_delta.y >= -35.0 * camera.zoom.x and screen_delta.y <= 20.0 * camera.zoom.x: return resource
+		if resource.position.distance_to(point) < resource.radius + 6: return resource
 	return null
 
 func _trade_post_at(point: Vector2) -> RtsTradePost:
 	for post in trade_posts:
-		if is_instance_valid(post) and (not fog.active or fog.is_explored(0, post.position)) and post.contains(point): return post
+		if not is_instance_valid(post) or fog.active and not fog.is_explored(0, post.position): continue
+		if view_mode_25d:
+			var screen_delta := get_viewport().get_canvas_transform().basis_xform(point - post.position)
+			if absf(screen_delta.x) <= 28.0 * camera.zoom.x and screen_delta.y >= -38.0 * camera.zoom.x and screen_delta.y <= 23.0 * camera.zoom.x: return post
+		if post.contains(point): return post
 	return null
 
 func _relic_at(point: Vector2) -> RtsRelic:
 	for relic in relics:
-		if is_instance_valid(relic) and relic.available() and (not fog.active or fog.can_see(0, relic.position)) and relic.position.distance_to(point) <= 20.0: return relic
+		if not is_instance_valid(relic) or not relic.available() or fog.active and not fog.can_see(0, relic.position): continue
+		if view_mode_25d:
+			var screen_delta := get_viewport().get_canvas_transform().basis_xform(point - relic.position)
+			if absf(screen_delta.x) <= 16.0 * camera.zoom.x and screen_delta.y >= -20.0 * camera.zoom.x and screen_delta.y <= 14.0 * camera.zoom.x: return relic
+		if relic.position.distance_to(point) <= 20.0: return relic
 	return null
 
 func _issue_order(point: Vector2, append_order := false) -> void:
@@ -1807,10 +2198,14 @@ func _update_population_hud() -> void:
 	var dynasty_text := " · %s朝" % RtsLandmarkCatalog.DYNASTY_NAMES[bank["dynasty"]] if bank["dynasty"] != "" else ""
 	var used := population_used(0)
 	var capacity := population_cap(0)
-	top_label.text = "%s · 时代 %d%s     食物 %d    木材 %d    黄金 %d    石料 %d     人口 %d/%d（空余 %d）" % [
-		GameData.CIVILIZATIONS[civilizations[0]]["label"], bank["age"], dynasty_text, bank["food"], bank["wood"], bank["gold"], bank["stone"], used, capacity, maxi(0, capacity - used)]
+	var age_names := ["", "黑暗时代", "封建时代", "城堡时代", "帝王时代"]
+	top_label.text = "%s\n%s · %s%s" % [GameData.CIVILIZATIONS[civilizations[0]]["label"], age_names[clampi(bank["age"], 1, 4)], ["", "I", "II", "III", "IV"][clampi(bank["age"], 1, 4)], dynasty_text]
+	for kind in ["food", "wood", "gold", "stone"]:
+		resource_readouts[kind].text = str(bank[kind])
+	population_label.text = "人口\n%d / %d" % [used, capacity]
+	population_label.tooltip_text = "空余 %d" % maxi(0, capacity - used)
 	var idle_count := idle_villagers().size()
-	idle_villager_button.text = "空闲村民 %d" % idle_count
+	idle_villager_button.text = "村民 %d" % idle_count
 	idle_villager_button.disabled = idle_count == 0
 
 func _update_selection_hud() -> void:
@@ -2363,7 +2758,12 @@ func _draw() -> void:
 				draw_line(marker + Vector2(0, 12), marker + Vector2(0, -14), marker_color, 2)
 				draw_colored_polygon(PackedVector2Array([marker + Vector2(0, -14), marker + Vector2(15, -9), marker + Vector2(0, -4)]), marker_color)
 	if dragging:
-		draw_rect(Rect2(drag_start, drag_current - drag_start).abs(), Color("f5e597"), false, 2)
+		var projection := get_viewport().get_canvas_transform()
+		var inverse := projection.affine_inverse()
+		var screen_rect := Rect2(projection * drag_start, projection * drag_current - projection * drag_start).abs()
+		var corners := [screen_rect.position, Vector2(screen_rect.end.x, screen_rect.position.y), screen_rect.end, Vector2(screen_rect.position.x, screen_rect.end.y)]
+		for index in corners.size():
+			draw_line(inverse * corners[index], inverse * corners[(index + 1) % corners.size()], Color("f5e597"), 2)
 	if build_mode != "":
 		var mouse := get_global_mouse_position()
 		var vertical := wall_vertical
