@@ -9,7 +9,7 @@ func _run() -> void:
 	root.add_child(game)
 	await process_frame
 	game.start_game("English", 12345)
-	if DisplayServer.get_name() != "headless": assert(Input.mouse_mode == Input.MOUSE_MODE_CONFINED_HIDDEN)
+	if DisplayServer.get_name() != "headless": assert(Input.mouse_mode == game._gameplay_mouse_mode())
 	assert(game.map_seed == 12345)
 	var terrain_map: RtsWorldMap = game.world_map
 	assert(terrain_map.cells.has(RtsWorldMap.Terrain.WATER), "map should contain water")
@@ -48,7 +48,7 @@ func _run() -> void:
 	assert(game.units[0].position == frozen_position)
 	game._input(escape)
 	assert(not game.paused and not game.pause_overlay.visible)
-	if DisplayServer.get_name() != "headless": assert(Input.mouse_mode == Input.MOUSE_MODE_CONFINED_HIDDEN)
+	if DisplayServer.get_name() != "headless": assert(Input.mouse_mode == game._gameplay_mouse_mode())
 	assert(game.cursor.visible)
 	assert(game._edge_pan_direction(Vector2(640, 360), Vector2(1280, 720)) == Vector2.ZERO)
 	assert(game._edge_pan_direction(Vector2(2, 360), Vector2(1280, 720)) == Vector2.LEFT)
@@ -56,12 +56,17 @@ func _run() -> void:
 	assert(game._edge_pan_direction(Vector2(-2, 360), Vector2(1280, 720)) == Vector2.LEFT)
 	assert(game._edge_pan_direction(Vector2(1280, 720), Vector2(1280, 720)) == Vector2(1, 1))
 	assert(game._edge_pan_direction(Vector2(1282, 360), Vector2(1280, 720)) == Vector2.RIGHT)
-	game.dragging = true
-	game.drag_start_screen = Vector2(100, 100)
-	game.drag_current_screen = Vector2(108, 108)
-	game.selection_drag_overlay.begin(game.drag_start_screen)
-	assert(not game._selection_drag_active(), "small trackpad motion should remain a click candidate")
-	game.drag_current_screen = Vector2(113, 100)
+	game.global_queue_panel.show()
+	assert(game._selection_point_over_hud(game.global_queue_panel.get_global_rect().get_center()), "native selection must not start behind the global queue")
+	game.global_queue_panel.hide()
+	game._begin_selection_candidate_poc(Vector2(100, 100))
+	assert(game.selection_drag_phase == game.SelectionDragPhase.CANDIDATE)
+	assert(game.selection_drag_overlay.tracking and game.selection_drag_overlay.visible and game.selection_drag_overlay.anchor.visible, "press feedback should be immediate")
+	game._update_selection_drag_poc(Vector2(102, 100))
+	assert(game.selection_drag_overlay.active and game.selection_drag_overlay.visible, "the first small movement should show the rectangle")
+	assert(not game._selection_drag_active(), "visual feedback must not change click semantics")
+	game._update_selection_drag_poc(Vector2(113, 100))
+	assert(game.selection_drag_phase == game.SelectionDragPhase.ACTIVE)
 	assert(game._selection_drag_active(), "selection rectangle should activate after the drag threshold")
 	assert(game.selection_drag_overlay != null, "the selection overlay POC should be available")
 	var drag_motion := InputEventMouseMotion.new()
@@ -75,7 +80,7 @@ func _run() -> void:
 	drag_release.position = drag_motion.position
 	game._input(drag_release)
 	assert(not game.dragging, "active drags should receive release before the HUD")
-	assert(not game.selection_drag_overlay.active and not game.selection_drag_overlay.visible)
+	assert(not game.selection_drag_overlay.active and not game.selection_drag_overlay.tracking and not game.selection_drag_overlay.visible)
 	var accumulated_before_drag := Input.use_accumulated_input
 	var drag_press := InputEventMouseButton.new()
 	drag_press.button_index = MOUSE_BUTTON_LEFT

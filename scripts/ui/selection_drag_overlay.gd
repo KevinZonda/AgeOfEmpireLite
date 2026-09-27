@@ -5,14 +5,22 @@ extends Control
 # avoids rebuilding the game's world-space draw list for every pointer event.
 const BORDER_WIDTH := 2.0
 const BORDER_COLOR := Color("f5e597")
+const ANCHOR_SIZE := 6.0
 
 var drag_start := Vector2.ZERO
 var drag_current := Vector2.ZERO
 var active := false
+var tracking := false
 var borders: Array[ColorRect] = []
+var anchor: ColorRect
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	anchor = ColorRect.new()
+	anchor.color = BORDER_COLOR
+	anchor.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	anchor.size = Vector2(ANCHOR_SIZE, ANCHOR_SIZE)
+	add_child(anchor)
 	for _index in 4:
 		var border := ColorRect.new()
 		border.color = BORDER_COLOR
@@ -25,12 +33,18 @@ func begin(screen_point: Vector2) -> void:
 	drag_start = screen_point
 	drag_current = screen_point
 	active = false
-	hide()
+	tracking = true
+	anchor.position = screen_point - Vector2.ONE * ANCHOR_SIZE * 0.5
+	anchor.show()
+	for border in borders: border.hide()
+	show()
 
 func update_drag(screen_point: Vector2, should_show: bool) -> void:
 	drag_current = screen_point
 	active = should_show
-	visible = active
+	if not tracking: return
+	anchor.visible = not active
+	for border in borders: border.visible = active
 	if not active: return
 	var rect := screen_rect()
 	_set_border(borders[0], rect.position, Vector2(maxf(rect.size.x, BORDER_WIDTH), BORDER_WIDTH))
@@ -40,6 +54,7 @@ func update_drag(screen_point: Vector2, should_show: bool) -> void:
 
 func finish() -> void:
 	active = false
+	tracking = false
 	hide()
 
 func screen_rect() -> Rect2:

@@ -9,8 +9,12 @@ const CAMERA_PAN_SPEED := 570.0
 const GESTURE_PAN_PIXELS := 32.0
 const EDGE_SCROLL_MARGIN := 28.0
 const SELECTION_DRAG_THRESHOLD := 12.0
+const SELECTION_DRAG_VISUAL_THRESHOLD := 1.0
 # POC switch: false restores the world-space immediate-mode selection box.
 const USE_SELECTION_DRAG_OVERLAY_POC := true
+# macOS POC: poll AppKit-backed DisplayServer state and avoid confined cursor
+# warping. F8 switches back to the old confined mode for an in-game A/B test.
+const USE_MACOS_NATIVE_SELECTION_POC := true
 const UNIT_SCENE := preload("res://scripts/entities/unit.gd")
 const BUILDING_SCENE := preload("res://scripts/entities/building.gd")
 const BUILD_GRID_SIZE := 25.0 # Half a terrain cell keeps existing building art near its current scale.
@@ -34,6 +38,8 @@ const UNIT_ABILITY_ACTIONS := [
 	{"id": "camp", "label": "预备营地", "kinds": ["scout", "man_at_arms"], "civilization": "English"},
 	{"id": "artillery_shot", "label": "炮击齐射", "kinds": ["cannon"], "producer_landmark": "fr_college_of_artillery"},
 ]
+
+enum SelectionDragPhase { IDLE, BLOCKED, CANDIDATE, ACTIVE }
 const PLAYER_COLOR_NAMES := ["蓝色", "红色", "黄色", "绿色", "青色", "紫色", "橙色", "粉色"]
 const PLAYER_COLORS := [
 	Color("4e9bea"), Color("e65852"), Color("e5c44b"), Color("4ac57b"),
@@ -105,6 +111,16 @@ var drag_start := Vector2.ZERO
 var drag_current := Vector2.ZERO
 var drag_start_screen := Vector2.ZERO
 var drag_current_screen := Vector2.ZERO
+var selection_drag_phase := SelectionDragPhase.IDLE
+var selection_drag_additive := false
+var selection_poc_previous_left_down := false
+var selection_poc_hidden_mode := true
+var selection_drag_probe: Dictionary = {}
+var selection_probe_history := {"hidden": [], "confined": []}
+var selection_last_process_entry_usec := 0
+var selection_current_frame_gap_msec := 0.0
+var selection_last_event_motion_usec := 0
+var selection_last_event_motion_position := Vector2.INF
 var ai_think_timers: Dictionary = {}
 var iso_sort_timer := 0.0
 var ai: RtsAiController
@@ -164,6 +180,7 @@ var zoom_gesture_enabled := true
 var settings_from_pause := false
 var cursor: GameCursor
 var selection_drag_overlay: Variant
+var selection_input_probe_label: Label
 
 func _ready() -> void:
 	_load_settings()
@@ -209,8 +226,18 @@ func _ready() -> void:
 	queue_redraw()
 
 func _exit_tree() -> void:
-	_finish_selection_drag_poc()
+	_cancel_selection_drag_poc()
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
+		_cancel_selection_drag_poc()
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		if selection_input_probe_label != null: selection_input_probe_label.hide()
+	elif what == NOTIFICATION_APPLICATION_FOCUS_IN and started and not paused and not game_over:
+		_apply_gameplay_mouse_mode()
+		_reset_selection_pointer_poc()
+		_update_selection_probe_label()
 
 func _create_cursor() -> void:
 	var layer := CanvasLayer.new()
@@ -219,6 +246,16 @@ func _create_cursor() -> void:
 	if USE_SELECTION_DRAG_OVERLAY_POC:
 		selection_drag_overlay = SELECTION_DRAG_OVERLAY.new()
 		layer.add_child(selection_drag_overlay)
+	selection_input_probe_label = Label.new()
+	selection_input_probe_label.position = Vector2(10, 72)
+	selection_input_probe_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	selection_input_probe_label.z_index = 90
+	selection_input_probe_label.add_theme_font_size_override("font_size", 13)
+	selection_input_probe_label.add_theme_color_override("font_color", Color("f5e597"))
+	selection_input_probe_label.add_theme_color_override("font_outline_color", Color(0.05, 0.04, 0.03, 0.9))
+	selection_input_probe_label.add_theme_constant_override("outline_size", 3)
+	selection_input_probe_label.visible = _uses_macos_native_selection_poc()
+	layer.add_child(selection_input_probe_label)
 	cursor = GameCursor.new()
 	layer.add_child(cursor)
 	cursor.hide()
@@ -772,6 +809,7 @@ func _show_menu() -> void:
 	if settings_overlay != null: settings_overlay.hide()
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	if cursor != null: cursor.hide()
+	if selection_input_probe_label != null: selection_input_probe_label.hide()
 	menu_backdrop.show()
 	hud_top.hide()
 	hud_bottom.hide()
@@ -1142,7 +1180,9 @@ func start_game(civ: String, requested_seed := -1, opponent_civ := "") -> void:
 	hud_top.show()
 	hud_bottom.show()
 	result_panel.hide()
-	Input.mouse_mode = Input.MOUSE_MODE_CONFINED_HIDDEN
+	_apply_gameplay_mouse_mode()
+	_reset_selection_pointer_poc()
+	_update_selection_probe_label()
 	cursor.show()
 	_spawn_map_resources()
 	objectives.setup(self)
@@ -1175,7 +1215,7 @@ func start_game(civ: String, requested_seed := -1, opponent_civ := "") -> void:
 
 func _clear_world() -> void:
 	_close_age_choice()
-	_finish_selection_drag_poc()
+	_cancel_selection_drag_poc()
 	if world_map != null: world_map.hide()
 	if weather != null: weather.hide()
 	if fog != null: fog.clear()
@@ -1270,13 +1310,17 @@ func _spawn_neutral_sites() -> void:
 func _set_paused(value: bool) -> void:
 	if not started or game_over: return
 	paused = value
-	dragging = false
+	_cancel_selection_drag_poc()
 	wall_dragging = false
-	_finish_selection_drag_poc()
 	pause_overlay.visible = value
 	if not value and settings_overlay != null: settings_overlay.hide()
-	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if value else Input.MOUSE_MODE_CONFINED_HIDDEN
+	if value:
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	else:
+		_apply_gameplay_mouse_mode()
+		_reset_selection_pointer_poc()
 	cursor.visible = not value
+	if selection_input_probe_label != null: selection_input_probe_label.visible = not value and _uses_macos_native_selection_poc()
 	queue_redraw()
 
 func _return_to_menu() -> void:
@@ -1429,12 +1473,13 @@ func _check_match_end() -> void:
 
 func _finish_game(won: bool, reason := "landmarks") -> void:
 	if game_over: return
-	_finish_selection_drag_poc()
+	_cancel_selection_drag_poc()
 	match_statistics.record_event(0, "对局结束")
 	match_statistics.sample()
 	game_over = true
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	cursor.hide()
+	if selection_input_probe_label != null: selection_input_probe_label.hide()
 	for child in result_panel.get_children(): child.queue_free()
 	result_panel.custom_minimum_size = Vector2(400, 220)
 	result_panel.offset_left = -200
@@ -1910,15 +1955,22 @@ func notify_player(message: String) -> void:
 	notice_timer = 3.5
 
 func _process(delta: float) -> void:
+	var process_entry_usec := Time.get_ticks_usec()
+	selection_current_frame_gap_msec = (process_entry_usec - selection_last_process_entry_usec) / 1000.0 if selection_last_process_entry_usec > 0 else 0.0
+	_selection_probe_frame(process_entry_usec)
+	selection_last_process_entry_usec = process_entry_usec
 	if not started or game_over or paused: return
+	if USE_SELECTION_DRAG_OVERLAY_POC:
+		if _uses_macos_native_selection_poc():
+			_poll_selection_pointer_poc()
+		elif dragging:
+			_update_selection_drag_poc(get_viewport().get_mouse_position())
 	match_statistics.tick(delta)
 	if view_mode_25d:
 		iso_sort_timer -= delta
 		if iso_sort_timer <= 0.0:
 			_update_iso_depths()
 			iso_sort_timer = 0.1
-	if dragging and USE_SELECTION_DRAG_OVERLAY_POC:
-		_update_selection_drag_poc(get_viewport().get_mouse_position())
 	_pan_camera(delta)
 	_update_cursor()
 	if notice_timer > 0.0:
@@ -1952,7 +2004,7 @@ func _pan_camera(delta: float) -> void:
 	if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP): direction.y -= 1
 	if Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN): direction.y += 1
 	if get_window().has_focus():
-		direction += _edge_pan_direction(get_viewport().get_mouse_position(), get_viewport_rect().size)
+		direction += _edge_pan_direction(_selection_pointer_screen_position(), get_viewport_rect().size)
 	if direction != Vector2.ZERO:
 		_move_camera_screen_delta(direction.normalized() * CAMERA_PAN_SPEED * delta)
 
@@ -2042,8 +2094,86 @@ func _edge_pan_direction(screen_point: Vector2, viewport_size: Vector2) -> Vecto
 	if point.y >= viewport_size.y - EDGE_SCROLL_MARGIN: direction.y += 1
 	return direction
 
+func _uses_macos_native_selection_poc() -> bool:
+	return USE_MACOS_NATIVE_SELECTION_POC and OS.get_name() == "macOS" and DisplayServer.get_name() != "headless"
+
+func _gameplay_mouse_mode():
+	if _uses_macos_native_selection_poc() and selection_poc_hidden_mode:
+		return Input.MOUSE_MODE_HIDDEN
+	return Input.MOUSE_MODE_CONFINED_HIDDEN
+
+func _apply_gameplay_mouse_mode() -> void:
+	Input.mouse_mode = _gameplay_mouse_mode()
+
+func _selection_pointer_screen_position() -> Vector2:
+	if not _uses_macos_native_selection_poc(): return get_viewport().get_mouse_position()
+	var window_id := get_window().get_window_id()
+	var window_position := DisplayServer.window_get_position(window_id)
+	var window_size := DisplayServer.window_get_size(window_id)
+	if window_size.x <= 0 or window_size.y <= 0: return get_viewport().get_mouse_position()
+	var client_point := Vector2(DisplayServer.mouse_get_position() - window_position)
+	return client_point * get_viewport_rect().size / Vector2(window_size)
+
+func _selection_native_left_down() -> bool:
+	return (DisplayServer.mouse_get_button_state() & MOUSE_BUTTON_MASK_LEFT) != 0
+
+func _reset_selection_pointer_poc() -> void:
+	selection_drag_phase = SelectionDragPhase.IDLE
+	selection_poc_previous_left_down = _selection_native_left_down() if _uses_macos_native_selection_poc() else false
+	selection_drag_probe.clear()
+
+func _selection_point_over_hud(screen_point: Vector2) -> bool:
+	if not Rect2(Vector2.ZERO, get_viewport_rect().size).has_point(screen_point): return true
+	for control in [hud_top, hud_bottom, global_queue_panel, pause_overlay, settings_overlay, tech_tree_overlay, age_choice_overlay]:
+		if control != null and control is Control and control.is_visible_in_tree() and control.get_global_rect().has_point(screen_point): return true
+	return false
+
+func _can_begin_native_selection(screen_point: Vector2) -> bool:
+	return get_window().has_focus() and started and not paused and not game_over and build_mode == "" and order_mode == "" and not wall_dragging and not _selection_point_over_hud(screen_point)
+
+func _poll_selection_pointer_poc() -> void:
+	var screen_point := _selection_pointer_screen_position()
+	var left_down := _selection_native_left_down()
+	if left_down and not selection_poc_previous_left_down:
+		if selection_drag_phase == SelectionDragPhase.BLOCKED:
+			pass
+		elif dragging:
+			if selection_drag_phase == SelectionDragPhase.IDLE: selection_drag_phase = SelectionDragPhase.CANDIDATE
+		elif _can_begin_native_selection(screen_point):
+			_begin_selection_candidate_poc(screen_point, true)
+		else:
+			selection_drag_phase = SelectionDragPhase.BLOCKED
+	elif left_down:
+		if dragging and selection_drag_phase in [SelectionDragPhase.CANDIDATE, SelectionDragPhase.ACTIVE]:
+			selection_drag_additive = Input.is_key_pressed(KEY_SHIFT)
+			_record_selection_native_motion(screen_point)
+			_update_selection_drag_poc(screen_point)
+	elif selection_poc_previous_left_down:
+		if dragging and selection_drag_phase in [SelectionDragPhase.CANDIDATE, SelectionDragPhase.ACTIVE]:
+			_complete_selection_drag_poc(screen_point, selection_drag_additive)
+		else:
+			selection_drag_phase = SelectionDragPhase.IDLE
+	selection_poc_previous_left_down = left_down
+
+func _begin_selection_candidate_poc(screen_point: Vector2, from_native := false) -> void:
+	dragging = true
+	selection_drag_phase = SelectionDragPhase.CANDIDATE
+	selection_drag_additive = Input.is_key_pressed(KEY_SHIFT)
+	drag_start_screen = screen_point
+	drag_current_screen = screen_point
+	drag_start = get_viewport().get_canvas_transform().affine_inverse() * screen_point
+	drag_current = drag_start
+	_begin_selection_drag_poc(screen_point)
+	_begin_selection_probe(screen_point, "native" if from_native else "event")
+	if _uses_macos_native_selection_poc(): selection_poc_previous_left_down = _selection_native_left_down()
+
 func _selection_drag_active() -> bool:
-	return dragging and drag_start_screen.distance_to(drag_current_screen) > SELECTION_DRAG_THRESHOLD
+	if not dragging: return false
+	if USE_SELECTION_DRAG_OVERLAY_POC: return selection_drag_phase == SelectionDragPhase.ACTIVE
+	return drag_start_screen.distance_to(drag_current_screen) > SELECTION_DRAG_THRESHOLD
+
+func _selection_drag_visible() -> bool:
+	return dragging and drag_start_screen.distance_to(drag_current_screen) > SELECTION_DRAG_VISUAL_THRESHOLD
 
 func _begin_selection_drag_poc(screen_point: Vector2) -> void:
 	if not USE_SELECTION_DRAG_OVERLAY_POC: return
@@ -2052,24 +2182,151 @@ func _begin_selection_drag_poc(screen_point: Vector2) -> void:
 func _update_selection_drag_poc(screen_point: Vector2) -> void:
 	drag_current_screen = screen_point
 	drag_current = get_viewport().get_canvas_transform().affine_inverse() * screen_point
+	if selection_drag_phase == SelectionDragPhase.CANDIDATE and drag_start_screen.distance_to(screen_point) > SELECTION_DRAG_THRESHOLD:
+		selection_drag_phase = SelectionDragPhase.ACTIVE
+	var should_show := _selection_drag_visible()
+	if should_show: _record_selection_overlay_visible()
 	if selection_drag_overlay != null:
-		selection_drag_overlay.update_drag(screen_point, _selection_drag_active())
+		selection_drag_overlay.update_drag(screen_point, should_show)
 
 func _finish_selection_drag_poc() -> void:
 	if selection_drag_overlay != null: selection_drag_overlay.finish()
 
+func _complete_selection_drag_poc(screen_point: Vector2, additive: bool) -> void:
+	if not dragging: return
+	_update_selection_drag_poc(screen_point)
+	dragging = false
+	selection_drag_phase = SelectionDragPhase.IDLE
+	_finish_selection_drag_poc()
+	_select_screen_area(drag_start_screen, screen_point, additive)
+	_finish_selection_probe()
+
+func _cancel_selection_drag_poc(block_until_release := false) -> void:
+	dragging = false
+	var left_down := _selection_native_left_down() if _uses_macos_native_selection_poc() else false
+	selection_drag_phase = SelectionDragPhase.BLOCKED if block_until_release and left_down else SelectionDragPhase.IDLE
+	if _uses_macos_native_selection_poc(): selection_poc_previous_left_down = left_down
+	_finish_selection_drag_poc()
+	selection_drag_probe.clear()
+
+func _toggle_selection_pointer_poc_mode() -> void:
+	if not _uses_macos_native_selection_poc(): return
+	if _selection_native_left_down():
+		notify_player("请先松开触摸板，再切换 POC 模式")
+		return
+	_cancel_selection_drag_poc()
+	selection_poc_hidden_mode = not selection_poc_hidden_mode
+	_apply_gameplay_mouse_mode()
+	_reset_selection_pointer_poc()
+	_update_selection_probe_label()
+	notify_player("触摸板 POC：%s" % _selection_poc_mode_text())
+
+func _selection_poc_mode_text() -> String:
+	return "HIDDEN + 系统采样" if selection_poc_hidden_mode else "CONFINED_HIDDEN + 系统采样"
+
+func _update_selection_probe_label(detail := "等待拖拽") -> void:
+	if selection_input_probe_label == null: return
+	selection_input_probe_label.visible = _uses_macos_native_selection_poc() and started and not paused and not game_over
+	selection_input_probe_label.text = "触摸板 POC：%s｜%s｜F8 切换 A/B" % [_selection_poc_mode_text(), detail]
+
+func _begin_selection_probe(screen_point: Vector2, source: String) -> void:
+	if not _uses_macos_native_selection_poc(): return
+	var now := Time.get_ticks_usec()
+	selection_drag_probe = {
+		"press_usec": now,
+		"source": source,
+		"start_point": screen_point,
+		"first_native_motion_usec": -1,
+		"first_event_motion_usec": -1,
+		"first_event_gap_usec": -1,
+		"first_event_press_usec": 0 if source == "event" else -1,
+		"first_visible_usec": -1,
+		"anchor_frame_usec": -1,
+		"rectangle_frame_usec": -1,
+		"max_frame_msec": selection_current_frame_gap_msec if source == "native" else 0.0,
+	}
+	_watch_selection_post_draw("anchor_frame_usec")
+
+func _selection_probe_frame(process_entry_usec: int) -> void:
+	if selection_drag_probe.is_empty(): return
+	if selection_last_process_entry_usec > 0:
+		var frame_msec := (process_entry_usec - selection_last_process_entry_usec) / 1000.0
+		selection_drag_probe["max_frame_msec"] = maxf(float(selection_drag_probe["max_frame_msec"]), frame_msec)
+
+func _record_selection_native_motion(screen_point: Vector2) -> void:
+	if selection_drag_probe.is_empty() or int(selection_drag_probe["first_native_motion_usec"]) >= 0: return
+	if Vector2(selection_drag_probe["start_point"]).distance_to(screen_point) > 0.5:
+		selection_drag_probe["first_native_motion_usec"] = Time.get_ticks_usec() - int(selection_drag_probe["press_usec"])
+
+func _record_selection_event_motion(event_gap_usec: int) -> void:
+	if selection_drag_probe.is_empty() or int(selection_drag_probe["first_event_motion_usec"]) >= 0: return
+	selection_drag_probe["first_event_motion_usec"] = Time.get_ticks_usec() - int(selection_drag_probe["press_usec"])
+	selection_drag_probe["first_event_gap_usec"] = event_gap_usec
+
+func _record_selection_event_press() -> void:
+	if selection_drag_probe.is_empty() or int(selection_drag_probe["first_event_press_usec"]) >= 0: return
+	selection_drag_probe["first_event_press_usec"] = Time.get_ticks_usec() - int(selection_drag_probe["press_usec"])
+
+func _record_selection_overlay_visible() -> void:
+	if selection_drag_probe.is_empty() or int(selection_drag_probe["first_visible_usec"]) >= 0: return
+	selection_drag_probe["first_visible_usec"] = Time.get_ticks_usec() - int(selection_drag_probe["press_usec"])
+	_watch_selection_post_draw("rectangle_frame_usec")
+
+func _watch_selection_post_draw(key: String) -> void:
+	if selection_drag_probe.is_empty(): return
+	selection_drag_probe[key + "_pending"] = true
+	if not RenderingServer.frame_post_draw.is_connected(_record_selection_post_draw):
+		RenderingServer.frame_post_draw.connect(_record_selection_post_draw, CONNECT_ONE_SHOT)
+
+func _record_selection_post_draw() -> void:
+	if selection_drag_probe.is_empty(): return
+	var elapsed := Time.get_ticks_usec() - int(selection_drag_probe["press_usec"])
+	for key in ["anchor_frame_usec", "rectangle_frame_usec"]:
+		if bool(selection_drag_probe.get(key + "_pending", false)) and int(selection_drag_probe.get(key, -1)) < 0:
+			selection_drag_probe[key] = elapsed
+			selection_drag_probe[key + "_pending"] = false
+
+func _probe_delay_text(key: String) -> String:
+	var usec := int(selection_drag_probe.get(key, -1))
+	return "--" if usec < 0 else "%dms" % roundi(usec / 1000.0)
+
+func _finish_selection_probe() -> void:
+	if selection_drag_probe.is_empty(): return
+	if selection_last_process_entry_usec > 0:
+		selection_drag_probe["max_frame_msec"] = maxf(float(selection_drag_probe["max_frame_msec"]), (Time.get_ticks_usec() - selection_last_process_entry_usec) / 1000.0)
+	var mode_key := "hidden" if selection_poc_hidden_mode else "confined"
+	var event_gap_usec := int(selection_drag_probe["first_event_gap_usec"])
+	var samples: Array = selection_probe_history[mode_key]
+	if event_gap_usec >= 0:
+		samples.append(event_gap_usec / 1000.0)
+		if samples.size() > 40: samples.pop_front()
+	var stalls := 0
+	for sample in samples:
+		if float(sample) > 100.0: stalls += 1
+	var detail := "系统位移 %s · 事件断流 %s · 选框提交 %s · 帧间隔 %.0fms · >100ms %d/%d" % [
+		_probe_delay_text("first_native_motion_usec"),
+		_probe_delay_text("first_event_gap_usec"),
+		_probe_delay_text("rectangle_frame_usec"),
+		float(selection_drag_probe["max_frame_msec"]),
+		stalls,
+		samples.size(),
+	]
+	print("[SelectionDragPOC] mode=%s source=%s event_press=%s anchor_submit=%s rectangle_request=%s event_motion=%s %s" % [_selection_poc_mode_text(), selection_drag_probe["source"], _probe_delay_text("first_event_press_usec"), _probe_delay_text("anchor_frame_usec"), _probe_delay_text("first_visible_usec"), _probe_delay_text("first_event_motion_usec"), detail])
+	selection_drag_probe.clear()
+	_update_selection_probe_label(detail)
+
 func _update_cursor() -> void:
-	var screen_point := get_viewport().get_mouse_position()
+	var screen_point := _selection_pointer_screen_position()
 	cursor.position = screen_point
-	if _selection_drag_active():
-		# The select cursor has the same glyph and is already rendered during
-		# normal hovering, avoiding a cold fallback-font draw on the first drag.
-		cursor.set_state("select" if USE_SELECTION_DRAG_OVERLAY_POC else "drag")
+	if dragging:
+		# Keep the current cursor for the click-sized candidate. The anchor is
+		# sufficient feedback and avoids introducing a first-draw font cost.
+		if _selection_drag_visible(): cursor.set_state("select" if USE_SELECTION_DRAG_OVERLAY_POC else "drag")
 		cursor.set_context("")
 		return
 	var hovered := get_viewport().gui_get_hovered_control()
 	var over_ui := hovered != null and hovered != cursor
-	var world_point := get_global_mouse_position()
+	var world_point := get_viewport().get_canvas_transform().affine_inverse() * screen_point
 	cursor.set_state(_cursor_state_at(world_point, over_ui))
 	var resource := _resource_at(world_point) if not over_ui and build_mode == "" else null
 	var context := ""
@@ -2121,6 +2378,15 @@ func _player_center(owner_id: int) -> RtsBuilding:
 	return null
 
 func _input(event: InputEvent) -> void:
+	var motion_gap_usec := -1
+	var valid_motion := false
+	if event is InputEventMouseMotion:
+		valid_motion = event.relative.length_squared() > 0.01 or (selection_last_event_motion_position != Vector2.INF and selection_last_event_motion_position.distance_to(event.position) > 0.5)
+		if valid_motion:
+			var now := Time.get_ticks_usec()
+			if selection_last_event_motion_usec > 0: motion_gap_usec = now - selection_last_event_motion_usec
+			selection_last_event_motion_usec = now
+			selection_last_event_motion_position = event.position
 	if age_choice_overlay != null:
 		if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
 			_close_age_choice()
@@ -2137,10 +2403,16 @@ func _input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 		return
 	if not started or game_over: return
-	# Wall dragging and the legacy selection path still need motion before GUI
-	# controls can consume it. The POC selection path polls once per frame.
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		_record_selection_event_press()
+	# Active drags receive motion before GUI controls can consume it. Native
+	# polling remains the fallback when macOS withholds these events.
 	if event is InputEventMouseMotion:
-		if dragging and not USE_SELECTION_DRAG_OVERLAY_POC:
+		if dragging and USE_SELECTION_DRAG_OVERLAY_POC:
+			if valid_motion and (event.button_mask & MOUSE_BUTTON_MASK_LEFT) != 0:
+				_record_selection_event_motion(motion_gap_usec)
+			_update_selection_drag_poc(_selection_pointer_screen_position() if _uses_macos_native_selection_poc() else event.position)
+		elif dragging:
 			var was_drag_active := _selection_drag_active()
 			drag_current = get_global_mouse_position()
 			drag_current_screen = event.position
@@ -2155,6 +2427,11 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
 		_set_paused(not paused)
 		get_viewport().set_input_as_handled()
+		return
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F8 and _uses_macos_native_selection_poc() and not paused:
+		_toggle_selection_pointer_poc_mode()
+		get_viewport().set_input_as_handled()
+		return
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F:
 		_toggle_global_queue()
 		get_viewport().set_input_as_handled()
@@ -2172,9 +2449,9 @@ func _finish_left_drag(event: InputEventMouseButton) -> bool:
 		_confirm_wall_line(wall_start, get_global_mouse_position(), event.shift_pressed)
 		return true
 	if dragging:
-		dragging = false
-		_finish_selection_drag_poc()
-		_select_screen_area(drag_start_screen, event.position, event.shift_pressed)
+		var screen_point := _selection_pointer_screen_position() if _uses_macos_native_selection_poc() else event.position
+		_complete_selection_drag_poc(screen_point, event.shift_pressed)
+		if _uses_macos_native_selection_poc(): selection_poc_previous_left_down = _selection_native_left_down()
 		if not USE_SELECTION_DRAG_OVERLAY_POC: queue_redraw()
 		return true
 	return false
@@ -2216,17 +2493,16 @@ func _unhandled_input(event: InputEvent) -> void:
 			if event.double_click:
 				var clicked := _entity_at(get_viewport().get_canvas_transform().affine_inverse() * event.position)
 				if clicked is RtsUnit and clicked.owner_id == 0:
+					_cancel_selection_drag_poc(true)
 					_select_same_type_visible(clicked, event.shift_pressed)
 					return
 				if clicked is RtsBuilding and clicked.owner_id == 0:
+					_cancel_selection_drag_poc(true)
 					_select_same_buildings_visible(clicked, event.shift_pressed)
 					return
-			dragging = true
-			drag_start = get_global_mouse_position()
-			drag_current = drag_start
-			drag_start_screen = event.position
-			drag_current_screen = event.position
-			_begin_selection_drag_poc(event.position)
+			if _uses_macos_native_selection_poc():
+				if dragging and selection_drag_phase in [SelectionDragPhase.CANDIDATE, SelectionDragPhase.ACTIVE]: return
+			_begin_selection_candidate_poc(_selection_pointer_screen_position() if _uses_macos_native_selection_poc() else event.position)
 			return
 		if event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
 			if order_mode != "":
