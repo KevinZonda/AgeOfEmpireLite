@@ -6,6 +6,8 @@
 
 ## 运行
 
+完整的环境准备、引擎补丁构建、开发验证与 macOS 发布要求见 [BUILD.md](BUILD.md)。
+
 macOS 使用本地修复版 Godot，解决 Magnet 开启时按下、拖框延迟的问题。首次在项目目录编译（需要 Xcode 命令行工具和 Python 3），随后正常启动：
 
 ```sh
