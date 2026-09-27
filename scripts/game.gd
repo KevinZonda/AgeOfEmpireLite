@@ -3,7 +3,8 @@ extends Node2D
 const WORLD_SIZE := Vector2(2400, 2400)
 const START_CAMERA_POINT := Vector2(630, 820)
 const WINDOW_RESOLUTIONS := [Vector2i(1280, 720), Vector2i(1440, 810), Vector2i(1600, 900), Vector2i(1920, 1080), Vector2i(2560, 1440)]
-const DISPLAY_SETTINGS_PATH := "user://display.cfg"
+const SETTINGS_PATH := "user://settings.cfg"
+const LEGACY_DISPLAY_SETTINGS_PATH := "user://display.cfg"
 const CAMERA_PAN_SPEED := 570.0
 const GESTURE_PAN_PIXELS := 32.0
 const EDGE_SCROLL_MARGIN := 28.0
@@ -121,16 +122,22 @@ var command_buttons: Array[RtsCommandButton] = []
 var hotkey_buttons: Dictionary = {}
 var minimap: RtsMinimap
 var menu_panel: PanelContainer
+var tech_tree_overlay: ColorRect
 var result_panel: PanelContainer
 var pause_overlay: ColorRect
 var settings_overlay: ColorRect
+var settings_tabs: TabContainer
 var resolution_choice: OptionButton
 var resolution_values: Array[Vector2i] = []
+var edge_scroll_toggle: CheckButton
+var edge_scroll_enabled := true
+var zoom_gesture_toggle: CheckButton
+var zoom_gesture_enabled := true
 var settings_from_pause := false
 var cursor: GameCursor
 
 func _ready() -> void:
-	_load_display_settings()
+	_load_settings()
 	world_map = RtsWorldMap.new()
 	world_map.z_index = -10
 	add_child(world_map)
@@ -148,16 +155,16 @@ func _ready() -> void:
 	add_child(camera)
 	camera.make_current()
 	weather = RtsWeather.new()
-	weather.z_index = 3100
+	weather.z_index = -6
 	add_child(weather)
 	weather.hide()
 	fog = RtsFogOfWar.new()
-	fog.z_index = 3200
+	fog.z_index = -5
 	add_child(fog)
 	fog.setup(self)
 	fog.hide()
 	objectives = RtsObjectiveManager.new()
-	objectives.z_index = 2
+	objectives.z_index = -7
 	add_child(objectives)
 	objectives.victory.connect(func(owner_id: int, reason: String) -> void: _finish_game(not is_enemy(0, owner_id), reason))
 	objectives.site_captured.connect(func(_index: int, owner_id: int) -> void:
@@ -239,7 +246,7 @@ func _create_hud() -> void:
 	view_button = Button.new()
 	view_button.text = "2.5D 视角"
 	_style_button(view_button)
-	view_button.pressed.connect(_toggle_view_mode)
+	view_button.pressed.connect(func() -> void: _toggle_view_mode(true))
 	top_tools.add_child(view_button)
 	global_queue_panel = PanelContainer.new()
 	global_queue_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
@@ -407,11 +414,11 @@ func _create_hud() -> void:
 	_add_menu_label(pause_box, "游戏已暂停", 27)
 	_add_menu_label(pause_box, "按 Esc 继续游戏", 16)
 	_add_pause_button(pause_box, "继续游戏", func() -> void: _set_paused(false))
-	_add_pause_button(pause_box, "显示设置", func() -> void: _show_display_settings(true))
+	_add_pause_button(pause_box, "设置", func() -> void: _show_settings(true))
 	_add_pause_button(pause_box, "重新开始", func() -> void: start_game(selected_civ, -1, selected_opponent_civ))
 	_add_pause_button(pause_box, "返回主界面", func() -> void: _return_to_menu())
 	_add_pause_button(pause_box, "退出游戏", func() -> void: get_tree().quit())
-	_create_display_settings(root)
+	_create_settings(root)
 
 func _hud_panel_style(color: Color, margin: float) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
@@ -515,7 +522,7 @@ func _add_pause_button(parent: Node, label_text: String, action: Callable) -> vo
 	button.pressed.connect(action)
 	parent.add_child(button)
 
-func _create_display_settings(parent: Control) -> void:
+func _create_settings(parent: Control) -> void:
 	settings_overlay = ColorRect.new()
 	settings_overlay.color = Color(0.08, 0.06, 0.04, 0.78)
 	settings_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -523,23 +530,55 @@ func _create_display_settings(parent: Control) -> void:
 	parent.add_child(settings_overlay)
 	var panel := PanelContainer.new()
 	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	panel.custom_minimum_size = Vector2(500, 310)
-	panel.offset_left = -250
-	panel.offset_top = -155
-	panel.offset_right = 250
-	panel.offset_bottom = 155
+	panel.custom_minimum_size = Vector2(520, 430)
+	panel.offset_left = -260
+	panel.offset_top = -215
+	panel.offset_right = 260
+	panel.offset_bottom = 215
 	panel.add_theme_stylebox_override("panel", _hud_panel_style(Color("30271c"), 20))
 	settings_overlay.add_child(panel)
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 16)
 	panel.add_child(box)
-	_add_menu_label(box, "显示设置", 27)
-	_add_menu_label(box, "窗口分辨率", 17)
+	_add_menu_label(box, "设置", 27)
+	settings_tabs = TabContainer.new()
+	settings_tabs.custom_minimum_size = Vector2(460, 275)
+	settings_tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	box.add_child(settings_tabs)
+	var display_tab := VBoxContainer.new()
+	display_tab.name = "显示设置"
+	display_tab.add_theme_constant_override("separation", 12)
+	settings_tabs.add_child(display_tab)
+	_add_menu_label(display_tab, "窗口分辨率", 17)
 	resolution_choice = OptionButton.new()
 	resolution_choice.custom_minimum_size.y = 42
 	_style_button(resolution_choice)
-	box.add_child(resolution_choice)
-	_add_menu_label(box, "设置会在下次启动时保留。", 14)
+	display_tab.add_child(resolution_choice)
+	_add_menu_label(display_tab, "视角", 17)
+	projection_choice = OptionButton.new()
+	projection_choice.add_item("2D 俯视")
+	projection_choice.add_item("2.5D 斜视")
+	projection_choice.custom_minimum_size.y = 42
+	_style_button(projection_choice)
+	display_tab.add_child(projection_choice)
+	_add_menu_label(display_tab, "高于当前屏幕可用尺寸的选项不会显示。", 14)
+	var controls_tab := VBoxContainer.new()
+	controls_tab.name = "操作设置"
+	controls_tab.add_theme_constant_override("separation", 12)
+	settings_tabs.add_child(controls_tab)
+	edge_scroll_toggle = CheckButton.new()
+	edge_scroll_toggle.text = "启用边缘卷页"
+	edge_scroll_toggle.tooltip_text = "鼠标靠近窗口边缘时移动镜头"
+	edge_scroll_toggle.custom_minimum_size.y = 42
+	edge_scroll_toggle.add_theme_color_override("font_color", Color("f5e4bf"))
+	controls_tab.add_child(edge_scroll_toggle)
+	zoom_gesture_toggle = CheckButton.new()
+	zoom_gesture_toggle.text = "启用缩放手势"
+	zoom_gesture_toggle.tooltip_text = "双指捏合时缩放镜头；鼠标滚轮不受影响"
+	zoom_gesture_toggle.custom_minimum_size.y = 42
+	zoom_gesture_toggle.add_theme_color_override("font_color", Color("f5e4bf"))
+	controls_tab.add_child(zoom_gesture_toggle)
+	_add_menu_label(box, "保存后立即生效，下次启动仍会保留。", 14)
 	var buttons := HBoxContainer.new()
 	buttons.add_theme_constant_override("separation", 12)
 	box.add_child(buttons)
@@ -547,30 +586,39 @@ func _create_display_settings(parent: Control) -> void:
 	back_button.text = "返回"
 	back_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_style_button(back_button)
-	back_button.pressed.connect(_close_display_settings)
+	back_button.pressed.connect(_close_settings)
 	buttons.add_child(back_button)
 	var apply_button := Button.new()
-	apply_button.text = "应用分辨率"
+	apply_button.text = "保存设置"
 	apply_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_style_button(apply_button, true)
 	apply_button.pressed.connect(func() -> void:
 		var index := resolution_choice.selected
 		if index < 0 or index >= resolution_values.size(): return
-		_apply_window_resolution(resolution_values[index])
-		_close_display_settings()
+		_apply_window_resolution(resolution_values[index], false)
+		edge_scroll_enabled = edge_scroll_toggle.button_pressed
+		zoom_gesture_enabled = zoom_gesture_toggle.button_pressed
+		selected_view_mode_25d = projection_choice.selected == 1
+		if started and view_mode_25d != selected_view_mode_25d: _toggle_view_mode()
+		_save_settings()
+		_close_settings()
 	)
 	buttons.add_child(apply_button)
 	settings_overlay.hide()
 
-func _show_display_settings(from_pause := false) -> void:
+func _show_settings(from_pause := false) -> void:
 	settings_from_pause = from_pause
 	_refresh_resolution_options()
+	edge_scroll_toggle.button_pressed = edge_scroll_enabled
+	zoom_gesture_toggle.button_pressed = zoom_gesture_enabled
+	projection_choice.select(1 if selected_view_mode_25d else 0)
+	settings_tabs.current_tab = 0
 	if not from_pause: menu_panel.hide()
 	settings_overlay.show()
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	if cursor != null: cursor.hide()
 
-func _close_display_settings() -> void:
+func _close_settings() -> void:
 	settings_overlay.hide()
 	if settings_from_pause:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
@@ -601,15 +649,23 @@ func _apply_window_resolution(resolution: Vector2i, save_setting := true) -> voi
 		var usable := DisplayServer.screen_get_usable_rect(window.current_screen)
 		window.position = usable.position + (usable.size - resolution) / 2
 	if started: call_deferred("_clamp_camera_position")
-	if save_setting:
-		var config := ConfigFile.new()
-		config.set_value("display", "window_size", resolution)
-		config.save(DISPLAY_SETTINGS_PATH)
+	if save_setting: _save_settings()
 
-func _load_display_settings() -> void:
+func _save_settings() -> void:
+	var config := ConfigFile.new()
+	config.set_value("display", "window_size", get_window().size)
+	config.set_value("display", "view_mode_25d", selected_view_mode_25d)
+	config.set_value("controls", "edge_scroll_enabled", edge_scroll_enabled)
+	config.set_value("controls", "zoom_gesture_enabled", zoom_gesture_enabled)
+	config.save(SETTINGS_PATH)
+
+func _load_settings() -> void:
 	if DisplayServer.get_name() == "headless": return
 	var config := ConfigFile.new()
-	if config.load(DISPLAY_SETTINGS_PATH) != OK: return
+	if config.load(SETTINGS_PATH) != OK and config.load(LEGACY_DISPLAY_SETTINGS_PATH) != OK: return
+	selected_view_mode_25d = bool(config.get_value("display", "view_mode_25d", false))
+	edge_scroll_enabled = bool(config.get_value("controls", "edge_scroll_enabled", true))
+	zoom_gesture_enabled = bool(config.get_value("controls", "zoom_gesture_enabled", true))
 	var resolution: Variant = config.get_value("display", "window_size", Vector2i.ZERO)
 	if not resolution is Vector2i or not WINDOW_RESOLUTIONS.has(resolution): return
 	var usable := DisplayServer.screen_get_usable_rect(get_window().current_screen).size
@@ -662,10 +718,10 @@ func _show_home_menu() -> void:
 	start_button.pressed.connect(_show_setup_menu)
 	box.add_child(start_button)
 	var settings_button := Button.new()
-	settings_button.text = "显 示 设 置"
+	settings_button.text = "设 置"
 	settings_button.custom_minimum_size.y = 43
 	_style_menu_button(settings_button)
-	settings_button.pressed.connect(func() -> void: _show_display_settings())
+	settings_button.pressed.connect(func() -> void: _show_settings())
 	box.add_child(settings_button)
 	var quit_button := Button.new()
 	quit_button.text = "退 出 游 戏"
@@ -699,11 +755,11 @@ func _show_setup_menu() -> void:
 	heading.add_theme_constant_override("separation", 6)
 	players_column.add_child(heading)
 	var player_heading := _menu_ink_label(heading, "玩家", 14)
-	player_heading.custom_minimum_size.x = 100
+	player_heading.custom_minimum_size.x = 80
 	var difficulty_heading := _menu_ink_label(heading, "AI 强度", 14)
-	difficulty_heading.custom_minimum_size.x = 115
+	difficulty_heading.custom_minimum_size.x = 100
 	var nation_heading := _menu_ink_label(heading, "国家", 14)
-	nation_heading.custom_minimum_size.x = 130
+	nation_heading.custom_minimum_size.x = 115
 	_menu_ink_label(heading, "队伍", 14)
 	player_list = VBoxContainer.new()
 	player_list.add_theme_constant_override("separation", 7)
@@ -735,13 +791,6 @@ func _show_setup_menu() -> void:
 	map_size_choice.selected = 1 if selected_map_size.x > WORLD_SIZE.x else 0
 	_style_menu_button(map_size_choice)
 	settings_column.add_child(map_size_choice)
-	_menu_ink_label(settings_column, "视角", 14)
-	projection_choice = OptionButton.new()
-	projection_choice.add_item("2D 俯视")
-	projection_choice.add_item("2.5D 斜视")
-	projection_choice.selected = 1 if selected_view_mode_25d else 0
-	_style_menu_button(projection_choice)
-	settings_column.add_child(projection_choice)
 	_menu_ink_label(settings_column, "初始资源", 14)
 	initial_resources_choice = OptionButton.new()
 	for option in ["较少", "标准", "丰富"]: initial_resources_choice.add_item(option)
@@ -790,10 +839,10 @@ func _refresh_player_rows() -> void:
 		row.add_theme_constant_override("separation", 6)
 		player_list.add_child(row)
 		var player_name := _menu_ink_label(row, "玩家 %d%s" % [slot + 1, " (你)" if slot == 0 else ""], 15)
-		player_name.custom_minimum_size.x = 100
+		player_name.custom_minimum_size.x = 80
 		player_name.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		var difficulty := OptionButton.new()
-		difficulty.custom_minimum_size.x = 115
+		difficulty.custom_minimum_size.x = 100
 		if slot == 0:
 			difficulty.add_item("人类")
 			difficulty.disabled = true
@@ -806,7 +855,7 @@ func _refresh_player_rows() -> void:
 		_style_menu_button(difficulty)
 		row.add_child(difficulty)
 		var civilization := OptionButton.new()
-		civilization.custom_minimum_size.x = 130
+		civilization.custom_minimum_size.x = 115
 		for civ in civilization_ids: civilization.add_item(GameData.CIVILIZATIONS[civ]["label"])
 		civilization.selected = civilization_ids.find(lobby_players[slot]["civilization"])
 		civilization.item_selected.connect(func(value: int) -> void:
@@ -815,7 +864,7 @@ func _refresh_player_rows() -> void:
 		_style_menu_button(civilization)
 		row.add_child(civilization)
 		var team := OptionButton.new()
-		team.custom_minimum_size.x = 86
+		team.custom_minimum_size.x = 75
 		for team_id in range(1, 5): team.add_item("队伍 %d" % team_id)
 		team.selected = clampi(int(lobby_players[slot].get("team", slot + 1)) - 1, 0, 3)
 		team.item_selected.connect(func(value: int) -> void:
@@ -824,6 +873,12 @@ func _refresh_player_rows() -> void:
 		)
 		_style_menu_button(team)
 		row.add_child(team)
+		var tree_button := Button.new()
+		tree_button.text = "查看科技树"
+		tree_button.custom_minimum_size.x = 96
+		_style_menu_button(tree_button)
+		tree_button.pressed.connect(func() -> void: _show_tech_tree(str(lobby_players[slot]["civilization"])))
+		row.add_child(tree_button)
 		var remove_button := Button.new()
 		remove_button.text = "×"
 		remove_button.custom_minimum_size.x = 32
@@ -837,6 +892,156 @@ func _refresh_player_rows() -> void:
 		row.add_child(remove_button)
 	add_player_button.disabled = lobby_players.size() >= 4
 	_update_lobby_team_state()
+
+func _show_tech_tree(civilization: String) -> void:
+	if not GameData.CIVILIZATIONS.has(civilization): return
+	if tech_tree_overlay != null: tech_tree_overlay.queue_free()
+	tech_tree_overlay = ColorRect.new()
+	tech_tree_overlay.color = Color("100f0d")
+	tech_tree_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	tech_tree_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	menu_panel.get_parent().add_child(tech_tree_overlay)
+	menu_panel.hide()
+	var panel := PanelContainer.new()
+	panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	panel.offset_left = 24
+	panel.offset_top = 20
+	panel.offset_right = -24
+	panel.offset_bottom = -20
+	panel.add_theme_stylebox_override("panel", _tech_tree_style(Color("26211a"), Color("9f7b43"), 16))
+	tech_tree_overlay.add_child(panel)
+	var layout := VBoxContainer.new()
+	layout.add_theme_constant_override("separation", 12)
+	panel.add_child(layout)
+	var header := HBoxContainer.new()
+	layout.add_child(header)
+	var title := _tech_tree_label(header, "%s  ·  科技树" % GameData.CIVILIZATIONS[civilization]["label"], 26, Color("f4dfae"))
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var close_button := Button.new()
+	close_button.text = "返回国家选择"
+	close_button.custom_minimum_size = Vector2(140, 38)
+	_style_button(close_button)
+	close_button.pressed.connect(_close_tech_tree)
+	header.add_child(close_button)
+	var body := HBoxContainer.new()
+	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	body.add_theme_constant_override("separation", 12)
+	layout.add_child(body)
+	var sidebar_panel := PanelContainer.new()
+	sidebar_panel.custom_minimum_size.x = 205
+	sidebar_panel.add_theme_stylebox_override("panel", _tech_tree_style(Color("352b20"), Color("6f5634"), 12))
+	body.add_child(sidebar_panel)
+	var sidebar := VBoxContainer.new()
+	sidebar.add_theme_constant_override("separation", 10)
+	sidebar_panel.add_child(sidebar)
+	_tech_tree_label(sidebar, "文明特色", 18, Color("e4bd79"))
+	var description := _tech_tree_label(sidebar, str(GameData.CIVILIZATIONS[civilization]["description"]), 15, Color("e4d6b9"))
+	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_tech_tree_label(sidebar, "特色单位", 18, Color("e4bd79"))
+	var unique_units: Array[String] = []
+	for building_kind in RtsTechTree.PRODUCTION:
+		for unit_kind in RtsTechTree.all_train_units(civilization, building_kind):
+			if GameData.UNITS[unit_kind]["tags"].has("unique") and not unique_units.has(unit_kind): unique_units.append(unit_kind)
+	for unit_kind in unique_units:
+		_tech_tree_label(sidebar, "◆ %s" % GameData.UNITS[unit_kind]["label"], 14, Color("b9d4f0"))
+	_tech_tree_label(sidebar, "图例", 18, Color("e4bd79"))
+	_tech_tree_label(sidebar, "◆ 建筑与地标", 14, Color("e4bd79"))
+	_tech_tree_label(sidebar, "◆ 可训练单位", 14, Color("a9cdef"))
+	_tech_tree_label(sidebar, "◆ 可研究科技", 14, Color("a9d8ae"))
+	var hint := _tech_tree_label(sidebar, "悬停可查看费用、属性和前置要求。滚动查看各时代。", 13, Color("c4b492"))
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	body.add_child(scroll)
+	var ages := HBoxContainer.new()
+	ages.add_theme_constant_override("separation", 12)
+	scroll.add_child(ages)
+	for age in range(1, 5): _build_tech_tree_age(ages, civilization, age)
+
+func _close_tech_tree() -> void:
+	if tech_tree_overlay != null:
+		tech_tree_overlay.queue_free()
+		tech_tree_overlay = null
+	menu_panel.show()
+
+func _build_tech_tree_age(parent: HBoxContainer, civilization: String, age: int) -> void:
+	var column_panel := PanelContainer.new()
+	column_panel.custom_minimum_size.x = 250
+	column_panel.add_theme_stylebox_override("panel", _tech_tree_style(Color("30281e"), Color("6f5634"), 10))
+	parent.add_child(column_panel)
+	var column := VBoxContainer.new()
+	column.add_theme_constant_override("separation", 9)
+	column_panel.add_child(column)
+	_tech_tree_label(column, ["", "I  黑暗时代", "II  封建时代", "III  城堡时代", "IV  帝王时代"][age], 19, Color("f3d59c"))
+	if age > 1:
+		var landmarks := _tech_tree_card(column, "时代地标", "选择其一升至该时代", Color("edc781"))
+		for landmark_id in RtsLandmarkCatalog.LANDMARKS:
+			var landmark: Dictionary = RtsLandmarkCatalog.LANDMARKS[landmark_id]
+			if landmark["civilization"] != civilization or int(landmark["age"]) != age: continue
+			var details: Dictionary = RtsLandmarkCatalog.landmark(landmark_id)
+			_tech_tree_entry(landmarks, str(landmark["label"]), Color("edc781"), "%s\n费用：%s" % [landmark["description"], GameData.cost_text(details["cost"])])
+	for building_kind in ["town_center"] + RtsTechTree.BUILD_MENU:
+		var building_age: int = int(RtsTechTree.BUILDING_AGE.get(building_kind, 99))
+		if building_age > age: continue
+		var units: Array[String] = []
+		for unit_kind in RtsTechTree.all_train_units(civilization, building_kind):
+			var unit_age: int = maxi(int(RtsTechTree.UNIT_AGE.get(unit_kind, 99)), building_age)
+			unit_age = int(RtsTechTree.UNIT_AGE_OVERRIDES.get(civilization, {}).get(unit_kind, unit_age))
+			if unit_age == age: units.append(unit_kind)
+		var researches: Array[String] = []
+		for tech_id in RtsTechTree.all_researches(civilization, building_kind):
+			if int(RtsTechTree.get_technology(tech_id).get("age", 99)) == age: researches.append(tech_id)
+		if building_age != age and units.is_empty() and researches.is_empty(): continue
+		var building: Dictionary = GameData.BUILDINGS[building_kind]
+		var card := _tech_tree_card(column, str(building["label"]), "建造费用：%s" % (GameData.cost_text(building["cost"]) if not building["cost"].is_empty() else "初始建筑"), Color("edc781"))
+		for unit_kind in units:
+			var unit: Dictionary = GameData.UNITS[unit_kind]
+			var unit_label := "%s%s" % ["★ " if unit["tags"].has("unique") else "", unit["label"]]
+			var requirements := ""
+			if unit_kind == "zhuge_nu": requirements = "\n需要宋朝王朝"
+			elif unit_kind == "fire_lancer": requirements = "\n需要元朝王朝"
+			elif unit_kind == "grenadier": requirements = "\n需要明朝王朝"
+			_tech_tree_entry(card, unit_label, Color("a9cdef"), "训练费用：%s\n生命：%d  攻击：%d%s" % [GameData.cost_text(GameData.unit_cost(unit_kind)), int(unit["hp"]), int(unit["damage"]), requirements])
+		for tech_id in researches:
+			var tech: Dictionary = RtsTechTree.get_technology(tech_id)
+			var requirements: Array[String] = []
+			for prerequisite in tech["requires"]: requirements.append(str(RtsTechTree.get_technology(prerequisite)["label"]))
+			var tooltip := "研究费用：%s" % GameData.cost_text(tech["cost"])
+			if not requirements.is_empty(): tooltip += "\n前置科技：%s" % "、".join(requirements)
+			_tech_tree_entry(card, str(tech["label"]), Color("a9d8ae"), tooltip)
+
+func _tech_tree_card(parent: VBoxContainer, heading: String, tooltip: String, accent: Color) -> VBoxContainer:
+	var panel := PanelContainer.new()
+	panel.add_theme_stylebox_override("panel", _tech_tree_style(Color("403223"), Color("745735"), 8))
+	panel.tooltip_text = tooltip
+	parent.add_child(panel)
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override("separation", 4)
+	panel.add_child(content)
+	_tech_tree_label(content, heading, 16, accent)
+	return content
+
+func _tech_tree_entry(parent: VBoxContainer, value: String, color: Color, tooltip: String) -> void:
+	var label := _tech_tree_label(parent, "◆ %s" % value, 14, color)
+	label.tooltip_text = tooltip
+
+func _tech_tree_label(parent: Node, value: String, size: int, color: Color) -> Label:
+	var label := Label.new()
+	label.text = value
+	label.add_theme_font_size_override("font_size", size)
+	label.add_theme_color_override("font_color", color)
+	parent.add_child(label)
+	return label
+
+func _tech_tree_style(fill: Color, border: Color, margin: float) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = fill
+	style.border_color = border
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(3)
+	style.set_content_margin_all(margin)
+	return style
 
 func _update_lobby_team_state() -> void:
 	var unique_teams := {}
@@ -874,7 +1079,6 @@ func _begin_menu_match() -> void:
 	selected_map_size = Vector2(3000, 3000) if map_size_choice.selected == 1 else WORLD_SIZE
 	selected_map_style = ["balanced", "lakes", "highlands", "islands"][map_style_choice.selected]
 	selected_initial_resources = initial_resources_choice.selected
-	selected_view_mode_25d = projection_choice.selected == 1
 	var requested := int(map_seed_input.text) if map_seed_input.text.is_valid_int() else -1
 	use_lobby_setup = true
 	start_game(lobby_players[0]["civilization"], requested, lobby_players[1]["civilization"])
@@ -961,7 +1165,7 @@ func start_game(civ: String, requested_seed := -1, opponent_civ := "") -> void:
 		ai_controllers.append(RtsAiController.new(self, owner_id, ai_difficulty))
 		ai_think_timers[owner_id] = 0.0
 	ai = ai_controllers[0]
-	if use_lobby_setup and view_mode_25d != selected_view_mode_25d: _toggle_view_mode()
+	if view_mode_25d != selected_view_mode_25d: _toggle_view_mode()
 	_update_hud()
 	_rebuild_actions()
 	queue_redraw()
@@ -1745,7 +1949,7 @@ func _counter_priority(attacker: RtsUnit, defender_stats: Dictionary) -> float:
 	return bonus
 
 func show_hit(from: Vector2, to: Vector2, owner_id: int) -> void:
-	hit_lines.append({"from": from, "to": to, "owner": owner_id, "time": 0.13})
+	hit_lines.append({"from": from, "to": to, "owner": owner_id, "time": 0.24})
 	queue_redraw()
 
 func notify_player(message: String) -> void:
@@ -1809,7 +2013,7 @@ func _clamp_camera_position() -> void:
 	var margin := extents.min(world_size * (0.12 if view_mode_25d else 0.5))
 	camera.position = camera.position.clamp(margin, world_size - margin)
 
-func _toggle_view_mode() -> void:
+func _toggle_view_mode(save_setting := false) -> void:
 	var at_starting_camera := started and match_statistics.elapsed < 2.0 and camera.position.distance_to(_scaled_point(START_CAMERA_POINT)) < 2.0
 	view_mode_25d = not view_mode_25d
 	world_map.isometric_view = view_mode_25d
@@ -1819,7 +2023,12 @@ func _toggle_view_mode() -> void:
 	camera.zoom = Vector2(base_zoom, base_zoom * 0.5 if view_mode_25d else base_zoom)
 	if view_mode_25d and at_starting_camera: camera.position = spawn_point_for(0)
 	_clamp_camera_position()
+	camera.force_update_scroll()
+	fog.update_projection()
 	view_button.text = "2D 视角" if view_mode_25d else "2.5D 视角"
+	if save_setting:
+		selected_view_mode_25d = view_mode_25d
+		_save_settings()
 	_redraw_projected_entities()
 	_update_iso_depths()
 	queue_redraw()
@@ -1857,10 +2066,14 @@ func _adjust_zoom(factor: float, screen_anchor := Vector2.INF) -> void:
 	var shifted_world := get_viewport().get_canvas_transform().affine_inverse() * screen_anchor
 	camera.position += anchor_world - shifted_world
 	_clamp_camera_position()
-	if view_mode_25d: _redraw_projected_entities()
+	if view_mode_25d:
+		world_map.queue_redraw()
+		fog.update_projection()
+		_redraw_projected_entities()
 	queue_redraw()
 
 func _edge_pan_direction(screen_point: Vector2, viewport_size: Vector2) -> Vector2:
+	if not edge_scroll_enabled: return Vector2.ZERO
 	if not Rect2(Vector2.ZERO, viewport_size).has_point(screen_point): return Vector2.ZERO
 	var direction := Vector2.ZERO
 	if screen_point.x <= EDGE_SCROLL_MARGIN: direction.x -= 1
@@ -1926,9 +2139,14 @@ func _player_center(owner_id: int) -> RtsBuilding:
 	return null
 
 func _input(event: InputEvent) -> void:
+	if tech_tree_overlay != null:
+		if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
+			_close_tech_tree()
+			get_viewport().set_input_as_handled()
+		return
 	if settings_overlay != null and settings_overlay.visible:
 		if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
-			_close_display_settings()
+			_close_settings()
 			get_viewport().set_input_as_handled()
 		return
 	if not started or game_over: return
@@ -1939,7 +2157,7 @@ func _input(event: InputEvent) -> void:
 		_toggle_global_queue()
 		get_viewport().set_input_as_handled()
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_V:
-		_toggle_view_mode()
+		_toggle_view_mode(true)
 		get_viewport().set_input_as_handled()
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_R and (build_mode.ends_with("_wall") or build_mode.ends_with("_gate")):
 		wall_vertical = not wall_vertical
@@ -1948,6 +2166,11 @@ func _input(event: InputEvent) -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not started or game_over or paused: return
+	if event is InputEventMagnifyGesture:
+		if zoom_gesture_enabled:
+			_adjust_zoom(event.factor, event.position)
+			get_viewport().set_input_as_handled()
+		return
 	if event is InputEventPanGesture:
 		_move_camera_screen_delta(event.delta * GESTURE_PAN_PIXELS)
 		get_viewport().set_input_as_handled()
@@ -2112,14 +2335,14 @@ func _handle_control_group(event: InputEventKey) -> void:
 
 func _entity_at(point: Vector2) -> Node2D:
 	var canvas := get_viewport().get_canvas_transform()
-	for unit in navigation.nearby_units(point, 75.0 if view_mode_25d else 36.0):
+	for unit in navigation.nearby_units(point, 250.0 if view_mode_25d else 36.0):
 		if not is_instance_valid(unit) or unit.is_queued_for_deletion() or unit.garrisoned_in != null: continue
 		if unit.owner_id != 0 and fog.active and not fog.can_detect_unit(0, unit): continue
 		if view_mode_25d:
 			var screen_delta := canvas.basis_xform(point - unit.position - RtsIsoProjection.ground_lift(self, unit.position))
 			if absf(screen_delta.x) <= (unit.radius() + 5.0) * camera.zoom.x and screen_delta.y >= -34.0 * camera.zoom.x and screen_delta.y <= 6.0 * camera.zoom.x: return unit
 		if is_instance_valid(unit) and unit.position.distance_to(point) <= unit.radius() + 5: return unit
-	for building in navigation.nearby_buildings(point, 160.0 if view_mode_25d else 50.0):
+	for building in navigation.nearby_buildings(point, 260.0 if view_mode_25d else 50.0):
 		if not is_instance_valid(building) or building.is_queued_for_deletion(): continue
 		if building.owner_id != 0 and fog.active and not fog.can_see(0, building.position): continue
 		if building.contains(point) or view_mode_25d and building.contains_isometric_visual(point, canvas): return building
@@ -2127,7 +2350,7 @@ func _entity_at(point: Vector2) -> Node2D:
 
 func _resource_at(point: Vector2) -> RtsResource:
 	var canvas := get_viewport().get_canvas_transform()
-	for resource in navigation.nearby_resources(point, 90.0 if view_mode_25d else 35.0):
+	for resource in navigation.nearby_resources(point, 250.0 if view_mode_25d else 35.0):
 		if not is_instance_valid(resource) or resource.is_queued_for_deletion() or fog.active and not fog.can_show_resource(0, resource): continue
 		if view_mode_25d and resource.appearance != "fish":
 			var screen_delta := canvas.basis_xform(point - resource.position - RtsIsoProjection.ground_lift(self, resource.position))
@@ -2982,8 +3205,17 @@ func _draw() -> void:
 			draw_rect(Rect2(preview - dimensions * 0.5, dimensions), Color(0.25, 0.9, 0.4, 0.35) if valid else Color(0.9, 0.2, 0.2, 0.35))
 	for line in hit_lines:
 		if fog.active and line["owner"] != 0 and not fog.can_see(0, line["to"]): continue
-		var color: Color = player_color(line["owner"]).lightened(0.45)
-		draw_line(line["from"], line["to"], color, 3)
+		var progress := clampf(float(line["time"]) / 0.24, 0.0, 1.0)
+		var origin: Vector2 = line["from"]
+		var impact: Vector2 = line["to"]
+		if view_mode_25d:
+			origin += RtsIsoProjection.ground_lift(self, origin)
+			impact += RtsIsoProjection.ground_lift(self, impact)
+		var color := Color(player_color(line["owner"]).lightened(0.55), progress)
+		draw_line(origin, impact, color, 2.5)
+		draw_circle(impact, 3.0 + (1.0 - progress) * 5.0, Color("ffdf97", progress * 0.72))
+		for ray in [Vector2.LEFT, Vector2.RIGHT, Vector2.UP, Vector2.DOWN]:
+			draw_line(impact + ray * 5.0, impact + ray * (8.0 + (1.0 - progress) * 7.0), Color("ffe9bc", progress), 1.6)
 	for marker in order_markers:
 		var alpha: float = clampf(marker["time"] / 0.55, 0.0, 1.0)
 		draw_arc(marker["point"], 9.0 + (1.0 - alpha) * 11.0, 0.0, TAU, 24, Color(marker["color"], alpha), 2.0)

@@ -13,6 +13,7 @@ var order := "idle"
 var destination := Vector2.ZERO
 var target: Node2D
 var attack_timer := 0.0
+var hit_flash_timer := 0.0
 var work_timer := 0.0
 var enclosure_timer := 5.0
 var charging := false
@@ -478,6 +479,9 @@ func _reset_route() -> void:
 
 func _process(delta: float) -> void:
 	if not game.started or game.paused or game.game_over or garrisoned_in != null: return
+	if hit_flash_timer > 0.0:
+		hit_flash_timer = maxf(0.0, hit_flash_timer - delta)
+		queue_redraw()
 	if field_build_remaining > 0.0: return
 	if _tick_status(delta): return
 	if order == "hold":
@@ -981,6 +985,7 @@ func _update_facing(previous_position: Vector2) -> void:
 
 func take_damage(damage: float) -> void:
 	hp -= damage
+	hit_flash_timer = 0.18
 	queue_redraw()
 	if hp <= 0.0:
 		if RtsCivilizationRules.is_dynasty_unit(kind) and RtsCivilizationRules.spirit_way_active(game, owner_id):
@@ -1001,32 +1006,50 @@ func _draw() -> void:
 		_draw_isometric()
 		return
 	var color: Color = game.player_color(owner_id)
-	draw_circle(Vector2(1, 3), radius() + 2, Color("20292a"))
-	draw_circle(Vector2.ZERO, radius(), color)
-	if kind == "villager":
-		draw_circle(Vector2(0, -2), 4, Color("e8cfab"))
-	elif stats.get("tags", []).has("naval"):
-		draw_colored_polygon(PackedVector2Array([Vector2(-radius(), -3), Vector2(radius(), -3), Vector2(radius() * 0.6, 8), Vector2(-radius() * 0.6, 8)]), Color("d5bc83"))
-		draw_line(Vector2.ZERO, Vector2(0, -radius()), Color("eee4cb"), 2)
-		if kind == "transport_ship": draw_string(ThemeDB.fallback_font, Vector2(-9, 4), str(passengers.size()), HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color.WHITE)
-	elif kind == "monk":
-		draw_line(Vector2(0, -8), Vector2(0, 8), Color("f4e5aa"), 3)
-		draw_line(Vector2(-5, -2), Vector2(5, -2), Color("f4e5aa"), 3)
-	elif kind == "trader":
-		draw_rect(Rect2(-6, -4, 12, 8), Color("e7c97d"))
+	var r := radius()
+	draw_circle(Vector2(2, 5), r + 2.0, Color("172322", 0.53))
+	if stats.get("tags", []).has("naval"):
+		draw_colored_polygon(PackedVector2Array([Vector2(0, -r - 5), Vector2(r - 2, -4), Vector2(r - 4, 9), Vector2(0, r + 3), Vector2(-r + 4, 9), Vector2(-r + 2, -4)]), Color("715239"))
+		draw_colored_polygon(PackedVector2Array([Vector2(0, -r), Vector2(r - 6, -3), Vector2(r - 8, 6), Vector2(-r + 8, 6), Vector2(-r + 6, -3)]), color.darkened(0.18))
+		draw_line(Vector2(0, -7), Vector2(0, 10), Color("e8d8aa"), 2.0)
+		draw_colored_polygon(PackedVector2Array([Vector2(1, -5), Vector2(10, 2), Vector2(1, 3)]), Color("eee7cf"))
+		if kind == "transport_ship": draw_string(ThemeDB.fallback_font, Vector2(-5, 8), str(passengers.size()), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color.WHITE)
+	elif stats.get("tags", []).has("siege"):
+		draw_rect(Rect2(-r + 3, -8, 2.0 * r - 6, 15), Color("745239"))
+		draw_rect(Rect2(-r + 6, -5, 2.0 * r - 12, 9), color.darkened(0.18))
+		draw_circle(Vector2(-r + 5, 9), 4.0, Color("2e302d"))
+		draw_circle(Vector2(r - 5, 9), 4.0, Color("2e302d"))
+		draw_line(Vector2(-4, 0), Vector2(6, -r), Color("c3a479"), 3.0)
 	elif stats.get("tags", []).has("cavalry"):
-		draw_rect(Rect2(-5, -3, 10, 6), Color("f1e6c6"))
-	elif kind == "archer" or kind == "longbow":
-		draw_arc(Vector2(1, 0), 7, -PI * 0.6, PI * 0.6, 12, Color("eee6c9"), 2)
-	elif kind == "crossbowman" or kind == "arbaletrier" or kind == "zhuge_nu":
-		draw_line(Vector2(-7, -3), Vector2(7, -3), Color("eee6c9"), 2)
-		draw_line(Vector2(0, -3), Vector2(0, 8), Color("eee6c9"), 2)
-	elif kind == "man_at_arms" or kind == "palace_guard":
-		draw_rect(Rect2(-5, -6, 10, 12), Color("eee6c9"), false, 2)
+		draw_colored_polygon(PackedVector2Array([Vector2(-r + 2, -5), Vector2(r - 5, -8), Vector2(r + 3, -2), Vector2(r - 3, 8), Vector2(-r + 1, 7)]), Color("95734e"))
+		draw_circle(Vector2(r - 1, -7), 5.0, Color("a28058"))
+		draw_colored_polygon(PackedVector2Array([Vector2(-8, -7), Vector2(5, -9), Vector2(8, 4), Vector2(-5, 6)]), color.darkened(0.08))
+		draw_circle(Vector2(0, -3), 4.5, Color("d9bf96"))
+		draw_line(Vector2(-r + 3, 3), Vector2(-r - 5, 8), Color("594233"), 2.0)
 	else:
-		draw_line(Vector2(0, -8), Vector2(0, 8), Color("eee6c9"), 2)
-	draw_rect(Rect2(-radius(), -radius() - 7, radius() * 2, 3), Color("422f2d"))
-	draw_rect(Rect2(-radius(), -radius() - 7, radius() * 2 * clampf(hp / max_hp, 0.0, 1.0), 3), Color("82dd8b"))
+		draw_line(Vector2(-4, 5), Vector2(-5, r + 2), Color("3e342c"), 3.0)
+		draw_line(Vector2(4, 5), Vector2(5, r + 2), Color("3e342c"), 3.0)
+		draw_colored_polygon(PackedVector2Array([Vector2(-8, -7), Vector2(8, -7), Vector2(9, 8), Vector2(-9, 8)]), color.darkened(0.10))
+		draw_circle(Vector2(0, -10), 5.5, Color("ddc59f"))
+		if kind == "villager" or kind == "imperial_official":
+			draw_colored_polygon(PackedVector2Array([Vector2(-7, -13), Vector2(7, -13), Vector2(4, -19), Vector2(-4, -19)]), Color("95744b"))
+			draw_line(Vector2(10, 5), Vector2(14, -13), Color("c8a777"), 2.5)
+		elif kind == "monk":
+			draw_circle(Vector2(0, -11), 6.5, color.darkened(0.27))
+			draw_line(Vector2(12, 7), Vector2(12, -18), Color("e2d09c"), 2.0)
+			draw_line(Vector2(8, -12), Vector2(16, -12), Color("e2d09c"), 2.0)
+		elif stats.get("tags", []).has("ranged"):
+			draw_arc(Vector2(10, -2), 9, -PI * 0.55, PI * 0.55, 12, Color("e1d3a9"), 2.0)
+			draw_line(Vector2(7, -13), Vector2(7, 9), Color("d8c9a3"), 1.5)
+		else:
+			draw_line(Vector2(11, 8), Vector2(12, -20), Color("d6d5bd"), 2.5)
+			if stats.get("tags", []).has("heavy"):
+				draw_colored_polygon(PackedVector2Array([Vector2(-11, -4), Vector2(-5, -8), Vector2(0, -4), Vector2(-1, 8), Vector2(-8, 9)]), Color("bbc0b8"))
+	if hit_flash_timer > 0.0:
+		draw_arc(Vector2.ZERO, r + 4.0, 0.0, TAU, 24, Color("ffe5ac", hit_flash_timer / 0.18), 2.0)
+	if hp < max_hp:
+		draw_rect(Rect2(-r, -r - 8, r * 2.0, 3), Color("422f2d"))
+		draw_rect(Rect2(-r, -r - 8, r * 2.0 * clampf(hp / max_hp, 0.0, 1.0), 3), Color("82dd8b"))
 
 func _draw_isometric() -> void:
 	var color: Color = game.player_color(owner_id)
@@ -1061,7 +1084,10 @@ func _draw_isometric() -> void:
 		elif kind == "villager":
 			draw_rect(Rect2(7, -11, 6, 6), Color("b6a07a"))
 	draw_set_transform_matrix(RtsIsoProjection.upright(canvas, ground_lift))
-	var bar_width := maxf(18.0, radius() * 2.0)
-	draw_rect(Rect2(-bar_width * 0.5, -38, bar_width, 4), Color("422f2d"))
-	draw_rect(Rect2(-bar_width * 0.5, -38, bar_width * clampf(hp / max_hp, 0.0, 1.0), 4), Color("82dd8b"))
+	if hit_flash_timer > 0.0:
+		draw_arc(Vector2(0, -16), radius() + 7.0, 0.0, TAU, 24, Color("ffe5ac", hit_flash_timer / 0.18), 2.0)
+	if hp < max_hp:
+		var bar_width := maxf(18.0, radius() * 2.0)
+		draw_rect(Rect2(-bar_width * 0.5, -38, bar_width, 4), Color("422f2d"))
+		draw_rect(Rect2(-bar_width * 0.5, -38, bar_width * clampf(hp / max_hp, 0.0, 1.0), 4), Color("82dd8b"))
 	draw_set_transform_matrix(Transform2D.IDENTITY)

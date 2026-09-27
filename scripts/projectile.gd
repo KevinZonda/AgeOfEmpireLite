@@ -12,6 +12,7 @@ var source_stats: Dictionary = {}
 var attack_profile: Dictionary = {}
 var last_destination := Vector2.ZERO
 var launch_position := Vector2.ZERO
+var previous_position := Vector2.ZERO
 var fixed_target := false
 
 
@@ -20,6 +21,7 @@ func setup(game_ref: Node2D, player_id: int, origin: Vector2, enemy: Node2D, dam
 	owner_id = player_id
 	position = origin
 	launch_position = origin
+	previous_position = origin
 	target = enemy
 	impact_damage = damage_amount
 	speed = maxf(1.0, flight_speed)
@@ -35,6 +37,7 @@ func setup_point(game_ref: Node2D, player_id: int, origin: Vector2, point: Vecto
 	owner_id = player_id
 	position = origin
 	launch_position = origin
+	previous_position = origin
 	target = null
 	fixed_target = true
 	last_destination = point
@@ -85,9 +88,27 @@ func _process(delta: float) -> void:
 		game.show_hit(global_position, impact_point, owner_id)
 		queue_free()
 		return
+	previous_position = global_position
 	global_position = global_position.move_toward(destination, travel)
+	queue_redraw()
 
 
 func _draw() -> void:
-	draw_circle(Vector2.ZERO, 4.0, Color("25221c"))
-	draw_circle(Vector2.ZERO, 2.5, Color("eed899"))
+	if game == null: return
+	var canvas := get_viewport().get_canvas_transform()
+	var flight_length := maxf(1.0, launch_position.distance_to(last_destination))
+	var progress := clampf(launch_position.distance_to(global_position) / flight_length, 0.0, 1.0)
+	var arc_height := sin(progress * PI) * minf(38.0, flight_length * 0.16)
+	var screen_travel := canvas.basis_xform(global_position - previous_position).normalized()
+	if screen_travel == Vector2.ZERO: screen_travel = Vector2.RIGHT
+	var screen_lift := Vector2(0, -arc_height)
+	if game.view_mode_25d:
+		screen_lift += canvas.basis_xform(RtsIsoProjection.ground_lift(game, global_position))
+		draw_set_transform_matrix(RtsIsoProjection.upright(canvas, RtsIsoProjection.world_delta(canvas, screen_lift)))
+	else:
+		draw_set_transform_matrix(Transform2D(0.0, screen_lift))
+	var size := 4.2 if splash_radius > 0.0 else 2.8
+	draw_line(-screen_travel * (size + 7.0), -screen_travel * size, Color("ffe4a0", 0.68), 2.0)
+	draw_circle(Vector2.ZERO, size + 1.6, Color("2f2921", 0.86))
+	draw_circle(Vector2.ZERO, size, Color("ffdc82"))
+	draw_set_transform_matrix(Transform2D.IDENTITY)

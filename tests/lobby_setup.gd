@@ -30,7 +30,7 @@ func _run() -> void:
 	game._refresh_player_rows()
 	game.map_style_choice.select(3)
 	game.map_size_choice.select(1)
-	game.projection_choice.select(1)
+	game.selected_view_mode_25d = true
 	game.initial_resources_choice.select(2)
 	game.map_seed_input.text = "54321"
 	game._begin_menu_match()

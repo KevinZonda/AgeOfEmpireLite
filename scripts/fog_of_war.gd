@@ -11,6 +11,7 @@ var visible_cells: Array[PackedByteArray] = []
 var explored_cells: Array[PackedByteArray] = []
 var mask_texture: ImageTexture
 var mask_image: Image
+var relief_mesh: MeshInstance2D
 var update_timer := 0.0
 var active := false
 var spy_timers: Dictionary = {}
@@ -18,6 +19,10 @@ var spy_timers: Dictionary = {}
 func setup(game_ref: Node2D) -> void:
 	game = game_ref
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	relief_mesh = MeshInstance2D.new()
+	relief_mesh.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	add_child(relief_mesh)
+	relief_mesh.hide()
 
 func reset() -> void:
 	spy_timers.clear()
@@ -36,6 +41,7 @@ func reset() -> void:
 		explored_cells.append(explored)
 	mask_texture = null
 	mask_image = null
+	relief_mesh.mesh = null
 	active = true
 	update_timer = UPDATE_INTERVAL
 	update_visibility()
@@ -177,8 +183,11 @@ func _update_entity_visibility() -> void:
 	for resource in game.resources:
 		if not is_instance_valid(resource) or resource.is_queued_for_deletion(): continue
 		resource.visible = can_show_resource(0, resource)
+		resource.modulate = Color.WHITE if can_see(0, resource.position) else Color(0.42, 0.46, 0.48)
 	for post in game.trade_posts:
-		if is_instance_valid(post): post.visible = is_explored(0, post.position)
+		if is_instance_valid(post):
+			post.visible = is_explored(0, post.position)
+			post.modulate = Color.WHITE if can_see(0, post.position) else Color(0.42, 0.46, 0.48)
 	for relic in game.relics:
 		if is_instance_valid(relic): relic.visible = relic.stored_in == null and can_see(0, relic.position)
 
@@ -196,7 +205,46 @@ func _update_mask() -> void:
 	else:
 		mask_texture.update(image)
 	mask_image = image
+	relief_mesh.texture = mask_texture
+	if game.view_mode_25d and relief_mesh.mesh == null: update_projection()
+	else: queue_redraw()
+
+func update_projection() -> void:
+	if relief_mesh == null: return
+	if not active or not game.view_mode_25d:
+		relief_mesh.hide()
+		queue_redraw()
+		return
+	var terrain_map: RtsWorldMap = game.world_map
+	var lift := RtsIsoProjection.world_delta(get_viewport().get_canvas_transform(), Vector2(0, -game.camera.zoom.x))
+	var vertices := PackedVector3Array()
+	var uvs := PackedVector2Array()
+	var indices := PackedInt32Array()
+	var apron := RtsWorldMap.VISUAL_APRON_CELLS
+	var width := grid_size.x + apron * 2 + 1
+	for y in range(-apron, grid_size.y + apron + 1):
+		for x in range(-apron, grid_size.x + apron + 1):
+			var point := Vector2(x, y) * RtsWorldMap.CELL_SIZE + lift * terrain_map._visual_vertex_height(x, y)
+			vertices.append(Vector3(point.x, point.y, 0.0))
+			uvs.append(Vector2(clampf(float(x) / grid_size.x, 0.0, 1.0), clampf(float(y) / grid_size.y, 0.0, 1.0)))
+	for y in grid_size.y + apron * 2:
+		for x in grid_size.x + apron * 2:
+			var nw := y * width + x
+			var ne := nw + 1
+			var sw := nw + width
+			var se := sw + 1
+			indices.append_array(PackedInt32Array([nw, ne, se, nw, se, sw]))
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = vertices
+	arrays[Mesh.ARRAY_TEX_UV] = uvs
+	arrays[Mesh.ARRAY_INDEX] = indices
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	relief_mesh.mesh = mesh
+	relief_mesh.show()
+	queue_redraw()
 
 func _draw() -> void:
-	if active and mask_texture != null:
-		draw_texture_rect(mask_texture, Rect2(Vector2.ZERO, game.world_size), false)
+	if not active or mask_texture == null: return
+	if not game.view_mode_25d: draw_texture_rect(mask_texture, Rect2(Vector2.ZERO, game.world_size), false)

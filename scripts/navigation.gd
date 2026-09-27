@@ -302,21 +302,33 @@ func _segment_clear(from: Vector2, to: Vector2, radius: float, self_unit: RtsUni
 func move_step(unit: RtsUnit, desired_position: Vector2) -> Vector2:
 	var movement := desired_position - unit.position
 	if movement.is_zero_approx(): return unit.position
+	# A long rendered frame must not turn one move into many collision samples.
+	# This bounds collision work during a stall; movement resumes next frame.
+	var max_step := unit.radius() * 0.6
+	if movement.length_squared() > max_step * max_step:
+		movement = movement.normalized() * max_step
+		desired_position = unit.position + movement
 	var direction := movement.normalized()
 	var distance := movement.length()
 	if _motion_clear(unit, desired_position): return desired_position
 	if unit.movement_group != null:
 		if unit.avoidance_cooldown > 0.0: return unit.position
-		unit.avoidance_cooldown = 0.08
+		unit.avoidance_cooldown = 0.18
 	var side := 1.0 if unit.get_instance_id() % 2 == 0 else -1.0
-	for offset in [side * PI / 4.0, -side * PI / 4.0, side * PI / 2.0, -side * PI / 2.0, side * PI * 0.75, -side * PI * 0.75]:
+	var offsets := [side * PI / 4.0, -side * PI / 4.0] if unit.movement_group != null else [side * PI / 4.0, -side * PI / 4.0, side * PI / 2.0, -side * PI / 2.0, side * PI * 0.75, -side * PI * 0.75]
+	for offset in offsets:
 		var candidate_direction := direction.rotated(offset)
 		var candidate: Vector2 = unit.position + candidate_direction * distance
 		if _motion_clear(unit, candidate): return candidate
 	return unit.position
 
 func _motion_clear(unit: RtsUnit, destination: Vector2) -> bool:
-	var samples := maxi(1, ceili(unit.position.distance_to(destination) / maxf(1.0, unit.radius() * 0.5)))
+	var distance := unit.position.distance_to(destination)
+	# A sub-radius step cannot jump across a unit or a blocked terrain cell.
+	# Checking its endpoint once avoids repeated neighborhood scans for every
+	# member of a moving army on ordinary rendered frames.
+	if distance <= unit.radius() * 0.6: return can_occupy(destination, unit.radius(), unit)
+	var samples := maxi(1, ceili(distance / maxf(1.0, unit.radius() * 0.6)))
 	for i in range(1, samples + 1):
 		var fraction := float(i) / samples
 		if not can_occupy(unit.position.lerp(destination, fraction), unit.radius(), unit): return false
@@ -354,7 +366,7 @@ func can_occupy(point: Vector2, radius: float, self_unit: RtsUnit) -> bool:
 				if not is_instance_valid(other) or other.is_queued_for_deletion() or other == self_unit: continue
 				var personal_space: float = radius + other.radius()
 				if self_unit != null and self_unit.owner_id == other.owner_id and self_unit.movement_group != null and other.movement_group != null:
-					personal_space *= 0.8
+					personal_space *= 0.7
 				if point.distance_squared_to(other.position) < personal_space * personal_space:
 					if self_unit == null or point.distance_squared_to(other.position) <= self_unit.position.distance_squared_to(other.position): return false
 	return true

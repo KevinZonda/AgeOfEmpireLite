@@ -2,6 +2,7 @@ class_name RtsWorldMap
 extends Node2D
 
 const CELL_SIZE := 50
+const VISUAL_APRON_CELLS := 12
 enum Terrain {GRASS, MEADOW, WATER, MOUNTAIN, ROAD}
 
 var world_size := Vector2.ZERO
@@ -12,12 +13,14 @@ var player_count := 2
 var isometric_view := false
 var cells := PackedByteArray()
 var elevation_levels := PackedByteArray()
+var elevation_vertices := PackedFloat32Array()
 var reachable_cells := PackedByteArray()
 var plants: Array[Dictionary] = []
 var stealth_patches: Array[Dictionary] = []
 var resource_specs: Array[Dictionary] = []
 var pathfinder := AStarGrid2D.new()
 var rng := RandomNumberGenerator.new()
+var lift_per_height := Vector2.ZERO
 
 func generate(seed_value: int, map_size: Vector2, style := "balanced", participants := 2) -> void:
 	map_seed = seed_value
@@ -86,13 +89,65 @@ func _build_elevations() -> void:
 					if cells[_index(neighbor)] == Terrain.MOUNTAIN:
 						nearest = mini(nearest, maxi(absi(dx), absi(dy)))
 			elevation_levels[_index(cell)] = 2 if nearest == 1 else 1 if nearest == 2 else 0
+	elevation_vertices.resize((grid_size.x + 1) * (grid_size.y + 1))
+	for y in grid_size.y + 1:
+		for x in grid_size.x + 1:
+			elevation_vertices[_vertex_index(x, y)] = _mountain_height_at(Vector2(x, y) * CELL_SIZE)
 
 func elevation_at(point: Vector2) -> float:
-	if elevation_levels.is_empty(): return 0.0
-	return _height_for_level(elevation_levels[_index(cell_at(point))])
+	if elevation_vertices.is_empty(): return 0.0
+	var cell := cell_at(point)
+	var fraction := (point - Vector2(cell) * CELL_SIZE) / float(CELL_SIZE)
+	fraction = fraction.clamp(Vector2.ZERO, Vector2.ONE)
+	var nw := _vertex_height(cell.x, cell.y)
+	var se := _vertex_height(cell.x + 1, cell.y + 1)
+	if fraction.x >= fraction.y:
+		var ne := _vertex_height(cell.x + 1, cell.y)
+		return nw * (1.0 - fraction.x) + ne * (fraction.x - fraction.y) + se * fraction.y
+	var sw := _vertex_height(cell.x, cell.y + 1)
+	return nw * (1.0 - fraction.y) + sw * (fraction.y - fraction.x) + se * fraction.x
 
-func _height_for_level(level: int) -> float:
-	return [0.0, 10.0, 22.0, 54.0][clampi(level, 0, 3)]
+func elevation_span(area: Rect2) -> float:
+	var low := INF
+	var high := 0.0
+	for y in [area.position.y, area.position.y + area.size.y * 0.5, area.end.y]:
+		for x in [area.position.x, area.position.x + area.size.x * 0.5, area.end.x]:
+			var height := elevation_at(Vector2(x, y))
+			low = minf(low, height)
+			high = maxf(high, height)
+	return high - low
+
+func _vertex_index(x: int, y: int) -> int:
+	return y * (grid_size.x + 1) + x
+
+func _vertex_height(x: int, y: int) -> float:
+	return elevation_vertices[_vertex_index(x, y)]
+
+func _mountain_height_at(point: Vector2) -> float:
+	var cell := cell_at(point)
+	var nearest := INF
+	for y in range(maxi(0, cell.y - 5), mini(grid_size.y - 1, cell.y + 5) + 1):
+		for x in range(maxi(0, cell.x - 5), mini(grid_size.x - 1, cell.x + 5) + 1):
+			if cells[_index(Vector2i(x, y))] != Terrain.MOUNTAIN: continue
+			nearest = minf(nearest, point.distance_to(cell_center(Vector2i(x, y))))
+	if nearest == INF: return 0.0
+	var shoulder := clampf(1.0 - nearest / (CELL_SIZE * 4.5), 0.0, 1.0)
+	var height := 74.0 * shoulder * shoulder * (3.0 - 2.0 * shoulder)
+	var world_scale := Vector2(world_size.x / 2400.0, world_size.y / 1500.0)
+	var peak_scale := 1.2 if map_style == "highlands" else 0.85 if map_style == "lakes" else 1.0
+	for peak in [
+		[Vector2(790, 255), Vector2(285, 205), 195.0],
+		[Vector2(705, 190), Vector2(145, 118), 135.0],
+		[Vector2(1660, 265), Vector2(270, 195), 190.0],
+		[Vector2(1740, 208), Vector2(142, 110), 130.0],
+	]:
+		var center: Vector2 = peak[0] * world_scale
+		var radius: Vector2 = peak[1] * world_scale * _mountain_scale()
+		var radial := ((point - center) / radius).length_squared()
+		if radial >= 1.0: continue
+		var crest: float = pow(1.0 - sqrt(radial), 0.82)
+		height = maxf(height, float(peak[2]) * peak_scale * crest)
+	return height
 
 func spawn_positions() -> Array[Vector2]:
 	var references := [Vector2(330, 720), Vector2(2070, 720)] if player_count <= 2 else [Vector2(330, 420), Vector2(2070, 1080), Vector2(330, 1080), Vector2(2070, 420)]
@@ -412,17 +467,65 @@ func _generate_fish() -> void:
 				placed += 1
 
 func _tile_lift(height: float) -> Vector2:
-	var camera := get_viewport().get_camera_2d()
-	if camera == null: return Vector2.ZERO
-	return RtsIsoProjection.world_delta(get_viewport().get_canvas_transform(), Vector2(0, -height * camera.zoom.x))
+	return lift_per_height * height
 
-func _neighbor_level(x: int, y: int) -> int:
-	if x < 0 or y < 0 or x >= grid_size.x or y >= grid_size.y: return 0
-	return elevation_levels[_index(Vector2i(x, y))]
+func _visual_vertex_height(x: int, y: int) -> float:
+	var inside_x := clampi(x, 0, grid_size.x)
+	var inside_y := clampi(y, 0, grid_size.y)
+	var outside := maxi(absi(x - inside_x), absi(y - inside_y))
+	return _vertex_height(inside_x, inside_y) * clampf(1.0 - float(outside) / VISUAL_APRON_CELLS, 0.0, 1.0)
+
+func projected_vertex(x: int, y: int) -> Vector2:
+	return Vector2(x, y) * CELL_SIZE + _tile_lift(_visual_vertex_height(x, y))
+
+func _relief_color(terrain: int, height: float) -> Color:
+	if terrain == Terrain.MOUNTAIN:
+		return Color("777b71").lerp(Color("d8d6c5"), clampf((height - 70.0) / 110.0, 0.0, 1.0))
+	var grass := Color("88a36e") if terrain == Terrain.MEADOW else Color("759761")
+	return grass.lerp(Color("a49d79"), clampf(height / 105.0, 0.0, 0.78))
+
+func _draw_relief_tile(x: int, y: int) -> void:
+	var h_nw := _visual_vertex_height(x, y)
+	var h_ne := _visual_vertex_height(x + 1, y)
+	var h_se := _visual_vertex_height(x + 1, y + 1)
+	var h_sw := _visual_vertex_height(x, y + 1)
+	if maxf(maxf(h_nw, h_ne), maxf(h_se, h_sw)) < 0.5: return
+	var nw := projected_vertex(x, y)
+	var ne := projected_vertex(x + 1, y)
+	var se := projected_vertex(x + 1, y + 1)
+	var sw := projected_vertex(x, y + 1)
+	var terrain: int = cells[_index(Vector2i(clampi(x, 0, grid_size.x - 1), clampi(y, 0, grid_size.y - 1)))]
+	var average := (h_nw + h_ne + h_se + h_sw) * 0.25
+	var color := _relief_color(terrain, average)
+	var east_slope := (h_ne + h_se - h_nw - h_sw) / (2.0 * CELL_SIZE)
+	var south_slope := (h_sw + h_se - h_nw - h_ne) / (2.0 * CELL_SIZE)
+	var light := clampf(0.98 - east_slope * 0.16 - south_slope * 0.12, 0.72, 1.15)
+	draw_colored_polygon(PackedVector2Array([nw, ne, se]), color * light)
+	draw_colored_polygon(PackedVector2Array([nw, se, sw]), color * clampf(light - (h_sw - h_ne) / 500.0, 0.69, 1.13))
+	if terrain == Terrain.MOUNTAIN and average > 65.0 and (x * 7 + y * 11) % 4 == 0:
+		var rock_ink := color.darkened(0.20)
+		var scratch := nw.lerp(se, 0.37)
+		draw_line(scratch, scratch.lerp(ne, 0.30), Color(rock_ink, 0.55), 1.2)
+		if average > 105.0:
+			draw_line(nw.lerp(ne, 0.38), nw.lerp(se, 0.53), Color("eee9d4", 0.40), 1.4)
 
 func _draw() -> void:
 	if isometric_view:
+		var camera := get_viewport().get_camera_2d()
+		lift_per_height = RtsIsoProjection.world_delta(get_viewport().get_canvas_transform(), Vector2(0, -camera.zoom.x)) if camera != null else Vector2.ZERO
 		draw_rect(Rect2(-world_size * 2.0, world_size * 5.0), RtsFogOfWar.UNEXPLORED_COLOR)
+		for y in range(-VISUAL_APRON_CELLS, grid_size.y + VISUAL_APRON_CELLS):
+			for x in range(-VISUAL_APRON_CELLS, grid_size.x + VISUAL_APRON_CELLS):
+				if x >= 0 and y >= 0 and x < grid_size.x and y < grid_size.y: continue
+				var neighbor := Vector2i(clampi(x, 0, grid_size.x - 1), clampi(y, 0, grid_size.y - 1))
+				var terrain: int = cells[_index(neighbor)]
+				var color := Color("688e5e")
+				match terrain:
+					Terrain.MEADOW: color = Color("7d9b64")
+					Terrain.WATER: color = Color("437e9f")
+					Terrain.MOUNTAIN: color = Color("777b71")
+					Terrain.ROAD: color = Color("879468")
+				draw_rect(Rect2(Vector2(x, y) * CELL_SIZE, Vector2.ONE * CELL_SIZE), color)
 	for y in grid_size.y:
 		for x in grid_size.x:
 			var cell := Vector2i(x, y)
@@ -432,7 +535,7 @@ func _draw() -> void:
 			match terrain:
 				Terrain.MEADOW: color = Color("7d9b64")
 				Terrain.WATER: color = Color("437e9f")
-				Terrain.MOUNTAIN: color = Color("747d79")
+				Terrain.MOUNTAIN: color = Color("686f68").lerp(Color("adb0a1"), clampf((elevation_at(point + Vector2.ONE * CELL_SIZE * 0.5) - 60.0) / 140.0, 0.0, 1.0))
 				Terrain.ROAD: color = Color("879468")
 			draw_rect(Rect2(point, Vector2(CELL_SIZE, CELL_SIZE)), color)
 			if terrain == Terrain.WATER:
@@ -443,35 +546,20 @@ func _draw() -> void:
 				if x > 0 and cells[_index(Vector2i(x - 1, y))] != Terrain.WATER:
 					draw_line(point, point + Vector2(0, CELL_SIZE), Color("b8c6a0", 0.7), 2.0)
 			elif terrain == Terrain.MOUNTAIN and not isometric_view:
-				draw_colored_polygon(PackedVector2Array([point + Vector2(4, 46), point + Vector2(26, 8), point + Vector2(49, 46)]), Color("969e94"))
-				draw_colored_polygon(PackedVector2Array([point + Vector2(26, 8), point + Vector2(49, 46), point + Vector2(28, 38)]), Color("596663"))
-				draw_line(point + Vector2(19, 20), point + Vector2(26, 8), Color("d8d9c7"), 2)
+				if (x * 7 + y * 11) % 4 == 0:
+					draw_line(point + Vector2(9, 31), point + Vector2(23, 18), color.lightened(0.19), 2)
+					draw_line(point + Vector2(23, 18), point + Vector2(32, 21), color.darkened(0.24), 2)
+				if elevation_at(point + Vector2.ONE * CELL_SIZE * 0.5) > 145.0:
+					draw_line(point + Vector2(17, 12), point + Vector2(31, 9), Color("dedecf", 0.55), 3)
 			elif terrain == Terrain.ROAD and x % 3 == 0 and y % 2 == 0:
 				draw_line(point + Vector2(10, 27), point + Vector2(35, 25), Color("b1aa75", 0.25), 2)
+			elif terrain in [Terrain.GRASS, Terrain.MEADOW] and (x * 13 + y * 7) % 5 == 0:
+				draw_line(point + Vector2(11, 34), point + Vector2(14, 29), color.lightened(0.10), 1)
+				draw_line(point + Vector2(14, 29), point + Vector2(18, 33), color.darkened(0.08), 1)
 	if isometric_view:
-		for y in grid_size.y:
-			for x in grid_size.x:
-				var cell := Vector2i(x, y)
-				var level: int = elevation_levels[_index(cell)]
-				if level == 0: continue
-				var lift := _tile_lift(_height_for_level(level))
-				var point := Vector2(x * CELL_SIZE, y * CELL_SIZE)
-				var nw := point
-				var ne := point + Vector2(CELL_SIZE, 0)
-				var se := point + Vector2(CELL_SIZE, CELL_SIZE)
-				var sw := point + Vector2(0, CELL_SIZE)
-				var terrain: int = cells[_index(cell)]
-				var top := Color("a0a99c") if terrain == Terrain.MOUNTAIN else Color("8daa73") if terrain == Terrain.MEADOW else Color("789768")
-				var west_level := _neighbor_level(x - 1, y)
-				if west_level < level:
-					var lower := _tile_lift(_height_for_level(west_level))
-					draw_colored_polygon(PackedVector2Array([nw + lift, sw + lift, sw + lower, nw + lower]), top.darkened(0.44))
-				var south_level := _neighbor_level(x, y + 1)
-				if south_level < level:
-					var lower := _tile_lift(_height_for_level(south_level))
-					draw_colored_polygon(PackedVector2Array([sw + lift, se + lift, se + lower, sw + lower]), top.darkened(0.27))
-				draw_colored_polygon(PackedVector2Array([nw + lift, ne + lift, se + lift, sw + lift]), top)
-				if level >= 2: draw_line(sw + lift, se + lift, top.lightened(0.16), 1.5)
+		for y in range(-VISUAL_APRON_CELLS, grid_size.y + VISUAL_APRON_CELLS):
+			for x in range(-VISUAL_APRON_CELLS, grid_size.x + VISUAL_APRON_CELLS):
+				_draw_relief_tile(x, y)
 	for patch in stealth_patches:
 		var center: Vector2 = patch["position"]
 		if isometric_view: center += _tile_lift(elevation_at(center))

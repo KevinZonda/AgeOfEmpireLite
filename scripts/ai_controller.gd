@@ -7,6 +7,9 @@ var difficulty := "normal"
 var transport_wait: Dictionary = {}
 var construction_watch: Dictionary = {}
 var rng := RandomNumberGenerator.new()
+var last_tactic := ""
+var tactic_cooldown := 0.0
+var push_cooldown := 0.0
 
 func _init(game_ref: Node2D, player_id := 1, chosen_difficulty := "normal") -> void:
 	game = game_ref
@@ -15,7 +18,13 @@ func _init(game_ref: Node2D, player_id := 1, chosen_difficulty := "normal") -> v
 	rng.seed = int(game.map_seed) + player_id * 104729
 
 func worker_goal() -> int:
-	return {"easy": 7, "normal": 10, "hard": 14}[difficulty]
+	var age: int = game.players[owner_id]["age"] if game.players.size() > owner_id else 1
+	var goals: Dictionary = {
+		"easy": [7, 12, 18, 24],
+		"normal": [10, 17, 25, 34],
+		"hard": [14, 21, 31, 42],
+	}
+	return goals[difficulty][clampi(age - 1, 0, 3)]
 
 func attack_threshold() -> int:
 	return {"easy": 8, "normal": 5, "hard": 3}[difficulty]
@@ -26,6 +35,8 @@ func _has_unfinished_house() -> bool:
 	return false
 
 func tick() -> void:
+	tactic_cooldown = maxf(0.0, tactic_cooldown - {"easy": 6.0, "normal": 3.0, "hard": 1.5}[difficulty])
+	push_cooldown = maxf(0.0, push_cooldown - {"easy": 6.0, "normal": 3.0, "hard": 1.5}[difficulty])
 	var workers: Array[RtsUnit] = []
 	var army: Array[RtsUnit] = []
 	for unit in game.units:
@@ -46,17 +57,26 @@ func tick() -> void:
 			if fish != null: unit.issue_command("gather", Vector2.INF, fish)
 		elif unit.kind == "monk" and unit.order == "idle": _assign_monk(unit)
 	_resume_construction(workers)
+	var gathering := {"food": 0, "wood": 0, "gold": 0, "stone": 0}
+	for worker in workers:
+		if worker.order == "gather" and is_instance_valid(worker.target):
+			var gathered_kind: String = "food" if worker.target is RtsBuilding else worker.target.kind
+			if gathering.has(gathered_kind): gathering[gathered_kind] += 1
 	for worker in workers:
 		if worker.order == "gather" and is_instance_valid(worker.target):
 			var reach: float = worker.target.radius + worker.radius() + 2.0 if worker.target is RtsResource else worker.target.size().x * 0.5 + worker.radius() + 2.0
 			if worker.position.distance_to(worker.target.position) > reach + 5.0 and worker.route.is_empty(): worker.order_stop()
 		if worker.order == "idle":
-			var resource_kind := "food" if game.players[owner_id]["food"] < 330 else "wood" if game.players[owner_id]["wood"] < 230 else "gold"
+			var resource_kind := _needed_resource(gathering, workers.size())
 			var resource: RtsResource = game.find_nearest_resource(worker.position, resource_kind, INF, owner_id, false, worker)
-			if resource != null: worker.order_gather(resource)
+			if resource != null:
+				worker.order_gather(resource)
+				gathering[resource_kind] += 1
 			elif resource_kind == "food":
 				var farm: RtsBuilding = game.find_nearest_free_farm(owner_id, worker.position, 520.0, worker)
-				if farm != null: worker.order_gather(farm)
+				if farm != null:
+					worker.order_gather(farm)
+					gathering["food"] += 1
 	if game.players[owner_id]["age"] == 1:
 		if game._player_center(owner_id) != null: game.advance_age(owner_id)
 		if army.is_empty(): return
@@ -74,7 +94,7 @@ func tick() -> void:
 	if center != null and _unit_count("villager") < worker_goal(): game.train_unit(center, "villager")
 	if not workers.is_empty() and game.population_cap(owner_id) - game.population_used(owner_id) <= 4 and not _has_unfinished_house():
 		_construct("house", workers[0])
-	if not workers.is_empty() and age >= 2 and game.players[owner_id]["food"] < 320 and _building_count("farm") < mini(7, maxi(2, workers.size() / 2)) and not _has_unfinished_building("farm"):
+	if not workers.is_empty() and age >= 2 and game.players[owner_id]["food"] < 450 and _building_count("farm") < mini(12, maxi(2, workers.size() / 3)) and not _has_unfinished_building("farm"):
 		_construct("farm", workers[0])
 	if not workers.is_empty() and not _has_building("barracks"):
 		_construct("barracks", workers[0])
@@ -84,6 +104,7 @@ func tick() -> void:
 		_construct("stable", workers[0])
 	elif not workers.is_empty() and not _has_building("blacksmith"):
 		_construct("blacksmith", workers[0])
+	_expand_production(workers, army.size(), age)
 	if not workers.is_empty() and age >= 2 and not _has_building("outpost") and game.can_afford(owner_id, GameData.BUILDINGS["outpost"]["cost"]):
 		_construct("outpost", workers[0])
 	if not workers.is_empty() and age >= 3 and not _has_building("siege_workshop") and game.can_afford(owner_id, GameData.BUILDINGS["siege_workshop"]["cost"]):
@@ -128,7 +149,7 @@ func tick() -> void:
 		if building.producer_kind() == "white_tower":
 			game.train_unit(building, "spearman" if enemy_profile["cavalry"] > 0 else "longbow")
 		if building.producer_kind() == "wynguard": game.train_unit(building, "longbow")
-		if building.producer_kind() == "town_center" and building != center and workers.size() < 10: game.train_unit(building, "villager")
+		if building.producer_kind() == "town_center" and building != center and _unit_count("villager") < worker_goal(): game.train_unit(building, "villager")
 		if building.producer_kind() == "market" and _unit_count("trader") < 1:
 			game.train_unit(building, "trader")
 		if building.kind == "dock" and _unit_count("fishing_boat") < 2:
@@ -141,6 +162,7 @@ func tick() -> void:
 			game.train_unit(building, "transport_ship")
 		if building.kind == "monastery" and _unit_count("monk") < 3:
 			game.train_unit(building, "monk")
+	if _tactical_orders(army): return
 	if army.size() >= attack_threshold():
 		var target: Node2D = game.strategic_target_for(owner_id)
 		if target == null:
@@ -149,10 +171,23 @@ func tick() -> void:
 					target = building
 					break
 		if target != null:
-			var idle_army: Array[RtsUnit] = []
+			var home: Vector2 = center.position if center != null else game.spawn_point_for(owner_id)
+			var rally := home.move_toward(target.position, 180.0)
+			var ready_army: Array[RtsUnit] = []
 			for soldier in army:
-				if soldier.order == "idle": idle_army.append(soldier)
-			if not idle_army.is_empty(): game.issue_group_order(idle_army, target.position, true)
+				if soldier.hp <= soldier.max_hp * 0.4: continue
+				if soldier.order == "idle" or soldier.order == "move" and soldier.destination.distance_to(rally) < 55.0:
+					ready_army.append(soldier)
+			var wave_size: int = attack_threshold() + [2, 5, 8, 10][clampi(age - 1, 0, 3)]
+			if ready_army.size() >= wave_size and push_cooldown <= 0.0:
+				game.issue_group_order(ready_army, target.position, true)
+				last_tactic = "push"
+				push_cooldown = 18.0
+			else:
+				for soldier in ready_army:
+					if soldier.order != "idle": continue
+					if soldier.position.distance_to(rally) > 95.0: soldier.order_move(rally)
+				if not ready_army.is_empty(): last_tactic = "regroup"
 
 func _assign_scout(scout: RtsUnit) -> void:
 	var center: RtsBuilding = game.find_nearest_owned_building(owner_id, "town_center", scout.position)
@@ -214,6 +249,98 @@ func _enemy_profile() -> Dictionary:
 		for tag in profile:
 			if unit.stats.get("tags", []).has(tag): profile[tag] += 1
 	return profile
+
+func _needed_resource(gathering: Dictionary, worker_count: int) -> String:
+	var bank: Dictionary = game.players[owner_id]
+	var age: int = bank["age"]
+	var age_cost: Dictionary = RtsTechTree.age_cost(age)
+	var targets := {"food": 0.42, "wood": 0.30, "gold": 0.28}
+	if age < RtsTechTree.MAX_AGE and game.match_statistics.elapsed > 90.0:
+		targets = {"food": 0.40, "wood": 0.22, "gold": 0.38}
+	if int(bank["wood"]) < 180: targets["wood"] += 0.18
+	if int(bank["food"]) < 160: targets["food"] += 0.18
+	if age_cost.has("gold") and int(bank["gold"]) < int(age_cost["gold"]): targets["gold"] += 0.12
+	var best := "food"
+	var best_score := -INF
+	for kind in ["food", "wood", "gold"]:
+		var score: float = float(targets[kind]) * float(maxi(worker_count, 3)) - float(gathering[kind])
+		if score > best_score:
+			best_score = score
+			best = kind
+	return best
+
+func _expand_production(workers: Array[RtsUnit], army_size: int, age: int) -> void:
+	if workers.size() < 13 or age < 3: return
+	var desired := 2 if age == 3 else 3
+	if workers.size() < 25: desired = 2
+	if army_size < 12: desired = mini(desired, 2)
+	var bank: Dictionary = game.players[owner_id]
+	if int(bank["wood"]) < 220: return
+	for kind in ["barracks", "archery_range", "stable"]:
+		if _building_count(kind) < desired and not _has_unfinished_building(kind):
+			_construct(kind, workers[0])
+			return
+
+func _visible_enemy_units() -> Array[RtsUnit]:
+	var enemies: Array[RtsUnit] = []
+	for unit in game.units:
+		if not is_instance_valid(unit) or unit.is_queued_for_deletion() or unit.garrisoned_in != null or not game.is_enemy(owner_id, unit.owner_id): continue
+		if game.fog.active and not game.fog.can_detect_unit(owner_id, unit): continue
+		enemies.append(unit)
+	return enemies
+
+func _tactical_orders(army: Array[RtsUnit]) -> bool:
+	if army.is_empty(): return false
+	var center: RtsBuilding = game._player_center(owner_id)
+	var home: Vector2 = center.position if center != null else game.spawn_point_for(owner_id)
+	var visible := _visible_enemy_units()
+	var threat: RtsUnit
+	var threat_score := INF
+	var raid_target: RtsUnit
+	var raid_distance := INF
+	for enemy in visible:
+		var home_distance := enemy.position.distance_to(home)
+		if enemy.kind != "villager" and home_distance < 390.0 and home_distance < threat_score:
+			threat = enemy
+			threat_score = home_distance
+		if enemy.kind == "villager" and home_distance > 390.0:
+			var distance := enemy.position.distance_to(home)
+			if distance < raid_distance:
+				raid_target = enemy
+				raid_distance = distance
+	for soldier in army:
+		if soldier.hp > soldier.max_hp * 0.27 or soldier.order in ["move", "garrison"]: continue
+		var nearby_enemy := false
+		for enemy in visible:
+			if soldier.position.distance_to(enemy.position) < 170.0:
+				nearby_enemy = true
+				break
+		if nearby_enemy:
+			soldier.order_move(home + Vector2.from_angle(float(soldier.get_instance_id() % 32) * TAU / 32.0) * 75.0)
+			last_tactic = "retreat"
+	if tactic_cooldown > 0.0: return threat != null
+	if threat != null:
+		var defenders: Array[RtsUnit] = []
+		for soldier in army:
+			if soldier.hp <= soldier.max_hp * 0.27 or soldier.position.distance_to(home) > 650.0: continue
+			defenders.append(soldier)
+			if defenders.size() >= 14: break
+		if not defenders.is_empty():
+			game.issue_group_order(defenders, threat.position, true)
+			last_tactic = "defend"
+			tactic_cooldown = 9.0
+		return true
+	if raid_target != null and army.size() >= attack_threshold() + 4:
+		var raiders: Array[RtsUnit] = []
+		for soldier in army:
+			if soldier.stats.get("tags", []).has("cavalry") and soldier.order == "idle" and soldier.hp > soldier.max_hp * 0.6:
+				raiders.append(soldier)
+				if raiders.size() >= 4: break
+		if raiders.size() >= 2:
+			game.issue_group_order(raiders, raid_target.position, true)
+			last_tactic = "raid"
+			tactic_cooldown = 12.0
+	return false
 
 func _has_building(kind: String) -> bool:
 	for building in game.buildings:

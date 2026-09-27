@@ -99,6 +99,14 @@ func isometric_height() -> float:
 	if kind in ["town_center", "landmark", "keep", "wonder"]: return 42.0
 	return 26.0
 
+func foundation_height() -> float:
+	if game == null or game.world_map == null: return 0.0
+	var half := size() * 0.5
+	var height: float = game.world_map.elevation_at(position)
+	for corner in [Vector2(-half.x, -half.y), Vector2(half.x, -half.y), Vector2(half.x, half.y), Vector2(-half.x, half.y)]:
+		height = maxf(height, game.world_map.elevation_at(position + corner))
+	return height
+
 func contains_isometric_visual(world_point: Vector2, canvas: Transform2D) -> bool:
 	if contains(world_point): return true
 	var bounds := Rect2(-size() * 0.5, size())
@@ -106,7 +114,7 @@ func contains_isometric_visual(world_point: Vector2, canvas: Transform2D) -> boo
 	var ne := Vector2(bounds.end.x, bounds.position.y)
 	var se := bounds.end
 	var sw := Vector2(bounds.position.x, bounds.end.y)
-	var terrain_lift := RtsIsoProjection.ground_lift(game, position)
+	var terrain_lift := RtsIsoProjection.world_delta(canvas, Vector2(0, -foundation_height() * game.camera.zoom.x))
 	var lift := terrain_lift + RtsIsoProjection.world_delta(canvas, Vector2(0, -isometric_height() * game.camera.zoom.x))
 	var local_point := world_point - position
 	for polygon in [
@@ -385,8 +393,15 @@ func _draw_isometric() -> void:
 	var height := isometric_height()
 	var canvas := get_viewport().get_canvas_transform()
 	var lift := RtsIsoProjection.world_delta(canvas, Vector2(0, -height * game.camera.zoom.x))
-	var terrain_lift := RtsIsoProjection.ground_lift(game, position)
+	var terrain_lift := RtsIsoProjection.world_delta(canvas, Vector2(0, -foundation_height() * game.camera.zoom.x))
+	var ne_ground := RtsIsoProjection.ground_lift(game, position + ne) - terrain_lift
+	var se_ground := RtsIsoProjection.ground_lift(game, position + se) - terrain_lift
+	var sw_ground := RtsIsoProjection.ground_lift(game, position + sw) - terrain_lift
 	draw_set_transform_matrix(Transform2D(0.0, terrain_lift))
+	if ne_ground.length() + se_ground.length() + sw_ground.length() > 0.5:
+		draw_colored_polygon(PackedVector2Array([ne, se, se + se_ground, ne + ne_ground]), Color("625d4e"))
+		draw_colored_polygon(PackedVector2Array([sw, se, se + se_ground, sw + sw_ground]), Color("817866"))
+		draw_line(sw + sw_ground, se + se_ground, Color("3a3c32", 0.75), 1.4)
 	draw_colored_polygon(PackedVector2Array([nw, ne, se, sw]), Color("273a30", 0.65))
 	if height > 0.0:
 		draw_colored_polygon(PackedVector2Array([ne + lift, se + lift, se, ne]), color.darkened(0.5))
