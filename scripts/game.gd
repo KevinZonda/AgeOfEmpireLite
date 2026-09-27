@@ -67,6 +67,7 @@ var map_style_choice: OptionButton
 var map_seed_input: LineEdit
 var projection_choice: OptionButton
 var initial_resources_choice: OptionButton
+var fog_mode_choice: OptionButton
 var player_list: VBoxContainer
 var add_player_button: Button
 var setup_start_button: Button
@@ -77,6 +78,7 @@ var lobby_players: Array[Dictionary] = [
 ]
 var use_lobby_setup := false
 var selected_initial_resources := 1
+var selected_fog_mode := "enabled"
 var selected_view_mode_25d := false
 var started := false
 var game_over := false
@@ -886,6 +888,12 @@ func _show_setup_menu() -> void:
 	initial_resources_choice.selected = selected_initial_resources
 	_style_menu_button(initial_resources_choice)
 	settings_column.add_child(initial_resources_choice)
+	_menu_ink_label(settings_column, "战争迷雾", 14)
+	fog_mode_choice = OptionButton.new()
+	for option in ["开启", "完整关闭", "显示地形"]: fog_mode_choice.add_item(option)
+	fog_mode_choice.selected = ["enabled", "disabled", "terrain"].find(selected_fog_mode)
+	_style_menu_button(fog_mode_choice)
+	settings_column.add_child(fog_mode_choice)
 	_menu_ink_label(settings_column, "地图种子", 14)
 	map_seed_input = LineEdit.new()
 	map_seed_input.placeholder_text = "留空则随机生成"
@@ -963,19 +971,20 @@ func _refresh_player_rows() -> void:
 		_style_menu_button(team)
 		row.add_child(team)
 		var color_choice := OptionButton.new()
-		color_choice.custom_minimum_size.x = 92
+		color_choice.custom_minimum_size.x = 58
 		for color_index in PLAYER_COLORS.size():
-			color_choice.add_item(PLAYER_COLOR_NAMES[color_index])
+			color_choice.add_item("")
 			color_choice.set_item_icon(color_index, _color_swatch(PLAYER_COLORS[color_index]))
 		color_choice.selected = clampi(int(lobby_players[slot].get("color", slot)), 0, PLAYER_COLORS.size() - 1)
+		color_choice.tooltip_text = PLAYER_COLOR_NAMES[color_choice.selected]
 		color_choice.item_selected.connect(func(value: int) -> void:
 			_set_lobby_player_color(slot, value)
 		)
 		_style_menu_button(color_choice)
 		row.add_child(color_choice)
 		var tree_button := Button.new()
-		tree_button.text = "查看科技树"
-		tree_button.custom_minimum_size.x = 96
+		tree_button.text = "科技树"
+		tree_button.custom_minimum_size.x = 72
 		_style_menu_button(tree_button)
 		tree_button.pressed.connect(func() -> void: _show_tech_tree(str(lobby_players[slot]["civilization"])))
 		row.add_child(tree_button)
@@ -994,7 +1003,7 @@ func _refresh_player_rows() -> void:
 	_update_lobby_team_state()
 
 func _color_swatch(color: Color) -> ImageTexture:
-	var swatch := Image.create(14, 14, false, Image.FORMAT_RGBA8)
+	var swatch := Image.create(20, 20, false, Image.FORMAT_RGBA8)
 	swatch.fill(color)
 	return ImageTexture.create_from_image(swatch)
 
@@ -1062,6 +1071,7 @@ func _begin_menu_match() -> void:
 	selected_map_size = Vector2(3000, 3000) if map_size_choice.selected == 1 else WORLD_SIZE
 	selected_map_style = ["balanced", "lakes", "highlands", "islands"][map_style_choice.selected]
 	selected_initial_resources = initial_resources_choice.selected
+	selected_fog_mode = ["enabled", "disabled", "terrain"][fog_mode_choice.selected]
 	var requested := int(map_seed_input.text) if map_seed_input.text.is_valid_int() else -1
 	use_lobby_setup = true
 	start_game(lobby_players[0]["civilization"], requested, lobby_players[1]["civilization"])
@@ -1140,7 +1150,7 @@ func start_game(civ: String, requested_seed := -1, opponent_civ := "") -> void:
 	var home_center := _player_center(0)
 	if home_center != null: selected.append(home_center)
 	navigation.refresh()
-	fog.reset()
+	fog.reset(selected_fog_mode if use_lobby_setup else "enabled")
 	match_statistics.reset(self)
 	ai_controllers.clear()
 	for owner_id in range(1, player_count):

@@ -14,6 +14,7 @@ var mask_image: Image
 var relief_mesh: MeshInstance2D
 var update_timer := 0.0
 var active := false
+var mode := "enabled"
 var spy_timers: Dictionary = {}
 
 func setup(game_ref: Node2D) -> void:
@@ -24,7 +25,8 @@ func setup(game_ref: Node2D) -> void:
 	add_child(relief_mesh)
 	relief_mesh.hide()
 
-func reset() -> void:
+func reset(new_mode := "enabled") -> void:
+	mode = new_mode
 	spy_timers.clear()
 	grid_size = game.world_map.grid_size
 	var cell_count := grid_size.x * grid_size.y
@@ -37,12 +39,17 @@ func reset() -> void:
 		visible_cells.append(visible)
 		var explored := PackedByteArray()
 		explored.resize(cell_count)
-		explored.fill(0)
+		explored.fill(1 if mode == "terrain" else 0)
 		explored_cells.append(explored)
 	mask_texture = null
 	mask_image = null
 	relief_mesh.mesh = null
-	active = true
+	active = mode != "disabled"
+	if not active:
+		_update_entity_visibility()
+		hide()
+		if game.minimap != null: game.minimap.queue_redraw()
+		return
 	update_timer = UPDATE_INTERVAL
 	update_visibility()
 	show()
@@ -68,10 +75,12 @@ func _index(cell: Vector2i) -> int:
 	return cell.y * grid_size.x + cell.x
 
 func can_see(owner_id: int, point: Vector2) -> bool:
-	if not active or owner_id < 0 or owner_id >= visible_cells.size(): return false
+	if owner_id < 0 or owner_id >= game.players.size(): return false
+	if not active: return true
 	return visible_cells[owner_id][_index(game.world_map.cell_at(point))] != 0
 
 func can_detect_unit(owner_id: int, enemy: RtsUnit) -> bool:
+	if not active: return true
 	if not can_see(owner_id, enemy.position): return false
 	if enemy.owner_id == owner_id or enemy.revealed_timer > 0.0: return true
 	var patch_index: int = game.world_map.forest_patch_at(enemy.position)
@@ -83,7 +92,8 @@ func can_detect_unit(owner_id: int, enemy: RtsUnit) -> bool:
 	return false
 
 func is_explored(owner_id: int, point: Vector2) -> bool:
-	if not active or owner_id < 0 or owner_id >= explored_cells.size(): return false
+	if owner_id < 0 or owner_id >= game.players.size(): return false
+	if not active: return true
 	return explored_cells[owner_id][_index(game.world_map.cell_at(point))] != 0
 
 func can_show_resource(owner_id: int, resource: RtsResource) -> bool:
@@ -198,7 +208,7 @@ func _update_mask() -> void:
 	for y in grid_size.y:
 		for x in grid_size.x:
 			var index := _index(Vector2i(x, y))
-			var color := Color.TRANSPARENT if visible[index] != 0 else EXPLORED_COLOR if explored[index] != 0 else UNEXPLORED_COLOR
+			var color := Color.TRANSPARENT if visible[index] != 0 or mode == "terrain" else EXPLORED_COLOR if explored[index] != 0 else UNEXPLORED_COLOR
 			image.set_pixel(x, y, color)
 	if mask_texture == null:
 		mask_texture = ImageTexture.create_from_image(image)
