@@ -2,6 +2,8 @@
 
 使用 Godot 4.7 制作的 2D 即时战略原型。英格兰、法兰西和中国共用经济、建造、生产与战斗系统。`scripts/game_data.gd` 定义兵种模板，`data/aoe4_balance.json` 保存从 [归档资料](docs/aoe4-units/GAME_BALANCE.md) 生成的可玩数值，`scripts/stat_resolver.gd` 合成最终属性，`scripts/unit_catalog.gd` 处理文明兵种替换，`scripts/tech_tree.gd` 保存时代与科技要求，`scripts/landmark_catalog.gd` 保存地标与王朝能力，`scripts/combat_rules.gd` 计算伤害。画面采用程序绘制的临时图形，无需模型或外部贴图。
 
+模块边界和后续拆分顺序见 [架构说明](docs/ARCHITECTURE.md)。
+
 ## 运行
 
 用 Godot 4 打开 `project.godot`，或在项目目录执行：
@@ -94,6 +96,7 @@ RTS_BALANCE_MATRIX=1 RTS_BALANCE_SECONDS=180 /Applications/Godot_mono.app/Conten
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/battle_experience.gd
 RTS_BENCH_UNITS=200 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/performance_400.gd
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/performance_400.gd
+/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/performance_combat.gd
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/map_fairness.gd
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/economy_siege_controls.gd
 RTS_BENCH_PROJECTION=2d /Applications/Godot_mono.app/Contents/MacOS/Godot --path . --script res://tests/performance_visible.gd --windowed --resolution 1280x720

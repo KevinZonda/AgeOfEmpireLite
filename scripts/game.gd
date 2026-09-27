@@ -13,6 +13,11 @@ const BUILDING_SCENE := preload("res://scripts/building.gd")
 const RESOURCE_SCENE := preload("res://scripts/resource_node.gd")
 const SELECTION_PORTRAIT := preload("res://scripts/selection_portrait.gd")
 const MENU_BACKDROP := preload("res://scripts/menu_backdrop.gd")
+const TECH_TREE_PAGE := preload("res://scripts/tech_tree_page.gd")
+const PlayerSelection = preload("res://scripts/player_selection.gd")
+const PlayerOrders = preload("res://scripts/player_orders.gd")
+const MATCH_ECONOMY := preload("res://scripts/match_economy.gd")
+const MATCH_PRODUCTION := preload("res://scripts/match_production.gd")
 const FEEDBACK_AUDIO := preload("res://scripts/feedback_audio.gd")
 const UNIT_ABILITY_ACTIONS := [
 	{"id": "palings", "label": "架设拒马", "kinds": ["longbow"]},
@@ -127,6 +132,7 @@ var minimap: RtsMinimap
 var menu_panel: PanelContainer
 var tech_tree_overlay: ColorRect
 var tech_tree_civilization_choice: OptionButton
+var tech_tree_page
 var result_panel: PanelContainer
 var pause_overlay: ColorRect
 var settings_overlay: ColorRect
@@ -908,162 +914,21 @@ func _refresh_player_rows() -> void:
 func _show_tech_tree(civilization: String) -> void:
 	if not GameData.CIVILIZATIONS.has(civilization): return
 	if tech_tree_overlay != null: tech_tree_overlay.queue_free()
-	tech_tree_overlay = ColorRect.new()
-	tech_tree_overlay.color = Color("100f0d")
-	tech_tree_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	tech_tree_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
-	menu_panel.get_parent().add_child(tech_tree_overlay)
+	tech_tree_page = TECH_TREE_PAGE.new()
+	tech_tree_page.civilization_selected.connect(_show_tech_tree)
+	tech_tree_page.close_requested.connect(_close_tech_tree)
+	tech_tree_page.build(menu_panel.get_parent(), civilization, _style_button)
+	tech_tree_overlay = tech_tree_page.overlay
+	tech_tree_civilization_choice = tech_tree_page.civilization_choice
 	menu_panel.hide()
-	var panel := PanelContainer.new()
-	panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	panel.offset_left = 24
-	panel.offset_top = 20
-	panel.offset_right = -24
-	panel.offset_bottom = -20
-	panel.add_theme_stylebox_override("panel", _tech_tree_style(Color("26211a"), Color("9f7b43"), 16))
-	tech_tree_overlay.add_child(panel)
-	var layout := VBoxContainer.new()
-	layout.add_theme_constant_override("separation", 12)
-	panel.add_child(layout)
-	var header := HBoxContainer.new()
-	layout.add_child(header)
-	var title := _tech_tree_label(header, "%s  ·  科技树" % GameData.CIVILIZATIONS[civilization]["label"], 26, Color("f4dfae"))
-	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_tech_tree_label(header, "切换国家", 15, Color("e4d6b9"))
-	tech_tree_civilization_choice = OptionButton.new()
-	tech_tree_civilization_choice.custom_minimum_size = Vector2(135, 38)
-	var civilization_ids := GameData.CIVILIZATIONS.keys()
-	for civ in civilization_ids: tech_tree_civilization_choice.add_item(str(GameData.CIVILIZATIONS[civ]["label"]))
-	tech_tree_civilization_choice.select(civilization_ids.find(civilization))
-	_style_button(tech_tree_civilization_choice)
-	tech_tree_civilization_choice.item_selected.connect(func(index: int) -> void: _show_tech_tree(str(civilization_ids[index])))
-	header.add_child(tech_tree_civilization_choice)
-	var close_button := Button.new()
-	close_button.text = "返回"
-	close_button.custom_minimum_size = Vector2(90, 38)
-	_style_button(close_button)
-	close_button.pressed.connect(_close_tech_tree)
-	header.add_child(close_button)
-	var body := HBoxContainer.new()
-	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	body.add_theme_constant_override("separation", 12)
-	layout.add_child(body)
-	var sidebar_panel := PanelContainer.new()
-	sidebar_panel.custom_minimum_size.x = 205
-	sidebar_panel.add_theme_stylebox_override("panel", _tech_tree_style(Color("352b20"), Color("6f5634"), 12))
-	body.add_child(sidebar_panel)
-	var sidebar := VBoxContainer.new()
-	sidebar.add_theme_constant_override("separation", 10)
-	sidebar_panel.add_child(sidebar)
-	_tech_tree_label(sidebar, "文明特色", 18, Color("e4bd79"))
-	var description := _tech_tree_label(sidebar, str(GameData.CIVILIZATIONS[civilization]["description"]), 15, Color("e4d6b9"))
-	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_tech_tree_label(sidebar, "特色单位", 18, Color("e4bd79"))
-	var unique_units: Array[String] = []
-	for building_kind in RtsTechTree.PRODUCTION:
-		for unit_kind in RtsTechTree.all_train_units(civilization, building_kind):
-			if GameData.UNITS[unit_kind]["tags"].has("unique") and not unique_units.has(unit_kind): unique_units.append(unit_kind)
-	for unit_kind in unique_units:
-		_tech_tree_label(sidebar, "◆ %s" % GameData.UNITS[unit_kind]["label"], 14, Color("b9d4f0"))
-	_tech_tree_label(sidebar, "图例", 18, Color("e4bd79"))
-	_tech_tree_label(sidebar, "◆ 建筑与地标", 14, Color("e4bd79"))
-	_tech_tree_label(sidebar, "◆ 可训练单位", 14, Color("a9cdef"))
-	_tech_tree_label(sidebar, "◆ 可研究科技", 14, Color("a9d8ae"))
-	var hint := _tech_tree_label(sidebar, "悬停可查看费用、属性和前置要求。滚动查看各时代。", 13, Color("c4b492"))
-	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	var scroll := ScrollContainer.new()
-	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	body.add_child(scroll)
-	var ages := HBoxContainer.new()
-	ages.add_theme_constant_override("separation", 12)
-	scroll.add_child(ages)
-	for age in range(1, 5): _build_tech_tree_age(ages, civilization, age)
 
 func _close_tech_tree() -> void:
 	if tech_tree_overlay != null:
 		tech_tree_overlay.queue_free()
 		tech_tree_overlay = null
 		tech_tree_civilization_choice = null
+	tech_tree_page = null
 	menu_panel.show()
-
-func _build_tech_tree_age(parent: HBoxContainer, civilization: String, age: int) -> void:
-	var column_panel := PanelContainer.new()
-	column_panel.custom_minimum_size.x = 250
-	column_panel.add_theme_stylebox_override("panel", _tech_tree_style(Color("30281e"), Color("6f5634"), 10))
-	parent.add_child(column_panel)
-	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 9)
-	column_panel.add_child(column)
-	_tech_tree_label(column, ["", "I  黑暗时代", "II  封建时代", "III  城堡时代", "IV  帝王时代"][age], 19, Color("f3d59c"))
-	if age > 1:
-		var landmarks := _tech_tree_card(column, "时代地标", "选择其一升至该时代", Color("edc781"))
-		for landmark_id in RtsLandmarkCatalog.LANDMARKS:
-			var landmark: Dictionary = RtsLandmarkCatalog.LANDMARKS[landmark_id]
-			if landmark["civilization"] != civilization or int(landmark["age"]) != age: continue
-			var details: Dictionary = RtsLandmarkCatalog.landmark(landmark_id)
-			_tech_tree_entry(landmarks, str(landmark["label"]), Color("edc781"), "%s\n费用：%s" % [landmark["description"], GameData.cost_text(details["cost"])])
-	for building_kind in ["town_center"] + RtsTechTree.BUILD_MENU:
-		var building_age: int = int(RtsTechTree.BUILDING_AGE.get(building_kind, 99))
-		if building_age > age: continue
-		var units: Array[String] = []
-		for unit_kind in RtsTechTree.all_train_units(civilization, building_kind):
-			var unit_age: int = maxi(int(RtsTechTree.UNIT_AGE.get(unit_kind, 99)), building_age)
-			unit_age = int(RtsTechTree.UNIT_AGE_OVERRIDES.get(civilization, {}).get(unit_kind, unit_age))
-			if unit_age == age: units.append(unit_kind)
-		var researches: Array[String] = []
-		for tech_id in RtsTechTree.all_researches(civilization, building_kind):
-			if int(RtsTechTree.get_technology(tech_id).get("age", 99)) == age: researches.append(tech_id)
-		if building_age != age and units.is_empty() and researches.is_empty(): continue
-		var building: Dictionary = GameData.BUILDINGS[building_kind]
-		var card := _tech_tree_card(column, str(building["label"]), "建造费用：%s" % (GameData.cost_text(building["cost"]) if not building["cost"].is_empty() else "初始建筑"), Color("edc781"))
-		for unit_kind in units:
-			var unit: Dictionary = GameData.UNITS[unit_kind]
-			var unit_label := "%s%s" % ["★ " if unit["tags"].has("unique") else "", unit["label"]]
-			var requirements := ""
-			if unit_kind == "zhuge_nu": requirements = "\n需要宋朝王朝"
-			elif unit_kind == "fire_lancer": requirements = "\n需要元朝王朝"
-			elif unit_kind == "grenadier": requirements = "\n需要明朝王朝"
-			_tech_tree_entry(card, unit_label, Color("a9cdef"), "训练费用：%s\n生命：%d  攻击：%d%s" % [GameData.cost_text(GameData.unit_cost(unit_kind)), int(unit["hp"]), int(unit["damage"]), requirements])
-		for tech_id in researches:
-			var tech: Dictionary = RtsTechTree.get_technology(tech_id)
-			var requirements: Array[String] = []
-			for prerequisite in tech["requires"]: requirements.append(str(RtsTechTree.get_technology(prerequisite)["label"]))
-			var tooltip := "研究费用：%s" % GameData.cost_text(tech["cost"])
-			if not requirements.is_empty(): tooltip += "\n前置科技：%s" % "、".join(requirements)
-			_tech_tree_entry(card, str(tech["label"]), Color("a9d8ae"), tooltip)
-
-func _tech_tree_card(parent: VBoxContainer, heading: String, tooltip: String, accent: Color) -> VBoxContainer:
-	var panel := PanelContainer.new()
-	panel.add_theme_stylebox_override("panel", _tech_tree_style(Color("403223"), Color("745735"), 8))
-	panel.tooltip_text = tooltip
-	parent.add_child(panel)
-	var content := VBoxContainer.new()
-	content.add_theme_constant_override("separation", 4)
-	panel.add_child(content)
-	_tech_tree_label(content, heading, 16, accent)
-	return content
-
-func _tech_tree_entry(parent: VBoxContainer, value: String, color: Color, tooltip: String) -> void:
-	var label := _tech_tree_label(parent, "◆ %s" % value, 14, color)
-	label.tooltip_text = tooltip
-
-func _tech_tree_label(parent: Node, value: String, size: int, color: Color) -> Label:
-	var label := Label.new()
-	label.text = value
-	label.add_theme_font_size_override("font_size", size)
-	label.add_theme_color_override("font_color", color)
-	parent.add_child(label)
-	return label
-
-func _tech_tree_style(fill: Color, border: Color, margin: float) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = fill
-	style.border_color = border
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(3)
-	style.set_content_margin_all(margin)
-	return style
 
 func _update_lobby_team_state() -> void:
 	var unique_teams := {}
@@ -1577,38 +1442,13 @@ func _show_match_report(won: bool, result_reason: String) -> void:
 	layout.add_child(back)
 
 func credit_resource(owner_id: int, kind: String, amount: int) -> void:
-	players[owner_id][kind] += amount
-	match_statistics.record_income(owner_id, kind, amount)
-	if owner_id == 0: _update_hud()
+	MATCH_ECONOMY.credit_resource(self, owner_id, kind, amount)
 
 func market_quote(resource_kind: String, buy: bool, owner_id := 0) -> int:
-	if not market_supply.has(resource_kind): return 0
-	var sell_price := clampi(70 - int(market_supply[resource_kind]) * 5, 35, 110)
-	var spread := 25 if civilizations[owner_id] == "French" else 40
-	return sell_price + spread if buy else sell_price
+	return MATCH_ECONOMY.market_quote(self, resource_kind, buy, owner_id)
 
 func exchange_resource(owner_id: int, resource_kind: String, buy: bool) -> bool:
-	if not market_supply.has(resource_kind) or find_nearest_owned_building(owner_id, "market", spawn_point_for(owner_id)) == null: return false
-	var price := market_quote(resource_kind, buy, owner_id)
-	if buy:
-		if players[owner_id]["gold"] < price:
-			if owner_id == 0: notify_player("黄金不足，无法买入")
-			return false
-		players[owner_id]["gold"] -= price
-		players[owner_id][resource_kind] += 100
-		market_supply[resource_kind] = int(market_supply[resource_kind]) - 1
-	else:
-		if players[owner_id][resource_kind] < 100:
-			if owner_id == 0: notify_player("%s不足 100" % GameData.RESOURCE_LABELS[resource_kind])
-			return false
-		players[owner_id][resource_kind] -= 100
-		players[owner_id]["gold"] += price
-		market_supply[resource_kind] = int(market_supply[resource_kind]) + 1
-	if owner_id == 0:
-		notify_player("买入 100 %s" % GameData.RESOURCE_LABELS[resource_kind] if buy else "卖出 100 %s" % GameData.RESOURCE_LABELS[resource_kind])
-		_rebuild_actions()
-		_update_hud()
-	return true
+	return MATCH_ECONOMY.exchange_resource(self, owner_id, resource_kind, buy)
 
 func find_landing_pair(boat: RtsUnit, requested: Vector2) -> Dictionary:
 	navigation._ensure_current()
@@ -1644,92 +1484,28 @@ func find_landing_pair(boat: RtsUnit, requested: Vector2) -> Dictionary:
 	return result
 
 func can_afford(owner_id: int, cost: Dictionary) -> bool:
-	for resource in cost:
-		if players[owner_id][resource] < cost[resource]: return false
-	return true
+	return MATCH_ECONOMY.can_afford(self, owner_id, cost)
 
 func spend(owner_id: int, cost: Dictionary) -> bool:
-	if not can_afford(owner_id, cost): return false
-	for resource in cost: players[owner_id][resource] -= cost[resource]
-	_update_hud()
-	return true
+	return MATCH_ECONOMY.spend(self, owner_id, cost)
 
 func population_used(owner_id: int) -> int:
-	var used := 0
-	for unit in units:
-		if is_instance_valid(unit) and unit.owner_id == owner_id: used += RtsBalanceData.population_cost(unit.kind)
-	for building in buildings:
-		if is_instance_valid(building) and building.owner_id == owner_id:
-			for queued_kind in building.training_queue: used += RtsBalanceData.population_cost(queued_kind)
-	return used
+	return MATCH_ECONOMY.population_used(self, owner_id)
 
 func population_cap(owner_id: int) -> int:
-	var cap := 0
-	for building in buildings:
-		if is_instance_valid(building) and building.owner_id == owner_id and building.is_complete():
-			cap += building.definition()["pop"]
-	return cap
+	return MATCH_ECONOMY.population_cap(self, owner_id)
 
 func train_unit(building: RtsBuilding, unit_kind: String) -> bool:
-	if game_over or not is_instance_valid(building) or not building.is_complete(): return false
-	if not RtsTechTree.can_train(civilizations[building.owner_id], players[building.owner_id]["age"], building.producer_kind(), unit_kind, players[building.owner_id]["researched"], players[building.owner_id].get("dynasty", "")): return false
-	if unit_kind == "imperial_official":
-		var officials := 0
-		for unit in units:
-			if is_instance_valid(unit) and unit.owner_id == building.owner_id and unit.kind == "imperial_official": officials += 1
-		for producer in buildings:
-			if is_instance_valid(producer) and producer.owner_id == building.owner_id: officials += producer.training_queue.count("imperial_official")
-		if officials >= 4: return false
-	if population_used(building.owner_id) + RtsBalanceData.population_cost(unit_kind) > population_cap(building.owner_id):
-		if building.owner_id == 0: notify_player("人口已满，请建造房屋")
-		return false
-	var paid_cost := RtsCivilizationRules.training_cost(self, building, unit_kind)
-	if not spend(building.owner_id, paid_cost):
-		if building.owner_id == 0: notify_player("资源不足")
-		return false
-	building.enqueue(unit_kind, paid_cost)
-	if building.owner_id == 0: notify_player("正在训练%s" % GameData.UNITS[unit_kind]["label"])
-	_update_hud()
-	return true
+	return MATCH_PRODUCTION.train_unit(self, building, unit_kind)
 
 func queued_research(owner_id: int) -> Array[String]:
-	var result: Array[String] = []
-	for building in buildings:
-		if not is_instance_valid(building) or building.owner_id != owner_id: continue
-		for tech_id in building.research_queue:
-			if not result.has(tech_id): result.append(tech_id)
-	return result
+	return MATCH_PRODUCTION.queued_research(self, owner_id)
 
 func research_technology(building: RtsBuilding, tech_id: String) -> bool:
-	if game_over or not is_instance_valid(building) or not building.is_complete(): return false
-	var owner_id: int = building.owner_id
-	if not RtsTechTree.can_research(civilizations[owner_id], players[owner_id]["age"], building.producer_kind(), tech_id, players[owner_id]["researched"]): return false
-	if queued_research(owner_id).has(tech_id): return false
-	var technology: Dictionary = RtsTechTree.get_technology(tech_id)
-	var paid_cost := RtsCivilizationRules.research_cost(civilizations[owner_id], building.landmark_id, technology)
-	if not spend(owner_id, paid_cost):
-		if owner_id == 0: notify_player("研究所需资源不足")
-		return false
-	var research_time: float = float(technology["time"]) * (0.5 if building.landmark_id == "zh_spirit_way" else 1.0)
-	building.enqueue_research(tech_id, research_time, paid_cost)
-	if owner_id == 0: notify_player("正在研究%s" % technology["label"])
-	_update_hud()
-	return true
+	return MATCH_PRODUCTION.research_technology(self, building, tech_id)
 
 func complete_research(owner_id: int, tech_id: String) -> void:
-	if players[owner_id]["researched"].has(tech_id): return
-	players[owner_id]["researched"].append(tech_id)
-	if civilizations[owner_id] == "French" and RtsTechTree.get_technology(tech_id).get("economy", false):
-		for landmark in buildings:
-			if is_instance_valid(landmark) and landmark.owner_id == owner_id and landmark.landmark_id == "fr_chamber_of_commerce" and landmark.is_complete():
-				if population_used(owner_id) < population_cap(owner_id): spawn_unit(owner_id, "trader", find_spawn_position(landmark))
-				break
-	for unit in units:
-		if is_instance_valid(unit) and unit.owner_id == owner_id: unit.refresh_stats()
-	if owner_id == 0:
-		notify_player("%s研究完成" % RtsTechTree.get_technology(tech_id)["label"])
-		_rebuild_actions()
-	_update_hud()
+	MATCH_PRODUCTION.complete_research(self, owner_id, tech_id)
 
 func is_age_queued(owner_id: int) -> bool:
 	for building in buildings:
@@ -1838,14 +1614,7 @@ func complete_age(owner_id: int, target_age: int, landmark_id := "") -> void:
 	_update_hud()
 
 func cancel_production_job(building: RtsBuilding, index: int = 0) -> bool:
-	if not is_instance_valid(building) or building.is_queued_for_deletion() or index < 0: return false
-	var job := building.cancel_queue_entry(index)
-	if job.is_empty(): return false
-	for resource in job["cost"]:
-		players[building.owner_id][resource] += job["cost"][resource]
-	if building.owner_id == 0: notify_player("已取消，资源已返还")
-	_update_hud()
-	return true
+	return MATCH_PRODUCTION.cancel_job(self, building, index)
 
 func _cancel_selected_job() -> void:
 	if selected.is_empty() or not is_instance_valid(selected[0]) or not selected[0] is RtsBuilding: return
@@ -2308,245 +2077,40 @@ func _unhandled_input(event: InputEvent) -> void:
 				if entity is RtsBuilding and entity.kind != "town_center": entity_destroyed(entity)
 
 func _select_area(from: Vector2, to: Vector2, additive: bool) -> void:
-	var world_to_screen := get_viewport().get_canvas_transform()
-	_select_screen_area(world_to_screen * from, world_to_screen * to, additive)
+	PlayerSelection.select_area(self, from, to, additive)
 
 func _select_screen_area(from: Vector2, to: Vector2, additive: bool) -> void:
-	if not additive: selected.clear()
-	var world_to_screen := get_viewport().get_canvas_transform()
-	var screen_area := Rect2(from, to - from).abs()
-	if screen_area.size.length() < 12:
-		var entity := _entity_at(world_to_screen.affine_inverse() * to)
-		if entity is RtsUnit and is_enemy(0, entity.owner_id):
-			selected.clear()
-			selected.append(entity)
-		elif entity != null and entity.owner_id == 0 and not selected.has(entity): selected.append(entity)
-	else:
-		for unit in units:
-			if is_instance_valid(unit) and unit.garrisoned_in == null and unit.owner_id == 0 and screen_area.has_point(world_to_screen * (unit.position + (RtsIsoProjection.ground_lift(self, unit.position) if view_mode_25d else Vector2.ZERO))) and not selected.has(unit):
-				selected.append(unit)
-	_rebuild_actions()
-	_update_hud()
-	if not selected.is_empty(): play_feedback("select")
-	queue_redraw()
+	PlayerSelection.select_screen_area(self, from, to, additive)
 
 func _select_same_type_visible(clicked: RtsUnit, additive: bool) -> void:
-	if not additive: selected.clear()
-	var world_to_screen := get_viewport().get_canvas_transform()
-	var visible_area := get_viewport_rect()
-	for unit in units:
-		if not is_instance_valid(unit) or unit.is_queued_for_deletion() or unit.garrisoned_in != null: continue
-		if unit.owner_id == clicked.owner_id and unit.kind == clicked.kind and visible_area.has_point(world_to_screen * (unit.position + (RtsIsoProjection.ground_lift(self, unit.position) if view_mode_25d else Vector2.ZERO))) and not selected.has(unit):
-			selected.append(unit)
-	_rebuild_actions()
-	_update_hud()
-	queue_redraw()
+	PlayerSelection.select_same_type_visible(self, clicked, additive)
 
 func _select_same_buildings_visible(clicked: RtsBuilding, additive: bool) -> void:
-	if not additive: selected.clear()
-	var world_to_screen := get_viewport().get_canvas_transform()
-	var visible_area := get_viewport_rect()
-	for building in buildings:
-		if is_instance_valid(building) and not building.is_queued_for_deletion() and building.owner_id == clicked.owner_id and building.kind == clicked.kind and visible_area.has_point(world_to_screen * building.position) and not selected.has(building): selected.append(building)
-	_rebuild_actions()
-	_update_hud()
-	queue_redraw()
+	PlayerSelection.select_same_buildings_visible(self, clicked, additive)
 
 func _handle_control_group(event: InputEventKey) -> void:
-	var key := event.keycode
-	if event.ctrl_pressed:
-		var members: Array[Node2D] = []
-		if event.shift_pressed and control_groups.has(key):
-			for member in control_groups[key]:
-				if is_instance_valid(member) and not member.is_queued_for_deletion() and member.owner_id == 0: members.append(member)
-		for member in selected:
-			if is_instance_valid(member) and member.owner_id == 0 and not members.has(member): members.append(member)
-		control_groups[key] = members
-		notify_player("编组 %d：%d 个对象" % [key - KEY_0, members.size()])
-		return
-	var recalled: Array[Node2D] = []
-	for member in control_groups[key]:
-		if is_instance_valid(member) and not member.is_queued_for_deletion() and member.owner_id == 0 and (not member is RtsUnit or member.garrisoned_in == null): recalled.append(member)
-	control_groups[key] = recalled
-	if not event.shift_pressed: selected.clear()
-	for member in recalled:
-		if not selected.has(member): selected.append(member)
-	var now := Time.get_ticks_msec() / 1000.0
-	if last_group_key == key and now - last_group_press_time < 0.45 and not recalled.is_empty():
-		var center := Vector2.ZERO
-		for member in recalled: center += member.position
-		camera.position = center / recalled.size()
-		_clamp_camera_position()
-	last_group_key = key
-	last_group_press_time = now
-	_rebuild_actions()
-	_update_hud()
-	queue_redraw()
+	PlayerSelection.handle_control_group(self, event)
 
 func _entity_at(point: Vector2) -> Node2D:
-	var canvas := get_viewport().get_canvas_transform()
-	for unit in navigation.nearby_units(point, 250.0 if view_mode_25d else 36.0):
-		if not is_instance_valid(unit) or unit.is_queued_for_deletion() or unit.garrisoned_in != null: continue
-		if unit.owner_id != 0 and fog.active and not fog.can_detect_unit(0, unit): continue
-		if view_mode_25d:
-			var screen_delta := canvas.basis_xform(point - unit.position - RtsIsoProjection.ground_lift(self, unit.position))
-			if absf(screen_delta.x) <= (unit.radius() + 5.0) * camera.zoom.x and screen_delta.y >= -34.0 * camera.zoom.x and screen_delta.y <= 6.0 * camera.zoom.x: return unit
-		if is_instance_valid(unit) and unit.position.distance_to(point) <= unit.radius() + 5: return unit
-	for building in navigation.nearby_buildings(point, 260.0 if view_mode_25d else 50.0):
-		if not is_instance_valid(building) or building.is_queued_for_deletion(): continue
-		if building.owner_id != 0 and fog.active and not fog.can_see(0, building.position): continue
-		if building.contains(point) or view_mode_25d and building.contains_isometric_visual(point, canvas): return building
-	return null
+	return PlayerSelection.entity_at(self, point)
 
 func _resource_at(point: Vector2) -> RtsResource:
-	var canvas := get_viewport().get_canvas_transform()
-	for resource in navigation.nearby_resources(point, 250.0 if view_mode_25d else 35.0):
-		if not is_instance_valid(resource) or resource.is_queued_for_deletion() or fog.active and not fog.can_show_resource(0, resource): continue
-		if view_mode_25d and resource.appearance != "fish":
-			var screen_delta := canvas.basis_xform(point - resource.position - RtsIsoProjection.ground_lift(self, resource.position))
-			if absf(screen_delta.x) <= (resource.radius + 8.0) * camera.zoom.x and screen_delta.y >= -35.0 * camera.zoom.x and screen_delta.y <= 20.0 * camera.zoom.x: return resource
-		if resource.position.distance_to(point) < resource.radius + 6: return resource
-	return null
+	return PlayerSelection.resource_at(self, point)
 
 func _trade_post_at(point: Vector2) -> RtsTradePost:
-	for post in trade_posts:
-		if not is_instance_valid(post) or fog.active and not fog.is_explored(0, post.position): continue
-		if view_mode_25d:
-			var screen_delta := get_viewport().get_canvas_transform().basis_xform(point - post.position - RtsIsoProjection.ground_lift(self, post.position))
-			if absf(screen_delta.x) <= 28.0 * camera.zoom.x and screen_delta.y >= -38.0 * camera.zoom.x and screen_delta.y <= 23.0 * camera.zoom.x: return post
-		if post.contains(point): return post
-	return null
+	return PlayerSelection.trade_post_at(self, point)
 
 func _relic_at(point: Vector2) -> RtsRelic:
-	for relic in relics:
-		if not is_instance_valid(relic) or not relic.available() or fog.active and not fog.can_see(0, relic.position): continue
-		if view_mode_25d:
-			var screen_delta := get_viewport().get_canvas_transform().basis_xform(point - relic.position - RtsIsoProjection.ground_lift(self, relic.position))
-			if absf(screen_delta.x) <= 16.0 * camera.zoom.x and screen_delta.y >= -20.0 * camera.zoom.x and screen_delta.y <= 14.0 * camera.zoom.x: return relic
-		if relic.position.distance_to(point) <= 20.0: return relic
-	return null
+	return PlayerSelection.relic_at(self, point)
 
 func _issue_order(point: Vector2, append_order := false) -> void:
-	var entity := _entity_at(point)
-	var resource := _resource_at(point)
-	var post := _trade_post_at(point)
-	var relic := _relic_at(point)
-	var ground_point := RtsIsoProjection.ground_point(self, point)
-	if not Rect2(Vector2.ZERO, world_size).has_point(ground_point):
-		_show_order_feedback(point, "invalid")
-		notify_player("地图边界之外，无法下令")
-		return
-	var has_selected_unit := false
-	for subject in selected:
-		if is_instance_valid(subject) and subject is RtsUnit:
-			has_selected_unit = true
-			break
-	if not has_selected_unit:
-		var assigned := false
-		for subject in selected:
-			if not is_instance_valid(subject) or not subject is RtsBuilding: continue
-			if subject.owner_id != 0 or not subject.is_complete() or not RtsTechTree.PRODUCTION.has(subject.kind): continue
-			var rally_target: Node2D = resource if resource != null else post if post != null else entity if entity is RtsBuilding and entity.owner_id == 0 and entity.kind == "farm" else null
-			var rally_point: Vector2 = rally_target.position if rally_target != null else ground_point
-			subject.set_rally(rally_point.clamp(Vector2(24, 24), world_size - Vector2(24, 24)), rally_target)
-			assigned = true
-		if assigned:
-			notify_player("资源集结点已设置；新村民自动采集" if resource != null or entity is RtsBuilding and entity.kind == "farm" else "集结点已设置")
-			_show_order_feedback(point, "move", append_order)
-			queue_redraw()
-		return
-	var movers: Array[RtsUnit] = []
-	for subject in selected:
-		if not is_instance_valid(subject) or not subject is RtsUnit: continue
-		if entity is RtsBuilding and entity.kind == "stone_wall" and subject.kind == "siege_tower" and is_enemy(subject.owner_id, entity.owner_id):
-			subject.issue_command("assault_wall", Vector2.INF, entity, append_order)
-		elif entity is RtsBuilding and entity.kind == "stone_wall" and RtsSiegeRules.wall_entry(self, subject, entity) != null:
-			subject.issue_command("board_wall", Vector2.INF, entity, append_order)
-		elif entity is RtsUnit and entity.kind in ["transport_ship", "battering_ram", "siege_tower"] and entity.owner_id == 0 and subject != entity and not subject.stats.get("tags", []).has("naval") and not subject.stats.get("tags", []).has("siege"):
-			subject.issue_command("board_transport", Vector2.INF, entity, append_order)
-		elif subject.kind == "transport_ship" and world_map.is_walkable(ground_point) and not subject.passengers.is_empty():
-			subject.issue_command("unload", ground_point, null, append_order)
-		elif post != null and subject.kind == "trader":
-			subject.issue_command("trade", Vector2.INF, post, append_order)
-		elif relic != null and subject.kind == "monk":
-			subject.issue_command("relic", Vector2.INF, relic, append_order)
-		elif entity is RtsBuilding and entity.owner_id == 0 and entity.kind == "monastery" and subject.kind == "monk" and subject.carried_relic != null:
-			subject.issue_command("deposit_relic", Vector2.INF, entity, append_order)
-		elif entity != null and is_enemy(0, entity.owner_id):
-			subject.issue_command("attack", Vector2.INF, entity, append_order)
-		elif resource != null and resource.appearance == "boar" and resource.wildlife_hp > 0.0 and float(subject.stats.get("damage", 0.0)) > 0.0:
-			subject.issue_command("attack", Vector2.INF, resource, append_order)
-			if subject.kind == "villager": subject.issue_command("gather", Vector2.INF, resource, true)
-		elif entity is RtsBuilding and entity.owner_id == 0 and not entity.is_complete() and subject.kind == "villager":
-			subject.issue_command("build", Vector2.INF, entity, append_order)
-		elif entity != null and entity.owner_id == 0 and subject.kind == "villager" and (entity is RtsBuilding or entity is RtsUnit and entity.stats.get("tags", []).has("siege")) and entity.hp < entity.max_hp:
-			subject.issue_command("repair", Vector2.INF, entity, append_order)
-		elif resource != null and (subject.kind == "villager" and resource.appearance != "fish" and (resource.appearance != "sheep" or resource.claimed_by == 0) or subject.kind == "fishing_boat" and resource.appearance == "fish"):
-			subject.issue_command("gather", Vector2.INF, resource, append_order)
-		elif resource != null and resource.appearance == "sheep" and subject.kind == "villager":
-			if subject == selected[0]: notify_player("先用侦察兵认领羊群")
-		elif entity is RtsBuilding and entity.owner_id == 0 and entity.kind == "farm" and subject.kind == "villager":
-			subject.issue_command("gather", Vector2.INF, entity, append_order)
-		elif entity is RtsBuilding and entity.owner_id == 0 and entity.is_complete() and subject.kind == "imperial_official":
-			subject.issue_command("supervise", Vector2.INF, entity, append_order)
-		elif entity is RtsBuilding and entity.owner_id == 0 and entity.is_complete() and (RtsSiegeRules.can_garrison(subject.stats, entity.kind) or entity.kind == "landmark" and entity.garrison_capacity() > 0 and not subject.stats.get("tags", []).has("siege")):
-			subject.issue_command("garrison", Vector2.INF, entity, append_order)
-		else:
-			movers.append(subject)
-	issue_group_order(movers, ground_point, false, append_order)
-	if not movers.is_empty() or entity != null or resource != null or post != null or relic != null:
-		var kind := "attack" if entity != null and is_enemy(0, entity.owner_id) else "gather" if resource != null or post != null or relic != null else "build" if entity is RtsBuilding and not entity.is_complete() else "move"
-		_show_order_feedback(point, kind, append_order)
-	elif has_selected_unit:
-		_show_order_feedback(point, "invalid")
+	PlayerOrders.issue_order(self, point, append_order)
 
 func _issue_mode_order(point: Vector2, append_order := false) -> void:
-	var mode := order_mode
-	if not append_order: order_mode = ""
-	if mode == "attack_move":
-		_issue_attack_move(point, append_order)
-	elif mode == "patrol":
-		var patrol_issued := false
-		for subject in selected:
-			if is_instance_valid(subject) and subject is RtsUnit and subject.stats.get("tags", []).has("military"):
-				subject.issue_command("patrol", point, null, append_order)
-				patrol_issued = true
-		if patrol_issued: _show_order_feedback(point, "move", append_order)
-	elif mode == "focus":
-		var enemy := _entity_at(point)
-		if enemy != null and is_enemy(0, enemy.owner_id):
-			for subject in selected:
-				if is_instance_valid(subject) and subject is RtsUnit and float(subject.stats.get("damage", 0.0)) > 0.0:
-					subject.issue_command("attack", Vector2.INF, enemy, append_order)
-			_show_order_feedback(point, "attack", append_order)
-		else:
-			notify_player("请选择可见的敌方目标")
-			_show_order_feedback(point, "invalid")
-	elif mode == "attack_ground":
-		for subject in selected:
-			if is_instance_valid(subject) and subject is RtsUnit: subject.issue_command("attack_ground", point, null, append_order)
-		_show_order_feedback(point, "attack", append_order)
-	elif mode in ["field_ram", "field_tower"]:
-		place_field_siege("battering_ram" if mode == "field_ram" else "siege_tower", point, append_order)
-	elif mode == "unload":
-		if world_map.is_walkable(point):
-			for subject in selected:
-				if is_instance_valid(subject) and subject is RtsUnit and subject.kind == "transport_ship": subject.issue_command("unload", point, null, append_order)
-			_show_order_feedback(point, "move", append_order)
-		else:
-			notify_player("请点击陆地作为登陆目标")
-			_show_order_feedback(point, "invalid")
-	queue_redraw()
+	PlayerOrders.issue_mode_order(self, point, append_order)
 
 func _issue_attack_move(point: Vector2, append_order := false) -> void:
-	if not append_order: order_mode = ""
-	var movers: Array[RtsUnit] = []
-	for subject in selected:
-		if not is_instance_valid(subject) or not subject is RtsUnit or not subject.stats.get("tags", []).has("military"): continue
-		movers.append(subject)
-	issue_group_order(movers, point, true, append_order)
-	if not movers.is_empty(): _show_order_feedback(point, "attack", append_order)
-	queue_redraw()
+	PlayerOrders.issue_attack_move(self, point, append_order)
 
 func place_field_siege(kind: String, point: Vector2, append_order := false) -> bool:
 	if players[0]["age"] < RtsTechTree.UNIT_AGE[kind] or not navigation.can_occupy(point, 20.0, null): return false
@@ -2564,52 +2128,13 @@ func place_field_siege(kind: String, point: Vector2, append_order := false) -> b
 	return true
 
 func issue_group_order(movers: Array[RtsUnit], point: Vector2, attack_move := false, append_order := false) -> void:
-	if movers.is_empty(): return
-	var squads := RtsMovementGroup.split_squads(movers)
-	var center := Vector2.ZERO
-	for unit in movers: center += unit.position
-	center /= movers.size()
-	var heading := (point - center).normalized()
-	if heading.is_zero_approx(): heading = Vector2.RIGHT
-	var lateral := Vector2(-heading.y, heading.x)
-	squads.sort_custom(func(a: Array, b: Array) -> bool:
-		var ac := Vector2.ZERO
-		var bc := Vector2.ZERO
-		for unit in a: ac += unit.position
-		for unit in b: bc += unit.position
-		ac /= a.size()
-		bc /= b.size()
-		var front_a := ac.dot(heading)
-		var front_b := bc.dot(heading)
-		if absf(front_a - front_b) > 25.0: return front_a > front_b
-		return ac.dot(lateral) < bc.dot(lateral)
-	)
-	var columns := mini(6 if squads.size() > 12 else 3, maxi(1, ceili(sqrt(float(squads.size())))))
-	var rows := ceili(float(squads.size()) / columns)
-	var squad_spacing := 140.0 if squads.size() > 12 else 200.0
-	for index in squads.size():
-		var squad: Array[RtsUnit] = squads[index]
-		var group_point := point
-		if squads.size() > 1:
-			var row := index / columns
-			var col := index % columns
-			group_point += heading * (float(rows - 1) * 0.5 - float(row)) * squad_spacing + lateral * (float(col) - float(columns - 1) * 0.5) * squad_spacing
-		var group := RtsMovementGroup.new(self, squad, group_point, formation_mode, formation_width)
-		for unit in squad:
-			unit.issue_command("group_attack_move" if attack_move else "group_move", group_point, null, append_order, group)
+	PlayerOrders.issue_group_order(self, movers, point, attack_move, append_order)
 
 func _stop_selected_units() -> void:
-	order_mode = ""
-	for subject in selected:
-		if is_instance_valid(subject) and subject is RtsUnit: subject.order_stop()
-	notify_player("单位已停止")
+	PlayerOrders.stop_selected_units(self)
 
 func _retreat_selected() -> void:
-	for subject in selected:
-		if not is_instance_valid(subject) or not subject is RtsUnit: continue
-		var center: RtsBuilding = find_nearest_owned_building(0, "town_center", subject.position)
-		if center != null: subject.issue_command("move", center.position)
-	notify_player("部队撤往城镇中心")
+	PlayerOrders.retreat_selected(self)
 
 func _confirm_build(point: Vector2, append_order := false) -> void:
 	var builders: Array[RtsUnit] = []
