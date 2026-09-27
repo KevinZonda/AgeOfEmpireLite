@@ -2398,6 +2398,7 @@ func _issue_order(point: Vector2, append_order := false) -> void:
 	var resource := _resource_at(point)
 	var post := _trade_post_at(point)
 	var relic := _relic_at(point)
+	var ground_point := RtsIsoProjection.ground_point(self, point)
 	var has_selected_unit := false
 	for subject in selected:
 		if is_instance_valid(subject) and subject is RtsUnit:
@@ -2409,7 +2410,8 @@ func _issue_order(point: Vector2, append_order := false) -> void:
 			if not is_instance_valid(subject) or not subject is RtsBuilding: continue
 			if subject.owner_id != 0 or not subject.is_complete() or not RtsTechTree.PRODUCTION.has(subject.kind): continue
 			var rally_target: Node2D = resource if resource != null else post if post != null else entity if entity is RtsBuilding and entity.owner_id == 0 and entity.kind == "farm" else null
-			subject.set_rally(point.clamp(Vector2(24, 24), world_size - Vector2(24, 24)), rally_target)
+			var rally_point: Vector2 = rally_target.position if rally_target != null else ground_point
+			subject.set_rally(rally_point.clamp(Vector2(24, 24), world_size - Vector2(24, 24)), rally_target)
 			assigned = true
 		if assigned:
 			notify_player("资源集结点已设置；新村民自动采集" if resource != null or entity is RtsBuilding and entity.kind == "farm" else "集结点已设置")
@@ -2424,8 +2426,8 @@ func _issue_order(point: Vector2, append_order := false) -> void:
 			subject.issue_command("board_wall", Vector2.INF, entity, append_order)
 		elif entity is RtsUnit and entity.kind in ["transport_ship", "battering_ram", "siege_tower"] and entity.owner_id == 0 and subject != entity and not subject.stats.get("tags", []).has("naval") and not subject.stats.get("tags", []).has("siege"):
 			subject.issue_command("board_transport", Vector2.INF, entity, append_order)
-		elif subject.kind == "transport_ship" and world_map.is_walkable(point) and not subject.passengers.is_empty():
-			subject.issue_command("unload", point, null, append_order)
+		elif subject.kind == "transport_ship" and world_map.is_walkable(ground_point) and not subject.passengers.is_empty():
+			subject.issue_command("unload", ground_point, null, append_order)
 		elif post != null and subject.kind == "trader":
 			subject.issue_command("trade", Vector2.INF, post, append_order)
 		elif relic != null and subject.kind == "monk":
@@ -2453,7 +2455,7 @@ func _issue_order(point: Vector2, append_order := false) -> void:
 			subject.issue_command("garrison", Vector2.INF, entity, append_order)
 		else:
 			movers.append(subject)
-	issue_group_order(movers, point, false, append_order)
+	issue_group_order(movers, ground_point, false, append_order)
 	if not movers.is_empty() or entity != null or resource != null or post != null or relic != null:
 		order_markers.append({"point": point, "time": 0.55, "color": Color("e97871") if entity != null and is_enemy(0, entity.owner_id) else Color("8fd49b") if resource != null or post != null or relic != null else Color("95c7ef")})
 		queue_redraw()

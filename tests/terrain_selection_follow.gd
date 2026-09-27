@@ -30,7 +30,8 @@ func _run() -> void:
 	game.selected.clear()
 	game.selected.append(unit)
 	game._rebuild_actions()
-	game._issue_order(to)
+	game._issue_order(to + RtsIsoProjection.ground_lift(game, to))
+	assert(unit.movement_group != null and unit.movement_group.goal.distance_to(to) < 2.0, "a click on the visible slope should order movement to that ground point")
 	game.order_markers.clear()
 	await process_frame
 	var redraws := {"unit": 0, "selection": 0}

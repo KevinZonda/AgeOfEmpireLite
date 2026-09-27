@@ -14,6 +14,7 @@ var isometric_view := false
 var cells := PackedByteArray()
 var elevation_levels := PackedByteArray()
 var elevation_vertices := PackedFloat32Array()
+var maximum_elevation := 0.0
 var reachable_cells := PackedByteArray()
 var plants: Array[Dictionary] = []
 var stealth_patches: Array[Dictionary] = []
@@ -90,9 +91,12 @@ func _build_elevations() -> void:
 						nearest = mini(nearest, maxi(absi(dx), absi(dy)))
 			elevation_levels[_index(cell)] = 2 if nearest == 1 else 1 if nearest == 2 else 0
 	elevation_vertices.resize((grid_size.x + 1) * (grid_size.y + 1))
+	maximum_elevation = 0.0
 	for y in grid_size.y + 1:
 		for x in grid_size.x + 1:
-			elevation_vertices[_vertex_index(x, y)] = _mountain_height_at(Vector2(x, y) * CELL_SIZE)
+			var height := _mountain_height_at(Vector2(x, y) * CELL_SIZE)
+			elevation_vertices[_vertex_index(x, y)] = height
+			maximum_elevation = maxf(maximum_elevation, height)
 
 func elevation_at(point: Vector2) -> float:
 	if elevation_vertices.is_empty(): return 0.0
