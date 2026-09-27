@@ -17,7 +17,7 @@ func _run() -> void:
 		assert(row.get_combined_minimum_size().x <= game.player_list.size.x + 1.0, "tech tree button should fit in the player column")
 		var view_button: Button
 		for child in row.get_children():
-			if child is Button and child.text == "查看科技树": view_button = child
+			if child is Button and child.text == "科技树": view_button = child
 		assert(view_button != null, "each civilization selector needs a tech tree button")
 		view_button.pressed.emit()
 		await process_frame

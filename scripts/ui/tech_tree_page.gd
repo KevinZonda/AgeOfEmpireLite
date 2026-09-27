@@ -90,11 +90,15 @@ func _build_tech_tree_age(parent: HBoxContainer, civilization: String, age: int)
 	_tech_tree_label(column, ["", "I  黑暗时代", "II  封建时代", "III  城堡时代", "IV  帝王时代"][age], 19, Color("f3d59c"))
 	if age > 1:
 		var landmarks := _tech_tree_card(column, "时代地标", "选择其一升至该时代", Color("edc781"))
+		var unlocks := _tech_tree_label(landmarks, str(RtsTechTree.AGE_UNLOCK_TEXT[age]), 12, Color("d4c8ae"))
+		unlocks.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		for landmark_id in RtsLandmarkCatalog.LANDMARKS:
 			var landmark: Dictionary = RtsLandmarkCatalog.LANDMARKS[landmark_id]
 			if landmark["civilization"] != civilization or int(landmark["age"]) != age: continue
 			var details: Dictionary = RtsLandmarkCatalog.landmark(landmark_id)
 			_tech_tree_entry(landmarks, str(landmark["label"]), Color("edc781"), "%s\n费用：%s" % [landmark["description"], GameData.cost_text(details["cost"])])
+			var landmark_effect := _tech_tree_label(landmarks, "   %s" % landmark["description"], 12, Color("d4c8ae"))
+			landmark_effect.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	for building_kind in ["town_center"] + RtsTechTree.BUILD_MENU:
 		var building_age: int = int(RtsTechTree.BUILDING_AGE.get(building_kind, 99))
 		if building_age > age: continue
@@ -109,6 +113,7 @@ func _build_tech_tree_age(parent: HBoxContainer, civilization: String, age: int)
 		if building_age != age and units.is_empty() and researches.is_empty(): continue
 		var building: Dictionary = GameData.BUILDINGS[building_kind]
 		var card := _tech_tree_card(column, str(building["label"]), "建造费用：%s" % (GameData.cost_text(building["cost"]) if not building["cost"].is_empty() else "初始建筑"), Color("edc781"))
+		if not units.is_empty(): _tech_tree_label(card, "训练单位", 12, Color("a9cdef"))
 		for unit_kind in units:
 			var unit: Dictionary = GameData.UNITS[unit_kind]
 			var unit_label := "%s%s" % ["★ " if unit["tags"].has("unique") else "", unit["label"]]
@@ -117,13 +122,21 @@ func _build_tech_tree_age(parent: HBoxContainer, civilization: String, age: int)
 			elif unit_kind == "fire_lancer": requirements = "\n需要元朝王朝"
 			elif unit_kind == "grenadier": requirements = "\n需要明朝王朝"
 			_tech_tree_entry(card, unit_label, Color("a9cdef"), "训练费用：%s\n生命：%d  攻击：%d%s" % [GameData.cost_text(GameData.unit_cost(unit_kind)), int(unit["hp"]), int(unit["damage"]), requirements])
+		var rank_researches: Array[String] = []
+		var special_researches: Array[String] = []
 		for tech_id in researches:
-			var tech: Dictionary = RtsTechTree.get_technology(tech_id)
-			var requirements: Array[String] = []
-			for prerequisite in tech["requires"]: requirements.append(str(RtsTechTree.get_technology(prerequisite)["label"]))
-			var tooltip := "研究费用：%s" % GameData.cost_text(tech["cost"])
-			if not requirements.is_empty(): tooltip += "\n前置科技：%s" % "、".join(requirements)
-			_tech_tree_entry(card, str(tech["label"]), Color("a9d8ae"), tooltip)
+			if RtsTechTree.get_technology(tech_id).has("rank_unit"): rank_researches.append(tech_id)
+			else: special_researches.append(tech_id)
+		for group in [rank_researches, special_researches]:
+			if group.is_empty(): continue
+			_tech_tree_label(card, "兵种升级" if group == rank_researches else "建筑科技", 12, Color("a9d8ae"))
+			for tech_id in group:
+				var tech: Dictionary = RtsTechTree.get_technology(tech_id)
+				var requirements: Array[String] = []
+				for prerequisite in tech["requires"]: requirements.append(str(RtsTechTree.get_technology(prerequisite)["label"]))
+				var tooltip := "研究费用：%s" % GameData.cost_text(tech["cost"])
+				if not requirements.is_empty(): tooltip += "\n前置科技：%s" % "、".join(requirements)
+				_tech_tree_entry(card, str(tech["label"]), Color("a9d8ae"), tooltip)
 
 func _tech_tree_card(parent: VBoxContainer, heading: String, tooltip: String, accent: Color) -> VBoxContainer:
 	var panel := PanelContainer.new()
@@ -138,6 +151,7 @@ func _tech_tree_card(parent: VBoxContainer, heading: String, tooltip: String, ac
 
 func _tech_tree_entry(parent: VBoxContainer, value: String, color: Color, tooltip: String) -> void:
 	var label := _tech_tree_label(parent, "◆ %s" % value, 14, color)
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	label.tooltip_text = tooltip
 
 func _tech_tree_label(parent: Node, value: String, size: int, color: Color) -> Label:

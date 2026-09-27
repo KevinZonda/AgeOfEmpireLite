@@ -9,6 +9,11 @@ const AGE_ADVANCE_COSTS := {
 	3: {"food": 650, "gold": 350},
 }
 const AGE_ADVANCE_TIMES := {1: 25.0, 2: 35.0, 3: 45.0}
+const AGE_UNLOCK_TEXT := {
+	2: "开放军营、靶场、马厩、铁匠铺与贸易",
+	3: "开放城堡、修道院、攻城器械厂与石墙",
+	4: "开放大学、奇观与帝王兵种",
+}
 
 const BUILD_MENU := ["house", "farm", "mill", "lumber_camp", "mining_camp", "market", "dock", "barracks", "archery_range", "stable", "blacksmith", "university", "monastery", "outpost", "palisade_wall", "palisade_gate", "stone_wall", "stone_gate", "keep", "siege_workshop", "wonder"]
 const BUILDING_AGE := {
@@ -115,9 +120,9 @@ const UNIT_REQUIRES := {} # Unit-specific research prerequisites can be added he
 # RtsUnitCatalog.unit_definition(civilization, unit_kind, researched).
 const TECHNOLOGIES := {
 	"forged_weapons": {"label": "锻造武器", "age": 2, "building": "barracks", "cost": {"food": 100, "gold": 75}, "time": 15.0, "requires": [], "target_tags": ["infantry"], "effects": {"damage": 2.0}},
-	"iron_armor": {"label": "铁甲", "age": 3, "building": "town_center", "cost": {"food": 150, "gold": 125}, "time": 20.0, "requires": [], "target_tags": ["military"], "effects": {"armor_melee": 1.0, "armor_ranged": 1.0}},
 	"veteran_training": {"label": "老兵训练", "age": 3, "building": "barracks", "cost": {"food": 180, "gold": 120}, "time": 22.0, "requires": ["forged_weapons"], "target_tags": ["infantry"], "effects": {"hp": 20.0}},
-	"elite_training": {"label": "精锐训练", "age": 4, "building": "town_center", "cost": {"food": 280, "gold": 220}, "time": 30.0, "requires": ["iron_armor", "veteran_training"], "target_tags": ["military"], "effects": {"damage": 3.0, "hp": 20.0}},
+	"archery_drill": {"label": "射术训练", "age": 3, "building": "archery_range", "cost": {"wood": 150, "gold": 120}, "time": 28.0, "requires": [], "target_tags": ["ranged"], "exclude_tags": ["siege", "naval", "gunpowder"], "effects": {"damage_ranged": 1.0}},
+	"cavalry_husbandry": {"label": "骑术训练", "age": 3, "building": "stable", "cost": {"food": 180, "gold": 120}, "time": 28.0, "requires": [], "target_tags": ["cavalry"], "effects": {"speed": 8.0}},
 	"melee_attack_2": {"label": "熟铁块吹炼法", "age": 2, "building": "blacksmith", "cost": {"food": 50, "gold": 125}, "time": 33.0, "requires": [], "civilizations": ["English", "Chinese"], "target_tags": ["military"], "exclude_tags": ["siege", "naval"], "effects": {"damage_melee": 1.0}},
 	"melee_attack_3": {"label": "脱碳", "age": 3, "building": "blacksmith", "cost": {"food": 100, "gold": 250}, "time": 33.0, "requires": ["melee_attack_2"], "civilizations": ["English", "Chinese"], "target_tags": ["military"], "exclude_tags": ["siege", "naval"], "effects": {"damage_melee": 1.0}},
 	"melee_attack_4": {"label": "大马士革钢", "age": 4, "building": "blacksmith", "cost": {"food": 150, "gold": 350}, "time": 33.0, "requires": ["melee_attack_3"], "civilizations": ["English", "Chinese"], "target_tags": ["military"], "exclude_tags": ["siege", "naval"], "effects": {"damage_melee": 1.0}},
@@ -135,7 +140,7 @@ const TECHNOLOGIES := {
 	"horticulture": {"label": "园艺学", "age": 2, "building": "mill", "cost": {"food": 100, "gold": 75}, "time": 25.0, "requires": [], "economy": true, "gather_kind": "food", "gather_multiplier": 1.15, "target_tags": [], "effects": {}},
 	"double_broadaxe": {"label": "双刃斧", "age": 2, "building": "lumber_camp", "cost": {"wood": 100, "gold": 75}, "time": 25.0, "requires": [], "economy": true, "gather_kind": "wood", "gather_multiplier": 1.15, "target_tags": [], "effects": {}},
 	"specialized_pick": {"label": "专用镐", "age": 2, "building": "mining_camp", "cost": {"food": 100, "gold": 75}, "time": 25.0, "requires": [], "economy": true, "gather_kind": "gold", "gather_multiplier": 1.15, "target_tags": [], "effects": {}},
-	"siege_works": {"label": "攻城工程", "age": 4, "building": "university", "cost": {"wood": 300, "gold": 500}, "time": 50.0, "requires": [], "target_tags": ["siege"], "effects": {"hp": 20.0}},
+	"siege_works": {"label": "攻城工程", "age": 4, "building": "siege_workshop", "cost": {"wood": 300, "gold": 500}, "time": 50.0, "requires": [], "target_tags": ["siege"], "effects": {"hp": 20.0}},
 	"elite_army_tactics": {"label": "精锐军队战术", "age": 4, "building": "university", "cost": {"food": 350, "gold": 450}, "time": 50.0, "requires": ["veteran_training"], "target_tags": ["infantry"], "effects": {"hp": 15.0, "damage": 2.0}},
 	"armored_hull": {"label": "装甲船壳", "age": 3, "building": "dock", "cost": {"wood": 200, "gold": 180}, "time": 32.0, "requires": [], "target_tags": ["naval"], "effects": {"hp": 35.0, "armor_ranged": 1.0}},
 	"shipwrights": {"label": "造船工匠", "age": 4, "building": "dock", "cost": {"wood": 300, "gold": 260}, "time": 38.0, "requires": ["armored_hull"], "target_tags": ["naval"], "effects": {"speed": 9.0}},
@@ -257,7 +262,9 @@ static func all_researches(civilization: String, building_kind: String) -> Array
 				if int(age_key) > RtsBalanceData.first_rank_age(unit_kind): result.append(RtsBalanceData.rank_tech_id(unit_kind, int(age_key)))
 	if civilization == "French" and building_kind == "royal_institute":
 		for tech_id in TECHNOLOGIES:
-			if _technology_civilization_available(civilization, TECHNOLOGIES[tech_id]) and not result.has(tech_id): result.append(tech_id)
+			var technology: Dictionary = TECHNOLOGIES[tech_id]
+			if technology.get("economy", false) or technology["building"] == "dock": continue
+			if _technology_civilization_available(civilization, technology) and not result.has(tech_id): result.append(tech_id)
 		for producer_kind in ["barracks", "archery_range", "stable"]:
 			for unit_kind in all_train_units(civilization, producer_kind):
 				for age_key in RtsBalanceData.line(unit_kind).get("upgrade_costs", {}):

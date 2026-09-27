@@ -21,6 +21,7 @@ const PlayerOrders = preload("res://scripts/player/player_orders.gd")
 const MATCH_ECONOMY := preload("res://scripts/match/match_economy.gd")
 const MATCH_PRODUCTION := preload("res://scripts/match/match_production.gd")
 const FEEDBACK_AUDIO := preload("res://scripts/ui/feedback_audio.gd")
+const MILITARY_RESEARCH_BUILDINGS := ["barracks", "archery_range", "stable", "siege_workshop", "dock", "white_tower", "wynguard", "royal_institute"]
 const UNIT_ABILITY_ACTIONS := [
 	{"id": "palings", "label": "架设拒马", "kinds": ["longbow"]},
 	{"id": "volley", "label": "万箭齐发", "kinds": ["longbow"]},
@@ -142,6 +143,7 @@ var menu_panel: PanelContainer
 var tech_tree_overlay: ColorRect
 var tech_tree_civilization_choice: OptionButton
 var tech_tree_page
+var age_choice_overlay: ColorRect
 var result_panel: PanelContainer
 var pause_overlay: ColorRect
 var settings_overlay: ColorRect
@@ -1164,6 +1166,7 @@ func start_game(civ: String, requested_seed := -1, opponent_civ := "") -> void:
 	queue_redraw()
 
 func _clear_world() -> void:
+	_close_age_choice()
 	if world_map != null: world_map.hide()
 	if weather != null: weather.hide()
 	if fog != null: fog.clear()
@@ -2086,6 +2089,11 @@ func _player_center(owner_id: int) -> RtsBuilding:
 	return null
 
 func _input(event: InputEvent) -> void:
+	if age_choice_overlay != null:
+		if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
+			_close_age_choice()
+			get_viewport().set_input_as_handled()
+		return
 	if tech_tree_overlay != null:
 		if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
 			_close_tech_tree()
@@ -2139,7 +2147,7 @@ func _finish_left_drag(event: InputEventMouseButton) -> bool:
 	return false
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not started or game_over or paused: return
+	if not started or game_over or paused or age_choice_overlay != null: return
 	if event is InputEventMagnifyGesture:
 		if zoom_gesture_enabled:
 			_adjust_zoom(event.factor, event.position)
@@ -2638,6 +2646,7 @@ func _rebuild_actions() -> void:
 	command_title.text = "命令"
 	if selected.is_empty() or not is_instance_valid(selected[0]): return
 	var item := selected[0]
+	action_bar.columns = 2 if item is RtsBuilding and item.producer_kind() in MILITARY_RESEARCH_BUILDINGS else 3
 	if item.owner_id != 0:
 		command_title.text = "敌方单位 · 情报"
 		return
@@ -2676,9 +2685,8 @@ func _build_unit_actions(item: RtsUnit) -> void:
 			_add_build_action(kind, keys[action_index])
 			action_index += 1
 		if build_page == 3:
-			for choice in RtsLandmarkCatalog.choices_for(civilizations[0], players[0]["age"], players[0]["landmarks"]):
-				if int(choice["age"]) != players[0]["age"] + 1: continue
-				_add_landmark_action(choice, keys[action_index])
+			if RtsTechTree.can_advance(players[0]["age"]):
+				_add_action("age", "(%s) 升时代" % ["", "II", "III", "IV"][players[0]["age"]], {}, keys[action_index], "order", _show_age_choice)
 				action_index += 1
 		if civilizations[0] == "Chinese" and build_page == 4:
 			for choice in RtsLandmarkCatalog.choices_for(civilizations[0], players[0]["age"], players[0]["landmarks"]):
@@ -2799,21 +2807,40 @@ func _build_building_actions(item: RtsBuilding) -> void:
 			if not train_kinds.has(kind): train_kinds.append(kind)
 		for kind in RtsTechTree.all_researches(civilizations[0], candidate.producer_kind()):
 			if not research_kinds.has(kind): research_kinds.append(kind)
-	for kind in train_kinds:
-		var cost: Dictionary = GameData.unit_cost(kind)
-		_add_action(kind, GameData.UNITS[kind]["label"], cost, keys[action_index] if action_index < keys.size() else KEY_NONE, "train", func() -> void:
-			for candidate in selected:
-				if is_instance_valid(candidate) and candidate is RtsBuilding and candidate.owner_id == 0 and RtsTechTree.all_train_units(civilizations[0], candidate.producer_kind()).has(kind): train_unit(candidate, kind)
-		)
-		action_index += 1
-	for kind in research_kinds:
-		var technology: Dictionary = RtsTechTree.get_technology(kind)
-		_add_action(kind, technology["label"], technology["cost"], keys[action_index] if action_index < keys.size() else KEY_NONE, "research", func() -> void:
-			for candidate in selected:
-				if is_instance_valid(candidate) and candidate is RtsBuilding and candidate.owner_id == 0 and RtsTechTree.all_researches(civilizations[0], candidate.producer_kind()).has(kind):
-					if research_technology(candidate, kind): break
-		)
-		action_index += 1
+	if item.producer_kind() in MILITARY_RESEARCH_BUILDINGS:
+		for pair_start in range(0, train_kinds.size(), 2):
+			var pair: Array[String] = []
+			for index in range(pair_start, mini(pair_start + 2, train_kinds.size())):
+				pair.append(train_kinds[index])
+				_add_train_action(train_kinds[index], keys[action_index] if action_index < keys.size() else KEY_NONE)
+				action_index += 1
+			if pair.size() == 1: _add_action_spacer()
+			var rank_lists: Array[Array] = []
+			var max_rank_rows := 0
+			for unit_kind in pair:
+				var ranks: Array[String] = []
+				for tech_id in research_kinds:
+					if RtsTechTree.get_technology(tech_id).get("rank_unit", "") == unit_kind: ranks.append(tech_id)
+				rank_lists.append(ranks)
+				max_rank_rows = maxi(max_rank_rows, ranks.size())
+			for rank_index in max_rank_rows:
+				for ranks in rank_lists:
+					if rank_index < ranks.size():
+						_add_research_action(ranks[rank_index], keys[action_index] if action_index < keys.size() else KEY_NONE)
+						action_index += 1
+					else: _add_action_spacer()
+				if pair.size() == 1: _add_action_spacer()
+		for kind in research_kinds:
+			if RtsTechTree.get_technology(kind).has("rank_unit"): continue
+			_add_research_action(kind, keys[action_index] if action_index < keys.size() else KEY_NONE)
+			action_index += 1
+	else:
+		for kind in train_kinds:
+			_add_train_action(kind, keys[action_index] if action_index < keys.size() else KEY_NONE)
+			action_index += 1
+		for kind in research_kinds:
+			_add_research_action(kind, keys[action_index] if action_index < keys.size() else KEY_NONE)
+			action_index += 1
 	if item.kind == "market":
 		for resource_kind in ["food", "wood", "stone"]:
 			var sell_price := market_quote(resource_kind, false)
@@ -2822,12 +2849,6 @@ func _build_building_actions(item: RtsBuilding) -> void:
 			_add_action("market_sell", "卖%s +%d金" % [short_name, sell_price], {}, keys[action_index] if action_index < keys.size() else KEY_NONE, "order", func() -> void: exchange_resource(0, resource_kind, false))
 			action_index += 1
 			_add_action("market_buy", "买%s -%d金" % [short_name, buy_price], {}, keys[action_index] if action_index < keys.size() else KEY_NONE, "order", func() -> void: exchange_resource(0, resource_kind, true))
-			action_index += 1
-	if item.kind == "town_center":
-		var age: int = players[0]["age"]
-		for choice in RtsLandmarkCatalog.choices_for(civilizations[0], age, players[0]["landmarks"]):
-			if int(choice["age"]) != age + 1: continue
-			_add_landmark_action(choice, keys[action_index] if action_index < keys.size() else KEY_NONE)
 			action_index += 1
 	if item.garrison_capacity() > 0:
 		_add_action("ungarrison", "放出驻军", {}, keys[action_index] if action_index < keys.size() else KEY_NONE, "order", func() -> void: item.ungarrison_all())
@@ -2873,11 +2894,99 @@ func _add_build_action(kind: String, keycode: int) -> void:
 
 func _add_landmark_action(choice: Dictionary, keycode: int) -> void:
 	var choice_id: String = choice["id"]
-	_add_action(choice_id, choice["label"], choice["cost"], keycode, "landmark", func() -> void:
-		build_mode = "landmark"
-		pending_landmark_id = choice_id
-		notify_player("%s：%s。点击地图放置" % [choice["label"], choice["description"]])
+	_add_action(choice_id, choice["label"], choice["cost"], keycode, "landmark", func() -> void: _select_landmark_for_placement(choice_id))
+
+func _show_age_choice() -> void:
+	if not started or game_over or age_choice_overlay != null: return
+	var current_age: int = players[0]["age"]
+	if not RtsTechTree.can_advance(current_age): return
+	var choices: Array[Dictionary] = []
+	for choice in RtsLandmarkCatalog.choices_for(civilizations[0], current_age, players[0]["landmarks"]):
+		if int(choice["age"]) == current_age + 1: choices.append(choice)
+	if choices.is_empty(): return
+	var target_age := current_age + 1
+	age_choice_overlay = ColorRect.new()
+	age_choice_overlay.color = Color("100f0d", 0.87)
+	age_choice_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	age_choice_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	hud_bottom.get_parent().add_child(age_choice_overlay)
+	var panel := PanelContainer.new()
+	panel.set_anchors_preset(Control.PRESET_CENTER)
+	panel.offset_left = -310
+	panel.offset_right = 310
+	panel.offset_top = -174
+	panel.offset_bottom = 174
+	panel.add_theme_stylebox_override("panel", _hud_panel_style(Color("30271c"), 18))
+	age_choice_overlay.add_child(panel)
+	var column := VBoxContainer.new()
+	column.add_theme_constant_override("separation", 12)
+	panel.add_child(column)
+	var heading := Label.new()
+	heading.text = "选择进入 %s 时代的地标" % ["", "I", "II", "III", "IV"][target_age]
+	heading.add_theme_font_size_override("font_size", 23)
+	heading.add_theme_color_override("font_color", Color("f3d59c"))
+	column.add_child(heading)
+	var summary := Label.new()
+	summary.text = "%s  ·  升时代费用：%s" % [RtsTechTree.AGE_UNLOCK_TEXT[target_age], GameData.cost_text(RtsTechTree.age_cost(current_age))]
+	summary.add_theme_color_override("font_color", Color("e5d1a1"))
+	column.add_child(summary)
+	var options := HBoxContainer.new()
+	options.add_theme_constant_override("separation", 10)
+	column.add_child(options)
+	for choice in choices:
+		var chosen_id: String = choice["id"]
+		var button := Button.new()
+		button.custom_minimum_size = Vector2(280, 138)
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		button.text = "%s\n\n%s\n建造：%s" % [choice["label"], choice["description"], GameData.cost_text(choice["cost"])]
+		_style_button(button)
+		var status := RtsLandmarkCatalog.choice_status(civilizations[0], current_age, players[0]["landmarks"], chosen_id, active_landmark_id(0))
+		button.disabled = not status["available"] or not can_afford(0, choice["cost"])
+		if button.disabled: button.tooltip_text = status["reason"] if not status["available"] else "资源不足"
+		button.pressed.connect(func() -> void:
+			_close_age_choice()
+			_select_landmark_for_placement(chosen_id)
+		)
+		options.add_child(button)
+	var cancel := Button.new()
+	cancel.text = "返回"
+	cancel.custom_minimum_size.y = 36
+	_style_button(cancel)
+	cancel.pressed.connect(_close_age_choice)
+	column.add_child(cancel)
+
+func _close_age_choice() -> void:
+	if age_choice_overlay == null: return
+	age_choice_overlay.queue_free()
+	age_choice_overlay = null
+
+func _select_landmark_for_placement(choice_id: String) -> void:
+	var choice := RtsLandmarkCatalog.landmark(choice_id)
+	if choice.is_empty(): return
+	build_mode = "landmark"
+	pending_landmark_id = choice_id
+	notify_player("%s：%s。点击地图放置" % [choice["label"], choice["description"]])
+
+func _add_train_action(kind: String, keycode: int) -> void:
+	_add_action(kind, GameData.UNITS[kind]["label"], GameData.unit_cost(kind), keycode, "train", func() -> void:
+		for candidate in selected:
+			if is_instance_valid(candidate) and candidate is RtsBuilding and candidate.owner_id == 0 and RtsTechTree.all_train_units(civilizations[0], candidate.producer_kind()).has(kind): train_unit(candidate, kind)
 	)
+
+func _add_research_action(kind: String, keycode: int) -> void:
+	var technology: Dictionary = RtsTechTree.get_technology(kind)
+	_add_action(kind, technology["label"], technology["cost"], keycode, "research", func() -> void:
+		for candidate in selected:
+			if is_instance_valid(candidate) and candidate is RtsBuilding and candidate.owner_id == 0 and RtsTechTree.all_researches(civilizations[0], candidate.producer_kind()).has(kind):
+				if research_technology(candidate, kind): break
+	)
+
+func _add_action_spacer() -> void:
+	var spacer := Control.new()
+	spacer.custom_minimum_size = Vector2(108, 69)
+	spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	action_bar.add_child(spacer)
 
 func _add_action(icon_kind: String, label_text: String, cost: Dictionary, keycode: int, action_type: String, callback: Callable) -> void:
 	var button := RtsCommandButton.new()

@@ -79,8 +79,8 @@ func _run() -> void:
 	var center: RtsBuilding = game._player_center(0)
 	game.selected.append(center)
 	game._rebuild_actions()
-	assert(game.command_buttons.size() >= 6, "Town Center should show training, research, landmark choices, and ungarrison")
-	assert(game.command_buttons.any(func(button: RtsCommandButton) -> bool: return button.disabled and button.availability_reason.contains("时代")), "locked research should explain its requirement")
+	assert(game.command_buttons.size() >= 4, "Town Center should show villager training and garrison controls")
+	assert(not game.command_buttons.any(func(button: RtsCommandButton) -> bool: return button.get_meta("action_type") in ["research", "landmark"]), "Town Center should not host military upgrades or age landmark choices")
 	assert(game.hotkey_buttons.has(KEY_1))
 	game.command_buttons[0].pressed.emit()
 	assert(center.training_queue.size() == 1, "train command should enqueue a villager")
@@ -93,6 +93,28 @@ func _run() -> void:
 	assert(trained_villager.kind == "villager" and trained_villager.order == "move")
 	assert(trained_villager.destination == rally_destination, "trained units should travel to the rally point")
 	game.selected.clear()
+	game.selected.append(trained_villager)
+	game.build_page = 3
+	game._rebuild_actions()
+	var age_button: RtsCommandButton
+	for button in game.command_buttons:
+		if button.icon_kind == "age": age_button = button
+	assert(age_button != null, "villagers should open the age landmark chooser")
+	age_button.pressed.emit()
+	assert(game.age_choice_overlay != null, "age choices should open in a dedicated window")
+	var age_option_labels: Array[String] = []
+	for button in game.age_choice_overlay.find_children("*", "Button", true, false): age_option_labels.append(button.text)
+	assert(age_option_labels.any(func(value: String) -> bool: return value.contains("议会厅") and value.contains("训练时间减半")))
+	var council_choice: Button
+	for button in game.age_choice_overlay.find_children("*", "Button", true, false):
+		if button.text.contains("议会厅"): council_choice = button
+	assert(council_choice != null and not council_choice.disabled)
+	council_choice.pressed.emit()
+	assert(game.age_choice_overlay == null and game.build_mode == "landmark" and game.pending_landmark_id == "eng_council_hall")
+	game.build_mode = ""
+	game.pending_landmark_id = ""
+	game.selected.clear()
+	game.build_page = 0
 	var midpoint: Vector2 = game.minimap.map_to_world(game.minimap.size * 0.5)
 	assert(midpoint.distance_to(game.world_size * 0.5) < 1.0)
 	var map_click := InputEventMouseButton.new()
@@ -191,6 +213,10 @@ func _run() -> void:
 	assert(is_equal_approx(barracks.build_remaining, saved_progress - 2.0))
 	barracks.advance_construction(100.0)
 	assert(barracks.is_complete())
+	game.selected.clear()
+	game.selected.append(barracks)
+	game._rebuild_actions()
+	assert(game.action_bar.columns == 2 and game.command_buttons[0].icon_kind == "spearman" and game.command_buttons[1].icon_kind == "man_at_arms", "barracks should place two units in the first row")
 	assert(not game.train_unit(barracks, "archer"), "a producer cannot train another building's units")
 	assert(game.train_unit(barracks, "spearman"))
 	barracks._process(GameData.training_time("English", "barracks", "spearman"))

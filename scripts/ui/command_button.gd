@@ -96,7 +96,7 @@ func _draw_icon(center: Vector2, color: Color) -> void:
 		"scout", "horseman", "knight", "royal_knight":
 			draw_colored_polygon(PackedVector2Array([center + Vector2(-10, -8), center + Vector2(9, -8), center + Vector2(12, 4), center + Vector2(0, 13), center + Vector2(-12, 4)]), color)
 			draw_line(center + Vector2(-5, 1), center + Vector2(5, 1), Color("273338"), 2)
-		"forged_weapons", "iron_armor", "veteran_training", "elite_training":
+		"forged_weapons", "veteran_training", "archery_drill", "cavalry_husbandry", "siege_works":
 			draw_rect(Rect2(center + Vector2(-10, -12), Vector2(20, 24)), color, false, 2)
 			draw_line(center + Vector2(-5, -5), center + Vector2(5, -5), color, 2)
 			draw_line(center + Vector2(-5, 1), center + Vector2(5, 1), color, 2)
@@ -140,4 +140,7 @@ func _draw_icon(center: Vector2, color: Color) -> void:
 			draw_line(center + Vector2(-10, 0), center + Vector2(9, 0), color, 3)
 			draw_colored_polygon(PackedVector2Array([center + Vector2(4, -7), center + Vector2(12, 0), center + Vector2(4, 7)]), color)
 		_:
-			draw_circle(center, 10, color)
+			if icon_kind.begins_with("rank_"):
+				draw_line(center + Vector2(-9, 10), center + Vector2(0, -11), color, 3)
+				draw_line(center + Vector2(0, -11), center + Vector2(9, 10), color, 3)
+			else: draw_circle(center, 10, color)
