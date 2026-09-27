@@ -51,14 +51,41 @@ func _run() -> void:
 	assert(ai.last_tactic == "raid", "visible gatherer should trigger a cavalry raid")
 	game.entity_destroyed(enemy_worker)
 	await process_frame
+	var stuck_attacker: RtsUnit = game.spawn_unit(1, "spearman", home + Vector2(-110, -30))
+	var stuck_target: RtsUnit = game.spawn_unit(0, "spearman", home + Vector2(-210, -30))
+	stuck_attacker.order_attack(stuck_target)
+	game.fog.update_visibility()
+	ai.attack_watch[stuck_attacker.get_instance_id()] = {"target_id": stuck_target.get_instance_id(), "position": stuck_attacker.position, "since": game.match_statistics.elapsed - 10.0}
+	ai._recover_stalled_attacks([stuck_attacker])
+	assert(stuck_attacker.order != "attack", "stalled attacks must flank or reacquire")
+	game.entity_destroyed(stuck_target)
+	await process_frame
+	var first_monk: RtsUnit = game.spawn_unit(1, "monk", home + Vector2(0, 90))
+	var second_monk: RtsUnit = game.spawn_unit(1, "monk", home + Vector2(20, 90))
+	var first_site := ai._sacred_site_for(first_monk)
+	assert(first_site >= 0)
+	ai._assign_monk(first_monk)
+	assert(first_monk.order == "move" and first_monk.destination.distance_to(game.objectives.sacred_sites[first_site]["position"]) < 80.0, "monk should prioritize the sacred site")
+	assert(ai._sacred_site_for(second_monk) != first_site, "monks should spread across sacred sites")
+	game.objectives.sacred_sites[first_site]["contested"] = true
+	ai._secure_sacred_site(soldiers)
+	assert(ai.last_tactic == "secure_site", "army should contest a blocked sacred site")
+	game.objectives.sacred_sites[first_site]["contested"] = false
 	game.players[1]["wood"] = 1000
 	game.spawn_building(1, "barracks", home + Vector2(-280, 180))
+	game.spawn_building(1, "siege_workshop", home + Vector2(-280, -180))
 	var workers: Array[RtsUnit] = []
 	for unit in game.units:
 		if is_instance_valid(unit) and unit.owner_id == 1 and unit.kind == "villager": workers.append(unit)
 	for i in 20:
 		workers.append(game.spawn_unit(1, "villager", home + Vector2(i * 8, 90)))
+	var initial_production := ai._building_count("barracks") + ai._building_count("archery_range") + ai._building_count("stable")
+	assert(ai._unit_count("battering_ram") == 0)
 	ai._expand_production(workers, 20, 3)
-	assert(ai._building_count("barracks") >= 2, "AI should build additional production")
+	assert(ai._building_count("barracks") + ai._building_count("archery_range") + ai._building_count("stable") == initial_production, "siege production should precede extra barracks")
+	game.spawn_unit(1, "battering_ram", home + Vector2(-180, -90))
+	game.spawn_building(1, "monastery", home + Vector2(-360, -160))
+	ai._expand_production(workers, 20, 3)
+	assert(ai._building_count("barracks") + ai._building_count("archery_range") + ai._building_count("stable") > initial_production, "AI should build additional production")
 	print("AI_TACTICS_OK goal=%d barracks=%d" % [ai.worker_goal(), ai._building_count("barracks")])
 	quit()

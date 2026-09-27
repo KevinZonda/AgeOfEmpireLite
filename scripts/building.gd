@@ -32,6 +32,7 @@ var landmark_stockpile := {"food": 0, "wood": 0, "gold": 0, "stone": 0}
 var landmark_ability_cooldown := 0.0
 var tax_stockpile := 0
 var tax_timer := 4.0
+var damage_flash_timer := 0.0
 
 func setup(game_ref: Node2D, player_id: int, building_kind: String, under_construction := false, chosen_landmark := "") -> void:
 	game = game_ref
@@ -294,6 +295,9 @@ func activate_landmark_ability() -> bool:
 
 func _process(delta: float) -> void:
 	if not game.started or game.paused or game.game_over: return
+	if damage_flash_timer > 0.0:
+		damage_flash_timer = maxf(0.0, damage_flash_timer - delta)
+		queue_redraw()
 	if game.civilizations[owner_id] == "Chinese" and is_complete() and kind in ["town_center", "market", "barracks", "archery_range", "stable", "siege_workshop", "blacksmith", "farm"]:
 		tax_timer -= delta
 		if tax_timer <= 0.0:
@@ -325,6 +329,9 @@ func _process(delta: float) -> void:
 	if job["type"] == "train":
 		training_queue.pop_front()
 		var trained: RtsUnit = game.spawn_unit(owner_id, job["kind"], game.find_spawn_position(self), rally_point, rally_target, rally_resource_kind)
+		if owner_id == 0 and game.has_method("play_feedback"):
+			game.play_feedback("complete")
+			game.world_effects.append({"point": trained.position, "kind": "complete", "time": 0.9})
 		if kind == "landmark" and (RtsLandmarkCatalog.produced_siege_hp(landmark_id) > 1.0 or RtsLandmarkCatalog.produced_siege_damage(landmark_id) > 1.0) and trained.stats.get("tags", []).has("siege"):
 			trained.producer_landmark_id = landmark_id
 			trained.refresh_stats()
@@ -341,6 +348,8 @@ func _process(delta: float) -> void:
 
 func take_damage(damage: float) -> void:
 	hp -= damage
+	damage_flash_timer = 0.22
+	if owner_id == 0 and game.has_method("play_feedback"): game.play_feedback("alert")
 	queue_redraw()
 	if hp <= 0.0:
 		game.entity_destroyed(self)
@@ -351,6 +360,7 @@ func _draw() -> void:
 		return
 	var bounds := Rect2(-size() * 0.5, size())
 	var color: Color = game.player_color(owner_id)
+	var construction_ratio := 1.0 - build_remaining / maxf(build_total, 0.1)
 	if not is_complete(): color = color.darkened(0.45)
 	if game.view_mode_25d and not kind in ["farm", "palisade_wall", "stone_wall", "palisade_gate", "stone_gate"]:
 		var depth := 18.0 if kind == "town_center" or kind == "landmark" or kind == "keep" else 12.0
@@ -358,6 +368,15 @@ func _draw() -> void:
 		draw_colored_polygon(PackedVector2Array([bounds.position + Vector2(0, bounds.size.y), bounds.position + bounds.size, bounds.position + bounds.size + Vector2(0, depth), bounds.position + Vector2(0, bounds.size.y + depth)]), color.darkened(0.4))
 	draw_rect(bounds, Color("272d2a"))
 	draw_rect(bounds.grow(-4), color)
+	if damage_flash_timer > 0.0: draw_rect(bounds.grow(-2), Color("f8ca91", damage_flash_timer * 1.4), false, 3.0)
+	if not is_complete():
+		var timber := Color("b99b6e")
+		for side in [-1.0, 1.0]:
+			var post_x: float = side * (size().x * 0.5 - 7.0)
+			draw_line(Vector2(post_x, size().y * 0.43), Vector2(post_x, -size().y * 0.43 * construction_ratio), timber, 3.0)
+			draw_line(Vector2(post_x, size().y * 0.2), Vector2(-post_x, -size().y * 0.28 * construction_ratio), Color(timber, 0.72), 2.0)
+		if construction_ratio < 0.65:
+			draw_rect(Rect2(-size().x * 0.42, -size().y * 0.35, size().x * 0.84, 5), Color("6d5a41"))
 	if kind.ends_with("_gate"):
 		var opening := Rect2(-size() * 0.22, size() * 0.44)
 		draw_rect(opening, Color("314638"))
@@ -367,10 +386,10 @@ func _draw() -> void:
 	elif kind == "farm":
 		for x in range(-17, 25, 11):
 			draw_line(Vector2(x, -22), Vector2(x - 7, 22), Color("d4bd73"), 3)
-	elif kind == "town_center":
+	elif kind == "town_center" and construction_ratio >= 0.65:
 		draw_rect(Rect2(-15, -19, 30, 28), Color("e5d3a7"))
 		draw_colored_polygon(PackedVector2Array([Vector2(-26, -19), Vector2(0, -35), Vector2(26, -19)]), Color("513c36"))
-	else:
+	elif construction_ratio >= 0.65:
 		draw_colored_polygon(PackedVector2Array([Vector2(-size().x * 0.4, -size().y * 0.4), Vector2(0, -size().y * 0.65), Vector2(size().x * 0.4, -size().y * 0.4)]), Color("513c36"))
 	var font := ThemeDB.fallback_font
 	if font != null:
@@ -385,12 +404,13 @@ func _draw() -> void:
 func _draw_isometric() -> void:
 	var bounds := Rect2(-size() * 0.5, size())
 	var color: Color = game.player_color(owner_id)
+	var construction_ratio := 1.0 - build_remaining / maxf(build_total, 0.1)
 	if not is_complete(): color = color.darkened(0.45)
 	var nw := bounds.position
 	var ne := Vector2(bounds.end.x, bounds.position.y)
 	var se := bounds.end
 	var sw := Vector2(bounds.position.x, bounds.end.y)
-	var height := isometric_height()
+	var height := isometric_height() * (0.25 + 0.75 * construction_ratio)
 	var canvas := get_viewport().get_canvas_transform()
 	var lift := RtsIsoProjection.world_delta(canvas, Vector2(0, -height * game.camera.zoom.x))
 	var terrain_lift := RtsIsoProjection.world_delta(canvas, Vector2(0, -foundation_height() * game.camera.zoom.x))
@@ -412,15 +432,24 @@ func _draw_isometric() -> void:
 	var roof_color := Color("6b4b3d") if kind in ["town_center", "landmark", "keep", "wonder"] else color.darkened(0.18)
 	if kind == "farm": roof_color = Color("957d48")
 	if kind.ends_with("_wall") or kind.ends_with("_gate"): roof_color = color.lightened(0.13)
-	draw_colored_polygon(PackedVector2Array([nw + lift, ne + lift, se + lift, sw + lift]), roof_color)
-	draw_polyline(PackedVector2Array([nw + lift, ne + lift, se + lift, sw + lift, nw + lift]), Color("1f2929"), 2.0)
+	if construction_ratio >= 0.65:
+		draw_colored_polygon(PackedVector2Array([nw + lift, ne + lift, se + lift, sw + lift]), roof_color)
+		draw_polyline(PackedVector2Array([nw + lift, ne + lift, se + lift, sw + lift, nw + lift]), Color("1f2929"), 2.0)
+	else:
+		var scaffold := Color("c5a878")
+		for corner in [nw, ne, sw, se]:
+			draw_line(corner, corner + lift * maxf(0.2, construction_ratio), scaffold, 2.2)
+		draw_line(nw + lift * 0.38, se + lift * 0.38, Color(scaffold, 0.82), 2.0)
+		draw_line(ne + lift * 0.38, sw + lift * 0.38, Color(scaffold, 0.82), 2.0)
 	if kind == "farm":
 		for portion in [0.25, 0.5, 0.75]:
 			draw_line(nw.lerp(sw, portion), ne.lerp(se, portion), Color("c3a763"), 2.0)
-	elif not kind.ends_with("_wall") and not kind.ends_with("_gate"):
+	elif construction_ratio >= 0.65 and not kind.ends_with("_wall") and not kind.ends_with("_gate"):
 		var roof_middle := (nw + ne + se + sw) * 0.25 + lift
 		draw_line(nw + lift, se + lift, roof_color.lightened(0.25), 2.0)
 		draw_circle(roof_middle, 4.0, Color("d8bd80"))
+	if damage_flash_timer > 0.0:
+		draw_polyline(PackedVector2Array([nw + lift, ne + lift, se + lift, sw + lift, nw + lift]), Color("f7d091", damage_flash_timer * 3.4), 3.0)
 	# Labels and status bars are drawn in screen space so they stay legible.
 	draw_set_transform_matrix(RtsIsoProjection.upright(canvas, terrain_lift))
 	var font := ThemeDB.fallback_font

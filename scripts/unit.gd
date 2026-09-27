@@ -73,6 +73,14 @@ var artillery_shot_ready := false
 var artillery_shot_cooldown := 0.0
 var facing_right := true
 var facing_back := false
+var visual_phase := 0.0
+var visual_moving := false
+var visual_last_position := Vector2.INF
+var visual_action := ""
+var visual_action_timer := 0.0
+var visual_action_length := 0.0
+var visual_idle_timer := 0.0
+var visual_redraw_timer := 0.0
 
 func setup(game_ref: Node2D, player_id: int, unit_kind: String) -> void:
 	game = game_ref
@@ -479,6 +487,7 @@ func _reset_route() -> void:
 
 func _process(delta: float) -> void:
 	if not game.started or game.paused or game.game_over or garrisoned_in != null: return
+	_tick_visual(delta)
 	if hit_flash_timer > 0.0:
 		hit_flash_timer = maxf(0.0, hit_flash_timer - delta)
 		queue_redraw()
@@ -657,6 +666,7 @@ func _process(delta: float) -> void:
 		return
 	if order == "build":
 		if not _move_toward(target.position, delta, target.size().x * 0.6 + radius()): return
+		if visual_action_timer <= 0.0: _start_visual_action("build", 0.45)
 		target.advance_construction(delta * GameData.construction_multiplier(game.civilizations[owner_id]))
 		if target.is_complete(): _advance_command()
 		return
@@ -693,6 +703,7 @@ func _process_repair_order(delta: float) -> void:
 	target.hp = minf(target.max_hp, target.hp + (5.0 if target is RtsUnit else 8.0))
 	target.queue_redraw()
 	work_timer = 0.4
+	_start_visual_action("build", 0.4)
 
 func _process_attack_ground(delta: float) -> void:
 	var profile: Dictionary = stats.get("profiles", {}).get(stats.get("primary_profile", ""), {})
@@ -701,12 +712,15 @@ func _process_attack_ground(delta: float) -> void:
 		return
 	var reach := float(profile.get("range", stats.get("range", 0.0)))
 	if not _move_toward(destination, delta, reach): return
-	if attack_timer > 0.0: return
+	if attack_timer > 0.0:
+		if attack_timer <= 0.16 and visual_action != "attack": _start_visual_action("attack", 0.34)
+		return
 	var projectile := RtsProjectile.new()
 	projectile.setup_point(game, owner_id, global_position, destination, float(profile["damage"]), float(stats.get("projectile_speed", 350.0)), maxf(55.0, float(profile.get("splash_radius", 0.0))), stats, profile)
 	game.add_child(projectile)
 	attack_timer = float(profile.get("cooldown", stats["cooldown"]))
 	revealed_timer = 2.0
+	_start_visual_action("attack", 0.28)
 
 func _tick_status(delta: float) -> bool:
 	attack_timer = maxf(0.0, attack_timer - delta)
@@ -783,7 +797,10 @@ func _process_gather_order(delta: float) -> void:
 		var resource_kind: String = "food" if target is RtsBuilding else target.kind
 		var amount := gathering_amount()
 		if target is RtsResource: amount = target.harvest(amount)
-		if amount > 0: game.credit_resource(owner_id, resource_kind, amount)
+		if amount > 0:
+			game.credit_resource(owner_id, resource_kind, amount)
+			if owner_id == 0 and game.has_method("show_resource_gain"): game.show_resource_gain(position, resource_kind, amount)
+		_start_visual_action("gather", 0.42)
 		work_timer = 1.1
 		if target is RtsResource and target.amount <= 0: _continue_gather()
 
@@ -845,7 +862,9 @@ func _process_attack_order(delta: float) -> void:
 			_advance_command()
 			return
 	elif not _move_toward(target.position, delta, reach): return
-	if attack_timer > 0.0: return
+	if attack_timer > 0.0:
+		if attack_timer <= 0.16 and visual_action != "attack": _start_visual_action("attack", 0.34)
+		return
 	charged = charging and charge_distance >= 60.0
 	profile = RtsStatResolver.attack_profile(stats, defender_stats, charged)
 	if charged and target is RtsUnit and target.is_braced() and stats.get("tags", []).has("cavalry"):
@@ -869,6 +888,7 @@ func _process_attack_order(delta: float) -> void:
 		if kind == "royal_knight": momentum_timer = 3.0
 	charging = false
 	revealed_timer = 2.0
+	if visual_action != "attack": _start_visual_action("attack", 0.30)
 	if profile.get("damage_kind") == "ranged" or stats.get("primary_profile") == "siege" and float(profile.get("range", 0.0)) > 70.0:
 		var projectile := RtsProjectile.new()
 		projectile.setup(game, owner_id, global_position, target, damage, float(stats.get("projectile_speed", 350.0)), float(profile.get("splash_radius", 0.0)), stats, profile)
@@ -990,9 +1010,42 @@ func _update_facing(previous_position: Vector2) -> void:
 		facing_back = next_back
 		queue_redraw()
 
+func _tick_visual(delta: float) -> void:
+	visual_moving = visual_last_position != Vector2.INF and position.distance_squared_to(visual_last_position) > 0.16
+	visual_last_position = position
+	if visual_moving: visual_phase += delta * (11.0 if stats.get("tags", []).has("cavalry") else 8.0)
+	if visual_action_timer > 0.0: visual_action_timer = maxf(0.0, visual_action_timer - delta)
+	visual_redraw_timer -= delta
+	if visual_moving or visual_action_timer > 0.0:
+		if visual_redraw_timer <= 0.0:
+			visual_redraw_timer = (0.22 if game.units.size() > 160 else 0.085) if visual_moving else 0.055
+			queue_redraw()
+	elif visual_action != "":
+		visual_action = ""
+		queue_redraw()
+	elif game.selected.size() <= 12 and game.selected.has(self):
+		visual_phase += delta * 1.8
+		visual_idle_timer += delta
+		if visual_idle_timer >= 0.14:
+			visual_idle_timer = 0.0
+			queue_redraw()
+
+func _start_visual_action(action: String, duration: float) -> void:
+	visual_action = action
+	visual_action_length = duration
+	visual_action_timer = duration
+	queue_redraw()
+	if owner_id == 0 and game.has_method("play_feedback"):
+		game.play_feedback("attack" if action == "attack" else "gather" if action == "gather" else "build")
+
+func _action_swing() -> float:
+	if visual_action_timer <= 0.0 or visual_action_length <= 0.0: return 0.0
+	return sin((1.0 - visual_action_timer / visual_action_length) * PI)
+
 func take_damage(damage: float) -> void:
 	hp -= damage
 	hit_flash_timer = 0.18
+	if owner_id == 0 and game.has_method("play_feedback"): game.play_feedback("alert")
 	queue_redraw()
 	if hp <= 0.0:
 		if RtsCivilizationRules.is_dynasty_unit(kind) and RtsCivilizationRules.spirit_way_active(game, owner_id):
@@ -1014,7 +1067,11 @@ func _draw() -> void:
 		return
 	var color: Color = game.player_color(owner_id)
 	var r := radius()
+	var gait := sin(visual_phase) * 3.5 if visual_moving else 0.0
+	var idle_bob := sin(visual_phase) * 0.7 if not visual_moving else 0.0
+	var swing := _action_swing()
 	draw_circle(Vector2(2, 5), r + 2.0, Color("172322", 0.53))
+	draw_set_transform_matrix(Transform2D(0.0, Vector2(0, idle_bob - absf(gait) * 0.35 - swing * 1.5)))
 	if stats.get("tags", []).has("naval"):
 		draw_colored_polygon(PackedVector2Array([Vector2(0, -r - 5), Vector2(r - 2, -4), Vector2(r - 4, 9), Vector2(0, r + 3), Vector2(-r + 4, 9), Vector2(-r + 2, -4)]), Color("715239"))
 		draw_colored_polygon(PackedVector2Array([Vector2(0, -r), Vector2(r - 6, -3), Vector2(r - 8, 6), Vector2(-r + 8, 6), Vector2(-r + 6, -3)]), color.darkened(0.18))
@@ -1034,13 +1091,13 @@ func _draw() -> void:
 		draw_circle(Vector2(0, -3), 4.5, Color("d9bf96"))
 		draw_line(Vector2(-r + 3, 3), Vector2(-r - 5, 8), Color("594233"), 2.0)
 	else:
-		draw_line(Vector2(-4, 5), Vector2(-5, r + 2), Color("3e342c"), 3.0)
-		draw_line(Vector2(4, 5), Vector2(5, r + 2), Color("3e342c"), 3.0)
+		draw_line(Vector2(-4, 5), Vector2(-5 + gait, r + 2), Color("3e342c"), 3.0)
+		draw_line(Vector2(4, 5), Vector2(5 - gait, r + 2), Color("3e342c"), 3.0)
 		draw_colored_polygon(PackedVector2Array([Vector2(-8, -7), Vector2(8, -7), Vector2(9, 8), Vector2(-9, 8)]), color.darkened(0.10))
 		draw_circle(Vector2(0, -10), 5.5, Color("ddc59f"))
 		if kind == "villager" or kind == "imperial_official":
 			draw_colored_polygon(PackedVector2Array([Vector2(-7, -13), Vector2(7, -13), Vector2(4, -19), Vector2(-4, -19)]), Color("95744b"))
-			draw_line(Vector2(10, 5), Vector2(14, -13), Color("c8a777"), 2.5)
+			draw_line(Vector2(10, 5), Vector2(14 - swing * 6, -13 - swing * 6), Color("c8a777"), 2.5)
 		elif kind == "monk":
 			draw_circle(Vector2(0, -11), 6.5, color.darkened(0.27))
 			draw_line(Vector2(12, 7), Vector2(12, -18), Color("e2d09c"), 2.0)
@@ -1049,9 +1106,10 @@ func _draw() -> void:
 			draw_arc(Vector2(10, -2), 9, -PI * 0.55, PI * 0.55, 12, Color("e1d3a9"), 2.0)
 			draw_line(Vector2(7, -13), Vector2(7, 9), Color("d8c9a3"), 1.5)
 		else:
-			draw_line(Vector2(11, 8), Vector2(12, -20), Color("d6d5bd"), 2.5)
+			draw_line(Vector2(11, 8), Vector2(12 + swing * 12, -20 + swing * 13), Color("d6d5bd"), 2.5)
 			if stats.get("tags", []).has("heavy"):
 				draw_colored_polygon(PackedVector2Array([Vector2(-11, -4), Vector2(-5, -8), Vector2(0, -4), Vector2(-1, 8), Vector2(-8, 9)]), Color("bbc0b8"))
+	draw_set_transform_matrix(Transform2D.IDENTITY)
 	if hit_flash_timer > 0.0:
 		draw_arc(Vector2.ZERO, r + 4.0, 0.0, TAU, 24, Color("ffe5ac", hit_flash_timer / 0.18), 2.0)
 	if hp < max_hp:
@@ -1062,10 +1120,13 @@ func _draw_isometric() -> void:
 	var color: Color = game.player_color(owner_id)
 	var canvas := get_viewport().get_canvas_transform()
 	var ground_lift := RtsIsoProjection.ground_lift(game, position)
+	var gait := sin(visual_phase) * 3.0 if visual_moving else 0.0
+	var idle_bob := sin(visual_phase) * 0.7 if not visual_moving else 0.0
+	var swing := _action_swing()
 	# The footprint follows the ground projection; the figure faces the screen.
 	draw_set_transform_matrix(Transform2D(0.0, ground_lift))
 	draw_circle(Vector2.ZERO, radius() + 3.0, Color("1c2928", 0.62))
-	draw_set_transform_matrix(RtsIsoProjection.upright(canvas, ground_lift, game.camera.zoom.x))
+	draw_set_transform_matrix(RtsIsoProjection.upright(canvas, ground_lift + RtsIsoProjection.world_delta(canvas, Vector2(0, idle_bob - absf(gait) * 0.35 - swing * 1.5)), game.camera.zoom.x))
 	if stats.get("tags", []).has("naval"):
 		draw_colored_polygon(PackedVector2Array([Vector2(-radius(), -7), Vector2(radius(), -7), Vector2(radius() * 0.65, 3), Vector2(-radius() * 0.65, 3)]), Color("765839"))
 		draw_colored_polygon(PackedVector2Array([Vector2(-radius() * 0.7, -10), Vector2(radius() * 0.7, -10), Vector2(radius() * 0.45, -6), Vector2(-radius() * 0.45, -6)]), color)
@@ -1077,19 +1138,22 @@ func _draw_isometric() -> void:
 		var body_bottom := -3.0
 		var body_top := -17.0 if stats.get("tags", []).has("cavalry") else -15.0
 		draw_colored_polygon(PackedVector2Array([Vector2(-body_half, body_top), Vector2(body_half, body_top), Vector2(body_half + 2, body_bottom), Vector2(-body_half - 2, body_bottom)]), color.darkened(0.18))
-		draw_line(Vector2(-4, body_bottom), Vector2(-5, 2), Color("302f2a"), 2.5)
-		draw_line(Vector2(4, body_bottom), Vector2(5, 2), Color("302f2a"), 2.5)
+		draw_line(Vector2(-4, body_bottom), Vector2(-5 + gait, 2), Color("302f2a"), 2.5)
+		draw_line(Vector2(4, body_bottom), Vector2(5 - gait, 2), Color("302f2a"), 2.5)
 		draw_circle(Vector2(0, body_top - 5), 5.0, color.darkened(0.32) if facing_back else Color("e7d1ac"))
 		if not facing_back: draw_circle(Vector2(2.0 if facing_right else -2.0, body_top - 5), 1.25, Color("443a32"))
 		if kind == "monk":
 			draw_line(Vector2(9, -24), Vector2(9, 0), Color("e9dca6"), 2.0)
 			draw_line(Vector2(5, -19), Vector2(13, -19), Color("e9dca6"), 2.0)
 		elif kind == "archer" or kind == "longbow":
-			draw_arc(Vector2(9, -12), 8, -PI * 0.6, PI * 0.6, 12, Color("eee6c9"), 2.0)
+			draw_arc(Vector2(9 + swing * 4, -12), 8, -PI * 0.6, PI * 0.6, 12, Color("eee6c9"), 2.0)
 		elif stats.get("tags", []).has("cavalry"):
 			draw_colored_polygon(PackedVector2Array([Vector2(-13, -5), Vector2(12, -5), Vector2(15, 0), Vector2(-12, 0)]), Color("a1835c"))
 		elif kind == "villager":
+			draw_line(Vector2(8, -7), Vector2(13 - swing * 6, -19 - swing * 5), Color("d5bb8d"), 2.5)
 			draw_rect(Rect2(7, -11, 6, 6), Color("b6a07a"))
+		elif visual_action == "attack" and swing > 0.0:
+			draw_line(Vector2(6, -8), Vector2(14 + swing * 12, -23 + swing * 12), Color("e2e0ca"), 2.4)
 	draw_set_transform_matrix(RtsIsoProjection.upright(canvas, ground_lift))
 	if hit_flash_timer > 0.0:
 		draw_arc(Vector2(0, -16), radius() + 7.0, 0.0, TAU, 24, Color("ffe5ac", hit_flash_timer / 0.18), 2.0)

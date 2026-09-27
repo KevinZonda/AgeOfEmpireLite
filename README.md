@@ -56,7 +56,7 @@ make run
 - 共享兵种分为侦察兵、长矛兵、重装步兵、弓箭手、弩手、轻骑兵与重骑士。英格兰以长弓兵替换弓箭手，法兰西以弩炮手和皇家骑士替换对应兵种；中国保留普通弓箭手，王朝解锁诸葛弩、火长矛骑兵和掷弹兵。
 - 战斗按攻击档案处理目标加成、多段伤害、近远程护甲、攻城器械远程减伤、穿透、冲锋与范围伤害。长弓兵可架设拒马或发动万箭齐发；法兰西弩炮手可部署大盾，军学院火炮可使用炮击齐射；战船可短时加速，携圣物修士可招降敌军并治疗友军。英格兰侦察兵可花木材建预备营地。科技升级会更新已有单位的数值。
 - 地标可直接生产、研究、驻军、防御、积累资源或侦察；中国第二座地标解锁王朝。未满足要求的兵种和科技继续显示在面板并说明原因。
-- 电脑对手能够采集、选择并建造地标升级、研究、建造、根据视野内敌军兵种训练部队。村民目标随时代增长，闲置工人按当前采集人数和资源缺口分配；城堡时代起可扩建多座兵营、靶场和马厩。军队会在基地防守、低血量撤退、骑兵袭击可见村民、集结后成波进攻之间切换。简单／普通／困难使用不同的村民目标、出兵门槛、升时代时机和思考间隔；长局中会继续建房与农田，资源不足时通过市场交易，并为升时代保留资源。卡住的施工会更换工人或重新选址。
+- 电脑对手能够采集、选择并建造地标升级、研究、建造、根据视野内敌军兵种训练部队。村民目标随时代增长，闲置工人按当前采集人数和资源缺口分配；资源点耗尽时会寻找其他可达资源并派村民探索。城堡时代优先保留木材建造攻城器械厂、攻城槌和修道院，再扩建兵营、靶场和马厩。军队会在基地防守、低血量撤退、骑兵袭击可见村民、集结后成波进攻之间切换；攻城槌主动攻击建筑，卡住的攻击会重新选路，修士分别前往可达的圣地，军队会支援争夺中的圣地。简单／普通／困难使用不同的村民目标、出兵门槛、升时代时机和思考间隔；长局中会继续建房与农田，资源不足时通过市场交易，并为升时代保留资源。卡住的施工会更换工人或重新选址。
 - 地图由种子生成山地、湖泊、草地、植物群、树林、矿点与鹿群；雨会周期性出现。可用 `start_game("English", 12345)` 复现指定地图。
 - 地图还生成鱼群、中立贸易站与圣物；标准地图为 2400×2400，大型地图为 3000×3000，支持四种地形类型。陆军、水军分别寻路，港口生产水军。
 - 市场贸易、修士占领圣地与存放圣物、拖拽式连续墙段和可通行城门均已接入玩家与电脑对局。
@@ -89,6 +89,7 @@ make run
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/ai_long_match.gd
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/ai_tactics.gd
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/balance_multiseed.gd
+RTS_BALANCE_MATRIX=1 RTS_BALANCE_SECONDS=180 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/balance_multiseed.gd
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/aoe4_requested_systems.gd
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/battle_experience.gd
 RTS_BENCH_UNITS=200 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/performance_400.gd
@@ -98,3 +99,5 @@ RTS_BENCH_UNITS=200 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless
 RTS_BENCH_PROJECTION=2d /Applications/Godot_mono.app/Contents/MacOS/Godot --path . --script res://tests/performance_visible.gd --windowed --resolution 1280x720
 RTS_BENCH_PROJECTION=2.5d /Applications/Godot_mono.app/Contents/MacOS/Godot --path . --script res://tests/performance_visible.gd --windowed --resolution 1280x720
 ```
+
+`RTS_BALANCE_MATRIX=1` 覆盖三个文明两两对战及出生边互换、四种地图和三档难度，共 24 局。`RTS_BALANCE_SEEDS` 可指定逗号分隔的地图种子，`RTS_BALANCE_SECONDS` 设置每局模拟时长，`RTS_BALANCE_TRACE=1` 每 60 秒输出经济与建筑追踪。脚本会推进迷雾和导航更新，并汇总胜负、时代、军队、攻城、圣地及地图出生点公平性。

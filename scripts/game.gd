@@ -13,6 +13,7 @@ const BUILDING_SCENE := preload("res://scripts/building.gd")
 const RESOURCE_SCENE := preload("res://scripts/resource_node.gd")
 const SELECTION_PORTRAIT := preload("res://scripts/selection_portrait.gd")
 const MENU_BACKDROP := preload("res://scripts/menu_backdrop.gd")
+const FEEDBACK_AUDIO := preload("res://scripts/feedback_audio.gd")
 const UNIT_ABILITY_ACTIONS := [
 	{"id": "palings", "label": "架设拒马", "kinds": ["longbow"]},
 	{"id": "volley", "label": "万箭齐发", "kinds": ["longbow"]},
@@ -94,6 +95,8 @@ var hud_timer := 0.0
 var notice_timer := 0.0
 var hit_lines: Array[Dictionary] = []
 var order_markers: Array[Dictionary] = []
+var world_effects: Array[Dictionary] = []
+var feedback_audio: Node
 var match_statistics := RtsMatchStatistics.new()
 
 var top_label: Label
@@ -155,6 +158,8 @@ func _ready() -> void:
 	camera.ignore_rotation = false
 	add_child(camera)
 	camera.make_current()
+	feedback_audio = FEEDBACK_AUDIO.new()
+	add_child(feedback_audio)
 	weather = RtsWeather.new()
 	weather.z_index = -6
 	add_child(weather)
@@ -1205,6 +1210,8 @@ func _clear_world() -> void:
 	selected.clear()
 	control_groups.clear()
 	hit_lines.clear()
+	order_markers.clear()
+	world_effects.clear()
 
 func _scaled_point(point: Vector2) -> Vector2:
 	return point * Vector2(world_size.x / 2400.0, world_size.y / 1500.0)
@@ -1356,12 +1363,18 @@ func building_completed(building: RtsBuilding) -> void:
 	if building.kind.ends_with("_gate"): navigation.refresh()
 	if building.kind == "landmark":
 		complete_age(building.owner_id, int(RtsLandmarkCatalog.landmark(building.landmark_id).get("age", 0)), building.landmark_id)
-	if building.owner_id == 0: notify_player("%s建造完成" % building.display_label())
+	if building.owner_id == 0:
+		notify_player("%s建造完成" % building.display_label())
+		play_feedback("complete")
+		world_effects.append({"point": building.position, "kind": "complete", "time": 0.9})
 	_rebuild_actions()
 	_update_hud()
 
 func entity_destroyed(entity: Node2D) -> void:
 	if not is_instance_valid(entity) or entity.is_queued_for_deletion(): return
+	if not fog.active or fog.can_see(0, entity.position):
+		world_effects.append({"point": entity.position, "kind": "death" if entity is RtsUnit else "collapse", "color": player_color(entity.owner_id), "time": 0.9})
+		if entity.owner_id == 0 and entity is RtsUnit: play_feedback("alert")
 	selected.erase(entity)
 	if entity is RtsUnit:
 		if not entity.passengers.is_empty(): entity.ungarrison_all()
@@ -1965,8 +1978,25 @@ func _counter_priority(attacker: RtsUnit, defender_stats: Dictionary) -> float:
 				break
 	return bonus
 
-func show_hit(from: Vector2, to: Vector2, owner_id: int) -> void:
-	hit_lines.append({"from": from, "to": to, "owner": owner_id, "time": 0.24})
+func show_hit(from: Vector2, to: Vector2, owner_id: int, style := "melee") -> void:
+	hit_lines.append({"from": from, "to": to, "owner": owner_id, "time": 0.24, "style": style})
+	if not fog.active or fog.can_see(0, to):
+		world_effects.append({"point": to, "kind": style, "time": 0.36 if style == "siege" else 0.24})
+		play_feedback("impact")
+	queue_redraw()
+
+func play_feedback(cue: String) -> void:
+	if feedback_audio != null: feedback_audio.play_cue(cue)
+
+func show_resource_gain(point: Vector2, kind: String, amount: int) -> void:
+	if world_effects.size() >= 80: return
+	world_effects.append({"point": point, "kind": "resource", "resource": kind, "amount": amount, "time": 0.85})
+	queue_redraw()
+
+func _show_order_feedback(point: Vector2, kind: String, queued := false) -> void:
+	var color := Color("e97871") if kind in ["attack", "invalid"] else Color("8fd49b") if kind in ["gather", "build"] else Color("95c7ef")
+	order_markers.append({"point": point, "time": 0.82, "kind": kind, "queued": queued, "color": color})
+	play_feedback("invalid" if kind == "invalid" else "attack" if kind == "attack" else "gather" if kind == "gather" else "build" if kind == "build" else "move")
 	queue_redraw()
 
 func notify_player(message: String) -> void:
@@ -2003,7 +2033,9 @@ func _process(delta: float) -> void:
 	hit_lines = hit_lines.filter(func(line: Dictionary) -> bool: return line["time"] > 0.0)
 	for marker in order_markers: marker["time"] -= delta
 	order_markers = order_markers.filter(func(marker: Dictionary) -> bool: return marker["time"] > 0.0)
-	if dragging or build_mode != "" or not hit_lines.is_empty() or not order_markers.is_empty() or selected.any(func(entity: Node2D) -> bool: return is_instance_valid(entity) and entity is RtsUnit): queue_redraw()
+	for effect in world_effects: effect["time"] -= delta
+	world_effects = world_effects.filter(func(effect: Dictionary) -> bool: return effect["time"] > 0.0)
+	if dragging or build_mode != "" or not hit_lines.is_empty() or not order_markers.is_empty() or not world_effects.is_empty() or selected.any(func(entity: Node2D) -> bool: return is_instance_valid(entity) and entity is RtsUnit): queue_redraw()
 
 func _pan_camera(delta: float) -> void:
 	var direction := Vector2.ZERO
@@ -2295,6 +2327,7 @@ func _select_screen_area(from: Vector2, to: Vector2, additive: bool) -> void:
 				selected.append(unit)
 	_rebuild_actions()
 	_update_hud()
+	if not selected.is_empty(): play_feedback("select")
 	queue_redraw()
 
 func _select_same_type_visible(clicked: RtsUnit, additive: bool) -> void:
@@ -2399,6 +2432,10 @@ func _issue_order(point: Vector2, append_order := false) -> void:
 	var post := _trade_post_at(point)
 	var relic := _relic_at(point)
 	var ground_point := RtsIsoProjection.ground_point(self, point)
+	if not Rect2(Vector2.ZERO, world_size).has_point(ground_point):
+		_show_order_feedback(point, "invalid")
+		notify_player("地图边界之外，无法下令")
+		return
 	var has_selected_unit := false
 	for subject in selected:
 		if is_instance_valid(subject) and subject is RtsUnit:
@@ -2415,6 +2452,7 @@ func _issue_order(point: Vector2, append_order := false) -> void:
 			assigned = true
 		if assigned:
 			notify_player("资源集结点已设置；新村民自动采集" if resource != null or entity is RtsBuilding and entity.kind == "farm" else "集结点已设置")
+			_show_order_feedback(point, "move", append_order)
 			queue_redraw()
 		return
 	var movers: Array[RtsUnit] = []
@@ -2457,8 +2495,10 @@ func _issue_order(point: Vector2, append_order := false) -> void:
 			movers.append(subject)
 	issue_group_order(movers, ground_point, false, append_order)
 	if not movers.is_empty() or entity != null or resource != null or post != null or relic != null:
-		order_markers.append({"point": point, "time": 0.55, "color": Color("e97871") if entity != null and is_enemy(0, entity.owner_id) else Color("8fd49b") if resource != null or post != null or relic != null else Color("95c7ef")})
-		queue_redraw()
+		var kind := "attack" if entity != null and is_enemy(0, entity.owner_id) else "gather" if resource != null or post != null or relic != null else "build" if entity is RtsBuilding and not entity.is_complete() else "move"
+		_show_order_feedback(point, kind, append_order)
+	elif has_selected_unit:
+		_show_order_feedback(point, "invalid")
 
 func _issue_mode_order(point: Vector2, append_order := false) -> void:
 	var mode := order_mode
@@ -2466,26 +2506,36 @@ func _issue_mode_order(point: Vector2, append_order := false) -> void:
 	if mode == "attack_move":
 		_issue_attack_move(point, append_order)
 	elif mode == "patrol":
+		var patrol_issued := false
 		for subject in selected:
 			if is_instance_valid(subject) and subject is RtsUnit and subject.stats.get("tags", []).has("military"):
 				subject.issue_command("patrol", point, null, append_order)
+				patrol_issued = true
+		if patrol_issued: _show_order_feedback(point, "move", append_order)
 	elif mode == "focus":
 		var enemy := _entity_at(point)
 		if enemy != null and is_enemy(0, enemy.owner_id):
 			for subject in selected:
 				if is_instance_valid(subject) and subject is RtsUnit and float(subject.stats.get("damage", 0.0)) > 0.0:
 					subject.issue_command("attack", Vector2.INF, enemy, append_order)
-		else: notify_player("请选择可见的敌方目标")
+			_show_order_feedback(point, "attack", append_order)
+		else:
+			notify_player("请选择可见的敌方目标")
+			_show_order_feedback(point, "invalid")
 	elif mode == "attack_ground":
 		for subject in selected:
 			if is_instance_valid(subject) and subject is RtsUnit: subject.issue_command("attack_ground", point, null, append_order)
+		_show_order_feedback(point, "attack", append_order)
 	elif mode in ["field_ram", "field_tower"]:
 		place_field_siege("battering_ram" if mode == "field_ram" else "siege_tower", point, append_order)
 	elif mode == "unload":
 		if world_map.is_walkable(point):
 			for subject in selected:
 				if is_instance_valid(subject) and subject is RtsUnit and subject.kind == "transport_ship": subject.issue_command("unload", point, null, append_order)
-		else: notify_player("请点击陆地作为登陆目标")
+			_show_order_feedback(point, "move", append_order)
+		else:
+			notify_player("请点击陆地作为登陆目标")
+			_show_order_feedback(point, "invalid")
 	queue_redraw()
 
 func _issue_attack_move(point: Vector2, append_order := false) -> void:
@@ -2495,6 +2545,7 @@ func _issue_attack_move(point: Vector2, append_order := false) -> void:
 		if not is_instance_valid(subject) or not subject is RtsUnit or not subject.stats.get("tags", []).has("military"): continue
 		movers.append(subject)
 	issue_group_order(movers, point, true, append_order)
+	if not movers.is_empty(): _show_order_feedback(point, "attack", append_order)
 	queue_redraw()
 
 func place_field_siege(kind: String, point: Vector2, append_order := false) -> bool:
@@ -3193,6 +3244,7 @@ func _draw() -> void:
 		if not is_instance_valid(entity): continue
 		var ground_lift := RtsIsoProjection.ground_lift(self, entity.position) if view_mode_25d else Vector2.ZERO
 		if entity is RtsUnit:
+			if selected.size() <= 6 and entity.owner_id == 0: _draw_selected_route(entity)
 			draw_arc(entity.position + ground_lift, entity.radius() + 6, 0, TAU, 32, Color("f5e597"), 2)
 		elif entity is RtsBuilding:
 			draw_rect(Rect2(entity.position + ground_lift - entity.size() * 0.5 - Vector2(5, 5), entity.size() + Vector2(10, 10)), Color("f5e597"), false, 2)
@@ -3235,6 +3287,63 @@ func _draw() -> void:
 		draw_circle(impact, 3.0 + (1.0 - progress) * 5.0, Color("ffdf97", progress * 0.72))
 		for ray in [Vector2.LEFT, Vector2.RIGHT, Vector2.UP, Vector2.DOWN]:
 			draw_line(impact + ray * 5.0, impact + ray * (8.0 + (1.0 - progress) * 7.0), Color("ffe9bc", progress), 1.6)
+	for effect in world_effects:
+		var effect_point: Vector2 = effect["point"]
+		if effect["kind"] != "resource" and fog.active and not fog.can_see(0, effect_point): continue
+		if view_mode_25d: effect_point += RtsIsoProjection.ground_lift(self, effect_point)
+		var lifetime: float = 0.85 if effect["kind"] == "resource" else 0.9 if effect["kind"] in ["death", "collapse", "complete"] else 0.36 if effect["kind"] == "siege" else 0.24
+		var progress := 1.0 - clampf(float(effect["time"]) / lifetime, 0.0, 1.0)
+		var alpha := 1.0 - progress
+		match effect["kind"]:
+			"resource":
+				var text_color := Color("e8ce76") if effect["resource"] == "gold" else Color("a7da80") if effect["resource"] == "food" else Color("d3ac77")
+				var lift := RtsIsoProjection.world_delta(get_viewport().get_canvas_transform(), Vector2(0, -20.0 - progress * 26.0))
+				draw_set_transform_matrix(RtsIsoProjection.upright(get_viewport().get_canvas_transform(), effect_point + lift))
+				draw_string(ThemeDB.fallback_font, Vector2(-9, 0), "+%d" % effect["amount"], HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(text_color, alpha))
+				draw_set_transform_matrix(Transform2D.IDENTITY)
+			"death", "collapse":
+				var radius := (10.0 if effect["kind"] == "death" else 25.0) * (0.8 + progress * 0.6)
+				draw_circle(effect_point, radius, Color("775f48", alpha * 0.22))
+				if effect["kind"] == "death":
+					var body := PackedVector2Array([effect_point + Vector2(-10, -3), effect_point + Vector2(8, -2), effect_point + Vector2(11, 3), effect_point + Vector2(-8, 4)])
+					draw_colored_polygon(body, Color(effect["color"], alpha * 0.65))
+					draw_circle(effect_point + Vector2(11, 1), 3.5, Color("d9bf96", alpha * 0.7))
+				for angle_index in 6:
+					var direction := Vector2.from_angle(float(angle_index) * TAU / 6.0)
+					draw_circle(effect_point + direction * radius * progress, 2.5 + progress * 2.0, Color("b8a481", alpha * 0.48))
+			"complete":
+				draw_arc(effect_point, 12.0 + progress * 28.0, 0.0, TAU, 32, Color("f2d587", alpha), 2.4)
+			_:
+				var size := 14.0 + progress * (26.0 if effect["kind"] == "siege" else 10.0)
+				var color := Color("f3ba6c") if effect["kind"] == "siege" else Color("f3e2a5")
+				draw_arc(effect_point, size, 0.0, TAU, 24, Color(color, alpha * 0.7), 2.0)
+				for ray_index in 5:
+					var direction := Vector2.from_angle(float(ray_index) * TAU / 5.0)
+					draw_line(effect_point + direction * size * 0.5, effect_point + direction * size, Color(color, alpha), 1.7)
 	for marker in order_markers:
-		var alpha: float = clampf(marker["time"] / 0.55, 0.0, 1.0)
-		draw_arc(marker["point"], 9.0 + (1.0 - alpha) * 11.0, 0.0, TAU, 24, Color(marker["color"], alpha), 2.0)
+		var alpha: float = clampf(marker["time"] / 0.82, 0.0, 1.0)
+		var marker_point: Vector2 = marker["point"]
+		draw_arc(marker_point, 9.0 + (1.0 - alpha) * 13.0, 0.0, TAU, 24, Color(marker["color"], alpha), 2.0)
+		var symbol := "×" if marker["kind"] == "invalid" else "攻" if marker["kind"] == "attack" else "+" if marker["queued"] else "●"
+		draw_set_transform_matrix(RtsIsoProjection.upright(get_viewport().get_canvas_transform(), marker_point))
+		draw_string(ThemeDB.fallback_font, Vector2(-6, 5), symbol, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(marker["color"], alpha))
+		draw_set_transform_matrix(Transform2D.IDENTITY)
+
+func _draw_selected_route(unit: RtsUnit) -> void:
+	var points := PackedVector2Array()
+	points.append(unit.position)
+	if unit.order in ["move", "attack_move", "patrol", "unload"]:
+		for index in range(unit.route_index, mini(unit.route.size(), unit.route_index + 24)):
+			points.append(unit.route[index])
+		if unit.destination != Vector2.INF: points.append(unit.destination)
+	for command in unit.command_queue:
+		var goal: Vector2 = command.get("point", Vector2.INF)
+		if goal == Vector2.INF and is_instance_valid(command.get("target")): goal = command["target"].position
+		if goal != Vector2.INF and Rect2(Vector2.ZERO, world_size).has_point(goal): points.append(goal)
+	if points.size() < 2: return
+	for index in points.size():
+		if view_mode_25d: points[index] += RtsIsoProjection.ground_lift(self, points[index])
+	for index in range(points.size() - 1):
+		draw_dashed_line(points[index], points[index + 1], Color("e8d99e", 0.52), 1.4, 8.0)
+	for index in range(1, points.size()):
+		draw_arc(points[index], 3.5, 0.0, TAU, 14, Color("e8d99e", 0.72), 1.2)

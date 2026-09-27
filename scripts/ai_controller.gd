@@ -10,6 +10,8 @@ var rng := RandomNumberGenerator.new()
 var last_tactic := ""
 var tactic_cooldown := 0.0
 var push_cooldown := 0.0
+var site_cooldown := 0.0
+var attack_watch: Dictionary = {}
 
 func _init(game_ref: Node2D, player_id := 1, chosen_difficulty := "normal") -> void:
 	game = game_ref
@@ -37,11 +39,15 @@ func _has_unfinished_house() -> bool:
 func tick() -> void:
 	tactic_cooldown = maxf(0.0, tactic_cooldown - {"easy": 6.0, "normal": 3.0, "hard": 1.5}[difficulty])
 	push_cooldown = maxf(0.0, push_cooldown - {"easy": 6.0, "normal": 3.0, "hard": 1.5}[difficulty])
+	site_cooldown = maxf(0.0, site_cooldown - {"easy": 6.0, "normal": 3.0, "hard": 1.5}[difficulty])
 	var workers: Array[RtsUnit] = []
 	var army: Array[RtsUnit] = []
+	var economic_explorers := 0
 	for unit in game.units:
 		if not is_instance_valid(unit) or unit.owner_id != owner_id or unit.garrisoned_in != null: continue
-		if unit.kind == "villager": workers.append(unit)
+		if unit.kind == "villager":
+			workers.append(unit)
+			if unit.order == "move": economic_explorers += 1
 		elif unit.kind == "scout":
 			if unit.order == "idle": _assign_scout(unit)
 		elif unit.kind == "transport_ship":
@@ -69,6 +75,13 @@ func tick() -> void:
 		if worker.order == "idle":
 			var resource_kind := _needed_resource(gathering, workers.size())
 			var resource: RtsResource = game.find_nearest_resource(worker.position, resource_kind, INF, owner_id, false, worker)
+			if resource == null:
+				for fallback in ["wood", "food", "gold"]:
+					if fallback == resource_kind: continue
+					resource = game.find_nearest_resource(worker.position, fallback, INF, owner_id, false, worker)
+					if resource != null:
+						resource_kind = fallback
+						break
 			if resource != null:
 				worker.order_gather(resource)
 				gathering[resource_kind] += 1
@@ -77,11 +90,15 @@ func tick() -> void:
 				if farm != null:
 					worker.order_gather(farm)
 					gathering["food"] += 1
+			if worker.order == "idle" and economic_explorers < 2 and _explore_for_resources(worker, workers): economic_explorers += 1
 	if game.players[owner_id]["age"] == 1:
 		if game._player_center(owner_id) != null: game.advance_age(owner_id)
 		if army.is_empty(): return
 	var center: RtsBuilding = game._player_center(owner_id)
 	var age: int = game.players[owner_id]["age"]
+	var wants_siege: bool = age >= 3 and game.map_style != "islands" and _unit_count("battering_ram") == 0
+	var wants_monastery: bool = age >= 3 and not wants_siege and not _has_building("monastery")
+	var reserving_strategic_wood := wants_siege or wants_monastery
 	if center != null and not workers.is_empty() and age < RtsTechTree.MAX_AGE and not game.is_age_queued(owner_id):
 		var timing: float = {"easy": 220.0, "normal": 150.0, "hard": 105.0}[difficulty]
 		var should_advance: bool = game.highest_enemy_age(owner_id) > age or army.size() >= attack_threshold() + 2 or game.match_statistics.elapsed >= timing * float(age - 1)
@@ -94,26 +111,26 @@ func tick() -> void:
 	if center != null and _unit_count("villager") < worker_goal(): game.train_unit(center, "villager")
 	if not workers.is_empty() and game.population_cap(owner_id) - game.population_used(owner_id) <= 4 and not _has_unfinished_house():
 		_construct("house", workers[0])
-	if not workers.is_empty() and age >= 2 and game.players[owner_id]["food"] < 450 and _building_count("farm") < mini(12, maxi(2, workers.size() / 3)) and not _has_unfinished_building("farm"):
+	if not workers.is_empty() and age >= 2 and not reserving_strategic_wood and game.players[owner_id]["food"] < 450 and _building_count("farm") < mini(12, maxi(2, workers.size() / 3)) and not _has_unfinished_building("farm"):
 		_construct("farm", workers[0])
-	if not workers.is_empty() and not _has_building("barracks"):
+	if not workers.is_empty() and not _has_building("barracks") and not reserving_strategic_wood:
 		_construct("barracks", workers[0])
-	elif not workers.is_empty() and not _has_building("archery_range"):
+	elif not workers.is_empty() and not _has_building("archery_range") and not reserving_strategic_wood:
 		_construct("archery_range", workers[0])
-	elif not workers.is_empty() and not _has_building("stable"):
+	elif not workers.is_empty() and not _has_building("stable") and not reserving_strategic_wood:
 		_construct("stable", workers[0])
-	elif not workers.is_empty() and not _has_building("blacksmith"):
+	elif not workers.is_empty() and not _has_building("blacksmith") and not reserving_strategic_wood:
 		_construct("blacksmith", workers[0])
-	_expand_production(workers, army.size(), age)
-	if not workers.is_empty() and age >= 2 and not _has_building("outpost") and game.can_afford(owner_id, GameData.BUILDINGS["outpost"]["cost"]):
-		_construct("outpost", workers[0])
-	if not workers.is_empty() and age >= 3 and not _has_building("siege_workshop") and game.can_afford(owner_id, GameData.BUILDINGS["siege_workshop"]["cost"]):
+	if not workers.is_empty() and wants_siege and not _has_building("siege_workshop") and game.can_afford(owner_id, GameData.BUILDINGS["siege_workshop"]["cost"]):
 		_construct("siege_workshop", workers[0])
-	if not workers.is_empty() and age >= 2 and not _has_building("market") and game.can_afford(owner_id, GameData.BUILDINGS["market"]["cost"]):
+	_expand_production(workers, army.size(), age)
+	if not workers.is_empty() and not reserving_strategic_wood and age >= 2 and not _has_building("outpost") and game.can_afford(owner_id, GameData.BUILDINGS["outpost"]["cost"]):
+		_construct("outpost", workers[0])
+	if not workers.is_empty() and not reserving_strategic_wood and age >= 2 and not _has_building("market") and game.can_afford(owner_id, GameData.BUILDINGS["market"]["cost"]):
 		_construct("market", workers[0])
-	if not workers.is_empty() and age >= 2 and not _has_building("dock") and game.can_afford(owner_id, GameData.BUILDINGS["dock"]["cost"]):
+	if not workers.is_empty() and age >= 2 and game.map_style == "islands" and not _has_building("dock") and game.can_afford(owner_id, GameData.BUILDINGS["dock"]["cost"]):
 		_construct_dock(workers[0])
-	if not workers.is_empty() and age >= 3 and not _has_building("monastery") and game.can_afford(owner_id, GameData.BUILDINGS["monastery"]["cost"]):
+	if not workers.is_empty() and wants_monastery and game.can_afford(owner_id, GameData.BUILDINGS["monastery"]["cost"]):
 		_construct("monastery", workers[0])
 	_balance_market(age)
 	var age_cost := RtsTechTree.age_cost(age)
@@ -125,8 +142,9 @@ func tick() -> void:
 		if building.landmark_id == "fr_guild_hall" and int(building.landmark_stockpile.get("gold", 0)) >= 120: building.collect_stockpile()
 		if building.landmark_id == "zh_imperial_palace" and building.landmark_ability_cooldown <= 0.0: building.activate_landmark_ability()
 		if building.production_queue.size() >= (2 if difficulty == "easy" else 3): continue
-		if saving_for_age and building.producer_kind() in ["barracks", "archery_range", "stable", "siege_workshop", "white_tower", "wynguard"]: continue
-		if not saving_for_age:
+		if saving_for_age and building.producer_kind() in ["barracks", "archery_range", "stable", "white_tower", "wynguard"]: continue
+		if saving_for_age and building.producer_kind() == "siege_workshop" and game.match_statistics.elapsed < 330.0: continue
+		if not saving_for_age and not reserving_strategic_wood:
 			for tech_id in RtsTechTree.all_researches(game.civilizations[owner_id], building.producer_kind()):
 				if RtsTechTree.can_research(game.civilizations[owner_id], age, building.producer_kind(), tech_id, game.players[owner_id]["researched"]):
 					if game.research_technology(building, tech_id): break
@@ -144,7 +162,7 @@ func tick() -> void:
 				if game.civilizations[owner_id] == "French": cavalry_kind = "royal_knight"
 				elif age >= 3: cavalry_kind = "knight"
 			game.train_unit(building, cavalry_kind)
-		if building.producer_kind() == "siege_workshop" and not saving_for_age and game.can_afford(owner_id, GameData.unit_cost("battering_ram")):
+		if building.producer_kind() == "siege_workshop" and _unit_count("battering_ram") < (1 if age == 3 else 2) and game.can_afford(owner_id, GameData.unit_cost("battering_ram")):
 			game.train_unit(building, "battering_ram")
 		if building.producer_kind() == "white_tower":
 			game.train_unit(building, "spearman" if enemy_profile["cavalry"] > 0 else "longbow")
@@ -162,7 +180,9 @@ func tick() -> void:
 			game.train_unit(building, "transport_ship")
 		if building.kind == "monastery" and _unit_count("monk") < 3:
 			game.train_unit(building, "monk")
+	_recover_stalled_attacks(army)
 	if _tactical_orders(army): return
+	_secure_sacred_site(army)
 	if army.size() >= attack_threshold():
 		var target: Node2D = game.strategic_target_for(owner_id)
 		if target == null:
@@ -188,6 +208,11 @@ func tick() -> void:
 					if soldier.order != "idle": continue
 					if soldier.position.distance_to(rally) > 95.0: soldier.order_move(rally)
 				if not ready_army.is_empty(): last_tactic = "regroup"
+			if target is RtsBuilding and army.size() >= attack_threshold() + 3:
+				for soldier in army:
+					if soldier.kind == "battering_ram" and soldier.order in ["idle", "move", "attack_move"] and soldier.position.distance_to(target.position) > 110.0:
+						soldier.order_attack(target)
+						last_tactic = "siege_push"
 
 func _assign_scout(scout: RtsUnit) -> void:
 	var center: RtsBuilding = game.find_nearest_owned_building(owner_id, "town_center", scout.position)
@@ -212,12 +237,39 @@ func _assign_scout(scout: RtsUnit) -> void:
 			var point: Vector2 = game.world_map.cell_center(Vector2i(x, y))
 			if not game.world_map.is_walkable(point) or game.fog.is_explored(owner_id, point): continue
 			var distance := scout.position.distance_squared_to(point)
-			if distance > 180.0 * 180.0: candidates.append({"point": point, "distance": distance})
+			if distance > 180.0 * 180.0:
+				var exploration_score := point.distance_squared_to(game.world_size * 0.5) + distance * 0.2
+				candidates.append({"point": point, "distance": exploration_score})
 	candidates.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a["distance"] < b["distance"])
 	for candidate in candidates.slice(0, mini(24, candidates.size())):
 		if not game.navigation.path_between(scout.position, candidate["point"], scout).is_empty():
 			scout.issue_command("move", candidate["point"])
 			return
+
+func _explore_for_resources(worker: RtsUnit, workers: Array[RtsUnit]) -> bool:
+	var base: Vector2 = game.spawn_point_for(owner_id)
+	var candidates: Array[Dictionary] = []
+	for y in range(1, game.world_map.grid_size.y - 1, 4):
+		for x in range(1, game.world_map.grid_size.x - 1, 4):
+			var point: Vector2 = game.world_map.cell_center(Vector2i(x, y))
+			if not game.world_map.is_walkable(point) or game.fog.is_explored(owner_id, point): continue
+			var home_distance := point.distance_to(base)
+			if home_distance < 350.0 or home_distance > 1250.0: continue
+			var reserved := false
+			for ally in workers:
+				if ally != worker and ally.order == "move" and ally.destination.distance_to(point) < 230.0:
+					reserved = true
+					break
+			if reserved: continue
+			var distance := worker.position.distance_squared_to(point)
+			var exploration_score := point.distance_squared_to(game.world_size * 0.5) + distance * 0.2
+			candidates.append({"point": point, "distance": exploration_score})
+	candidates.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a["distance"] < b["distance"])
+	for candidate in candidates:
+		if game.navigation.path_between(worker.position, candidate["point"], worker).is_empty(): continue
+		worker.order_move(candidate["point"])
+		return true
+	return false
 
 func _assign_transport(boat: RtsUnit) -> void:
 	if not boat.passengers.is_empty():
@@ -258,6 +310,7 @@ func _needed_resource(gathering: Dictionary, worker_count: int) -> String:
 	if age < RtsTechTree.MAX_AGE and game.match_statistics.elapsed > 90.0:
 		targets = {"food": 0.40, "wood": 0.22, "gold": 0.38}
 	if int(bank["wood"]) < 180: targets["wood"] += 0.18
+	if age >= 3 and game.map_style != "islands" and (_unit_count("battering_ram") == 0 or not _has_building("monastery")) and int(bank["wood"]) < 300: targets["wood"] += 0.30
 	if int(bank["food"]) < 160: targets["food"] += 0.18
 	if age_cost.has("gold") and int(bank["gold"]) < int(age_cost["gold"]): targets["gold"] += 0.12
 	var best := "food"
@@ -271,6 +324,7 @@ func _needed_resource(gathering: Dictionary, worker_count: int) -> String:
 
 func _expand_production(workers: Array[RtsUnit], army_size: int, age: int) -> void:
 	if workers.size() < 13 or age < 3: return
+	if game.map_style != "islands" and (not _has_building("siege_workshop") or _unit_count("battering_ram") == 0 or not _has_building("monastery")): return
 	var desired := 2 if age == 3 else 3
 	if workers.size() < 25: desired = 2
 	if army_size < 12: desired = mini(desired, 2)
@@ -288,6 +342,85 @@ func _visible_enemy_units() -> Array[RtsUnit]:
 		if game.fog.active and not game.fog.can_detect_unit(owner_id, unit): continue
 		enemies.append(unit)
 	return enemies
+
+func _secure_sacred_site(army: Array[RtsUnit]) -> void:
+	if site_cooldown > 0.0 or army.size() < attack_threshold() + 3 or game.map_style == "islands": return
+	var best_site := -1
+	var best_score := INF
+	for index in game.objectives.sacred_sites.size():
+		var site: Dictionary = game.objectives.sacred_sites[index]
+		var needs_help: bool = site["contested"]
+		if not needs_help and site["owner_id"] >= 0 and game.is_enemy(owner_id, site["owner_id"]):
+			for unit in game.units:
+				if not is_instance_valid(unit) or unit.owner_id != owner_id or unit.kind != "monk": continue
+				if unit.position.distance_to(site["position"]) < 450.0 or unit.order == "move" and unit.destination.distance_to(site["position"]) < 80.0:
+					needs_help = true
+					break
+		if not needs_help: continue
+		var score: float = game.spawn_point_for(owner_id).distance_to(site["position"]) + (0.0 if site["contested"] else 250.0)
+		if score < best_score:
+			best_score = score
+			best_site = index
+	if best_site < 0: return
+	var point: Vector2 = game.objectives.sacred_sites[best_site]["position"]
+	var guards: Array[RtsUnit] = []
+	var candidates := army.duplicate()
+	candidates.sort_custom(func(a: RtsUnit, b: RtsUnit) -> bool: return a.position.distance_squared_to(point) < b.position.distance_squared_to(point))
+	for soldier in candidates:
+		if soldier.stats.get("tags", []).has("siege") or soldier.hp < soldier.max_hp * 0.45: continue
+		guards.append(soldier)
+		if guards.size() >= 10: break
+	if guards.size() < 4: return
+	game.issue_group_order(guards, point, true)
+	last_tactic = "secure_site"
+	site_cooldown = 16.0
+
+func _recover_stalled_attacks(army: Array[RtsUnit]) -> void:
+	var now: float = game.match_statistics.elapsed
+	var active_ids: Dictionary = {}
+	for soldier in army:
+		var id := soldier.get_instance_id()
+		active_ids[id] = true
+		if soldier.order != "attack" or not is_instance_valid(soldier.target):
+			attack_watch.erase(id)
+			continue
+		if soldier.target is RtsUnit and game.fog.active and not game.fog.can_detect_unit(owner_id, soldier.target):
+			soldier.order_stop()
+			attack_watch.erase(id)
+			continue
+		var target_radius: float = 18.0
+		if soldier.target is RtsUnit: target_radius = soldier.target.radius()
+		elif soldier.target is RtsBuilding: target_radius = maxf(soldier.target.size().x, soldier.target.size().y) * 0.5 + soldier.radius()
+		var reach: float = float(soldier.stats.get("range", 0.0)) + target_radius + 14.0
+		if soldier.position.distance_to(soldier.target.position) <= reach:
+			attack_watch.erase(id)
+			continue
+		var target_id := soldier.target.get_instance_id()
+		var state: Dictionary = attack_watch.get(id, {})
+		if state.is_empty() or int(state["target_id"]) != target_id or soldier.position.distance_to(state["position"]) > 14.0:
+			attack_watch[id] = {"target_id": target_id, "position": soldier.position, "since": now}
+			continue
+		if now - float(state["since"]) < 9.0: continue
+		var direction := (soldier.target.position - soldier.position).normalized()
+		if direction.is_zero_approx(): direction = Vector2.RIGHT
+		var lateral := Vector2(-direction.y, direction.x)
+		var flank: Vector2 = Vector2.INF
+		var side := 1.0 if id % 2 == 0 else -1.0
+		for offset in [side * 85.0, -side * 85.0, side * 145.0]:
+			var candidate: Vector2 = game.navigation.nearest_walkable_point(soldier.position + direction * 70.0 + lateral * offset, soldier.radius(), soldier, false)
+			if candidate.distance_to(soldier.position) < 35.0: continue
+			if game.navigation.path_between(soldier.position, candidate, soldier).is_empty(): continue
+			flank = candidate
+			break
+		if flank != Vector2.INF:
+			soldier.order_move(flank)
+			last_tactic = "flank"
+		else:
+			soldier.order_stop()
+			last_tactic = "retarget"
+		attack_watch.erase(id)
+	for id in attack_watch.keys():
+		if not active_ids.has(id): attack_watch.erase(id)
 
 func _tactical_orders(army: Array[RtsUnit]) -> bool:
 	if army.is_empty(): return false
@@ -387,14 +520,33 @@ func _assign_monk(monk: RtsUnit) -> void:
 		var monastery: RtsBuilding = game.find_nearest_owned_building(owner_id, "monastery", monk.position)
 		if monastery != null: monk.issue_command("deposit_relic", Vector2.INF, monastery)
 		return
+	var site_index := _sacred_site_for(monk)
+	if site_index >= 0:
+		monk.issue_command("move", game.objectives.sacred_sites[site_index]["position"])
+		return
 	for relic in game.relics:
-		if is_instance_valid(relic) and relic.available() and monk.position.distance_to(relic.position) < 460.0:
+		if is_instance_valid(relic) and relic.available() and monk.position.distance_to(relic.position) < 460.0 and not game.navigation.path_to_range(monk.position, relic.position, 20.0 + monk.radius(), monk).is_empty():
 			monk.issue_command("relic", Vector2.INF, relic)
 			return
-	for site in game.objectives.sacred_sites:
-		if site["owner_id"] < 0 or game.is_enemy(owner_id, site["owner_id"]):
-			monk.issue_command("move", site["position"])
-			return
+
+func _sacred_site_for(monk: RtsUnit) -> int:
+	var best_index := -1
+	var best_score := INF
+	for index in game.objectives.sacred_sites.size():
+		var site: Dictionary = game.objectives.sacred_sites[index]
+		if site["owner_id"] >= 0 and not game.is_enemy(owner_id, site["owner_id"]): continue
+		if game.navigation.path_between(monk.position, site["position"], monk).is_empty(): continue
+		var reservations := 0
+		for ally in game.units:
+			if not is_instance_valid(ally) or ally == monk or ally.owner_id != owner_id or ally.kind != "monk" or ally.order != "move": continue
+			if ally.destination.distance_to(site["position"]) < 80.0: reservations += 1
+		var score: float = monk.position.distance_to(site["position"]) + reservations * 520.0
+		if index == 1: score += 250.0
+		if owner_id % 2 == 0 and index == 2 or owner_id % 2 == 1 and index == 0: score += 180.0
+		if score < best_score:
+			best_score = score
+			best_index = index
+	return best_index
 
 func _resume_construction(workers: Array[RtsUnit]) -> void:
 	var now: float = game.match_statistics.elapsed

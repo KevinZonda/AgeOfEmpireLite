@@ -3,6 +3,7 @@ extends Node2D
 
 const CELL_SIZE := 50
 const VISUAL_APRON_CELLS := 12
+const OUTSIDE_COLOR := Color("202c2e")
 enum Terrain {GRASS, MEADOW, WATER, MOUNTAIN, ROAD}
 
 var world_size := Vector2.ZERO
@@ -500,13 +501,14 @@ func _draw_relief_tile(x: int, y: int) -> void:
 	var sw := projected_vertex(x, y + 1)
 	var terrain: int = cells[_index(Vector2i(clampi(x, 0, grid_size.x - 1), clampi(y, 0, grid_size.y - 1)))]
 	var average := (h_nw + h_ne + h_se + h_sw) * 0.25
-	var color := _relief_color(terrain, average)
+	var outside := x < 0 or y < 0 or x >= grid_size.x or y >= grid_size.y
+	var color := OUTSIDE_COLOR if outside else _relief_color(terrain, average)
 	var east_slope := (h_ne + h_se - h_nw - h_sw) / (2.0 * CELL_SIZE)
 	var south_slope := (h_sw + h_se - h_nw - h_ne) / (2.0 * CELL_SIZE)
 	var light := clampf(0.98 - east_slope * 0.16 - south_slope * 0.12, 0.72, 1.15)
 	draw_colored_polygon(PackedVector2Array([nw, ne, se]), color * light)
 	draw_colored_polygon(PackedVector2Array([nw, se, sw]), color * clampf(light - (h_sw - h_ne) / 500.0, 0.69, 1.13))
-	if terrain == Terrain.MOUNTAIN and average > 65.0 and (x * 7 + y * 11) % 4 == 0:
+	if not outside and terrain == Terrain.MOUNTAIN and average > 65.0 and (x * 7 + y * 11) % 4 == 0:
 		var rock_ink := color.darkened(0.20)
 		var scratch := nw.lerp(se, 0.37)
 		draw_line(scratch, scratch.lerp(ne, 0.30), Color(rock_ink, 0.55), 1.2)
@@ -521,15 +523,7 @@ func _draw() -> void:
 		for y in range(-VISUAL_APRON_CELLS, grid_size.y + VISUAL_APRON_CELLS):
 			for x in range(-VISUAL_APRON_CELLS, grid_size.x + VISUAL_APRON_CELLS):
 				if x >= 0 and y >= 0 and x < grid_size.x and y < grid_size.y: continue
-				var neighbor := Vector2i(clampi(x, 0, grid_size.x - 1), clampi(y, 0, grid_size.y - 1))
-				var terrain: int = cells[_index(neighbor)]
-				var color := Color("688e5e")
-				match terrain:
-					Terrain.MEADOW: color = Color("7d9b64")
-					Terrain.WATER: color = Color("437e9f")
-					Terrain.MOUNTAIN: color = Color("777b71")
-					Terrain.ROAD: color = Color("879468")
-				draw_rect(Rect2(Vector2(x, y) * CELL_SIZE, Vector2.ONE * CELL_SIZE), color)
+				draw_rect(Rect2(Vector2(x, y) * CELL_SIZE, Vector2.ONE * CELL_SIZE), OUTSIDE_COLOR)
 	for y in grid_size.y:
 		for x in grid_size.x:
 			var cell := Vector2i(x, y)
@@ -564,6 +558,13 @@ func _draw() -> void:
 		for y in range(-VISUAL_APRON_CELLS, grid_size.y + VISUAL_APRON_CELLS):
 			for x in range(-VISUAL_APRON_CELLS, grid_size.x + VISUAL_APRON_CELLS):
 				_draw_relief_tile(x, y)
+		var border := Color("d1bc86", 0.74)
+		for x in grid_size.x:
+			draw_line(projected_vertex(x, 0), projected_vertex(x + 1, 0), border, 2.0)
+			draw_line(projected_vertex(x, grid_size.y), projected_vertex(x + 1, grid_size.y), border, 2.0)
+		for y in grid_size.y:
+			draw_line(projected_vertex(0, y), projected_vertex(0, y + 1), border, 2.0)
+			draw_line(projected_vertex(grid_size.x, y), projected_vertex(grid_size.x, y + 1), border, 2.0)
 	for patch in stealth_patches:
 		var center: Vector2 = patch["position"]
 		if isometric_view: center += _tile_lift(elevation_at(center))

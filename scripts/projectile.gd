@@ -85,7 +85,7 @@ func _process(delta: float) -> void:
 				if entity.global_position.distance_to(destination) > splash_radius + (entity.radius() if entity is RtsUnit else entity.size().x * 0.5): continue
 				var amount := RtsCombatRules.volley_damage(source_stats, entity.stats, attack_profile) * (1.0 if fixed_target else 0.5)
 				entity.take_damage(amount)
-		game.show_hit(global_position, impact_point, owner_id)
+		game.show_hit(global_position, impact_point, owner_id, "siege" if splash_radius > 0.0 else "ranged")
 		queue_free()
 		return
 	previous_position = global_position

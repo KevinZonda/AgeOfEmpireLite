@@ -8,9 +8,10 @@ class GameStub extends Node2D:
 	var started := true
 	var paused := false
 	var game_over := false
+	var view_mode_25d := false
 	var hits := 0
 
-	func show_hit(_origin: Vector2, _destination: Vector2, _owner_id: int) -> void:
+	func show_hit(_origin: Vector2, _destination: Vector2, _owner_id: int, _kind := "ranged") -> void:
 		hits += 1
 
 
