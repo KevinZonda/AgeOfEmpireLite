@@ -11,7 +11,10 @@ func _run() -> void:
 	for civilization in ["English", "French", "Chinese"]:
 		game.lobby_players[0]["civilization"] = civilization
 		game._refresh_player_rows()
+		await process_frame
+		await process_frame
 		var row: HBoxContainer = game.player_list.get_child(0)
+		assert(row.get_combined_minimum_size().x <= game.player_list.size.x + 1.0, "tech tree button should fit in the player column")
 		var view_button: Button
 		for child in row.get_children():
 			if child is Button and child.text == "查看科技树": view_button = child
@@ -19,6 +22,8 @@ func _run() -> void:
 		view_button.pressed.emit()
 		await process_frame
 		assert(game.tech_tree_overlay != null and game.tech_tree_overlay.visible)
+		assert(game.tech_tree_overlay.get_child(0).get_global_rect().end.x <= game.get_viewport_rect().size.x)
+		assert(game.tech_tree_overlay.get_child(0).get_global_rect().end.y <= game.get_viewport_rect().size.y)
 		assert(not game.menu_panel.visible)
 		var labels: Array[String] = []
 		for child in game.tech_tree_overlay.find_children("*", "Label", true, false): labels.append(child.text)
@@ -27,6 +32,7 @@ func _run() -> void:
 		assert(labels.any(func(value: String) -> bool: return value.contains("IV  帝王时代")))
 		var unique_unit: String = {"English": "长弓兵", "French": "皇家骑士", "Chinese": "诸葛弩"}[civilization]
 		assert(labels.any(func(value: String) -> bool: return value.contains(unique_unit)), "civilization units should come from the game data")
+		if civilization != "Chinese": assert(not labels.any(func(value: String) -> bool: return value.contains("朝廷命官")))
 		var landmark: String = {"English": "议会厅", "French": "骑兵学校", "Chinese": "翰林院"}[civilization]
 		assert(labels.any(func(value: String) -> bool: return value.contains(landmark)), "civilization landmarks should come from the game data")
 		game._close_tech_tree()
