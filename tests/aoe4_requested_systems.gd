@@ -67,6 +67,7 @@ func _run() -> void:
 	assert(archer.wall_host == null)
 	var enemy_wall: RtsBuilding = chinese.spawn_building(1, "stone_wall", Vector2(1130, 980))
 	var tower: RtsUnit = chinese.spawn_unit(0, "siege_tower", enemy_wall.position + Vector2(70, 0))
+	tower.order = "siege_tower_docked"
 	assert(RtsSiegeRules.wall_entry(chinese, archer, enemy_wall) == tower)
 	chinese.free()
 	var french: Variant = load("res://scenes/main.tscn").instantiate()

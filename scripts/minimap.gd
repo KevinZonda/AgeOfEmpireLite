@@ -72,11 +72,16 @@ func _draw() -> void:
 		if unit.owner_id != 0 and game.fog.active and not game.fog.can_see(0, unit.position): continue
 		var color: Color = game.player_color(unit.owner_id).lightened(0.28)
 		draw_circle(world_to_map(unit.position), 1.8, color)
-	var visible_size: Vector2 = get_viewport_rect().size / game.camera.zoom
-	var viewport_center: Vector2 = game.camera.get_screen_center_position()
-	var top_left := world_to_map(viewport_center - visible_size * 0.5)
-	var bottom_right := world_to_map(viewport_center + visible_size * 0.5)
-	draw_rect(Rect2(top_left, bottom_right - top_left), Color("f4dd89"), false, 1.5)
+	var inverse: Transform2D = get_viewport().get_canvas_transform().affine_inverse()
+	var viewport_size: Vector2 = get_viewport_rect().size
+	var corners := PackedVector2Array([
+		world_to_map(inverse * Vector2.ZERO),
+		world_to_map(inverse * Vector2(viewport_size.x, 0)),
+		world_to_map(inverse * viewport_size),
+		world_to_map(inverse * Vector2(0, viewport_size.y)),
+	])
+	for index in corners.size():
+		draw_line(corners[index], corners[(index + 1) % corners.size()], Color("f4dd89"), 1.5)
 	draw_rect(Rect2(Vector2.ZERO, size), Color("c8b987"), false, 2)
 
 func _build_terrain_texture(terrain_map: RtsWorldMap) -> void:

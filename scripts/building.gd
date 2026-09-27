@@ -192,7 +192,7 @@ func garrison_unit(unit: RtsUnit) -> bool:
 	queue_redraw()
 	return true
 
-func ungarrison_all() -> void:
+func ungarrison_all(resume_previous_work := false) -> void:
 	for index in garrisoned_units.size():
 		var unit: RtsUnit = garrisoned_units[index]
 		if not is_instance_valid(unit): continue
@@ -200,6 +200,7 @@ func ungarrison_all() -> void:
 		unit.position = game.navigation.nearest_walkable_point(position + Vector2((index % 3 - 1) * 24, size().y * 0.5 + 30 + (index / 3) * 22), unit.radius(), unit)
 		unit.show()
 		unit.order_stop()
+		if resume_previous_work: unit.resume_work()
 	garrisoned_units.clear()
 	game.navigation.invalidate_spatial_index()
 	queue_redraw()
@@ -216,7 +217,7 @@ func _process_defense(delta: float) -> void:
 	var enemy: RtsUnit
 	var best := INF
 	var reach: float = float(attack.get("range", 0.0))
-	for unit in game.units:
+	for unit in game.navigation.nearby_units(position, reach):
 		if not is_instance_valid(unit) or unit.is_queued_for_deletion() or not game.is_enemy(owner_id, unit.owner_id) or unit.garrisoned_in != null: continue
 		if game.fog.active and not game.fog.can_detect_unit(owner_id, unit): continue
 		var distance := position.distance_squared_to(unit.position)

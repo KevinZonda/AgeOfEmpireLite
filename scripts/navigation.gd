@@ -12,12 +12,15 @@ var enemy_pathfinder := AStarGrid2D.new()
 var water_pathfinder := AStarGrid2D.new()
 var owner_pathfinders: Array[AStarGrid2D] = []
 var obstacle_signature := -1
+var obstacle_check_frame := -1
 var spatial_frame := -1
 var indexed_unit_count := -1
 var indexed_resource_count := -1
+var indexed_building_count := -1
 var max_dynamic_radius := 0.0
 var units_by_cell: Dictionary = {}
 var resources_by_cell: Dictionary = {}
+var buildings_by_cell: Dictionary = {}
 
 func _init(game_ref: Node2D, map_ref: RtsWorldMap) -> void:
 	game = game_ref
@@ -25,6 +28,7 @@ func _init(game_ref: Node2D, map_ref: RtsWorldMap) -> void:
 
 func refresh() -> void:
 	obstacle_signature = _obstacle_signature()
+	obstacle_check_frame = Engine.get_process_frames()
 	invalidate_spatial_index()
 	owner_pathfinders.clear()
 	for owner_id in game.players.size(): owner_pathfinders.append(AStarGrid2D.new())
@@ -84,19 +88,28 @@ func _obstacle_signature() -> int:
 	return signature
 
 func _ensure_current() -> void:
+	var frame := Engine.get_process_frames()
+	if obstacle_check_frame == frame: return
+	obstacle_check_frame = frame
 	if obstacle_signature != _obstacle_signature(): refresh()
 
 func invalidate_spatial_index() -> void:
 	spatial_frame = -1
+
+func invalidate_obstacles() -> void:
+	obstacle_signature = -1
+	obstacle_check_frame = -1
+	invalidate_spatial_index()
 
 func _spatial_cell(point: Vector2) -> Vector2i:
 	return Vector2i(floori(point.x / SPATIAL_CELL_SIZE), floori(point.y / SPATIAL_CELL_SIZE))
 
 func _ensure_spatial_index() -> void:
 	var frame := Engine.get_process_frames()
-	if spatial_frame == frame and indexed_unit_count == game.units.size() and indexed_resource_count == game.resources.size(): return
+	if spatial_frame == frame and indexed_unit_count == game.units.size() and indexed_resource_count == game.resources.size() and indexed_building_count == game.buildings.size(): return
 	units_by_cell.clear()
 	resources_by_cell.clear()
+	buildings_by_cell.clear()
 	max_dynamic_radius = 0.0
 	for unit in game.units:
 		if not is_instance_valid(unit) or unit.is_queued_for_deletion() or unit.garrisoned_in != null: continue
@@ -110,15 +123,64 @@ func _ensure_spatial_index() -> void:
 		var cell := _spatial_cell(resource.position)
 		if not resources_by_cell.has(cell): resources_by_cell[cell] = []
 		resources_by_cell[cell].append(resource)
+	for building in game.buildings:
+		if not is_instance_valid(building) or building.is_queued_for_deletion(): continue
+		var bounds := Rect2(building.position - building.size() * 0.5, building.size()).grow(48.0)
+		var first := _spatial_cell(bounds.position)
+		var last := _spatial_cell(bounds.end)
+		for y in range(first.y, last.y + 1):
+			for x in range(first.x, last.x + 1):
+				var cell := Vector2i(x, y)
+				if not buildings_by_cell.has(cell): buildings_by_cell[cell] = []
+				buildings_by_cell[cell].append(building)
 	spatial_frame = frame
 	indexed_unit_count = game.units.size()
 	indexed_resource_count = game.resources.size()
+	indexed_building_count = game.buildings.size()
+
+func nearby_units(point: Vector2, radius: float) -> Array[RtsUnit]:
+	_ensure_spatial_index()
+	var result: Array[RtsUnit] = []
+	var first := _spatial_cell(point - Vector2.ONE * radius)
+	var last := _spatial_cell(point + Vector2.ONE * radius)
+	for y in range(first.y, last.y + 1):
+		for x in range(first.x, last.x + 1):
+			for unit in units_by_cell.get(Vector2i(x, y), []):
+				if is_instance_valid(unit) and not unit.is_queued_for_deletion() and unit.garrisoned_in == null and point.distance_squared_to(unit.position) <= radius * radius:
+					result.append(unit)
+	return result
+
+func nearby_resources(point: Vector2, radius: float) -> Array[RtsResource]:
+	_ensure_spatial_index()
+	var result: Array[RtsResource] = []
+	var first := _spatial_cell(point - Vector2.ONE * radius)
+	var last := _spatial_cell(point + Vector2.ONE * radius)
+	for y in range(first.y, last.y + 1):
+		for x in range(first.x, last.x + 1):
+			for resource in resources_by_cell.get(Vector2i(x, y), []):
+				if is_instance_valid(resource) and not resource.is_queued_for_deletion() and point.distance_squared_to(resource.position) <= radius * radius: result.append(resource)
+	return result
+
+func nearby_buildings(point: Vector2, radius: float) -> Array[RtsBuilding]:
+	_ensure_spatial_index()
+	var result: Array[RtsBuilding] = []
+	var seen: Dictionary = {}
+	var first := _spatial_cell(point - Vector2.ONE * radius)
+	var last := _spatial_cell(point + Vector2.ONE * radius)
+	for y in range(first.y, last.y + 1):
+		for x in range(first.x, last.x + 1):
+			for building in buildings_by_cell.get(Vector2i(x, y), []):
+				if not is_instance_valid(building) or building.is_queued_for_deletion() or seen.has(building.get_instance_id()): continue
+				seen[building.get_instance_id()] = true
+				if point.distance_squared_to(building.position) <= pow(radius + maxf(building.size().x, building.size().y), 2): result.append(building)
+	return result
 
 func unit_moved(unit: RtsUnit, previous_position: Vector2) -> void:
 	if spatial_frame != Engine.get_process_frames(): return
 	_move_in_index(units_by_cell, unit, previous_position)
 
 func resource_moved(resource: RtsResource, previous_position: Vector2) -> void:
+	if world_map.cell_at(previous_position) != world_map.cell_at(resource.position): invalidate_obstacles()
 	if spatial_frame != Engine.get_process_frames(): return
 	_move_in_index(resources_by_cell, resource, previous_position)
 
@@ -242,9 +304,10 @@ func move_step(unit: RtsUnit, desired_position: Vector2) -> Vector2:
 	if movement.is_zero_approx(): return unit.position
 	var direction := movement.normalized()
 	var distance := movement.length()
+	if _motion_clear(unit, desired_position): return desired_position
 	var side := 1.0 if unit.get_instance_id() % 2 == 0 else -1.0
-	var candidates := [direction, direction.rotated(side * PI / 4.0), direction.rotated(-side * PI / 4.0), direction.rotated(side * PI / 2.0), direction.rotated(-side * PI / 2.0), direction.rotated(side * PI * 0.75), direction.rotated(-side * PI * 0.75)]
-	for candidate_direction in candidates:
+	for offset in [side * PI / 4.0, -side * PI / 4.0, side * PI / 2.0, -side * PI / 2.0, side * PI * 0.75, -side * PI * 0.75]:
+		var candidate_direction := direction.rotated(offset)
 		var candidate: Vector2 = unit.position + candidate_direction * distance
 		if _motion_clear(unit, candidate): return candidate
 	return unit.position
@@ -259,12 +322,19 @@ func _motion_clear(unit: RtsUnit, destination: Vector2) -> bool:
 func can_occupy(point: Vector2, radius: float, self_unit: RtsUnit) -> bool:
 	_ensure_spatial_index()
 	if point.x < radius or point.y < radius or point.x > world_map.world_size.x - radius or point.y > world_map.world_size.y - radius: return false
-	for sample in 9:
-		var offset := Vector2.ZERO if sample == 0 else Vector2.from_angle(TAU * (sample - 1) / 8.0) * radius
-		if self_unit != null and self_unit.stats.get("tags", []).has("naval"):
-			if not world_map.is_navigable(point + offset): return false
-		elif not world_map.is_walkable(point + offset): return false
-	for building in game.buildings:
+	var naval: bool = self_unit != null and self_unit.stats.get("tags", []).has("naval")
+	var cell_size := float(RtsWorldMap.CELL_SIZE)
+	var first_x := floori((point.x - radius) / cell_size)
+	var last_x := floori((point.x + radius) / cell_size)
+	var first_y := floori((point.y - radius) / cell_size)
+	var last_y := floori((point.y + radius) / cell_size)
+	for cy in range(first_y, last_y + 1):
+		for cx in range(first_x, last_x + 1):
+			var terrain: int = world_map.cells[cy * world_map.grid_size.x + cx]
+			if (terrain == RtsWorldMap.Terrain.WATER) == naval and terrain != RtsWorldMap.Terrain.MOUNTAIN: continue
+			var closest := Vector2(clampf(point.x, cx * cell_size, (cx + 1) * cell_size), clampf(point.y, cy * cell_size, (cy + 1) * cell_size))
+			if point.distance_squared_to(closest) < radius * radius: return false
+	for building in buildings_by_cell.get(_spatial_cell(point), []):
 		if not is_instance_valid(building) or building.is_queued_for_deletion(): continue
 		if self_unit != null and not game.is_enemy(self_unit.owner_id, building.owner_id) and building.kind.ends_with("_gate") and building.is_complete(): continue
 		if Rect2(building.position - building.size() * 0.5, building.size()).grow(radius).has_point(point): return false
@@ -275,7 +345,8 @@ func can_occupy(point: Vector2, radius: float, self_unit: RtsUnit) -> bool:
 			var cell := Vector2i(x, y)
 			for resource in resources_by_cell.get(cell, []):
 				if not is_instance_valid(resource) or resource.is_queued_for_deletion(): continue
-				if point.distance_squared_to(resource.position) < pow(radius + resource.radius, 2): return false
+				var distance_limit: float = radius + resource.radius
+				if point.distance_squared_to(resource.position) < distance_limit * distance_limit: return false
 			for other in units_by_cell.get(cell, []):
 				if not is_instance_valid(other) or other.is_queued_for_deletion() or other == self_unit: continue
 				var personal_space: float = radius + other.radius()

@@ -74,11 +74,16 @@ static func is_siege(unit_kind: String) -> bool:
 
 static func wall_entry(game: Node2D, unit: RtsUnit, wall: RtsBuilding) -> Node2D:
 	if wall.kind != "stone_wall" or not wall.is_complete() or not unit.stats.get("tags", []).has("military") or unit.stats.get("tags", []).has("siege"): return null
-	if is_instance_valid(unit.wall_host) and unit.wall_host.position.distance_to(wall.position) <= 80.0: return unit.wall_host
+	if is_instance_valid(unit.wall_host) and unit.wall_host.owner_id == wall.owner_id and walls_connected(unit.wall_host, wall): return unit.wall_host
 	if wall.owner_id == unit.owner_id:
 		for building in game.buildings:
-			if is_instance_valid(building) and building.owner_id == unit.owner_id and building.kind == "stone_gate" and building.is_complete() and building.position.distance_to(wall.position) <= 155.0: return building
+			if is_instance_valid(building) and building.owner_id == unit.owner_id and building.kind == "stone_gate" and building.is_complete() and walls_connected(building, wall): return building
 	else:
 		for siege in game.units:
-			if is_instance_valid(siege) and siege.owner_id == unit.owner_id and siege.kind == "siege_tower" and siege.position.distance_to(wall.position) <= 95.0: return siege
+			if is_instance_valid(siege) and siege.owner_id == unit.owner_id and siege.kind == "siege_tower" and siege.order == "siege_tower_docked" and siege.position.distance_to(wall.position) <= 95.0: return siege
 	return null
+
+static func walls_connected(a: RtsBuilding, b: RtsBuilding) -> bool:
+	if not is_instance_valid(a) or not is_instance_valid(b) or not a.is_complete() or not b.is_complete() or a.owner_id != b.owner_id: return false
+	if a.kind not in ["stone_wall", "stone_gate"] or b.kind not in ["stone_wall", "stone_gate"]: return false
+	return a.position.distance_to(b.position) <= 82.0

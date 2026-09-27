@@ -10,6 +10,7 @@ var map_seed := 0
 var map_style := "balanced"
 var player_count := 2
 var cells := PackedByteArray()
+var reachable_cells := PackedByteArray()
 var plants: Array[Dictionary] = []
 var stealth_patches: Array[Dictionary] = []
 var resource_specs: Array[Dictionary] = []
@@ -52,13 +53,61 @@ func generate(seed_value: int, map_size: Vector2, style := "balanced", participa
 				terrain = Terrain.MEADOW
 			cells[_index(Vector2i(x, y))] = terrain
 	_setup_pathfinder()
+	_mark_reachable_cells()
 	_generate_stealth_patches()
 	_generate_plants()
 	_generate_starter_resources()
 	_generate_resource_clusters()
 	_generate_sheep()
+	_generate_wildlife()
 	_generate_fish()
+	_ensure_starter_access()
 	queue_redraw()
+
+func spawn_positions() -> Array[Vector2]:
+	var references := [Vector2(330, 720), Vector2(2070, 720)] if player_count <= 2 else [Vector2(330, 420), Vector2(2070, 1080), Vector2(330, 1080), Vector2(2070, 420)]
+	var result: Array[Vector2] = []
+	for index in player_count: result.append(_world_point(references[index]))
+	return result
+
+func fairness_report() -> Dictionary:
+	var counts: Array[Dictionary] = []
+	var distances: Array[Dictionary] = []
+	var fair := true
+	for base in spawn_positions():
+		var nearest := {"wood": INF, "food": INF, "gold": INF, "stone": INF}
+		var local := {"wood": 0, "food": 0, "gold": 0, "stone": 0}
+		for spec in resource_specs:
+			var kind: String = spec["kind"]
+			if not nearest.has(kind) or spec["appearance"] in ["fish", "sheep", "boar"]: continue
+			var distance := base.distance_to(spec["position"])
+			if distance <= 430.0: local[kind] += 1
+			nearest[kind] = minf(nearest[kind], distance)
+		for kind in local:
+			if local[kind] < (3 if kind != "wood" else 5): fair = false
+		counts.append(local)
+		distances.append(nearest)
+	for kind in ["wood", "food", "gold", "stone"]:
+		var minimum := INF
+		var maximum := 0.0
+		for sample in distances:
+			minimum = minf(minimum, sample[kind])
+			maximum = maxf(maximum, sample[kind])
+		if maximum > minimum * 1.4 + 40.0: fair = false
+	return {"fair": fair, "counts": counts, "nearest": distances}
+
+func _ensure_starter_access() -> void:
+	var starter_count := player_count * 15
+	for index in mini(starter_count, resource_specs.size()):
+		var spec: Dictionary = resource_specs[index]
+		if is_walkable(spec["position"]) and not path_between(spawn_positions()[index / 15], spec["position"]).is_empty(): continue
+		spec["position"] = nearest_walkable_point(spec["position"])
+		resource_specs[index] = spec
+
+func _generate_wildlife() -> void:
+	for reference in [Vector2(900, 690), Vector2(1500, 810)]:
+		var point := nearest_walkable_point(_world_point(reference))
+		resource_specs.append({"kind": "food", "appearance": "boar", "position": point, "amount": 420})
 
 func _reference_point(point: Vector2) -> Vector2:
 	return point * Vector2(2400.0 / world_size.x, 1500.0 / world_size.y)
@@ -164,6 +213,7 @@ func is_area_buildable(area: Rect2) -> bool:
 	return true
 
 func _setup_pathfinder() -> void:
+	pathfinder = AStarGrid2D.new()
 	pathfinder.region = Rect2i(Vector2i.ZERO, grid_size)
 	pathfinder.cell_size = Vector2(CELL_SIZE, CELL_SIZE)
 	pathfinder.offset = Vector2(CELL_SIZE * 0.5, CELL_SIZE * 0.5)
@@ -173,6 +223,24 @@ func _setup_pathfinder() -> void:
 		for x in grid_size.x:
 			var cell := Vector2i(x, y)
 			if not is_walkable(cell_center(cell)): pathfinder.set_point_solid(cell)
+
+func _mark_reachable_cells() -> void:
+	reachable_cells.resize(cells.size())
+	reachable_cells.fill(0)
+	var origin := nearest_walkable_cell(_world_point(Vector2(1200, 750)))
+	var frontier: Array[Vector2i] = [origin]
+	reachable_cells[_index(origin)] = 1
+	var head := 0
+	while head < frontier.size():
+		var current := frontier[head]
+		head += 1
+		for offset: Vector2i in [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]:
+			var next: Vector2i = current + offset
+			if next.x < 0 or next.y < 0 or next.x >= grid_size.x or next.y >= grid_size.y: continue
+			var index := _index(next)
+			if reachable_cells[index] == 1 or pathfinder.is_point_solid(next): continue
+			reachable_cells[index] = 1
+			frontier.append(next)
 
 func nearest_walkable_cell(point: Vector2) -> Vector2i:
 	var origin := cell_at(point)
@@ -204,7 +272,7 @@ func _random_open_point() -> Vector2:
 	for attempt in 160:
 		var point := Vector2(rng.randf_range(110, world_size.x - 110), rng.randf_range(100, world_size.y - 100))
 		if _is_corridor_clearance(_reference_point(point)) or _is_base_clearance(_reference_point(point)) or not is_walkable(point): continue
-		if path_between(_world_point(Vector2(1200, 750)), point).is_empty(): continue
+		if reachable_cells[_index(cell_at(point))] == 0: continue
 		return point
 	return _world_point(Vector2(1200, 520))
 
@@ -288,7 +356,7 @@ func _add_cluster(kind: String, appearance: String, count: int, amount: int) -> 
 			var point := center + Vector2.from_angle(rng.randf_range(0, TAU)) * rng.randf_range(12, 105)
 			if point.x < 40 or point.y < 40 or point.x > world_size.x - 40 or point.y > world_size.y - 40: continue
 			if not is_area_buildable(Rect2(point - Vector2(24, 24), Vector2(48, 48))) or _is_corridor_clearance(_reference_point(point)) or _is_base_clearance(_reference_point(point)): continue
-			if path_between(_world_point(Vector2(1200, 750)), point).is_empty(): continue
+			if reachable_cells[_index(cell_at(point))] == 0: continue
 			var clear := true
 			for spec in resource_specs + pending:
 				if point.distance_squared_to(spec["position"]) < 38.0 * 38.0:

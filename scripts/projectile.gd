@@ -12,6 +12,7 @@ var source_stats: Dictionary = {}
 var attack_profile: Dictionary = {}
 var last_destination := Vector2.ZERO
 var launch_position := Vector2.ZERO
+var fixed_target := false
 
 
 func setup(game_ref: Node2D, player_id: int, origin: Vector2, enemy: Node2D, damage_amount: float, flight_speed: float = 350.0, area_radius: float = 0.0, attacker: Dictionary = {}, profile: Dictionary = {}) -> void:
@@ -26,6 +27,22 @@ func setup(game_ref: Node2D, player_id: int, origin: Vector2, enemy: Node2D, dam
 	source_stats = attacker.duplicate(true)
 	attack_profile = profile.duplicate(true)
 	last_destination = enemy.global_position
+	visible = owner_id == 0 or not game.fog.active or game.fog.can_see(0, position)
+	queue_redraw()
+
+func setup_point(game_ref: Node2D, player_id: int, origin: Vector2, point: Vector2, damage_amount: float, flight_speed: float, area_radius: float, attacker: Dictionary, profile: Dictionary) -> void:
+	game = game_ref
+	owner_id = player_id
+	position = origin
+	launch_position = origin
+	target = null
+	fixed_target = true
+	last_destination = point
+	impact_damage = damage_amount
+	speed = maxf(1.0, flight_speed)
+	splash_radius = maxf(1.0, area_radius)
+	source_stats = attacker.duplicate(true)
+	attack_profile = profile.duplicate(true)
 	visible = owner_id == 0 or not game.fog.active or game.fog.can_see(0, position)
 	queue_redraw()
 
@@ -44,7 +61,7 @@ func _process(delta: float) -> void:
 		queue_free()
 		return
 
-	var destination := target.global_position if is_instance_valid(target) and not target.is_queued_for_deletion() else last_destination
+	var destination := target.global_position if not fixed_target and is_instance_valid(target) and not target.is_queued_for_deletion() else last_destination
 	last_destination = destination
 	var travel := speed * delta
 	if global_position.distance_to(destination) <= travel + 3.0:
@@ -63,7 +80,7 @@ func _process(delta: float) -> void:
 				if not is_instance_valid(entity) or entity.is_queued_for_deletion() or entity == target or not game.is_enemy(owner_id, entity.owner_id): continue
 				if entity is RtsUnit and entity.garrisoned_in != null: continue
 				if entity.global_position.distance_to(destination) > splash_radius + (entity.radius() if entity is RtsUnit else entity.size().x * 0.5): continue
-				var amount := RtsCombatRules.volley_damage(source_stats, entity.stats, attack_profile) * 0.5
+				var amount := RtsCombatRules.volley_damage(source_stats, entity.stats, attack_profile) * (1.0 if fixed_target else 0.5)
 				entity.take_damage(amount)
 		game.show_hit(global_position, impact_point, owner_id)
 		queue_free()

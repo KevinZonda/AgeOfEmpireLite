@@ -11,11 +11,15 @@ var wander_time := 0.0
 var claimed_by := -1
 var shepherd: RtsUnit
 var claim_timer := 0.0
+var wildlife_hp := 0.0
+var wildlife_scan := 0.0
+var wildlife_attack := 0.0
 
 func setup(resource_kind: String, quantity: int, visual_kind := "") -> void:
 	kind = resource_kind
 	amount = quantity
 	appearance = visual_kind
+	wildlife_hp = 90.0 if appearance == "boar" else 1.0
 	home_position = position
 	wander_time = position.x * 0.013 + position.y * 0.019
 	queue_redraw()
@@ -25,14 +29,57 @@ func _process(delta: float) -> void:
 	if appearance == "sheep":
 		_process_sheep(delta)
 		return
+	if appearance == "boar":
+		_process_boar(delta)
+		return
 	if appearance != "deer": return
 	wander_time += delta
 	var desired := home_position + Vector2(sin(wander_time * 0.75) * 14.0, cos(wander_time * 0.52) * 10.0)
+	wildlife_scan -= delta
+	if wildlife_scan <= 0.0:
+		wildlife_scan = 0.35
+		for unit in game.navigation.nearby_units(position, 75.0):
+			if unit.garrisoned_in == null and unit.kind != "villager":
+				var away: Vector2 = (position - unit.position).normalized()
+				desired = position + away * 55.0
+				break
 	if game.world_map.is_walkable(desired):
 		var previous_position := position
 		position = desired
 		game.navigation.resource_moved(self, previous_position)
 		queue_redraw()
+
+func _process_boar(delta: float) -> void:
+	if wildlife_hp <= 0.0: return
+	wildlife_scan -= delta
+	wildlife_attack = maxf(0.0, wildlife_attack - delta)
+	if wildlife_scan > 0.0: return
+	wildlife_scan = 0.25
+	var victim: RtsUnit
+	var best := 110.0 * 110.0
+	for unit in game.navigation.nearby_units(position, 110.0):
+		if unit.kind != "villager" or unit.garrisoned_in != null: continue
+		var distance := position.distance_squared_to(unit.position)
+		if distance < best:
+			best = distance
+			victim = unit
+	if victim == null: return
+	if best <= 30.0 * 30.0:
+		if wildlife_attack <= 0.0:
+			victim.take_damage(11.0)
+			wildlife_attack = 1.2
+		return
+	var next := position.move_toward(victim.position, 44.0 * 0.25)
+	if game.world_map.is_walkable(next):
+		var previous := position
+		position = next
+		game.navigation.resource_moved(self, previous)
+		queue_redraw()
+
+func take_damage(damage: float) -> void:
+	if appearance != "boar" or wildlife_hp <= 0.0: return
+	wildlife_hp = maxf(0.0, wildlife_hp - damage)
+	queue_redraw()
 
 func _process_sheep(delta: float) -> void:
 	claim_timer -= delta
@@ -63,9 +110,11 @@ func _process_sheep(delta: float) -> void:
 		queue_redraw()
 
 func harvest(quantity: int) -> int:
+	if appearance == "boar" and wildlife_hp > 0.0: return 0
 	var taken: int = mini(quantity, amount)
 	amount -= taken
 	if amount <= 0:
+		if game != null: game.navigation.invalidate_obstacles()
 		queue_free()
 	else:
 		queue_redraw()
@@ -83,6 +132,9 @@ func _draw() -> void:
 		draw_circle(Vector2(9, -2), 1.5, Color("253947"))
 	elif appearance == "deer":
 		draw_ellipse_shape()
+	elif appearance == "boar":
+		draw_colored_polygon(PackedVector2Array([Vector2(-20, -9), Vector2(8, -13), Vector2(22, -3), Vector2(18, 12), Vector2(-18, 11)]), Color("684d3a") if wildlife_hp > 0.0 else Color("886b54"))
+		draw_circle(Vector2(17, -5), 6, Color("795640"))
 	elif appearance == "sheep":
 		draw_circle(Vector2.ZERO, 16, Color("efead9") if claimed_by < 0 else game.player_color(claimed_by).lightened(0.35))
 		draw_circle(Vector2(11, -8), 7, Color("d8ccb2"))

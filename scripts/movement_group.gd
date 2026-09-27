@@ -20,24 +20,41 @@ var last_obstacle_signature := -1
 var heading := Vector2.RIGHT
 var narrow := false
 var final_approach := false
+var formation := "balanced"
+var formation_width := 5
+var corridor_cache: Dictionary = {}
 
-func _init(game_ref: Node2D, squad: Array[RtsUnit], world_goal: Vector2) -> void:
+func _init(game_ref: Node2D, squad: Array[RtsUnit], world_goal: Vector2, chosen_formation := "balanced", chosen_width := 5) -> void:
 	game = game_ref
 	members = squad.duplicate()
 	goal = world_goal
+	formation = chosen_formation if chosen_formation in ["balanced", "line", "compact", "column"] else "balanced"
+	formation_width = clampi(chosen_width, 2, 8)
 
 static func split_squads(units: Array[RtsUnit]) -> Array[Array]:
-	var pending: Array[RtsUnit] = units.duplicate()
+	var buckets: Dictionary = {}
+	for unit in units:
+		if not is_instance_valid(unit) or unit.is_queued_for_deletion(): continue
+		var cell := Vector2i(floori(unit.position.x / CLUSTER_DISTANCE), floori(unit.position.y / CLUSTER_DISTANCE))
+		if not buckets.has(cell): buckets[cell] = []
+		buckets[cell].append(unit)
+	var visited: Dictionary = {}
 	var squads: Array[Array] = []
-	while not pending.is_empty():
-		var squad: Array[RtsUnit] = [pending.pop_front()]
+	for first in units:
+		if not is_instance_valid(first) or visited.has(first.get_instance_id()): continue
+		var squad: Array[RtsUnit] = [first]
+		visited[first.get_instance_id()] = true
 		var index := 0
 		while index < squad.size():
 			var seed := squad[index]
-			for candidate in pending.duplicate():
-				if candidate.owner_id == seed.owner_id and candidate.stats.get("tags", []).has("naval") == seed.stats.get("tags", []).has("naval") and seed.position.distance_squared_to(candidate.position) <= CLUSTER_DISTANCE * CLUSTER_DISTANCE:
-					squad.append(candidate)
-					pending.erase(candidate)
+			var seed_cell := Vector2i(floori(seed.position.x / CLUSTER_DISTANCE), floori(seed.position.y / CLUSTER_DISTANCE))
+			for y in range(seed_cell.y - 1, seed_cell.y + 2):
+				for x in range(seed_cell.x - 1, seed_cell.x + 2):
+					for candidate in buckets.get(Vector2i(x, y), []):
+						if visited.has(candidate.get_instance_id()): continue
+						if candidate.owner_id == seed.owner_id and candidate.stats.get("tags", []).has("naval") == seed.stats.get("tags", []).has("naval") and seed.position.distance_squared_to(candidate.position) <= CLUSTER_DISTANCE * CLUSTER_DISTANCE:
+							squad.append(candidate)
+							visited[candidate.get_instance_id()] = true
 			index += 1
 		# Keep a long army as several nearby platoons. A column of hundreds
 		# would extend beyond the map and prevent its front from progressing.
@@ -45,7 +62,7 @@ static func split_squads(units: Array[RtsUnit]) -> Array[Array]:
 			if absf(a.position.x - b.position.x) > 40.0: return a.position.x < b.position.x
 			return a.position.y < b.position.y
 		)
-		for first in range(0, squad.size(), MAX_MEMBERS): squads.append(squad.slice(first, mini(first + MAX_MEMBERS, squad.size())))
+		for start_index in range(0, squad.size(), MAX_MEMBERS): squads.append(squad.slice(start_index, mini(start_index + MAX_MEMBERS, squad.size())))
 	return squads
 
 func activate() -> void:
@@ -80,6 +97,7 @@ func _replan() -> void:
 				closest = i
 		member_route_index[unit.get_instance_id()] = mini(closest + 1, maxi(0, route.size() - 1))
 	last_obstacle_signature = game.navigation.obstacle_signature
+	corridor_cache.clear()
 	heading = (goal - center).normalized()
 	if heading.is_zero_approx(): heading = Vector2.RIGHT
 	_assign_slots(center)
@@ -103,13 +121,18 @@ func _assign_slots(center: Vector2) -> void:
 		if absf(side_a - side_b) > 0.1: return side_a < side_b
 		return a.get_instance_id() < b.get_instance_id()
 	)
-	var columns := mini(5, maxi(1, ceili(sqrt(float(ordered.size())))))
+	var columns := mini(formation_width, maxi(1, ceili(sqrt(float(ordered.size())))))
+	var spacing := SPACING
+	match formation:
+		"line": columns = mini(formation_width, ordered.size())
+		"compact": spacing = 26.0
+		"column": columns = 2
 	for i in ordered.size():
 		var col := i % columns
 		var row := i / columns
-		slots[ordered[i].get_instance_id()] = lateral * (float(col) - float(columns - 1) * 0.5) * SPACING - heading * row * SPACING
+		slots[ordered[i].get_instance_id()] = lateral * (float(col) - float(columns - 1) * 0.5) * spacing - heading * row * spacing
 	# A nearby click translates the current shape without assembling first.
-	if center.distance_to(goal) < 170.0:
+	if formation == "balanced" and center.distance_to(goal) < 170.0:
 		for unit in ordered:
 			slots[unit.get_instance_id()] = unit.position - center
 	final_destinations.clear()
@@ -127,6 +150,10 @@ func _center(active_only := true) -> Vector2:
 	return sum / count if count > 0 else goal
 
 func _corridor_is_narrow(point: Vector2) -> bool:
+	var point_cell: Vector2i = game.world_map.cell_at(point)
+	var heading_sector := posmod(roundi(heading.angle() / (PI / 4.0)), 8)
+	var cache_key := Vector3i(point_cell.x, point_cell.y, heading_sector)
+	if corridor_cache.has(cache_key): return corridor_cache[cache_key]
 	var representative: RtsUnit
 	for member in members:
 		if is_instance_valid(member) and member.movement_group == self:
@@ -141,7 +168,9 @@ func _corridor_is_narrow(point: Vector2) -> bool:
 			var cell: Vector2i = game.world_map.cell_at(point + lateral * side * step * RtsWorldMap.CELL_SIZE)
 			if grid.is_point_solid(cell): break
 			open_width += 1
-	return open_width < 3
+	var result := open_width < 3
+	corridor_cache[cache_key] = result
+	return result
 
 func _grid_line_clear(unit: RtsUnit, from: Vector2, to: Vector2) -> bool:
 	var grid: AStarGrid2D = game.navigation._grid_for(unit)

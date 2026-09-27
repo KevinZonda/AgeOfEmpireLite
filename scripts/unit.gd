@@ -27,6 +27,10 @@ var patrol_origin := Vector2.ZERO
 var patrol_destination := Vector2.ZERO
 var hold_position := Vector2.ZERO
 var stance := "aggressive"
+var engagement := "aggressive"
+var auto_engaged := false
+var awareness_timer := 0.0
+var engagement_origin := Vector2.ZERO
 var gather_kind := ""
 var gather_location := Vector2.ZERO
 var route := PackedVector2Array()
@@ -41,11 +45,14 @@ var garrisoned_in: Node2D
 var wall_host: RtsBuilding
 var wall_entry_point: Node2D
 var passengers: Array[RtsUnit] = []
+var field_build_remaining := 0.0
+var field_build_total := 0.0
 var landing_position := Vector2.INF
 var trade_post: RtsTradePost
 var trade_home: RtsBuilding
 var trade_returning := false
 var trade_resource_kind := "gold"
+var saved_work: Dictionary = {}
 var carried_relic: RtsRelic
 var producer_landmark_id := ""
 var paling_timer := 0.0
@@ -67,6 +74,7 @@ func setup(game_ref: Node2D, player_id: int, unit_kind: String) -> void:
 	game = game_ref
 	owner_id = player_id
 	kind = unit_kind
+	awareness_timer = float(get_instance_id() % 7) * 0.035
 	refresh_stats(false)
 	queue_redraw()
 
@@ -92,7 +100,7 @@ func gathering_amount() -> int:
 	if order != "gather" or not is_instance_valid(target): return 0
 	var resource_kind: String = "food" if target is RtsBuilding else target.kind
 	var amount := 12 if kind == "fishing_boat" else GameData.gathered_amount(game.civilizations[owner_id], resource_kind, target is RtsBuilding)
-	amount = maxi(1, roundi(amount * RtsLandmarkCatalog.gather_multiplier(game.civilizations[owner_id], game.players[owner_id].get("landmarks", []), resource_kind, target is RtsBuilding) * RtsCivilizationRules.economic_gather_multiplier(game, owner_id, resource_kind)))
+	amount = maxi(1, roundi(amount * RtsLandmarkCatalog.gather_multiplier(game.civilizations[owner_id], game.players[owner_id].get("landmarks", []), resource_kind, target is RtsBuilding) * RtsCivilizationRules.economic_gather_multiplier(game, owner_id, resource_kind) * RtsCivilizationRules.economic_site_multiplier(game, owner_id, resource_kind, target)))
 	if kind == "villager" and target is RtsResource and target.appearance == "deer":
 		for building in game.buildings:
 			if is_instance_valid(building) and building.owner_id == owner_id and building.kind == "scout_camp" and building.position.distance_to(position) <= 180.0:
@@ -105,7 +113,7 @@ func gathering_per_second() -> float:
 
 func order_move(world_point: Vector2) -> void:
 	if is_instance_valid(wall_host): leave_wall()
-	stance = "aggressive"
+	if stance == "hold": stance = "aggressive"
 	resume_order = ""
 	conversion_timer = 0.0
 	if paling_timer > 0.0: paling_timer = 0.0
@@ -117,7 +125,7 @@ func order_move(world_point: Vector2) -> void:
 	resume_destination = Vector2.INF
 	_reset_route()
 
-func order_attack(enemy: Node2D) -> void:
+func order_attack(enemy: Node2D, automatic := false) -> void:
 	if is_instance_valid(wall_host) and position.distance_to(enemy.position) > float(stats.get("range", 0.0)) + 35.0: leave_wall()
 	resume_order = ""
 	conversion_timer = 0.0
@@ -126,6 +134,8 @@ func order_attack(enemy: Node2D) -> void:
 	if helm_timer > 0.0: helm_timer = 0.0
 	movement_group = null
 	order = "attack"
+	auto_engaged = automatic
+	engagement_origin = position
 	target = enemy
 	charging = enemy is RtsUnit and (stats.get("profiles", {}).has("charge") or float(stats.get("charge_bonus", 0.0)) > 0.0) and charge_cooldown <= 0.0 and position.distance_to(enemy.position) >= 110.0 and position.distance_to(enemy.position) <= 180.0
 	charge_distance = 0.0
@@ -135,7 +145,7 @@ func order_attack(enemy: Node2D) -> void:
 
 func order_attack_move(world_point: Vector2) -> void:
 	if is_instance_valid(wall_host): leave_wall()
-	stance = "aggressive"
+	if stance == "hold": stance = "aggressive"
 	resume_order = ""
 	conversion_timer = 0.0
 	if paling_timer > 0.0: paling_timer = 0.0
@@ -148,7 +158,7 @@ func order_attack_move(world_point: Vector2) -> void:
 	_reset_route()
 
 func order_stop() -> void:
-	stance = "aggressive"
+	if stance == "hold": stance = "aggressive"
 	resume_order = ""
 	conversion_timer = 0.0
 	command_queue.clear()
@@ -174,7 +184,7 @@ func order_patrol(world_point: Vector2) -> void:
 	order = "patrol"
 
 func garrison_unit(unit: RtsUnit) -> bool:
-	if kind != "transport_ship" or not is_instance_valid(unit) or unit.owner_id != owner_id or passengers.size() >= 8 or unit.stats.get("tags", []).has("naval") or unit.garrisoned_in != null: return false
+	if kind not in ["transport_ship", "battering_ram", "siege_tower"] or field_build_remaining > 0.0 or not is_instance_valid(unit) or unit.owner_id != owner_id or passengers.size() >= (10 if kind == "siege_tower" else 8) or unit.stats.get("tags", []).has("naval") or unit.stats.get("tags", []).has("siege") or unit.garrisoned_in != null: return false
 	if unit.position.distance_to(position) > 100.0: return false
 	passengers.append(unit)
 	unit.garrisoned_in = self
@@ -187,9 +197,9 @@ func garrison_unit(unit: RtsUnit) -> bool:
 	return true
 
 func ungarrison_all() -> void:
-	if kind != "transport_ship" or passengers.is_empty(): return
-	var shore := landing_position
-	if shore == Vector2.INF:
+	if kind not in ["transport_ship", "battering_ram", "siege_tower"] or passengers.is_empty(): return
+	var shore := position + Vector2(0, 40) if kind != "transport_ship" else landing_position
+	if kind == "transport_ship" and shore == Vector2.INF:
 		var pair: Dictionary = game.find_landing_pair(self, position)
 		if pair.is_empty() or position.distance_to(pair["water"]) > 80.0: return
 		shore = pair["land"]
@@ -257,6 +267,12 @@ func _start_command(command: Dictionary) -> bool:
 		"attack_move":
 			if not stats.get("tags", []).has("military"): return false
 			order_attack_move(command["point"])
+		"attack_ground":
+			if kind not in ["mangonel", "nest_of_bees", "trebuchet", "bombard", "cannon"]: return false
+			order = "attack_ground"
+			destination = command["point"]
+			target = null
+			_reset_route()
 		"attack":
 			if not is_instance_valid(command["target"]) or command["target"].is_queued_for_deletion(): return false
 			if float(stats.get("damage", 0.0)) <= 0.0: return false
@@ -270,7 +286,7 @@ func _start_command(command: Dictionary) -> bool:
 			order_gather(command["target"])
 		"trade":
 			if kind != "trader" or not command["target"] is RtsTradePost: return false
-			trade_home = game.find_nearest_owned_building(owner_id, "market", position)
+			if not is_instance_valid(trade_home) or trade_home.is_queued_for_deletion(): trade_home = game.find_nearest_owned_building(owner_id, "market", position)
 			if trade_home == null: return false
 			trade_post = command["target"]
 			trade_returning = false
@@ -294,13 +310,25 @@ func _start_command(command: Dictionary) -> bool:
 		"build":
 			if kind != "villager" or not is_instance_valid(command["target"]) or command["target"].is_queued_for_deletion() or command["target"].is_complete(): return false
 			order_build(command["target"])
+		"field_build":
+			if not stats.get("tags", []).has("infantry") or not command["target"] is RtsUnit or command["target"].field_build_remaining <= 0.0 or command["target"].owner_id != owner_id: return false
+			order = "field_build"
+			target = command["target"]
+			_reset_route()
+		"repair":
+			if kind != "villager" or not is_instance_valid(command["target"]) or command["target"].owner_id != owner_id or not (command["target"] is RtsBuilding or command["target"] is RtsUnit and command["target"].stats.get("tags", []).has("siege")): return false
+			if command["target"].hp >= command["target"].max_hp: return false
+			order = "repair"
+			target = command["target"]
+			_reset_route()
 		"garrison":
 			if not is_instance_valid(command["target"]) or command["target"].is_queued_for_deletion() or not (RtsSiegeRules.can_garrison(stats, command["target"].kind) or command["target"].kind == "landmark" and command["target"].garrison_capacity() > 0 and not stats.get("tags", []).has("siege")): return false
+			remember_work()
 			order = "garrison"
 			target = command["target"]
 			_reset_route()
 		"board_transport":
-			if not command["target"] is RtsUnit or command["target"].kind != "transport_ship" or command["target"].owner_id != owner_id or stats.get("tags", []).has("naval"): return false
+			if not command["target"] is RtsUnit or command["target"].kind not in ["transport_ship", "battering_ram", "siege_tower"] or command["target"].owner_id != owner_id or stats.get("tags", []).has("naval") or stats.get("tags", []).has("siege"): return false
 			order = "board_transport"
 			target = command["target"]
 			_reset_route()
@@ -396,6 +424,11 @@ func activate_ability(ability_id: String) -> bool:
 func order_gather(resource: Node2D) -> void:
 	if resource is RtsResource and resource.appearance == "sheep" and resource.claimed_by != owner_id: return
 	if not ["villager", "fishing_boat"].has(kind): return
+	if resource is RtsBuilding and resource.kind == "farm" and game.farm_worker(resource, self) != null:
+		resource = game.find_nearest_free_farm(owner_id, position, 190.0, self)
+		if resource == null:
+			order_stop()
+			return
 	order = "gather"
 	target = resource
 	resume_destination = Vector2.INF
@@ -403,6 +436,19 @@ func order_gather(resource: Node2D) -> void:
 	gather_kind = resource.kind if resource is RtsResource else ""
 	gather_location = resource.position
 	_reset_route()
+
+func remember_work() -> void:
+	if order in ["gather", "build", "trade", "supervise"]:
+		saved_work = {"type": order, "target": trade_post if order == "trade" else target}
+	else:
+		saved_work.clear()
+
+func resume_work() -> void:
+	if saved_work.is_empty(): return
+	var previous: Dictionary = saved_work.duplicate()
+	saved_work.clear()
+	if is_instance_valid(previous.get("target")) and not previous["target"].is_queued_for_deletion():
+		issue_command(previous["type"], Vector2.INF, previous["target"])
 
 func _continue_gather() -> void:
 	var next_resource: RtsResource
@@ -429,22 +475,23 @@ func _reset_route() -> void:
 
 func _process(delta: float) -> void:
 	if not game.started or game.paused or game.game_over or garrisoned_in != null: return
+	if field_build_remaining > 0.0: return
 	if _tick_status(delta): return
 	if order == "hold":
 		if position.distance_to(hold_position) > 6.0:
 			_move_toward(hold_position, delta, 4.0)
 			return
-		var held_enemy: Node2D = game.nearest_enemy(self, float(stats.get("range", 0.0)) + 22.0)
+		var held_enemy: Node2D = game.nearest_enemy(self, float(stats.get("range", 0.0)) + 22.0) if engagement != "passive" else null
 		if held_enemy != null and float(stats.get("damage", 0.0)) > 0.0:
-			order_attack(held_enemy)
+			order_attack(held_enemy, true)
 			resume_order = "hold"
 		return
 	if order == "wall":
 		if not is_instance_valid(wall_host):
 			order = "idle"
 			return
-		var wall_enemy: Node2D = game.nearest_enemy(self, float(stats.get("range", 0.0)) + 20.0)
-		if wall_enemy != null and float(stats.get("damage", 0.0)) > 0.0: order_attack(wall_enemy)
+		var wall_enemy: Node2D = game.nearest_enemy(self, float(stats.get("range", 0.0)) + 20.0) if engagement != "passive" else null
+		if wall_enemy != null and float(stats.get("damage", 0.0)) > 0.0: order_attack(wall_enemy, true)
 		return
 	if order == "board_wall":
 		if not is_instance_valid(target) or not target is RtsBuilding or not target.is_complete() or not is_instance_valid(wall_entry_point):
@@ -462,17 +509,32 @@ func _process(delta: float) -> void:
 		if not is_instance_valid(target) or target.is_queued_for_deletion():
 			_advance_command()
 			return
-		if _move_toward(target.position, delta, 65.0): order = "siege_tower_docked"
+		if _move_toward(target.position, delta, 65.0):
+			order = "siege_tower_docked"
+			for passenger in passengers.duplicate():
+				if not is_instance_valid(passenger): continue
+				passenger.garrisoned_in = null
+				passenger.show()
+				passenger.wall_host = target
+				passenger.wall_entry_point = self
+				passenger.position = target.position + Vector2(float(passenger.get_instance_id() % 3 - 1) * 17.0, -9.0)
+				passenger.order_stop()
+				passenger.refresh_stats()
+			passengers.clear()
+			game.navigation.invalidate_spatial_index()
 		return
 	if order == "siege_tower_docked": return
 	if order == "idle":
 		_process_idle_order()
 		return
 	if order == "attack_move":
-		var nearby_enemy: Node2D = game.nearest_enemy(self, 155.0)
+		var nearby_enemy: Node2D
+		if awareness_timer <= 0.0 and engagement != "passive":
+			nearby_enemy = game.nearest_enemy(self, 110.0 if engagement == "defensive" else 155.0)
+			awareness_timer = 0.24
 		if nearby_enemy != null:
 			var resume_point := destination
-			order_attack(nearby_enemy)
+			order_attack(nearby_enemy, true)
 			resume_destination = resume_point
 			resume_order = "attack_move"
 			return
@@ -481,10 +543,13 @@ func _process(delta: float) -> void:
 		if position.distance_to(destination) < 7.0: _advance_command()
 		return
 	if order == "patrol":
-		var patrol_enemy: Node2D = game.nearest_enemy(self, 155.0)
+		var patrol_enemy: Node2D
+		if awareness_timer <= 0.0 and engagement != "passive":
+			patrol_enemy = game.nearest_enemy(self, 110.0 if engagement == "defensive" else 155.0)
+			awareness_timer = 0.24
 		if patrol_enemy != null:
 			var resume_point := destination
-			order_attack(patrol_enemy)
+			order_attack(patrol_enemy, true)
 			resume_destination = resume_point
 			resume_order = "patrol"
 			return
@@ -505,6 +570,9 @@ func _process(delta: float) -> void:
 		return
 	if order == "trade":
 		_process_trade_order(delta)
+		return
+	if order == "attack_ground":
+		_process_attack_ground(delta)
 		return
 	if order in ["supervise", "collect_tax"]:
 		if not is_instance_valid(target) or target.is_queued_for_deletion() or not target is RtsBuilding or not target.is_complete():
@@ -585,10 +653,57 @@ func _process(delta: float) -> void:
 		target.advance_construction(delta * GameData.construction_multiplier(game.civilizations[owner_id]))
 		if target.is_complete(): _advance_command()
 		return
+	if order == "field_build":
+		if not target is RtsUnit or target.field_build_remaining <= 0.0:
+			_advance_command()
+			return
+		if _move_toward(target.position, delta, target.radius() + radius() + 7.0):
+			target.field_build_remaining = maxf(0.0, target.field_build_remaining - delta)
+			target.queue_redraw()
+			if target.field_build_remaining <= 0.0:
+				target.hp = minf(target.max_hp, target.hp + target.max_hp * 0.7)
+				_advance_command()
+		return
+	if order == "repair":
+		_process_repair_order(delta)
+		return
 	if order == "attack": _process_attack_order(delta)
+
+func _process_repair_order(delta: float) -> void:
+	if target.hp >= target.max_hp:
+		_advance_command()
+		return
+	var stop_distance: float = float(target.size().x) * 0.5 + radius() if target is RtsBuilding else target.radius() + radius()
+	if not _move_toward(target.position, delta, stop_distance): return
+	if work_timer > 0.0: return
+	var resource_kind := "wood"
+	if target is RtsBuilding:
+		var cost: Dictionary = target.definition().get("cost", {})
+		if cost.has("stone") and not cost.has("wood"): resource_kind = "stone"
+	if not game.spend(owner_id, {resource_kind: 1}):
+		_advance_command()
+		return
+	target.hp = minf(target.max_hp, target.hp + (5.0 if target is RtsUnit else 8.0))
+	target.queue_redraw()
+	work_timer = 0.4
+
+func _process_attack_ground(delta: float) -> void:
+	var profile: Dictionary = stats.get("profiles", {}).get(stats.get("primary_profile", ""), {})
+	if profile.is_empty() or float(profile.get("damage", 0.0)) <= 0.0:
+		_advance_command()
+		return
+	var reach := float(profile.get("range", stats.get("range", 0.0)))
+	if not _move_toward(destination, delta, reach): return
+	if attack_timer > 0.0: return
+	var projectile := RtsProjectile.new()
+	projectile.setup_point(game, owner_id, global_position, destination, float(profile["damage"]), float(stats.get("projectile_speed", 350.0)), maxf(55.0, float(profile.get("splash_radius", 0.0))), stats, profile)
+	game.add_child(projectile)
+	attack_timer = float(profile.get("cooldown", stats["cooldown"]))
+	revealed_timer = 2.0
 
 func _tick_status(delta: float) -> bool:
 	attack_timer = maxf(0.0, attack_timer - delta)
+	awareness_timer = maxf(0.0, awareness_timer - delta)
 	work_timer = maxf(0.0, work_timer - delta)
 	charge_cooldown = maxf(0.0, charge_cooldown - delta)
 	stun_timer = maxf(0.0, stun_timer - delta)
@@ -627,8 +742,12 @@ func _process_idle_order() -> void:
 				taxable = building
 		if taxable != null: issue_command("collect_tax", Vector2.INF, taxable)
 		return
-	var enemy: Node2D = game.nearest_enemy(self, maxf(115.0, float(stats.get("range", 0.0)) + 45.0))
-	if enemy != null and stats.get("tags", []).has("military"): order_attack(enemy)
+	if engagement == "passive" or awareness_timer > 0.0: return
+	awareness_timer = 0.3
+	var sight := maxf(115.0, float(stats.get("range", 0.0)) + 45.0)
+	if engagement == "defensive": sight = minf(sight, 110.0)
+	var enemy: Node2D = game.nearest_enemy(self, sight)
+	if enemy != null and stats.get("tags", []).has("military"): order_attack(enemy, true)
 
 func _process_trade_order(delta: float) -> void:
 	if not is_instance_valid(trade_post) or not is_instance_valid(trade_home) or trade_home.is_queued_for_deletion():
@@ -636,11 +755,10 @@ func _process_trade_order(delta: float) -> void:
 		return
 	var goal: Vector2 = trade_home.position if trade_returning else trade_post.position
 	if _move_toward(goal, delta, 46.0):
-		if trade_returning:
-			var gold := maxi(12, roundi(trade_home.position.distance_to(trade_post.position) / 18.0))
-			gold = roundi(gold * RtsLandmarkCatalog.trade_multiplier(game.civilizations[owner_id], game.players[owner_id].get("landmarks", [])))
-			if game.civilizations[owner_id] == "French": gold = roundi(gold * 1.15)
-			game.credit_resource(owner_id, trade_resource_kind if game.civilizations[owner_id] == "French" else "gold", gold)
+		var cargo := maxi(6, roundi(trade_home.position.distance_to(trade_post.position) / 36.0))
+		cargo = roundi(cargo * RtsLandmarkCatalog.trade_multiplier(game.civilizations[owner_id], game.players[owner_id].get("landmarks", [])))
+		if game.civilizations[owner_id] == "French": cargo = roundi(cargo * 1.15)
+		game.credit_resource(owner_id, trade_resource_kind if game.civilizations[owner_id] == "French" else "gold", cargo)
 		trade_returning = not trade_returning
 		_reset_route()
 
@@ -663,6 +781,25 @@ func _process_gather_order(delta: float) -> void:
 		if target is RtsResource and target.amount <= 0: _continue_gather()
 
 func _process_attack_order(delta: float) -> void:
+	if target is RtsResource and target.appearance == "boar" and target.wildlife_hp <= 0.0:
+		_advance_command()
+		return
+	if auto_engaged and engagement == "defensive" and position.distance_to(engagement_origin) > 175.0:
+		var previous_order := resume_order
+		var previous_destination := resume_destination
+		resume_order = ""
+		resume_destination = Vector2.INF
+		target = null
+		auto_engaged = false
+		if previous_order == "patrol" or previous_order == "attack_move":
+			order = previous_order
+			destination = previous_destination
+			_reset_route()
+		elif previous_order == "hold":
+			order = "hold"
+		else:
+			order_move(engagement_origin)
+		return
 	if resume_order == "patrol" and position.distance_to(Geometry2D.get_closest_point_to_segment(position, patrol_origin, patrol_destination)) > 240.0:
 		order = "patrol"
 		destination = resume_destination
@@ -719,6 +856,7 @@ func _process_attack_order(delta: float) -> void:
 		artillery_shot_cooldown = 35.0
 	var modifiers := {"extra_damage": 3.0 if kind == "royal_knight" and momentum_timer > 0.0 else 0.0, "multiplier": RtsCivilizationRules.wall_ranged_multiplier(game, self) if profile.get("damage_kind", "") == "ranged" else 1.0}
 	var damage: float = RtsCombatRules.volley_damage(stats, defender_stats, profile, modifiers)
+	if kind == "battering_ram": damage *= 1.0 + minf(0.4, passengers.size() * 0.05)
 	if charged:
 		charge_cooldown = 10.0
 		if kind == "royal_knight": momentum_timer = 3.0
@@ -736,6 +874,11 @@ func _process_attack_order(delta: float) -> void:
 				if not is_instance_valid(other) or other == target or other.is_queued_for_deletion() or not game.is_enemy(owner_id, other.owner_id) or other.garrisoned_in != null: continue
 				if other.position.distance_to(impact_point) <= float(profile["splash_radius"]): other.take_damage(RtsCombatRules.volley_damage(stats, other.stats, profile) * 0.5)
 		game.show_hit(position, impact_point, owner_id)
+		if kind == "incendiary_ship":
+			for other in game.navigation.nearby_units(impact_point, 58.0):
+				if is_instance_valid(other) and other != target and game.is_enemy(owner_id, other.owner_id) and other.stats.get("tags", []).has("naval") and other.position.distance_to(impact_point) <= 58.0: other.take_damage(damage * 0.45)
+			game.entity_destroyed(self)
+			return
 	attack_timer = float(profile.get("cooldown", stats["cooldown"])) / (RtsCivilizationRules.english_network_rate(game, self) * (1.2 if spirit_buff_timer > 0.0 else 1.0))
 	if volley_timer > 0.0: attack_timer /= 1.7
 
@@ -778,7 +921,7 @@ func _move_toward(point: Vector2, delta: float, stop_distance: float) -> bool:
 		refresh_stats()
 	route_retry = maxf(0.0, route_retry - delta)
 	if route_goal == Vector2.INF or route_goal.distance_to(point) > RtsWorldMap.CELL_SIZE * 0.5 or route_retry <= 0.0:
-		if ["gather", "build", "attack", "garrison", "board_transport", "trade", "deposit_relic"].has(order):
+		if ["gather", "build", "field_build", "repair", "attack", "garrison", "board_transport", "trade", "deposit_relic", "relic", "supervise", "collect_tax", "board_wall", "assault_wall"].has(order):
 			route = game.navigation.path_to_range(position, point, stop_distance, self)
 		else:
 			route = game.navigation.path_between(position, point, self)
@@ -797,7 +940,6 @@ func _move_toward(point: Vector2, delta: float, stop_distance: float) -> bool:
 	game.navigation.unit_moved(self, old_position)
 	if charging: charge_distance += old_position.distance_to(position)
 	position = position.clamp(Vector2(24, 24), game.world_size - Vector2(24, 24))
-	queue_redraw()
 	return position.distance_to(point) <= stop_distance + 0.5
 
 func _move_with_group(delta: float) -> void:
@@ -820,7 +962,6 @@ func _move_with_group(delta: float) -> void:
 		movement_group = null
 		_reset_route()
 		_move_toward(destination, delta, 8.0)
-	queue_redraw()
 
 func take_damage(damage: float) -> void:
 	hp -= damage

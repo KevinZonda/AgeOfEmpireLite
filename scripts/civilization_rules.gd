@@ -16,6 +16,13 @@ static func economic_gather_multiplier(game: Node2D, owner_id: int, resource_kin
 			multiplier *= float(tech.get("gather_multiplier", 1.0))
 	return multiplier
 
+static func economic_site_multiplier(game: Node2D, owner_id: int, resource_kind: String, source: Node2D) -> float:
+	var site_kind := "mill" if resource_kind == "food" else "lumber_camp" if resource_kind == "wood" else "mining_camp"
+	for building in game.buildings:
+		if not is_instance_valid(building) or building.owner_id != owner_id or building.kind != site_kind or not building.is_complete(): continue
+		if building.position.distance_to(source.position) <= 170.0: return 1.15
+	return 1.0
+
 static func french_keep_influence(game: Node2D, producer: RtsBuilding) -> bool:
 	if game.civilizations[producer.owner_id] != "French" or producer.producer_kind() not in ["archery_range", "stable"]: return false
 	for building in game.buildings:

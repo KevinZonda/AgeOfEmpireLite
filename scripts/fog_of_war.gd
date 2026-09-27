@@ -70,7 +70,7 @@ func can_detect_unit(owner_id: int, enemy: RtsUnit) -> bool:
 	if enemy.owner_id == owner_id or enemy.revealed_timer > 0.0: return true
 	var patch_index: int = game.world_map.forest_patch_at(enemy.position)
 	if patch_index < 0: return true
-	for observer in game.units:
+	for observer in game.navigation.nearby_units(enemy.position, 210.0):
 		if not is_instance_valid(observer) or observer.owner_id != owner_id or observer.garrisoned_in != null: continue
 		if observer.position.distance_to(enemy.position) <= (145.0 if observer.kind == "scout" else 85.0): return true
 		if game.world_map.forest_patch_at(observer.position) == patch_index: return true
@@ -90,6 +90,7 @@ func reveal_enemy_villagers(owner_id: int, duration: float) -> void:
 
 func update_visibility() -> void:
 	if not active: return
+	game.navigation.invalidate_spatial_index()
 	for owner_id in game.players.size():
 		var visible: PackedByteArray = visible_cells[owner_id]
 		visible.fill(0)

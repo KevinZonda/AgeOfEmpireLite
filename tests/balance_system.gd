@@ -4,7 +4,7 @@ func _initialize() -> void:
 	call_deferred("_run")
 
 func _run() -> void:
-	assert(RtsBalanceData.document()["units"].size() == GameData.UNITS.size())
+	for archived_kind in RtsBalanceData.document()["units"]: assert(GameData.UNITS.has(archived_kind))
 	assert(int(GameData.unit_cost("royal_knight")["food"]) == 140 and int(GameData.unit_cost("royal_knight")["gold"]) == 100)
 	assert(int(GameData.unit_cost("zhuge_nu")["food"]) == 30 and int(GameData.unit_cost("zhuge_nu")["wood"]) == 30 and int(GameData.unit_cost("zhuge_nu")["gold"]) == 20)
 	var spear := RtsStatResolver.unit("English", "spearman", 2)

@@ -36,6 +36,7 @@ func _run() -> void:
 	var old_cell: Vector2i = game.world_map.cell_at(movable_resource.position)
 	assert(game.navigation.pathfinder.is_point_solid(old_cell))
 	movable_resource.position = Vector2(1450, 750)
+	game.navigation.resource_moved(movable_resource, game.world_map.cell_center(old_cell))
 	game.navigation.path_between(worker.position, movable_resource.position)
 	assert(not game.navigation.pathfinder.is_point_solid(old_cell), "moved resources should release old path cells")
 	assert(game.navigation.pathfinder.is_point_solid(game.world_map.cell_at(movable_resource.position)), "moved resources should block their new path cells")

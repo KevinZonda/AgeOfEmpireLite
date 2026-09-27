@@ -10,17 +10,21 @@ const AGE_ADVANCE_COSTS := {
 }
 const AGE_ADVANCE_TIMES := {1: 25.0, 2: 35.0, 3: 45.0}
 
-const BUILD_MENU := ["house", "farm", "market", "dock", "barracks", "archery_range", "stable", "blacksmith", "monastery", "outpost", "palisade_wall", "palisade_gate", "stone_wall", "stone_gate", "keep", "siege_workshop", "wonder"]
+const BUILD_MENU := ["house", "farm", "mill", "lumber_camp", "mining_camp", "market", "dock", "barracks", "archery_range", "stable", "blacksmith", "university", "monastery", "outpost", "palisade_wall", "palisade_gate", "stone_wall", "stone_gate", "keep", "siege_workshop", "wonder"]
 const BUILDING_AGE := {
 	"town_center": 1,
 	"house": 1,
 	"farm": 1,
+	"mill": 1,
+	"lumber_camp": 1,
+	"mining_camp": 1,
 	"market": 2,
 	"dock": 2,
 	"barracks": 2,
 	"archery_range": 2,
 	"stable": 2,
 	"blacksmith": 2,
+	"university": 4,
 	"monastery": 3,
 	"outpost": 2,
 	"palisade_wall": 2,
@@ -42,12 +46,13 @@ const PRODUCTION := {
 	"town_center": ["villager", "imperial_official"],
 	"imperial_academy": ["imperial_official"],
 	"market": ["trader"],
-	"dock": ["fishing_boat", "arrow_ship", "warship", "transport_ship"],
+	"dock": ["fishing_boat", "arrow_ship", "warship", "springald_ship", "incendiary_ship", "transport_ship"],
 	"monastery": ["monk"],
 	"barracks": ["spearman", "man_at_arms"],
 	"archery_range": ["archer", "crossbowman", "handcannoneer"],
 	"stable": ["scout", "horseman", "knight"],
 	"blacksmith": [],
+	"university": [],
 	"siege_workshop": ["battering_ram", "siege_tower", "springald", "mangonel", "trebuchet", "bombard"],
 	"white_tower": ["spearman", "man_at_arms", "archer", "crossbowman", "horseman", "knight"],
 	"wynguard": ["spearman", "man_at_arms", "archer", "trebuchet"],
@@ -83,6 +88,8 @@ const UNIT_AGE := {
 	"trader": 2,
 	"fishing_boat": 2,
 	"warship": 2,
+	"springald_ship": 3,
+	"incendiary_ship": 3,
 	"arrow_ship": 2,
 	"transport_ship": 2,
 	"monk": 3,
@@ -124,10 +131,14 @@ const TECHNOLOGIES := {
 	"ranged_armor_3": {"label": "楔形铆钉", "age": 3, "building": "blacksmith", "cost": {"food": 100, "gold": 250}, "time": 33.0, "requires": ["ranged_armor_2"], "target_tags": ["military"], "exclude_tags": ["siege", "naval"], "effects": {"armor_ranged": 1.0}},
 	"ranged_armor_4": {"label": "斜面", "age": 4, "building": "blacksmith", "cost": {"food": 150, "gold": 350}, "time": 33.0, "requires": ["ranged_armor_3"], "target_tags": ["military"], "exclude_tags": ["siege", "naval"], "effects": {"armor_ranged": 1.0}},
 	"military_academy": {"label": "军事学院", "age": 3, "building": "blacksmith", "cost": {"food": 100, "gold": 250}, "time": 33.0, "requires": [], "target_tags": [], "effects": {}},
-	"enclosures": {"label": "圈地法", "age": 4, "building": "town_center", "cost": {"wood": 200, "gold": 350}, "time": 45.0, "requires": [], "civilizations": ["English"], "target_tags": [], "effects": {}},
-	"horticulture": {"label": "园艺学", "age": 2, "building": "town_center", "cost": {"food": 100, "gold": 75}, "time": 25.0, "requires": [], "economy": true, "gather_kind": "food", "gather_multiplier": 1.15, "target_tags": [], "effects": {}},
-	"double_broadaxe": {"label": "双刃斧", "age": 2, "building": "town_center", "cost": {"wood": 100, "gold": 75}, "time": 25.0, "requires": [], "economy": true, "gather_kind": "wood", "gather_multiplier": 1.15, "target_tags": [], "effects": {}},
-	"specialized_pick": {"label": "专用镐", "age": 2, "building": "town_center", "cost": {"food": 100, "gold": 75}, "time": 25.0, "requires": [], "economy": true, "gather_kind": "gold", "gather_multiplier": 1.15, "target_tags": [], "effects": {}},
+	"enclosures": {"label": "圈地法", "age": 4, "building": "mill", "cost": {"wood": 200, "gold": 350}, "time": 45.0, "requires": ["horticulture"], "civilizations": ["English"], "target_tags": [], "effects": {}},
+	"horticulture": {"label": "园艺学", "age": 2, "building": "mill", "cost": {"food": 100, "gold": 75}, "time": 25.0, "requires": [], "economy": true, "gather_kind": "food", "gather_multiplier": 1.15, "target_tags": [], "effects": {}},
+	"double_broadaxe": {"label": "双刃斧", "age": 2, "building": "lumber_camp", "cost": {"wood": 100, "gold": 75}, "time": 25.0, "requires": [], "economy": true, "gather_kind": "wood", "gather_multiplier": 1.15, "target_tags": [], "effects": {}},
+	"specialized_pick": {"label": "专用镐", "age": 2, "building": "mining_camp", "cost": {"food": 100, "gold": 75}, "time": 25.0, "requires": [], "economy": true, "gather_kind": "gold", "gather_multiplier": 1.15, "target_tags": [], "effects": {}},
+	"siege_works": {"label": "攻城工程", "age": 4, "building": "university", "cost": {"wood": 300, "gold": 500}, "time": 50.0, "requires": [], "target_tags": ["siege"], "effects": {"hp": 20.0}},
+	"elite_army_tactics": {"label": "精锐军队战术", "age": 4, "building": "university", "cost": {"food": 350, "gold": 450}, "time": 50.0, "requires": ["veteran_training"], "target_tags": ["infantry"], "effects": {"hp": 15.0, "damage": 2.0}},
+	"armored_hull": {"label": "装甲船壳", "age": 3, "building": "dock", "cost": {"wood": 200, "gold": 180}, "time": 32.0, "requires": [], "target_tags": ["naval"], "effects": {"hp": 35.0, "armor_ranged": 1.0}},
+	"shipwrights": {"label": "造船工匠", "age": 4, "building": "dock", "cost": {"wood": 300, "gold": 260}, "time": 38.0, "requires": ["armored_hull"], "target_tags": ["naval"], "effects": {"speed": 9.0}},
 }
 
 static func can_advance(age: int) -> bool:
