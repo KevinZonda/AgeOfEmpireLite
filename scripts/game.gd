@@ -123,6 +123,7 @@ var hotkey_buttons: Dictionary = {}
 var minimap: RtsMinimap
 var menu_panel: PanelContainer
 var tech_tree_overlay: ColorRect
+var tech_tree_civilization_choice: OptionButton
 var result_panel: PanelContainer
 var pause_overlay: ColorRect
 var settings_overlay: ColorRect
@@ -696,7 +697,7 @@ func _menu_panel_size(dimensions: Vector2) -> void:
 		child.queue_free()
 
 func _show_home_menu() -> void:
-	_menu_panel_size(Vector2(600, 470))
+	_menu_panel_size(Vector2(600, 500))
 	var box := VBoxContainer.new()
 	box.alignment = BoxContainer.ALIGNMENT_CENTER
 	box.add_theme_constant_override("separation", 20)
@@ -717,6 +718,12 @@ func _show_home_menu() -> void:
 	_style_button(start_button, true)
 	start_button.pressed.connect(_show_setup_menu)
 	box.add_child(start_button)
+	var tech_tree_button := Button.new()
+	tech_tree_button.text = "查看科技树"
+	tech_tree_button.custom_minimum_size.y = 43
+	_style_menu_button(tech_tree_button)
+	tech_tree_button.pressed.connect(func() -> void: _show_tech_tree(str(lobby_players[0]["civilization"])))
+	box.add_child(tech_tree_button)
 	var settings_button := Button.new()
 	settings_button.text = "设 置"
 	settings_button.custom_minimum_size.y = 43
@@ -917,9 +924,18 @@ func _show_tech_tree(civilization: String) -> void:
 	layout.add_child(header)
 	var title := _tech_tree_label(header, "%s  ·  科技树" % GameData.CIVILIZATIONS[civilization]["label"], 26, Color("f4dfae"))
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_tech_tree_label(header, "切换国家", 15, Color("e4d6b9"))
+	tech_tree_civilization_choice = OptionButton.new()
+	tech_tree_civilization_choice.custom_minimum_size = Vector2(135, 38)
+	var civilization_ids := GameData.CIVILIZATIONS.keys()
+	for civ in civilization_ids: tech_tree_civilization_choice.add_item(str(GameData.CIVILIZATIONS[civ]["label"]))
+	tech_tree_civilization_choice.select(civilization_ids.find(civilization))
+	_style_button(tech_tree_civilization_choice)
+	tech_tree_civilization_choice.item_selected.connect(func(index: int) -> void: _show_tech_tree(str(civilization_ids[index])))
+	header.add_child(tech_tree_civilization_choice)
 	var close_button := Button.new()
-	close_button.text = "返回国家选择"
-	close_button.custom_minimum_size = Vector2(140, 38)
+	close_button.text = "返回"
+	close_button.custom_minimum_size = Vector2(90, 38)
 	_style_button(close_button)
 	close_button.pressed.connect(_close_tech_tree)
 	header.add_child(close_button)
@@ -941,7 +957,6 @@ func _show_tech_tree(civilization: String) -> void:
 	var unique_units: Array[String] = []
 	for building_kind in RtsTechTree.PRODUCTION:
 		for unit_kind in RtsTechTree.all_train_units(civilization, building_kind):
-			if not _tech_tree_unit_matches_civ(civilization, unit_kind): continue
 			if GameData.UNITS[unit_kind]["tags"].has("unique") and not unique_units.has(unit_kind): unique_units.append(unit_kind)
 	for unit_kind in unique_units:
 		_tech_tree_label(sidebar, "◆ %s" % GameData.UNITS[unit_kind]["label"], 14, Color("b9d4f0"))
@@ -964,6 +979,7 @@ func _close_tech_tree() -> void:
 	if tech_tree_overlay != null:
 		tech_tree_overlay.queue_free()
 		tech_tree_overlay = null
+		tech_tree_civilization_choice = null
 	menu_panel.show()
 
 func _build_tech_tree_age(parent: HBoxContainer, civilization: String, age: int) -> void:
@@ -987,15 +1003,12 @@ func _build_tech_tree_age(parent: HBoxContainer, civilization: String, age: int)
 		if building_age > age: continue
 		var units: Array[String] = []
 		for unit_kind in RtsTechTree.all_train_units(civilization, building_kind):
-			if not _tech_tree_unit_matches_civ(civilization, unit_kind): continue
 			var unit_age: int = maxi(int(RtsTechTree.UNIT_AGE.get(unit_kind, 99)), building_age)
 			unit_age = int(RtsTechTree.UNIT_AGE_OVERRIDES.get(civilization, {}).get(unit_kind, unit_age))
 			if unit_age == age: units.append(unit_kind)
 		var researches: Array[String] = []
 		for tech_id in RtsTechTree.all_researches(civilization, building_kind):
-			var tech: Dictionary = RtsTechTree.get_technology(tech_id)
-			if tech.has("rank_unit") and not _tech_tree_unit_matches_civ(civilization, str(tech["rank_unit"])): continue
-			if int(tech.get("age", 99)) == age: researches.append(tech_id)
+			if int(RtsTechTree.get_technology(tech_id).get("age", 99)) == age: researches.append(tech_id)
 		if building_age != age and units.is_empty() and researches.is_empty(): continue
 		var building: Dictionary = GameData.BUILDINGS[building_kind]
 		var card := _tech_tree_card(column, str(building["label"]), "建造费用：%s" % (GameData.cost_text(building["cost"]) if not building["cost"].is_empty() else "初始建筑"), Color("edc781"))
@@ -1014,9 +1027,6 @@ func _build_tech_tree_age(parent: HBoxContainer, civilization: String, age: int)
 			var tooltip := "研究费用：%s" % GameData.cost_text(tech["cost"])
 			if not requirements.is_empty(): tooltip += "\n前置科技：%s" % "、".join(requirements)
 			_tech_tree_entry(card, str(tech["label"]), Color("a9d8ae"), tooltip)
-
-func _tech_tree_unit_matches_civ(civilization: String, unit_kind: String) -> bool:
-	return not RtsTechTree.UNIT_CIVILIZATION.has(unit_kind) or RtsTechTree.UNIT_CIVILIZATION[unit_kind] == civilization
 
 func _tech_tree_card(parent: VBoxContainer, heading: String, tooltip: String, accent: Color) -> VBoxContainer:
 	var panel := PanelContainer.new()
@@ -1993,7 +2003,7 @@ func _process(delta: float) -> void:
 	hit_lines = hit_lines.filter(func(line: Dictionary) -> bool: return line["time"] > 0.0)
 	for marker in order_markers: marker["time"] -= delta
 	order_markers = order_markers.filter(func(marker: Dictionary) -> bool: return marker["time"] > 0.0)
-	if dragging or build_mode != "" or not hit_lines.is_empty() or not order_markers.is_empty(): queue_redraw()
+	if dragging or build_mode != "" or not hit_lines.is_empty() or not order_markers.is_empty() or selected.any(func(entity: Node2D) -> bool: return is_instance_valid(entity) and entity is RtsUnit): queue_redraw()
 
 func _pan_camera(delta: float) -> void:
 	var direction := Vector2.ZERO

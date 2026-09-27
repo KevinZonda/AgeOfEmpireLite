@@ -35,9 +35,35 @@ func _run() -> void:
 		if civilization != "Chinese": assert(not labels.any(func(value: String) -> bool: return value.contains("朝廷命官")))
 		var landmark: String = {"English": "议会厅", "French": "骑兵学校", "Chinese": "翰林院"}[civilization]
 		assert(labels.any(func(value: String) -> bool: return value.contains(landmark)), "civilization landmarks should come from the game data")
+		assert(game.tech_tree_civilization_choice.item_count == 3)
 		game._close_tech_tree()
 		assert(game.tech_tree_overlay == null and game.menu_panel.visible)
 		assert(game.lobby_players[0]["civilization"] == civilization)
+	game.lobby_players[0]["civilization"] = "English"
+	game._show_home_menu()
+	await process_frame
+	var home_button: Button
+	for child in game.menu_panel.get_child(0).get_children():
+		if child is Button and child.text == "查看科技树": home_button = child
+	assert(home_button != null, "home screen should have a tech tree entry")
+	home_button.pressed.emit()
+	assert(game.tech_tree_overlay != null)
+	var chinese_index := GameData.CIVILIZATIONS.keys().find("Chinese")
+	game.tech_tree_civilization_choice.select(chinese_index)
+	game.tech_tree_civilization_choice.item_selected.emit(chinese_index)
+	await process_frame
+	assert(game.tech_tree_civilization_choice.selected == chinese_index)
+	var switched_labels: Array[String] = []
+	for child in game.tech_tree_overlay.find_children("*", "Label", true, false): switched_labels.append(child.text)
+	assert(switched_labels.any(func(value: String) -> bool: return value.contains("中国  ·  科技树")))
+	assert(switched_labels.any(func(value: String) -> bool: return value.contains("诸葛弩")))
+	assert(game.lobby_players[0]["civilization"] == "English", "browsing should preserve the chosen player civilization")
+	var return_button: Button
+	for child in game.tech_tree_overlay.find_children("*", "Button", true, false):
+		if child.text == "返回": return_button = child
+	assert(return_button != null)
+	return_button.pressed.emit()
+	assert(game.menu_panel.visible)
 	game.free()
 	print("TECH_TREE_PAGE_OK")
 	quit()

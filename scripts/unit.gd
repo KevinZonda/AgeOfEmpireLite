@@ -948,6 +948,7 @@ func _move_toward(point: Vector2, delta: float, stop_distance: float) -> bool:
 	_update_facing(old_position)
 	if charging: charge_distance += old_position.distance_to(position)
 	position = position.clamp(Vector2(24, 24), game.world_size - Vector2(24, 24))
+	_refresh_slope_visual(old_position)
 	return position.distance_to(point) <= stop_distance + 0.5
 
 func _move_with_group(delta: float) -> void:
@@ -961,6 +962,7 @@ func _move_with_group(delta: float) -> void:
 	game.navigation.unit_moved(self, old_position)
 	_update_facing(old_position)
 	position = position.clamp(Vector2(24, 24), game.world_size - Vector2(24, 24))
+	_refresh_slope_visual(old_position)
 	if position.distance_squared_to(group_last_position) < 9.0 and position.distance_to(point) > 18.0:
 		group_stuck_time += delta
 	else:
@@ -972,6 +974,11 @@ func _move_with_group(delta: float) -> void:
 		movement_group = null
 		_reset_route()
 		_move_toward(destination, delta, 8.0)
+
+func _refresh_slope_visual(previous_position: Vector2) -> void:
+	if not game.view_mode_25d or position == previous_position: return
+	if absf(game.world_map.elevation_at(position) - game.world_map.elevation_at(previous_position)) > 0.01:
+		queue_redraw()
 
 func _update_facing(previous_position: Vector2) -> void:
 	if not game.view_mode_25d or previous_position.distance_squared_to(position) < 0.25: return

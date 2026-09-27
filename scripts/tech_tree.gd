@@ -177,9 +177,11 @@ static func all_train_units(civilization: String, building_kind: String) -> Arra
 	if not GameData.CIVILIZATIONS.has(civilization) or not PRODUCTION.has(building_kind): return result
 	for base_kind in PRODUCTION[building_kind]:
 		var unit_kind := RtsUnitCatalog.replacement_for(civilization, base_kind)
+		if UNIT_CIVILIZATION.has(unit_kind) and UNIT_CIVILIZATION[unit_kind] != civilization: continue
 		if not result.has(unit_kind): result.append(unit_kind)
 	var extras: Dictionary = RtsUnitCatalog.EXTRA_UNITS.get(civilization, {})
 	for unit_kind in extras.get(building_kind, []):
+		if UNIT_CIVILIZATION.has(unit_kind) and UNIT_CIVILIZATION[unit_kind] != civilization: continue
 		if not result.has(unit_kind): result.append(unit_kind)
 	return result
 
