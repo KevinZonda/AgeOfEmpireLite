@@ -1,7 +1,7 @@
 class_name RtsWorldMap
 extends Node2D
 
-const WorldMapRenderer = preload("res://scripts/world_map_renderer.gd")
+const WorldMapRenderer = preload("res://scripts/world/world_map_renderer.gd")
 
 const CELL_SIZE := 50
 const VISUAL_APRON_CELLS := 12

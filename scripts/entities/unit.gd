@@ -2,8 +2,8 @@ class_name RtsUnit
 extends Node2D
 
 const AUTO_GATHER_RADIUS := 180.0
-const UnitWork = preload("res://scripts/unit_work.gd")
-const UnitCombat = preload("res://scripts/unit_combat.gd")
+const UnitWork = preload("res://scripts/entities/unit_work.gd")
+const UnitCombat = preload("res://scripts/entities/unit_combat.gd")
 
 var game: Node2D
 var owner_id := 0

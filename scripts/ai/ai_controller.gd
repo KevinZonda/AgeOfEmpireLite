@@ -1,8 +1,8 @@
 class_name RtsAiController
 extends RefCounted
 
-const TACTICS_SCRIPT = preload("res://scripts/ai_tactics.gd")
-const ECONOMY_SCRIPT = preload("res://scripts/ai_economy.gd")
+const TACTICS_SCRIPT = preload("res://scripts/ai/ai_tactics.gd")
+const ECONOMY_SCRIPT = preload("res://scripts/ai/ai_economy.gd")
 
 var game: Node2D
 var owner_id := 1

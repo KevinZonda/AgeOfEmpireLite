@@ -1,7 +1,7 @@
 extends SceneTree
 
-const CombatRules = preload("res://scripts/combat_rules.gd")
-const Projectile = preload("res://scripts/projectile.gd")
+const CombatRules = preload("res://scripts/rules/combat_rules.gd")
+const Projectile = preload("res://scripts/entities/projectile.gd")
 
 
 class GameStub extends Node2D:

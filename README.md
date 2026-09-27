@@ -1,8 +1,8 @@
 # Age of Empire Lite
 
-使用 Godot 4.7 制作的 2D 即时战略原型。英格兰、法兰西和中国共用经济、建造、生产与战斗系统。`scripts/game_data.gd` 定义兵种模板，`data/aoe4_balance.json` 保存从 [归档资料](docs/aoe4-units/GAME_BALANCE.md) 生成的可玩数值，`scripts/stat_resolver.gd` 合成最终属性，`scripts/unit_catalog.gd` 处理文明兵种替换，`scripts/tech_tree.gd` 保存时代与科技要求，`scripts/landmark_catalog.gd` 保存地标与王朝能力，`scripts/combat_rules.gd` 计算伤害。画面采用程序绘制的临时图形，无需模型或外部贴图。
+使用 Godot 4.7 制作的 2D 即时战略原型。英格兰、法兰西和中国共用经济、建造、生产与战斗系统。`scripts/catalogs/game_data.gd` 定义兵种模板，`data/aoe4_balance.json` 保存从 [归档资料](docs/aoe4-units/GAME_BALANCE.md) 生成的可玩数值，`scripts/rules/stat_resolver.gd` 合成最终属性，`scripts/catalogs/unit_catalog.gd` 处理文明兵种替换，`scripts/catalogs/tech_tree.gd` 保存时代与科技要求，`scripts/catalogs/landmark_catalog.gd` 保存地标与王朝能力，`scripts/rules/combat_rules.gd` 计算伤害。画面采用程序绘制的临时图形，无需模型或外部贴图。
 
-模块边界和后续拆分顺序见 [架构说明](docs/ARCHITECTURE.md)。
+模块边界和后续拆分顺序见 [架构说明](scripts/ARCHITECTURE.md)。
 
 ## 运行
 
@@ -67,6 +67,8 @@ make run
 - 大军分队、近敌搜索、防御建筑寻敌与隐蔽检测使用空间索引；单位碰撞只检查接触到的地形格，编队拥挤时降低绕行探测频率。`tests/performance_400.gd` 提供 400 单位无渲染 CPU 基准，`tests/performance_visible.gd` 在真实窗口测量 400 个可见移动单位的中位与 95 分位帧时间。开发目标是 400 单位 30 Hz 模拟每步不超过 40 ms、群体命令不超过 250 ms；可见窗口帧率仍受密集碰撞影响，需要在目标设备上持续测量。
 
 ## 验证
+
+首次克隆后先用 Godot 打开项目，或执行 `Godot --headless --editor --path . --quit` 注册 GDScript 全局类，再运行下列独立脚本。
 
 ```sh
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/smoke.gd

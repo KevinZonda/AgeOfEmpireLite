@@ -2,6 +2,19 @@
 
 主场景 `scenes/main.tscn` 使用 `scripts/game.gd` 装配一局游戏。现阶段保留它的公开方法与字段：单位、建筑、AI 和现有测试仍通过 `game` 访问对局。这些方法中已拆出的部分只负责转发；新逻辑按职责放在独立脚本中。
 
+| 目录 | 职责 |
+| --- | --- |
+| `scripts/ai/` | 电脑玩家调度、经济与战术决策 |
+| `scripts/catalogs/` | 兵种、建筑、科技、地标和平衡数据目录 |
+| `scripts/entities/` | 单位、建筑、资源等场景实体及其行为 |
+| `scripts/match/` | 对局经济、生产、统计与胜利目标 |
+| `scripts/player/` | 玩家选中、编组与下令 |
+| `scripts/rules/` | 战斗、文明、攻城和属性规则 |
+| `scripts/ui/` | HUD 控件、菜单、科技树、战报和反馈表现 |
+| `scripts/world/` | 地图、寻路、迷雾、天气和投影 |
+
+`scripts/game.gd` 留在根目录，作为唯一的场景装配入口。各脚本原有的 `class_name` 未改变，目录迁移不改变运行时职责。
+
 ```mermaid
 flowchart TD
     Game["game.gd<br/>场景装配、对局流程、兼容入口"]

@@ -1,7 +1,7 @@
 extends SceneTree
 
-const SiegeRules = preload("res://scripts/siege_rules.gd")
-const CombatRules = preload("res://scripts/combat_rules.gd")
+const SiegeRules = preload("res://scripts/rules/siege_rules.gd")
+const CombatRules = preload("res://scripts/rules/combat_rules.gd")
 
 func _initialize() -> void:
 	assert(RtsTechTree.can_build("English", 2, "outpost"))
