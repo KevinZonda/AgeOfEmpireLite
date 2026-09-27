@@ -23,6 +23,8 @@ const SELECTION_DRAG_OVERLAY := preload("res://scripts/ui/selection_drag_overlay
 const SELECTION_PORTRAIT := preload("res://scripts/ui/selection_portrait.gd")
 const MENU_BACKDROP := preload("res://scripts/ui/menu_backdrop.gd")
 const TECH_TREE_PAGE := preload("res://scripts/ui/tech_tree_page.gd")
+const MENU_UI := preload("res://scripts/ui/game_menu_ui.gd")
+const HUD_UI := preload("res://scripts/ui/game_hud_ui.gd")
 const PlayerSelection = preload("res://scripts/player/player_selection.gd")
 const PlayerOrders = preload("res://scripts/player/player_orders.gd")
 const MATCH_ECONOMY := preload("res://scripts/match/match_economy.gd")
@@ -158,6 +160,8 @@ var action_bar: GridContainer
 var command_buttons: Array[RtsCommandButton] = []
 var hotkey_buttons: Dictionary = {}
 var minimap: RtsMinimap
+var menu_ui: MENU_UI
+var hud_ui: HUD_UI
 var menu_panel: PanelContainer
 var tech_tree_overlay: ColorRect
 var tech_tree_civilization_choice: OptionButton
@@ -261,236 +265,11 @@ func _create_cursor() -> void:
 	cursor.hide()
 
 func _create_hud() -> void:
-	var layer := CanvasLayer.new()
-	add_child(layer)
-	var root := Control.new()
-	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	layer.add_child(root)
-	menu_backdrop = MENU_BACKDROP.new()
-	menu_backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	menu_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	root.add_child(menu_backdrop)
-	var top := PanelContainer.new()
-	hud_top = top
-	top.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
-	top.offset_bottom = 66
-	top.add_theme_stylebox_override("panel", _hud_panel_style(Color("251e17"), 8))
-	root.add_child(top)
-	var top_row := HBoxContainer.new()
-	top_row.add_theme_constant_override("separation", 5)
-	top.add_child(top_row)
-	top_label = Label.new()
-	top_label.custom_minimum_size.x = 170
-	top_label.add_theme_font_size_override("font_size", 16)
-	top_label.add_theme_color_override("font_color", Color("f4dfaa"))
-	top_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	top_row.add_child(top_label)
-	for spec in [
-		["food", "粮", Color("d8a65d")],
-		["wood", "木", Color("8eaa73")],
-		["gold", "金", Color("e3c26b")],
-		["stone", "石", Color("a9b5b0")],
-	]:
-		_add_resource_readout(top_row, spec[0], spec[1], spec[2])
-	population_label = Label.new()
-	population_label.custom_minimum_size.x = 102
-	population_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	population_label.add_theme_font_size_override("font_size", 15)
-	population_label.add_theme_color_override("font_color", Color("eee2c7"))
-	top_row.add_child(population_label)
-	var top_tools := HBoxContainer.new()
-	top_tools.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	top_tools.alignment = BoxContainer.ALIGNMENT_END
-	top_tools.add_theme_constant_override("separation", 5)
-	top_row.add_child(top_tools)
-	var global_queue_button := Button.new()
-	global_queue_button.text = "队列 [F]"
-	_style_button(global_queue_button)
-	global_queue_button.pressed.connect(_toggle_global_queue)
-	top_tools.add_child(global_queue_button)
-	idle_villager_button = Button.new()
-	idle_villager_button.text = "村民 0"
-	_style_button(idle_villager_button)
-	idle_villager_button.tooltip_text = "选中下一个空闲村民（句号键）"
-	idle_villager_button.pressed.connect(_select_next_idle_villager)
-	top_tools.add_child(idle_villager_button)
-	view_button = Button.new()
-	view_button.text = "2.5D 视角"
-	_style_button(view_button)
-	view_button.pressed.connect(func() -> void: _toggle_view_mode(true))
-	top_tools.add_child(view_button)
-	global_queue_panel = PanelContainer.new()
-	global_queue_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
-	global_queue_panel.offset_left = -390
-	global_queue_panel.offset_right = -8
-	global_queue_panel.offset_top = 70
-	global_queue_panel.offset_bottom = 415
-	global_queue_panel.add_theme_stylebox_override("panel", _hud_panel_style(Color("2c241b"), 12))
-	root.add_child(global_queue_panel)
-	var queue_scroll := ScrollContainer.new()
-	global_queue_panel.add_child(queue_scroll)
-	global_queue_list = VBoxContainer.new()
-	global_queue_list.custom_minimum_size.x = 350
-	queue_scroll.add_child(global_queue_list)
-	global_queue_panel.hide()
-	var bottom := PanelContainer.new()
-	hud_bottom = bottom
-	bottom.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	bottom.offset_top = -230
-	bottom.add_theme_stylebox_override("panel", _hud_panel_style(Color("241d16"), 7))
-	root.add_child(bottom)
-	var dock := HBoxContainer.new()
-	dock.add_theme_constant_override("separation", 9)
-	bottom.add_child(dock)
-	var command_panel := PanelContainer.new()
-	command_panel.custom_minimum_size.x = 368
-	command_panel.add_theme_stylebox_override("panel", _hud_panel_style(Color("30261b"), 7))
-	dock.add_child(command_panel)
-	var command_column := VBoxContainer.new()
-	command_column.add_theme_constant_override("separation", 6)
-	command_panel.add_child(command_column)
-	command_title = Label.new()
-	command_title.text = "命令"
-	command_title.add_theme_font_size_override("font_size", 17)
-	command_title.add_theme_color_override("font_color", Color("e8cb85"))
-	command_column.add_child(command_title)
-	var action_scroll := ScrollContainer.new()
-	action_scroll.custom_minimum_size = Vector2(350, 155)
-	action_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	command_column.add_child(action_scroll)
-	action_bar = GridContainer.new()
-	action_bar.columns = 3
-	action_bar.add_theme_constant_override("h_separation", 6)
-	action_bar.add_theme_constant_override("v_separation", 5)
-	action_scroll.add_child(action_bar)
-	var selection_panel := PanelContainer.new()
-	selection_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	selection_panel.add_theme_stylebox_override("panel", _hud_panel_style(Color("30271c"), 8))
-	dock.add_child(selection_panel)
-	var selection_row := HBoxContainer.new()
-	selection_row.add_theme_constant_override("separation", 10)
-	selection_panel.add_child(selection_row)
-	selection_portrait = SELECTION_PORTRAIT.new()
-	selection_portrait.custom_minimum_size = Vector2(102, 142)
-	selection_row.add_child(selection_portrait)
-	var selection_column := VBoxContainer.new()
-	selection_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	selection_column.add_theme_constant_override("separation", 7)
-	selection_row.add_child(selection_column)
-	info_label = Label.new()
-	info_label.text = "未选择"
-	info_label.add_theme_font_size_override("font_size", 19)
-	info_label.add_theme_color_override("font_color", Color("f0dfb6"))
-	selection_column.add_child(info_label)
-	detail_label = Label.new()
-	detail_label.text = "左键选择 · 右键下令"
-	detail_label.add_theme_font_size_override("font_size", 13)
-	detail_label.add_theme_color_override("font_color", Color("d3c5a8"))
-	detail_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	detail_label.custom_minimum_size.x = 420
-	detail_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var detail_scroll := ScrollContainer.new()
-	detail_scroll.custom_minimum_size.y = 62
-	detail_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	detail_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	selection_column.add_child(detail_scroll)
-	detail_scroll.add_child(detail_label)
-	selection_health = ProgressBar.new()
-	selection_health.show_percentage = false
-	selection_health.custom_minimum_size = Vector2(285, 11)
-	selection_health.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	_style_progress_bar(selection_health, Color("80ad68"))
-	selection_health.hide()
-	selection_column.add_child(selection_health)
-	selection_progress = ProgressBar.new()
-	selection_progress.show_percentage = false
-	selection_progress.custom_minimum_size = Vector2(285, 9)
-	selection_progress.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	_style_progress_bar(selection_progress, Color("d4af62"))
-	selection_progress.hide()
-	selection_column.add_child(selection_progress)
-	queue_label = Label.new()
-	queue_label.add_theme_font_size_override("font_size", 13)
-	queue_label.add_theme_color_override("font_color", Color("e5d1a1"))
-	selection_column.add_child(queue_label)
-	queue_controls = HBoxContainer.new()
-	queue_controls.hide()
-	selection_column.add_child(queue_controls)
-	queue_choice = OptionButton.new()
-	queue_choice.custom_minimum_size.x = 205
-	_style_button(queue_choice)
-	queue_controls.add_child(queue_choice)
-	cancel_queue_button = Button.new()
-	cancel_queue_button.text = "取消并退款"
-	_style_button(cancel_queue_button)
-	cancel_queue_button.pressed.connect(_cancel_selected_job)
-	queue_controls.add_child(cancel_queue_button)
-	notice_label = Label.new()
-	notice_label.add_theme_color_override("font_color", Color("f0d783"))
-	notice_label.add_theme_font_size_override("font_size", 13)
-	selection_column.add_child(notice_label)
-	var map_panel := PanelContainer.new()
-	map_panel.custom_minimum_size.x = 180
-	map_panel.add_theme_stylebox_override("panel", _hud_panel_style(Color("30261b"), 7))
-	dock.add_child(map_panel)
-	var map_column := VBoxContainer.new()
-	map_column.add_theme_constant_override("separation", 5)
-	map_panel.add_child(map_column)
-	var map_title := Label.new()
-	map_title.text = "小地图  ·  点击定位"
-	map_title.add_theme_font_size_override("font_size", 15)
-	map_title.add_theme_color_override("font_color", Color("e8cb85"))
-	map_column.add_child(map_title)
-	minimap = RtsMinimap.new()
-	map_column.add_child(minimap)
-	minimap.setup(self)
-
-	menu_panel = PanelContainer.new()
-	menu_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	menu_panel.custom_minimum_size = Vector2(1050, 610)
-	menu_panel.offset_left = -525
-	menu_panel.offset_top = -305
-	menu_panel.offset_right = 525
-	menu_panel.offset_bottom = 305
-	menu_panel.add_theme_stylebox_override("panel", _parchment_style(Color("d1bb8c"), 23))
-	root.add_child(menu_panel)
-	result_panel = PanelContainer.new()
-	result_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	result_panel.custom_minimum_size = Vector2(400, 220)
-	result_panel.offset_left = -200
-	result_panel.offset_top = -110
-	result_panel.offset_right = 200
-	result_panel.offset_bottom = 110
-	result_panel.add_theme_stylebox_override("panel", _hud_panel_style(Color("30271c"), 18))
-	result_panel.hide()
-	root.add_child(result_panel)
-	pause_overlay = ColorRect.new()
-	pause_overlay.color = Color(0.08, 0.06, 0.04, 0.72)
-	pause_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	pause_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
-	pause_overlay.hide()
-	root.add_child(pause_overlay)
-	var pause_panel := PanelContainer.new()
-	pause_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	pause_panel.custom_minimum_size = Vector2(380, 340)
-	pause_panel.offset_left = -190
-	pause_panel.offset_top = -170
-	pause_panel.offset_right = 190
-	pause_panel.offset_bottom = 170
-	pause_panel.add_theme_stylebox_override("panel", _hud_panel_style(Color("30271c"), 20))
-	pause_overlay.add_child(pause_panel)
-	var pause_box := VBoxContainer.new()
-	pause_box.add_theme_constant_override("separation", 12)
-	pause_panel.add_child(pause_box)
-	_add_menu_label(pause_box, "游戏已暂停", 27)
-	_add_menu_label(pause_box, "按 Esc 继续游戏", 16)
-	_add_pause_button(pause_box, "继续游戏", func() -> void: _set_paused(false))
-	_add_pause_button(pause_box, "设置", func() -> void: _show_settings(true))
-	_add_pause_button(pause_box, "重新开始", func() -> void: start_game(selected_civ, -1, selected_opponent_civ))
-	_add_pause_button(pause_box, "返回主界面", func() -> void: _return_to_menu())
-	_add_pause_button(pause_box, "退出游戏", func() -> void: get_tree().quit())
-	_create_settings(root)
+	menu_ui = MENU_UI.new(self)
+	menu_ui.match_requested.connect(_start_lobby_match)
+	hud_ui = HUD_UI.new(self)
+	add_child(hud_ui)
+	hud_ui._create_hud()
 
 func _hud_panel_style(color: Color, margin: float) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
@@ -595,161 +374,19 @@ func _add_pause_button(parent: Node, label_text: String, action: Callable) -> vo
 	parent.add_child(button)
 
 func _create_settings(parent: Control) -> void:
-	settings_overlay = ColorRect.new()
-	settings_overlay.color = Color(0.08, 0.06, 0.04, 0.78)
-	settings_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	settings_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
-	parent.add_child(settings_overlay)
-	var panel := PanelContainer.new()
-	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	panel.custom_minimum_size = Vector2(620, 430)
-	panel.offset_left = -310
-	panel.offset_top = -215
-	panel.offset_right = 310
-	panel.offset_bottom = 215
-	panel.add_theme_stylebox_override("panel", _hud_panel_style(Color("30271c"), 20))
-	settings_overlay.add_child(panel)
-	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 16)
-	panel.add_child(box)
-	_add_menu_label(box, "设置", 27)
-	var settings_layout := HBoxContainer.new()
-	settings_layout.add_theme_constant_override("separation", 12)
-	settings_layout.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	box.add_child(settings_layout)
-	var sidebar := VBoxContainer.new()
-	sidebar.custom_minimum_size.x = 126
-	sidebar.add_theme_constant_override("separation", 8)
-	settings_layout.add_child(sidebar)
-	settings_tabs = TabContainer.new()
-	settings_tabs.tabs_visible = false
-	settings_tabs.custom_minimum_size = Vector2(420, 275)
-	settings_tabs.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	settings_tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	settings_layout.add_child(settings_tabs)
-	var display_tab := VBoxContainer.new()
-	display_tab.name = "显示设置"
-	display_tab.add_theme_constant_override("separation", 12)
-	settings_tabs.add_child(display_tab)
-	_add_menu_label(display_tab, "显示模式", 17)
-	window_mode_choice = OptionButton.new()
-	window_mode_choice.add_item("窗口化")
-	window_mode_choice.add_item("全屏")
-	window_mode_choice.custom_minimum_size.y = 42
-	_style_button(window_mode_choice)
-	display_tab.add_child(window_mode_choice)
-	_add_menu_label(display_tab, "窗口分辨率", 17)
-	resolution_choice = OptionButton.new()
-	resolution_choice.custom_minimum_size.y = 42
-	_style_button(resolution_choice)
-	display_tab.add_child(resolution_choice)
-	_add_menu_label(display_tab, "视角", 17)
-	projection_choice = OptionButton.new()
-	projection_choice.add_item("2D 俯视")
-	projection_choice.add_item("2.5D 斜视")
-	projection_choice.custom_minimum_size.y = 42
-	_style_button(projection_choice)
-	display_tab.add_child(projection_choice)
-	_add_menu_label(display_tab, "高于当前屏幕可用尺寸的选项不会显示。", 14)
-	var controls_tab := VBoxContainer.new()
-	controls_tab.name = "操作设置"
-	controls_tab.add_theme_constant_override("separation", 12)
-	settings_tabs.add_child(controls_tab)
-	edge_scroll_toggle = CheckButton.new()
-	edge_scroll_toggle.text = "启用边缘卷页"
-	edge_scroll_toggle.tooltip_text = "鼠标靠近窗口边缘时移动镜头"
-	edge_scroll_toggle.custom_minimum_size.y = 42
-	edge_scroll_toggle.add_theme_color_override("font_color", Color("f5e4bf"))
-	controls_tab.add_child(edge_scroll_toggle)
-	zoom_gesture_toggle = CheckButton.new()
-	zoom_gesture_toggle.text = "启用缩放手势"
-	zoom_gesture_toggle.tooltip_text = "双指捏合时缩放镜头；鼠标滚轮不受影响"
-	zoom_gesture_toggle.custom_minimum_size.y = 42
-	zoom_gesture_toggle.add_theme_color_override("font_color", Color("f5e4bf"))
-	controls_tab.add_child(zoom_gesture_toggle)
-	settings_tab_buttons.clear()
-	for tab_index in settings_tabs.get_tab_count():
-		var tab_button := Button.new()
-		tab_button.text = settings_tabs.get_tab_title(tab_index)
-		tab_button.custom_minimum_size.y = 46
-		var index := tab_index
-		tab_button.pressed.connect(func() -> void: settings_tabs.current_tab = index)
-		sidebar.add_child(tab_button)
-		settings_tab_buttons.append(tab_button)
-	settings_tabs.tab_changed.connect(_update_settings_tab_buttons)
-	_update_settings_tab_buttons(settings_tabs.current_tab)
-	_add_menu_label(box, "保存后立即生效，下次启动仍会保留。", 14)
-	var buttons := HBoxContainer.new()
-	buttons.add_theme_constant_override("separation", 12)
-	box.add_child(buttons)
-	var back_button := Button.new()
-	back_button.text = "返回"
-	back_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_style_button(back_button)
-	back_button.pressed.connect(_close_settings)
-	buttons.add_child(back_button)
-	var apply_button := Button.new()
-	apply_button.text = "保存设置"
-	apply_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_style_button(apply_button, true)
-	apply_button.pressed.connect(func() -> void:
-		var index := resolution_choice.selected
-		if index < 0 or index >= resolution_values.size(): return
-		var resolution := resolution_values[index]
-		if window_mode_choice.selected == 1:
-			windowed_resolution = resolution
-			_apply_window_mode(true, false)
-		else:
-			_apply_window_resolution(resolution, false)
-		edge_scroll_enabled = edge_scroll_toggle.button_pressed
-		zoom_gesture_enabled = zoom_gesture_toggle.button_pressed
-		selected_view_mode_25d = projection_choice.selected == 1
-		if started and view_mode_25d != selected_view_mode_25d: _toggle_view_mode()
-		_save_settings()
-		_close_settings()
-	)
-	buttons.add_child(apply_button)
-	settings_overlay.hide()
+	menu_ui._create_settings(parent)
 
 func _update_settings_tab_buttons(active_tab: int) -> void:
-	for index in settings_tab_buttons.size():
-		_style_menu_button(settings_tab_buttons[index], index == active_tab)
+	menu_ui._update_settings_tab_buttons(active_tab)
 
 func _show_settings(from_pause := false) -> void:
-	settings_from_pause = from_pause
-	if not _window_is_fullscreen(): windowed_resolution = get_window().size
-	_refresh_resolution_options()
-	window_mode_choice.select(1 if _window_is_fullscreen() else 0)
-	edge_scroll_toggle.button_pressed = edge_scroll_enabled
-	zoom_gesture_toggle.button_pressed = zoom_gesture_enabled
-	projection_choice.select(1 if selected_view_mode_25d else 0)
-	settings_tabs.current_tab = 0
-	if not from_pause: menu_panel.hide()
-	settings_overlay.show()
-	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-	if cursor != null: cursor.hide()
+	menu_ui._show_settings(from_pause)
 
 func _close_settings() -> void:
-	settings_overlay.hide()
-	if settings_from_pause:
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-	else:
-		menu_panel.show()
-	settings_from_pause = false
+	menu_ui._close_settings()
 
 func _refresh_resolution_options() -> void:
-	resolution_choice.clear()
-	resolution_values.clear()
-	var current := windowed_resolution if _window_is_fullscreen() else get_window().size
-	var usable := DisplayServer.screen_get_usable_rect(get_window().current_screen).size
-	for resolution in WINDOW_RESOLUTIONS:
-		if DisplayServer.get_name() != "headless" and resolution != current and (resolution.x > usable.x or resolution.y > usable.y): continue
-		resolution_values.append(resolution)
-		resolution_choice.add_item("%d × %d" % [resolution.x, resolution.y])
-	if not resolution_values.has(current):
-		resolution_values.append(current)
-		resolution_choice.add_item("当前窗口：%d × %d" % [current.x, current.y])
-	resolution_choice.select(resolution_values.find(current))
+	menu_ui._refresh_resolution_options()
 
 func _apply_window_resolution(resolution: Vector2i, save_setting := true) -> void:
 	if not WINDOW_RESOLUTIONS.has(resolution) and resolution != windowed_resolution and resolution != get_window().size: return
@@ -803,334 +440,55 @@ func _load_settings() -> void:
 		_apply_window_mode(true, false)
 
 func _show_menu() -> void:
-	paused = false
-	use_lobby_setup = false
-	if pause_overlay != null: pause_overlay.hide()
-	if settings_overlay != null: settings_overlay.hide()
-	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-	if cursor != null: cursor.hide()
-	if selection_input_probe_label != null: selection_input_probe_label.hide()
-	menu_backdrop.show()
-	hud_top.hide()
-	hud_bottom.hide()
-	global_queue_panel.hide()
-	_show_home_menu()
+	menu_ui._show_menu()
 
 func _menu_panel_size(dimensions: Vector2) -> void:
-	menu_panel.custom_minimum_size = dimensions
-	menu_panel.offset_left = -dimensions.x * 0.5
-	menu_panel.offset_top = -dimensions.y * 0.5
-	menu_panel.offset_right = dimensions.x * 0.5
-	menu_panel.offset_bottom = dimensions.y * 0.5
-	for child in menu_panel.get_children():
-		menu_panel.remove_child(child)
-		child.queue_free()
+	menu_ui._menu_panel_size(dimensions)
 
 func _show_home_menu() -> void:
-	_menu_panel_size(Vector2(600, 500))
-	var box := VBoxContainer.new()
-	box.alignment = BoxContainer.ALIGNMENT_CENTER
-	box.add_theme_constant_override("separation", 20)
-	menu_panel.add_child(box)
-	var title := _menu_ink_label(box, "帝 国 时 代", 42)
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	var subtitle := _menu_ink_label(box, "AGE OF EMPIRE LITE", 18)
-	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	var rule := ColorRect.new()
-	rule.color = Color("88663d")
-	rule.custom_minimum_size.y = 2
-	box.add_child(rule)
-	var description := _menu_ink_label(box, "建立帝国，探索战场，争夺胜利。", 17)
-	description.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	var start_button := Button.new()
-	start_button.text = "开 始 游 戏"
-	start_button.custom_minimum_size.y = 55
-	_style_button(start_button, true)
-	start_button.pressed.connect(_show_setup_menu)
-	box.add_child(start_button)
-	var tech_tree_button := Button.new()
-	tech_tree_button.text = "查看科技树"
-	tech_tree_button.custom_minimum_size.y = 43
-	_style_menu_button(tech_tree_button)
-	tech_tree_button.pressed.connect(func() -> void: _show_tech_tree(str(lobby_players[0]["civilization"])))
-	box.add_child(tech_tree_button)
-	var settings_button := Button.new()
-	settings_button.text = "设 置"
-	settings_button.custom_minimum_size.y = 43
-	_style_menu_button(settings_button)
-	settings_button.pressed.connect(func() -> void: _show_settings())
-	box.add_child(settings_button)
-	var quit_button := Button.new()
-	quit_button.text = "退 出 游 戏"
-	quit_button.custom_minimum_size.y = 43
-	_style_menu_button(quit_button)
-	quit_button.pressed.connect(func() -> void: get_tree().quit())
-	box.add_child(quit_button)
-	menu_panel.show()
+	menu_ui._show_home_menu()
 
 func _show_setup_menu() -> void:
-	_menu_panel_size(Vector2(1150, 610))
-	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 10)
-	menu_panel.add_child(box)
-	var header := HBoxContainer.new()
-	box.add_child(header)
-	var title := _menu_ink_label(header, "对 局 设 置", 30)
-	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var subtitle := _menu_ink_label(header, "SKIRMISH SETUP", 13)
-	subtitle.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
-	var divider := ColorRect.new()
-	divider.color = Color("80613a")
-	divider.custom_minimum_size.y = 2
-	box.add_child(divider)
-	var body := HBoxContainer.new()
-	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	body.add_theme_constant_override("separation", 14)
-	box.add_child(body)
-	var players_column := _menu_section(body, "玩家信息", 665)
-	var heading := HBoxContainer.new()
-	heading.add_theme_constant_override("separation", 6)
-	players_column.add_child(heading)
-	var player_heading := _menu_ink_label(heading, "玩家", 14)
-	player_heading.custom_minimum_size.x = 80
-	var difficulty_heading := _menu_ink_label(heading, "AI 强度", 14)
-	difficulty_heading.custom_minimum_size.x = 100
-	var nation_heading := _menu_ink_label(heading, "国家", 14)
-	nation_heading.custom_minimum_size.x = 115
-	var team_heading := _menu_ink_label(heading, "队伍", 14)
-	team_heading.custom_minimum_size.x = 58
-	_menu_ink_label(heading, "颜色", 14)
-	player_list = VBoxContainer.new()
-	player_list.add_theme_constant_override("separation", 7)
-	players_column.add_child(player_list)
-	add_player_button = Button.new()
-	add_player_button.text = "+  新增玩家"
-	add_player_button.custom_minimum_size.y = 40
-	_style_menu_button(add_player_button)
-	add_player_button.pressed.connect(func() -> void:
-		if lobby_players.size() >= 4: return
-		var civilization_ids := GameData.CIVILIZATIONS.keys()
-		lobby_players.append({"civilization": civilization_ids[lobby_players.size() % civilization_ids.size()], "difficulty": "normal", "team": mini(lobby_players.size() + 1, 3), "color": lobby_players.size()})
-		_refresh_player_rows()
-	)
-	players_column.add_child(add_player_button)
-	var player_hint := _menu_ink_label(players_column, "同队共享视野与胜利；至少需要两个队伍。", 13)
-	player_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	var settings_column := _menu_section(body, "对局设置", 0)
-	_menu_ink_label(settings_column, "地图选择", 14)
-	map_style_choice = OptionButton.new()
-	for option in ["平衡", "大湖", "高地", "群岛"]: map_style_choice.add_item(option)
-	map_style_choice.selected = ["balanced", "lakes", "highlands", "islands"].find(selected_map_style)
-	_style_menu_button(map_style_choice)
-	settings_column.add_child(map_style_choice)
-	_menu_ink_label(settings_column, "地图大小", 14)
-	map_size_choice = OptionButton.new()
-	map_size_choice.add_item("标准地图")
-	map_size_choice.add_item("大型地图")
-	map_size_choice.selected = 1 if selected_map_size.x > WORLD_SIZE.x else 0
-	_style_menu_button(map_size_choice)
-	settings_column.add_child(map_size_choice)
-	_menu_ink_label(settings_column, "初始资源", 14)
-	initial_resources_choice = OptionButton.new()
-	for option in ["较少", "标准", "丰富"]: initial_resources_choice.add_item(option)
-	initial_resources_choice.selected = selected_initial_resources
-	_style_menu_button(initial_resources_choice)
-	settings_column.add_child(initial_resources_choice)
-	_menu_ink_label(settings_column, "战争迷雾", 14)
-	fog_mode_choice = OptionButton.new()
-	for option in ["开启", "完整关闭", "显示地形"]: fog_mode_choice.add_item(option)
-	fog_mode_choice.selected = ["enabled", "disabled", "terrain"].find(selected_fog_mode)
-	_style_menu_button(fog_mode_choice)
-	settings_column.add_child(fog_mode_choice)
-	_menu_ink_label(settings_column, "地图种子", 14)
-	map_seed_input = LineEdit.new()
-	map_seed_input.placeholder_text = "留空则随机生成"
-	map_seed_input.add_theme_stylebox_override("normal", _button_style(Color("eadbb4"), Color("9b784b")))
-	map_seed_input.add_theme_color_override("font_color", Color("3d2b1d"))
-	map_seed_input.add_theme_color_override("font_placeholder_color", Color("826949"))
-	settings_column.add_child(map_seed_input)
-	var footer := HBoxContainer.new()
-	footer.add_theme_constant_override("separation", 16)
-	box.add_child(footer)
-	var back_button := Button.new()
-	back_button.text = "返 回"
-	back_button.custom_minimum_size = Vector2(160, 47)
-	_style_menu_button(back_button)
-	back_button.pressed.connect(_show_home_menu)
-	footer.add_child(back_button)
-	var spacer := Control.new()
-	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	footer.add_child(spacer)
-	setup_warning_label = _menu_ink_label(footer, "", 13)
-	setup_warning_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	setup_start_button = Button.new()
-	setup_start_button.text = "开 始 对 局"
-	setup_start_button.custom_minimum_size = Vector2(210, 47)
-	_style_button(setup_start_button, true)
-	setup_start_button.pressed.connect(_begin_menu_match)
-	footer.add_child(setup_start_button)
-	_refresh_player_rows()
-	menu_panel.show()
+	menu_ui._show_setup_menu()
 
 func _refresh_player_rows() -> void:
-	if player_list == null: return
-	for child in player_list.get_children():
-		player_list.remove_child(child)
-		child.queue_free()
-	var civilization_ids := GameData.CIVILIZATIONS.keys()
-	for index in lobby_players.size():
-		var slot := index
-		var row := HBoxContainer.new()
-		row.add_theme_constant_override("separation", 6)
-		player_list.add_child(row)
-		var player_name := _menu_ink_label(row, "玩家 %d%s" % [slot + 1, " (你)" if slot == 0 else ""], 15)
-		player_name.custom_minimum_size.x = 80
-		player_name.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		var difficulty := OptionButton.new()
-		difficulty.custom_minimum_size.x = 100
-		if slot == 0:
-			difficulty.add_item("人类")
-			difficulty.disabled = true
-		else:
-			for label in ["简单", "普通", "困难"]: difficulty.add_item(label)
-			difficulty.selected = ["easy", "normal", "hard"].find(lobby_players[slot]["difficulty"])
-			difficulty.item_selected.connect(func(value: int) -> void:
-				lobby_players[slot]["difficulty"] = ["easy", "normal", "hard"][value]
-			)
-		_style_menu_button(difficulty)
-		row.add_child(difficulty)
-		var civilization := OptionButton.new()
-		civilization.custom_minimum_size.x = 115
-		for civ in civilization_ids: civilization.add_item(GameData.CIVILIZATIONS[civ]["label"])
-		civilization.selected = civilization_ids.find(lobby_players[slot]["civilization"])
-		civilization.item_selected.connect(func(value: int) -> void:
-			lobby_players[slot]["civilization"] = civilization_ids[value]
-		)
-		_style_menu_button(civilization)
-		row.add_child(civilization)
-		var team := OptionButton.new()
-		team.custom_minimum_size.x = 58
-		for team_id in range(1, 4): team.add_item(str(team_id))
-		team.selected = clampi(int(lobby_players[slot].get("team", slot + 1)) - 1, 0, 2)
-		team.item_selected.connect(func(value: int) -> void:
-			lobby_players[slot]["team"] = value + 1
-			_update_lobby_team_state()
-		)
-		_style_menu_button(team)
-		row.add_child(team)
-		var color_choice := OptionButton.new()
-		color_choice.custom_minimum_size.x = 58
-		for color_index in PLAYER_COLORS.size():
-			color_choice.add_item("")
-			color_choice.set_item_icon(color_index, _color_swatch(PLAYER_COLORS[color_index]))
-		color_choice.selected = clampi(int(lobby_players[slot].get("color", slot)), 0, PLAYER_COLORS.size() - 1)
-		color_choice.tooltip_text = PLAYER_COLOR_NAMES[color_choice.selected]
-		color_choice.item_selected.connect(func(value: int) -> void:
-			_set_lobby_player_color(slot, value)
-		)
-		_style_menu_button(color_choice)
-		row.add_child(color_choice)
-		var tree_button := Button.new()
-		tree_button.text = "科技树"
-		tree_button.custom_minimum_size.x = 72
-		_style_menu_button(tree_button)
-		tree_button.pressed.connect(func() -> void: _show_tech_tree(str(lobby_players[slot]["civilization"])))
-		row.add_child(tree_button)
-		var remove_button := Button.new()
-		remove_button.text = "×"
-		remove_button.custom_minimum_size.x = 32
-		remove_button.disabled = slot == 0 or lobby_players.size() <= 2
-		remove_button.tooltip_text = "移除玩家"
-		_style_menu_button(remove_button)
-		remove_button.pressed.connect(func() -> void:
-			lobby_players.remove_at(slot)
-			_refresh_player_rows()
-		)
-		row.add_child(remove_button)
-	add_player_button.disabled = lobby_players.size() >= 4
-	_update_lobby_team_state()
+	menu_ui._refresh_player_rows()
 
 func _color_swatch(color: Color) -> ImageTexture:
-	var swatch := Image.create(20, 20, false, Image.FORMAT_RGBA8)
-	swatch.fill(color)
-	return ImageTexture.create_from_image(swatch)
+	return menu_ui._color_swatch(color)
 
 func _set_lobby_player_color(slot: int, color_index: int) -> void:
-	var previous_color := int(lobby_players[slot].get("color", slot))
-	for other_slot in lobby_players.size():
-		if other_slot != slot and int(lobby_players[other_slot].get("color", other_slot)) == color_index:
-			lobby_players[other_slot]["color"] = previous_color
-			break
-	lobby_players[slot]["color"] = color_index
-	_refresh_player_rows()
+	menu_ui._set_lobby_player_color(slot, color_index)
 
 func _show_tech_tree(civilization: String) -> void:
-	if not GameData.CIVILIZATIONS.has(civilization): return
-	if tech_tree_overlay != null: tech_tree_overlay.queue_free()
-	tech_tree_page = TECH_TREE_PAGE.new()
-	tech_tree_page.civilization_selected.connect(_show_tech_tree)
-	tech_tree_page.close_requested.connect(_close_tech_tree)
-	tech_tree_page.build(menu_panel.get_parent(), civilization, _style_button)
-	tech_tree_overlay = tech_tree_page.overlay
-	tech_tree_civilization_choice = tech_tree_page.civilization_choice
-	menu_panel.hide()
+	menu_ui._show_tech_tree(civilization)
 
 func _close_tech_tree() -> void:
-	if tech_tree_overlay != null:
-		tech_tree_overlay.queue_free()
-		tech_tree_overlay = null
-		tech_tree_civilization_choice = null
-	tech_tree_page = null
-	menu_panel.show()
+	menu_ui._close_tech_tree()
 
 func _update_lobby_team_state() -> void:
-	var unique_teams := {}
-	for player in lobby_players: unique_teams[int(player.get("team", 1))] = true
-	var valid := unique_teams.size() >= 2
-	setup_start_button.disabled = not valid
-	setup_warning_label.text = "至少需要两个队伍" if not valid else ""
+	menu_ui._update_lobby_team_state()
 
 func _menu_ink_label(parent: Node, value: String, size: int) -> Label:
-	var label := Label.new()
-	label.text = value
-	label.add_theme_font_size_override("font_size", size)
-	label.add_theme_color_override("font_color", Color("3a2a1b"))
-	parent.add_child(label)
-	return label
+	return menu_ui._menu_ink_label(parent, value, size)
 
 func _menu_section(parent: HBoxContainer, heading: String, width: float) -> VBoxContainer:
-	var panel := PanelContainer.new()
-	if width > 0: panel.custom_minimum_size.x = width
-	else: panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	panel.add_theme_stylebox_override("panel", _parchment_style(Color("deca9e"), 14))
-	parent.add_child(panel)
-	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 7)
-	panel.add_child(column)
-	_menu_ink_label(column, heading, 20)
-	return column
+	return menu_ui._menu_section(parent, heading, width)
 
 func _begin_menu_match() -> void:
-	var unique_teams := {}
-	for player in lobby_players: unique_teams[int(player.get("team", 1))] = true
-	if unique_teams.size() < 2: return
-	var count := lobby_players.size()
-	match_mode = "duel" if count == 2 else "ffa3" if count == 3 else "ffa4"
-	selected_map_size = Vector2(3000, 3000) if map_size_choice.selected == 1 else WORLD_SIZE
-	selected_map_style = ["balanced", "lakes", "highlands", "islands"][map_style_choice.selected]
-	selected_initial_resources = initial_resources_choice.selected
-	selected_fog_mode = ["enabled", "disabled", "terrain"][fog_mode_choice.selected]
-	var requested := int(map_seed_input.text) if map_seed_input.text.is_valid_int() else -1
+	menu_ui._begin_menu_match()
+
+func _start_lobby_match(settings: Dictionary) -> void:
+	match_mode = settings["match_mode"]
+	selected_map_size = settings["map_size"]
+	selected_map_style = settings["map_style"]
+	selected_initial_resources = settings["initial_resources"]
+	selected_fog_mode = settings["fog_mode"]
 	use_lobby_setup = true
-	start_game(lobby_players[0]["civilization"], requested, lobby_players[1]["civilization"])
+	start_game(lobby_players[0]["civilization"], settings["seed"], lobby_players[1]["civilization"])
 
 func _add_menu_label(parent: Node, value: String, size: int) -> void:
-	var label := Label.new()
-	label.text = value
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", size)
-	label.add_theme_color_override("font_color", Color("f0ddb1"))
-	parent.add_child(label)
+	menu_ui._add_menu_label(parent, value, size)
 
 func start_game(civ: String, requested_seed := -1, opponent_civ := "") -> void:
 	if not GameData.CIVILIZATIONS.has(civ): return
@@ -2657,12 +2015,7 @@ func _confirm_wall_line(from: Vector2, to: Vector2, append_order := false) -> vo
 	queue_redraw()
 
 func _update_hud() -> void:
-	if top_label == null or players.is_empty(): return
-	_prune_hidden_enemy_selection()
-	if global_queue_panel.visible: _refresh_global_queue_panel()
-	_update_population_hud()
-	_refresh_action_buttons()
-	_update_selection_hud()
+	hud_ui._update_hud()
 
 func _prune_hidden_enemy_selection() -> void:
 	var changed := false
@@ -2676,80 +2029,13 @@ func _prune_hidden_enemy_selection() -> void:
 		queue_redraw()
 
 func _update_population_hud() -> void:
-	var bank := players[0]
-	var dynasty_text := " · %s朝" % RtsLandmarkCatalog.DYNASTY_NAMES[bank["dynasty"]] if bank["dynasty"] != "" else ""
-	var used := population_used(0)
-	var capacity := population_cap(0)
-	var age_names := ["", "黑暗时代", "封建时代", "城堡时代", "帝王时代"]
-	top_label.text = "%s\n%s · %s%s" % [GameData.CIVILIZATIONS[civilizations[0]]["label"], age_names[clampi(bank["age"], 1, 4)], ["", "I", "II", "III", "IV"][clampi(bank["age"], 1, 4)], dynasty_text]
-	for kind in ["food", "wood", "gold", "stone"]:
-		resource_readouts[kind].text = str(bank[kind])
-	population_label.text = "人口\n%d / %d" % [used, capacity]
-	population_label.tooltip_text = "空余 %d" % maxi(0, capacity - used)
-	var idle_count := idle_villagers().size()
-	idle_villager_button.text = "村民 %d" % idle_count
-	idle_villager_button.disabled = idle_count == 0
+	hud_ui._update_population_hud()
 
 func _update_selection_hud() -> void:
-	selection_health.hide()
-	selection_progress.hide()
-	queue_label.text = ""
-	queue_controls.hide()
-	if selected.is_empty() or not is_instance_valid(selected[0]):
-		selection_portrait.show_subject(null)
-		info_label.text = "未选择"
-		detail_label.text = "左键选择 · 双击同型单位 · 右键下令 · Esc 暂停"
-		return
-	var item := selected[0]
-	selection_portrait.show_subject(item, player_color(item.owner_id))
-	if selected.size() > 1:
-		info_label.text = "已选中 %d 个单位" % selected.size()
-		var counts: Dictionary = {}
-		for entity in selected:
-			if not is_instance_valid(entity): continue
-			var label_text: String = GameData.UNITS[entity.kind]["label"] if entity is RtsUnit else entity.display_label()
-			counts[label_text] = counts.get(label_text, 0) + 1
-		var parts: Array[String] = []
-		for label_text in counts: parts.append("%s ×%d" % [label_text, counts[label_text]])
-		detail_label.text = "  ".join(parts)
-		return
-	var name: String = GameData.UNITS[item.kind]["label"] if item is RtsUnit else item.display_label()
-	info_label.text = "敌方 · %s" % name if is_enemy(0, item.owner_id) else name
-	selection_health.max_value = item.max_hp
-	selection_health.value = maxf(0.0, item.hp)
-	selection_health.show()
-	if item is RtsUnit:
-		detail_label.text = _unit_stats_text(item)
-		if item.field_build_remaining > 0.0:
-			selection_progress.max_value = item.field_build_total
-			selection_progress.value = item.field_build_total - item.field_build_remaining
-			selection_progress.show()
-			queue_label.text = "野外建造 %d%%" % roundi(100.0 * selection_progress.value / selection_progress.max_value)
-		if item.kind in ["transport_ship", "battering_ram", "siege_tower"]: detail_label.text += "   乘员 %d/%d" % [item.passengers.size(), 10 if item.kind == "siege_tower" else 8]
-		if item.kind == "trader": detail_label.text += "   右键贸易站往返交易"
-		if item.kind == "monk": detail_label.text += "   携带圣物" if item.carried_relic != null else "   可占圣地、拾取圣物"
-		if item.kind == "fishing_boat": detail_label.text += "   右键鱼群捕鱼"
-	else:
-		detail_label.text = "生命 %.0f/%.0f   %s" % [item.hp, item.max_hp, "建造中" if not item.is_complete() else "已建成"]
-		if item.kind == "monastery": detail_label.text += "   圣物 %d（每 4 秒每件 +12 黄金）" % item.relics.size()
-		if not item.garrisoned_units.is_empty(): detail_label.text += "   驻军 %d/%d" % [item.garrisoned_units.size(), item.garrison_capacity()]
-		if item.is_complete() and RtsTechTree.PRODUCTION.has(item.producer_kind()):
-			detail_label.text += "   右键设置集结点"
-		_update_building_progress(item)
-		_refresh_queue_controls(item)
+	hud_ui._update_selection_hud()
 
 func _update_building_progress(building: RtsBuilding) -> void:
-	if not building.is_complete():
-		selection_progress.max_value = maxf(0.1, building.build_total)
-		selection_progress.value = building.build_total - building.build_remaining
-		selection_progress.show()
-		queue_label.text = "施工 %d%% · 村民 %d · 选村民右键继续" % [int(100.0 * selection_progress.value / selection_progress.max_value), count_builders(building)]
-	elif not building.production_queue.is_empty():
-		var job: Dictionary = building.current_job()
-		selection_progress.max_value = job["time"]
-		selection_progress.value = job["time"] - job["remaining"]
-		selection_progress.show()
-		queue_label.text = "%s   队列 %d" % [_job_label(job), building.production_queue.size()]
+	hud_ui._update_building_progress(building)
 
 func idle_villagers() -> Array[RtsUnit]:
 	var result: Array[RtsUnit] = []
@@ -2792,385 +2078,37 @@ func _select_next_idle_villager() -> void:
 	queue_redraw()
 
 func _unit_stats_text(unit: RtsUnit) -> String:
-	var stats: Dictionary = unit.stats
-	var armor: Dictionary = stats.get("armor", {})
-	var resistance: Dictionary = stats.get("resistance", {})
-	var rank: int = int(stats.get("rank_age", 0))
-	var lines: Array[String] = ["生命 %.0f/%.0f  ·  近甲 %.0f  ·  远甲 %.0f  ·  移速 %.2f 格/秒%s" % [unit.hp, unit.max_hp, float(armor.get("melee", 0.0)), float(armor.get("ranged", 0.0)), unit.effective_speed() / 80.0, "  ·  等级 %d" % rank if rank > 0 else ""]]
-	if stats.get("tags", []).has("military"):
-		lines.append("交战规则：%s" % {"aggressive": "主动追击", "defensive": "短距防御", "passive": "只响应手动攻击"}.get(unit.engagement, unit.engagement))
-	if float(resistance.get("ranged", 0.0)) > 0.0: lines.append("远程减伤 %.0f%%" % (float(resistance["ranged"]) * 100.0))
-	if RtsCivilizationRules.english_network_rate(self, unit) > 1.0: lines.append("城堡网络：攻击速度 +20%")
-	if is_instance_valid(unit.wall_host): lines.append("正在石墙上驻守  ·  远程护甲 +2")
-	var profiles: Dictionary = stats.get("profiles", {})
-	for profile_id in profiles:
-		var profile: Dictionary = profiles[profile_id]
-		if float(profile.get("damage", 0.0)) <= 0.0: continue
-		var label_text: String = {"melee": "近战", "ranged": "远程", "siege": "攻城", "charge": "冲锋", "structure": "对建筑", "torch": "火炬"}.get(profile_id, str(profile_id))
-		var description := "%s %d×%.0f  ·  间隔 %.2f 秒  ·  射程 %.1f 格" % [label_text, int(profile.get("hits", 1)), float(profile["damage"]), float(profile.get("cooldown", 1.0)), float(profile.get("range", 0.0)) / 30.0]
-		for bonus in profile.get("bonuses", []): description += "  ·  %s +%.0f" % [bonus.get("source_label", "加成"), float(bonus.get("amount", 0.0))]
-		lines.append(description)
-	if unit.kind in ["villager", "fishing_boat"]:
-		if unit.order == "gather" and is_instance_valid(unit.target):
-			var resource_kind: String = "food" if unit.target is RtsBuilding else unit.target.kind
-			lines.append("正在采集%s  ·  当前效率 %.2f/sec" % [GameData.RESOURCE_LABELS.get(resource_kind, resource_kind), unit.gathering_per_second()])
-		else:
-			lines.append("当前采集效率 0.00/sec")
-	if unit.kind == "trader" and civilizations[unit.owner_id] == "French": lines.append("贸易运回：%s" % GameData.RESOURCE_LABELS[unit.trade_resource_kind])
-	return "\n".join(lines)
+	return hud_ui._unit_stats_text(unit)
 
 func _job_label(job: Dictionary) -> String:
-	match job["type"]:
-		"train": return "训练：%s" % GameData.UNITS[job["kind"]]["label"]
-		"research": return "研究：%s" % RtsTechTree.get_technology(job["kind"])["label"]
-		"age": return "升级到时代 %d" % job["target_age"]
-	return "未知任务"
+	return hud_ui._job_label(job)
 
 func _refresh_queue_controls(building: RtsBuilding) -> void:
-	if building.owner_id != 0 or building.production_queue.is_empty(): return
-	queue_controls.show()
-	var previous := queue_choice.get_selected_id()
-	var needs_rebuild := queue_choice.item_count != building.production_queue.size()
-	if not needs_rebuild:
-		for index in building.production_queue.size():
-			if queue_choice.get_item_text(index) != "%d. %s" % [index + 1, _job_label(building.production_queue[index])]:
-				needs_rebuild = true
-				break
-	if not needs_rebuild: return
-	queue_choice.clear()
-	for index in building.production_queue.size():
-		queue_choice.add_item("%d. %s" % [index + 1, _job_label(building.production_queue[index])], index)
-	queue_choice.select(clampi(previous, 0, building.production_queue.size() - 1))
+	hud_ui._refresh_queue_controls(building)
 
 func _toggle_global_queue() -> void:
-	global_queue_panel.visible = not global_queue_panel.visible
-	if global_queue_panel.visible: _refresh_global_queue_panel()
+	hud_ui._toggle_global_queue()
 
 func _refresh_global_queue_panel() -> void:
-	for child in global_queue_list.get_children(): child.queue_free()
-	var heading := Label.new()
-	heading.text = "全局生产队列 · 点击定位建筑"
-	global_queue_list.add_child(heading)
-	var count := 0
-	for building in buildings:
-		if not is_instance_valid(building) or building.owner_id != 0 or building.production_queue.is_empty(): continue
-		for index in building.production_queue.size():
-			var job: Dictionary = building.production_queue[index]
-			var row := HBoxContainer.new()
-			global_queue_list.add_child(row)
-			var locate := Button.new()
-			locate.text = "%s · %s%s" % [building.display_label(), _job_label(job), " %.0fs" % building.production_remaining if index == 0 else ""]
-			locate.custom_minimum_size.x = 275
-			locate.pressed.connect(func() -> void:
-				if not is_instance_valid(building): return
-				selected.clear()
-				selected.append(building)
-				camera.position = building.position
-				_rebuild_actions()
-				_update_hud()
-			)
-			row.add_child(locate)
-			var cancel := Button.new()
-			cancel.text = "×"
-			cancel.pressed.connect(func() -> void:
-				if is_instance_valid(building): cancel_production_job(building, index)
-				_refresh_global_queue_panel()
-			)
-			row.add_child(cancel)
-			count += 1
-	if count == 0:
-		var empty := Label.new()
-		empty.text = "当前没有训练、研究或升级任务"
-		global_queue_list.add_child(empty)
+	hud_ui._refresh_global_queue_panel()
 
 func _refresh_action_buttons() -> void:
-	if players.is_empty(): return
-	var producer := ""
-	var complete := true
-	var landmark_id := ""
-	var landmark_cooldown := 0.0
-	var landmark_stockpile := {}
-	var ability_ready := {}
-	for ability in UNIT_ABILITY_ACTIONS: ability_ready[ability["id"]] = false
-	var ability_reason := {"convert": "需要携带圣物"}
-	var camp_count := 0
-	for building in buildings:
-		if is_instance_valid(building) and building.owner_id == 0 and building.kind == "scout_camp": camp_count += 1
-	for selection in selected:
-		if not is_instance_valid(selection) or not selection is RtsUnit: continue
-		if selection.kind == "longbow":
-			if selection.paling_cooldown <= 0.0: ability_ready["palings"] = true
-			if selection.volley_cooldown <= 0.0: ability_ready["volley"] = true
-		if selection.kind == "arbaletrier": ability_ready["pavise"] = true
-		if selection.kind == "warship" and selection.helm_cooldown <= 0.0: ability_ready["helmsman"] = true
-		if selection.kind == "cannon" and selection.producer_landmark_id == "fr_college_of_artillery" and selection.artillery_shot_cooldown <= 0.0: ability_ready["artillery_shot"] = true
-		if selection.kind == "monk":
-			if selection.carried_relic != null and selection.conversion_cooldown <= 0.0: ability_ready["convert"] = true
-			elif selection.carried_relic != null: ability_reason["convert"] = "技能冷却中"
-		if civilizations[0] == "English" and selection.kind in ["scout", "man_at_arms"] and camp_count < 5: ability_ready["camp"] = true
-	if not selected.is_empty() and is_instance_valid(selected[0]) and selected[0] is RtsBuilding:
-		producer = selected[0].producer_kind()
-		complete = selected[0].is_complete()
-		landmark_id = selected[0].landmark_id
-		landmark_cooldown = selected[0].landmark_ability_cooldown
-		landmark_stockpile = selected[0].landmark_stockpile
-	var context := {
-		"civilization": civilizations[0], "age": players[0]["age"], "dynasty": players[0].get("dynasty", ""), "producer": producer,
-		"researched": players[0]["researched"], "queued_research": queued_research(0),
-		"landmarks": players[0]["landmarks"], "active_landmark": active_landmark_id(0),
-		"has_wonder": _has_wonder(0),
-		"resources": players[0], "population_used": population_used(0), "population_cap": population_cap(0),
-		"production_complete": complete,
-		"landmark_id": landmark_id, "landmark_cooldown": landmark_cooldown, "landmark_stockpile": landmark_stockpile,
-		"ability_ready": ability_ready, "ability_reason": ability_reason, "camp_count": camp_count,
-		"producer_building": selected[0] if not selected.is_empty() and selected[0] is RtsBuilding else null, "game": self,
-	}
-	for button in command_buttons:
-		if not is_instance_valid(button) or button.is_queued_for_deletion(): continue
-		var action_type: String = button.get_meta("action_type")
-		var action_kind: String = button.get_meta("action_kind")
-		var status := RtsActionAvailability.evaluate(action_type, action_kind, context)
-		if action_type in ["train", "research"] and selected.size() > 1:
-			for candidate in selected:
-				if not is_instance_valid(candidate) or not candidate is RtsBuilding or candidate.owner_id != 0: continue
-				var candidate_context: Dictionary = context.duplicate()
-				candidate_context["producer"] = candidate.producer_kind()
-				candidate_context["production_complete"] = candidate.is_complete()
-				candidate_context["producer_building"] = candidate
-				var candidate_status := RtsActionAvailability.evaluate(action_type, action_kind, candidate_context)
-				if candidate_status["available"]:
-					status = candidate_status
-					break
-		button.set_availability(status["available"], status["reason"], status["cost"])
+	hud_ui._refresh_action_buttons()
 
 func _has_wonder(owner_id: int) -> bool:
-	for building in buildings:
-		if is_instance_valid(building) and building.owner_id == owner_id and building.kind == "wonder": return true
-	return false
+	return hud_ui._has_wonder(owner_id)
 
 func _rebuild_actions() -> void:
-	if action_bar == null: return
-	for child in action_bar.get_children(): child.queue_free()
-	command_buttons.clear()
-	hotkey_buttons.clear()
-	command_title.text = "命令"
-	if selected.is_empty() or not is_instance_valid(selected[0]): return
-	var item := selected[0]
-	action_bar.columns = 2 if item is RtsBuilding and item.producer_kind() in MILITARY_RESEARCH_BUILDINGS else 3
-	if item.owner_id != 0:
-		command_title.text = "敌方单位 · 情报"
-		return
-	if item is RtsUnit: _build_unit_actions(item)
-	elif item is RtsBuilding: _build_building_actions(item)
-	_refresh_action_buttons()
+	hud_ui._rebuild_actions()
 
 func _build_unit_actions(item: RtsUnit) -> void:
-	var keys := [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9]
-	var action_index := 0
-	var any_worker := false
-	var any_military := false
-	var any_special := false
-	var worker_count := 0
-	var military_count := 0
-	for unit in selected:
-		if not is_instance_valid(unit) or not unit is RtsUnit: continue
-		if unit.kind == "villager": worker_count += 1
-		if unit.stats.get("tags", []).has("military"): military_count += 1
-		if unit.kind == "monk": any_special = true
-	any_worker = worker_count > 0 and worker_count >= military_count
-	any_military = military_count > 0 and military_count > worker_count
-	if any_worker:
-		var pages := [
-			{"title": "经济", "kinds": ["house", "farm", "mill", "lumber_camp", "mining_camp"]},
-			{"title": "军营", "kinds": ["barracks", "archery_range", "stable", "siege_workshop", "blacksmith", "university"]},
-			{"title": "防御", "kinds": ["outpost", "palisade_wall", "stone_wall", "keep"]},
-			{"title": "地标与奇观", "kinds": ["wonder"]},
-		]
-		if civilizations[0] == "Chinese": pages.append({"title": "王朝地标", "kinds": []})
-		pages.append({"title": "港口与贸易", "kinds": ["market", "dock", "monastery", "palisade_gate", "stone_gate"]})
-		build_page = posmod(build_page, pages.size())
-		var page: Dictionary = pages[build_page]
-		command_title.text = "村民 · %s (%d/%d)" % [page["title"], build_page + 1, pages.size()]
-		for kind in page["kinds"]:
-			_add_build_action(kind, keys[action_index])
-			action_index += 1
-		if build_page == 3:
-			if RtsTechTree.can_advance(players[0]["age"]):
-				_add_action("age", "(%s) 升时代" % ["", "II", "III", "IV"][players[0]["age"]], {}, keys[action_index], "order", _show_age_choice)
-				action_index += 1
-		if civilizations[0] == "Chinese" and build_page == 4:
-			for choice in RtsLandmarkCatalog.choices_for(civilizations[0], players[0]["age"], players[0]["landmarks"]):
-				if int(choice["age"]) > players[0]["age"]: continue
-				_add_landmark_action(choice, keys[action_index])
-				action_index += 1
-		_add_action("next_page", "下一页", {}, KEY_9 if page["kinds"].size() >= 5 else KEY_5, "order", func() -> void:
-			build_page = (build_page + 1) % pages.size()
-			_rebuild_actions()
-		)
-	if (any_military or any_special) and not any_worker:
-		command_title.text = "部队 · 命令"
-		if any_military:
-			if players[0]["age"] >= 3 and selected.any(func(chosen: Node2D) -> bool: return chosen is RtsUnit and chosen.stats.get("tags", []).has("infantry") and not chosen.stats.get("tags", []).has("siege")):
-				for field_kind in ["field_ram", "field_tower"]:
-					var mode_id: String = field_kind
-					var label_text := "野外建造攻城槌" if field_kind == "field_ram" else "野外建造攻城塔"
-					_add_action(field_kind, label_text, GameData.unit_cost("battering_ram" if field_kind == "field_ram" else "siege_tower"), KEY_NONE, "order", func() -> void:
-						order_mode = mode_id
-						notify_player("点击地面指定建造位置")
-					)
-			if selected.any(func(chosen: Node2D) -> bool: return chosen is RtsUnit and chosen.kind in ["mangonel", "nest_of_bees", "trebuchet", "bombard", "cannon"]):
-				_add_action("attack_ground", "攻击地面", {}, KEY_NONE, "order", func() -> void:
-					order_mode = "attack_ground"
-					notify_player("点击地面指定炮击位置")
-				)
-			_add_action("attack_move", "攻击移动", {}, KEY_1, "order", func() -> void:
-				order_mode = "attack_move"
-				build_mode = ""
-				notify_player("点击地图攻击移动；Shift 点击连续下令")
-			)
-			_add_action("patrol", "巡逻", {}, KEY_3, "order", func() -> void:
-				order_mode = "patrol"
-				notify_player("点击地图设置巡逻终点")
-			)
-			_add_action("hold", "坚守", {}, KEY_4, "order", func() -> void:
-				for unit in selected:
-					if is_instance_valid(unit) and unit is RtsUnit: unit.issue_command("hold")
-			)
-			_add_action("focus", "集火", {}, KEY_5, "order", func() -> void:
-				order_mode = "focus"
-				notify_player("点击敌方单位或建筑集火")
-			)
-			_add_action("retreat", "撤退", {}, KEY_7, "order", func() -> void: _retreat_selected())
-			for shape in ["balanced", "line", "compact", "column"]:
-				var shape_id: String = shape
-				var shape_label: String = {"balanced": "默认", "line": "横队", "compact": "密集", "column": "纵队"}[shape]
-				_add_action("formation", "%s阵型%s" % [shape_label, " ✓" if formation_mode == shape else ""], {}, KEY_NONE, "order", func() -> void:
-					formation_mode = shape_id
-					notify_player("下一次群体移动采用%s阵型" % shape_label)
-					_rebuild_actions()
-				)
-			_add_action("formation", "队宽 - (%d)" % formation_width, {}, KEY_NONE, "order", func() -> void:
-				formation_width = maxi(2, formation_width - 1)
-				_rebuild_actions()
-			)
-			_add_action("formation", "队宽 + (%d)" % formation_width, {}, KEY_NONE, "order", func() -> void:
-				formation_width = mini(8, formation_width + 1)
-				_rebuild_actions()
-			)
-			for behavior in ["aggressive", "defensive", "passive"]:
-				var behavior_id: String = behavior
-				var behavior_label: String = {"aggressive": "主动", "defensive": "防御", "passive": "被动"}[behavior]
-				_add_action("stance", "%s交战%s" % [behavior_label, " ✓" if item.engagement == behavior_id else ""], {}, KEY_NONE, "order", func() -> void:
-					for chosen in selected:
-						if is_instance_valid(chosen) and chosen is RtsUnit and chosen.stats.get("tags", []).has("military"): chosen.engagement = behavior_id
-					notify_player("已设为%s交战" % behavior_label)
-					_rebuild_actions()
-					_update_hud()
-				)
-		for ability in UNIT_ABILITY_ACTIONS:
-			if not _selected_has_ability(ability): continue
-			var ability_id: String = ability["id"]
-			_add_action(ability_id, ability["label"], {}, KEY_NONE, "unit_ability", func() -> void: _activate_selected_ability(ability_id))
-	if item.kind == "transport_ship":
-		_add_action("unload", "登陆", {}, KEY_1, "order", func() -> void:
-			order_mode = "unload"
-			notify_player("点击陆地让运输船靠岸并卸载乘员")
-		)
-	if item.kind in ["battering_ram", "siege_tower"]:
-		_add_action("unload", "放出乘员", {}, KEY_NONE, "order", func() -> void:
-			for chosen in selected:
-				if is_instance_valid(chosen) and chosen is RtsUnit and chosen.kind in ["battering_ram", "siege_tower"]: chosen.ungarrison_all()
-		)
-	if item.kind == "trader" and civilizations[0] == "French":
-		for resource_kind in ["food", "wood", "gold"]:
-			_add_action(resource_kind, "贸易换%s" % GameData.RESOURCE_LABELS[resource_kind], {}, KEY_NONE, "order", func() -> void: _set_selected_trade_resource(resource_kind))
-	if item.kind == "trader":
-		_add_action("trade", "恢复贸易", {}, KEY_NONE, "order", func() -> void:
-			for chosen in selected:
-				if is_instance_valid(chosen) and chosen is RtsUnit and chosen.kind == "trader" and is_instance_valid(chosen.trade_post): chosen.issue_command("trade", Vector2.INF, chosen.trade_post)
-		)
-	_add_action("stop", "停止", {}, KEY_6 if any_worker else KEY_2, "order", func() -> void: _stop_selected_units())
+	hud_ui._build_unit_actions(item)
 
 func _selected_has_ability(ability: Dictionary) -> bool:
-	if ability.has("civilization") and civilizations[0] != ability["civilization"]: return false
-	for unit in selected:
-		if not is_instance_valid(unit) or not unit is RtsUnit or unit.kind not in ability["kinds"]: continue
-		if ability.has("producer_landmark") and unit.producer_landmark_id != ability["producer_landmark"]: continue
-		return true
-	return false
+	return hud_ui._selected_has_ability(ability)
 
 func _build_building_actions(item: RtsBuilding) -> void:
-	var keys := [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9]
-	var action_index := 0
-	command_title.text = "%s · 训练与研究" % item.display_label()
-	if item.kind.ends_with("_wall"):
-		var gate_kind := "stone_gate" if item.kind == "stone_wall" else "palisade_gate"
-		var resource := "stone" if gate_kind == "stone_gate" else "wood"
-		var extra: int = GameData.BUILDINGS[gate_kind]["cost"][resource] - GameData.BUILDINGS[item.kind]["cost"][resource]
-		_add_action(gate_kind, "改建城门", {resource: extra}, KEY_1, "convert_gate", func() -> void: convert_wall_to_gate(item))
-		action_index += 1
-	var train_kinds: Array[String] = []
-	var research_kinds: Array[String] = []
-	for candidate in selected:
-		if not is_instance_valid(candidate) or not candidate is RtsBuilding or candidate.owner_id != 0: continue
-		for kind in RtsTechTree.all_train_units(civilizations[0], candidate.producer_kind()):
-			if not train_kinds.has(kind): train_kinds.append(kind)
-		for kind in RtsTechTree.all_researches(civilizations[0], candidate.producer_kind()):
-			if not research_kinds.has(kind): research_kinds.append(kind)
-	if item.producer_kind() in MILITARY_RESEARCH_BUILDINGS:
-		for pair_start in range(0, train_kinds.size(), 2):
-			var pair: Array[String] = []
-			for index in range(pair_start, mini(pair_start + 2, train_kinds.size())):
-				pair.append(train_kinds[index])
-				_add_train_action(train_kinds[index], keys[action_index] if action_index < keys.size() else KEY_NONE)
-				action_index += 1
-			if pair.size() == 1: _add_action_spacer()
-			var rank_lists: Array[Array] = []
-			var max_rank_rows := 0
-			for unit_kind in pair:
-				var ranks: Array[String] = []
-				for tech_id in research_kinds:
-					if RtsTechTree.get_technology(tech_id).get("rank_unit", "") == unit_kind: ranks.append(tech_id)
-				rank_lists.append(ranks)
-				max_rank_rows = maxi(max_rank_rows, ranks.size())
-			for rank_index in max_rank_rows:
-				for ranks in rank_lists:
-					if rank_index < ranks.size():
-						_add_research_action(ranks[rank_index], keys[action_index] if action_index < keys.size() else KEY_NONE)
-						action_index += 1
-					else: _add_action_spacer()
-				if pair.size() == 1: _add_action_spacer()
-		for kind in research_kinds:
-			if RtsTechTree.get_technology(kind).has("rank_unit"): continue
-			_add_research_action(kind, keys[action_index] if action_index < keys.size() else KEY_NONE)
-			action_index += 1
-	else:
-		for kind in train_kinds:
-			_add_train_action(kind, keys[action_index] if action_index < keys.size() else KEY_NONE)
-			action_index += 1
-		for kind in research_kinds:
-			_add_research_action(kind, keys[action_index] if action_index < keys.size() else KEY_NONE)
-			action_index += 1
-	if item.kind == "market":
-		for resource_kind in ["food", "wood", "stone"]:
-			var sell_price := market_quote(resource_kind, false)
-			var buy_price := market_quote(resource_kind, true)
-			var short_name := "粮" if resource_kind == "food" else "木" if resource_kind == "wood" else "石"
-			_add_action("market_sell", "卖%s +%d金" % [short_name, sell_price], {}, keys[action_index] if action_index < keys.size() else KEY_NONE, "order", func() -> void: exchange_resource(0, resource_kind, false))
-			action_index += 1
-			_add_action("market_buy", "买%s -%d金" % [short_name, buy_price], {}, keys[action_index] if action_index < keys.size() else KEY_NONE, "order", func() -> void: exchange_resource(0, resource_kind, true))
-			action_index += 1
-	if item.garrison_capacity() > 0:
-		_add_action("ungarrison", "放出驻军", {}, keys[action_index] if action_index < keys.size() else KEY_NONE, "order", func() -> void: item.ungarrison_all())
-		action_index += 1
-	if item.kind == "town_center":
-		_add_action("town_bell", "镇钟：村民避险", {}, KEY_NONE, "order", func() -> void: ring_town_bell(item))
-		_add_action("return_work", "返回原工作", {}, KEY_NONE, "order", func() -> void: item.ungarrison_all(true))
-	if item.landmark_id == "fr_guild_hall":
-		_add_action("collect_stockpile", "提取公会资源", {}, keys[action_index] if action_index < keys.size() else KEY_NONE, "landmark_ability", func() -> void: item.collect_stockpile())
-		action_index += 1
-	if item.landmark_id == "zh_imperial_palace":
-		_add_action("spy", "侦察敌方村民", {}, keys[action_index] if action_index < keys.size() else KEY_NONE, "landmark_ability", func() -> void: item.activate_landmark_ability())
+	hud_ui._build_building_actions(item)
 
 func _activate_selected_ability(ability_id: String) -> void:
 	for selection in selected:
@@ -3195,81 +2133,16 @@ func _set_selected_trade_resource(resource_kind: String) -> void:
 	_update_hud()
 
 func _add_build_action(kind: String, keycode: int) -> void:
-	var cost: Dictionary = RtsCivilizationRules.building_cost(civilizations[0], kind)
-	_add_action(kind, GameData.BUILDINGS[kind]["label"], cost, keycode, "build", func() -> void:
-		build_mode = kind
-		pending_landmark_id = ""
-		notify_player("拖拽铺设%s；R 旋转；Shift 连续建造" % GameData.BUILDINGS[kind]["label"] if kind.ends_with("_wall") else "点击地图放置%s；R 旋转墙门；Shift 连续建造" % GameData.BUILDINGS[kind]["label"])
-	)
+	hud_ui._add_build_action(kind, keycode)
 
 func _add_landmark_action(choice: Dictionary, keycode: int) -> void:
-	var choice_id: String = choice["id"]
-	_add_action(choice_id, choice["label"], choice["cost"], keycode, "landmark", func() -> void: _select_landmark_for_placement(choice_id))
+	hud_ui._add_landmark_action(choice, keycode)
 
 func _show_age_choice() -> void:
-	if not started or game_over or age_choice_overlay != null: return
-	var current_age: int = players[0]["age"]
-	if not RtsTechTree.can_advance(current_age): return
-	var choices: Array[Dictionary] = []
-	for choice in RtsLandmarkCatalog.choices_for(civilizations[0], current_age, players[0]["landmarks"]):
-		if int(choice["age"]) == current_age + 1: choices.append(choice)
-	if choices.is_empty(): return
-	var target_age := current_age + 1
-	age_choice_overlay = ColorRect.new()
-	age_choice_overlay.color = Color("100f0d", 0.87)
-	age_choice_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	age_choice_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
-	hud_bottom.get_parent().add_child(age_choice_overlay)
-	var panel := PanelContainer.new()
-	panel.set_anchors_preset(Control.PRESET_CENTER)
-	panel.offset_left = -310
-	panel.offset_right = 310
-	panel.offset_top = -174
-	panel.offset_bottom = 174
-	panel.add_theme_stylebox_override("panel", _hud_panel_style(Color("30271c"), 18))
-	age_choice_overlay.add_child(panel)
-	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 12)
-	panel.add_child(column)
-	var heading := Label.new()
-	heading.text = "选择进入 %s 时代的地标" % ["", "I", "II", "III", "IV"][target_age]
-	heading.add_theme_font_size_override("font_size", 23)
-	heading.add_theme_color_override("font_color", Color("f3d59c"))
-	column.add_child(heading)
-	var summary := Label.new()
-	summary.text = "%s  ·  升时代费用：%s" % [RtsTechTree.AGE_UNLOCK_TEXT[target_age], GameData.cost_text(RtsTechTree.age_cost(current_age))]
-	summary.add_theme_color_override("font_color", Color("e5d1a1"))
-	column.add_child(summary)
-	var options := HBoxContainer.new()
-	options.add_theme_constant_override("separation", 10)
-	column.add_child(options)
-	for choice in choices:
-		var chosen_id: String = choice["id"]
-		var button := Button.new()
-		button.custom_minimum_size = Vector2(280, 138)
-		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		button.text = "%s\n\n%s\n建造：%s" % [choice["label"], choice["description"], GameData.cost_text(choice["cost"])]
-		_style_button(button)
-		var status := RtsLandmarkCatalog.choice_status(civilizations[0], current_age, players[0]["landmarks"], chosen_id, active_landmark_id(0))
-		button.disabled = not status["available"] or not can_afford(0, choice["cost"])
-		if button.disabled: button.tooltip_text = status["reason"] if not status["available"] else "资源不足"
-		button.pressed.connect(func() -> void:
-			_close_age_choice()
-			_select_landmark_for_placement(chosen_id)
-		)
-		options.add_child(button)
-	var cancel := Button.new()
-	cancel.text = "返回"
-	cancel.custom_minimum_size.y = 36
-	_style_button(cancel)
-	cancel.pressed.connect(_close_age_choice)
-	column.add_child(cancel)
+	hud_ui._show_age_choice()
 
 func _close_age_choice() -> void:
-	if age_choice_overlay == null: return
-	age_choice_overlay.queue_free()
-	age_choice_overlay = null
+	hud_ui._close_age_choice()
 
 func _select_landmark_for_placement(choice_id: String) -> void:
 	var choice := RtsLandmarkCatalog.landmark(choice_id)
@@ -3279,52 +2152,16 @@ func _select_landmark_for_placement(choice_id: String) -> void:
 	notify_player("%s：%s。点击地图放置" % [choice["label"], choice["description"]])
 
 func _add_train_action(kind: String, keycode: int) -> void:
-	_add_action(kind, GameData.UNITS[kind]["label"], GameData.unit_cost(kind), keycode, "train", func() -> void:
-		for candidate in selected:
-			if is_instance_valid(candidate) and candidate is RtsBuilding and candidate.owner_id == 0 and RtsTechTree.all_train_units(civilizations[0], candidate.producer_kind()).has(kind): train_unit(candidate, kind)
-	)
+	hud_ui._add_train_action(kind, keycode)
 
 func _add_research_action(kind: String, keycode: int) -> void:
-	var technology: Dictionary = RtsTechTree.get_technology(kind)
-	_add_action(kind, technology["label"], technology["cost"], keycode, "research", func() -> void:
-		for candidate in selected:
-			if is_instance_valid(candidate) and candidate is RtsBuilding and candidate.owner_id == 0 and RtsTechTree.all_researches(civilizations[0], candidate.producer_kind()).has(kind):
-				if research_technology(candidate, kind): break
-	)
+	hud_ui._add_research_action(kind, keycode)
 
 func _add_action_spacer() -> void:
-	var spacer := Control.new()
-	spacer.custom_minimum_size = Vector2(108, 69)
-	spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	action_bar.add_child(spacer)
+	hud_ui._add_action_spacer()
 
 func _add_action(icon_kind: String, label_text: String, cost: Dictionary, keycode: int, action_type: String, callback: Callable) -> void:
-	var button := RtsCommandButton.new()
-	var key_text := OS.get_keycode_string(keycode) if keycode != KEY_NONE else ""
-	button.configure(icon_kind, label_text, key_text, command_buttons.size())
-	if action_type == "train" and GameData.UNITS.has(icon_kind):
-		var source_landmark: String = selected[0].landmark_id if not selected.is_empty() and selected[0] is RtsBuilding else ""
-		var unit_stats := RtsUnitCatalog.unit_definition(civilizations[0], icon_kind, players[0]["researched"], players[0]["age"], players[0]["landmarks"], players[0].get("dynasty", ""), source_landmark)
-		var profile: Dictionary = unit_stats.get("profiles", {}).get(unit_stats.get("primary_profile", ""), {})
-		var train_seconds: float = selected[0]._training_time(icon_kind) if not selected.is_empty() and selected[0] is RtsBuilding else GameData.training_time(civilizations[0], "", icon_kind)
-		button.set_description("生命 %.0f · 攻击 %d×%.0f · 训练 %.1f 秒" % [float(unit_stats.get("hp", 0.0)), int(profile.get("hits", 1)), float(profile.get("damage", 0.0)), train_seconds])
-	elif action_type == "research":
-		var technology: Dictionary = RtsTechTree.get_technology(icon_kind)
-		var effect_parts: Array[String] = []
-		for stat in technology.get("effects", {}): effect_parts.append("%s +%s" % [str(stat), str(technology["effects"][stat])])
-		var description := "研究 %.1f 秒" % float(technology.get("time", 0.0))
-		if not effect_parts.is_empty(): description += " · " + ", ".join(effect_parts)
-		if not technology.get("requires", []).is_empty(): description += " · 前置：" + ", ".join(technology["requires"])
-		button.set_description(description)
-	elif icon_kind in ["market_buy", "market_sell"]:
-		button.set_description("每次交易 100 单位；价格随供需变化")
-	button.set_meta("cost", cost)
-	button.set_meta("action_type", action_type)
-	button.set_meta("action_kind", icon_kind)
-	button.pressed.connect(callback)
-	action_bar.add_child(button)
-	command_buttons.append(button)
-	if keycode != KEY_NONE: hotkey_buttons[keycode] = button
+	hud_ui._add_action(icon_kind, label_text, cost, keycode, action_type, callback)
 
 func _draw() -> void:
 	if not started:
