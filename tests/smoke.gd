@@ -59,18 +59,38 @@ func _run() -> void:
 	game.dragging = true
 	game.drag_start_screen = Vector2(100, 100)
 	game.drag_current_screen = Vector2(108, 108)
+	game.selection_drag_overlay.begin(game.drag_start_screen)
 	assert(not game._selection_drag_active(), "small trackpad motion should remain a click candidate")
 	game.drag_current_screen = Vector2(113, 100)
 	assert(game._selection_drag_active(), "selection rectangle should activate after the drag threshold")
+	assert(game.selection_drag_overlay != null, "the selection overlay POC should be available")
 	var drag_motion := InputEventMouseMotion.new()
 	drag_motion.position = Vector2(124, 100)
-	game._input(drag_motion)
+	game._update_selection_drag_poc(drag_motion.position)
 	assert(game.drag_current_screen == drag_motion.position, "active drags should keep receiving motion before the HUD")
+	assert(game.selection_drag_overlay.active and game.selection_drag_overlay.visible)
+	assert(game.selection_drag_overlay.screen_rect() == Rect2(Vector2(100, 100), Vector2(24, 0)))
 	var drag_release := InputEventMouseButton.new()
 	drag_release.button_index = MOUSE_BUTTON_LEFT
 	drag_release.position = drag_motion.position
 	game._input(drag_release)
 	assert(not game.dragging, "active drags should receive release before the HUD")
+	assert(not game.selection_drag_overlay.active and not game.selection_drag_overlay.visible)
+	var accumulated_before_drag := Input.use_accumulated_input
+	var drag_press := InputEventMouseButton.new()
+	drag_press.button_index = MOUSE_BUTTON_LEFT
+	drag_press.pressed = true
+	drag_press.position = Vector2(400, 300)
+	game._unhandled_input(drag_press)
+	assert(Input.use_accumulated_input == accumulated_before_drag, "clicking must not change the global input event mode")
+	drag_release.position = drag_press.position
+	game._input(drag_release)
+	assert(Input.use_accumulated_input == accumulated_before_drag)
+	game._unhandled_input(drag_press)
+	game._set_paused(true)
+	assert(Input.use_accumulated_input == accumulated_before_drag)
+	assert(not game.selection_drag_overlay.visible)
+	game._set_paused(false)
 	assert(game._cursor_state_at(game.units[0].position) == "select")
 	game._select_area(game.units[0].position, game.units[0].position, false)
 	assert(game.info_label.text == "村民", "selection details should update immediately")

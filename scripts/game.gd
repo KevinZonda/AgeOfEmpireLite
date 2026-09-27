@@ -9,10 +9,13 @@ const CAMERA_PAN_SPEED := 570.0
 const GESTURE_PAN_PIXELS := 32.0
 const EDGE_SCROLL_MARGIN := 28.0
 const SELECTION_DRAG_THRESHOLD := 12.0
+# POC switch: false restores the world-space immediate-mode selection box.
+const USE_SELECTION_DRAG_OVERLAY_POC := true
 const UNIT_SCENE := preload("res://scripts/entities/unit.gd")
 const BUILDING_SCENE := preload("res://scripts/entities/building.gd")
 const BUILD_GRID_SIZE := 25.0 # Half a terrain cell keeps existing building art near its current scale.
 const RESOURCE_SCENE := preload("res://scripts/entities/resource_node.gd")
+const SELECTION_DRAG_OVERLAY := preload("res://scripts/ui/selection_drag_overlay.gd")
 const SELECTION_PORTRAIT := preload("res://scripts/ui/selection_portrait.gd")
 const MENU_BACKDROP := preload("res://scripts/ui/menu_backdrop.gd")
 const TECH_TREE_PAGE := preload("res://scripts/ui/tech_tree_page.gd")
@@ -160,6 +163,7 @@ var zoom_gesture_toggle: CheckButton
 var zoom_gesture_enabled := true
 var settings_from_pause := false
 var cursor: GameCursor
+var selection_drag_overlay: Variant
 
 func _ready() -> void:
 	_load_settings()
@@ -205,12 +209,16 @@ func _ready() -> void:
 	queue_redraw()
 
 func _exit_tree() -> void:
+	_finish_selection_drag_poc()
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
 func _create_cursor() -> void:
 	var layer := CanvasLayer.new()
 	layer.layer = 10
 	add_child(layer)
+	if USE_SELECTION_DRAG_OVERLAY_POC:
+		selection_drag_overlay = SELECTION_DRAG_OVERLAY.new()
+		layer.add_child(selection_drag_overlay)
 	cursor = GameCursor.new()
 	layer.add_child(cursor)
 	cursor.hide()
@@ -1167,6 +1175,7 @@ func start_game(civ: String, requested_seed := -1, opponent_civ := "") -> void:
 
 func _clear_world() -> void:
 	_close_age_choice()
+	_finish_selection_drag_poc()
 	if world_map != null: world_map.hide()
 	if weather != null: weather.hide()
 	if fog != null: fog.clear()
@@ -1263,6 +1272,7 @@ func _set_paused(value: bool) -> void:
 	paused = value
 	dragging = false
 	wall_dragging = false
+	_finish_selection_drag_poc()
 	pause_overlay.visible = value
 	if not value and settings_overlay != null: settings_overlay.hide()
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if value else Input.MOUSE_MODE_CONFINED_HIDDEN
@@ -1419,6 +1429,7 @@ func _check_match_end() -> void:
 
 func _finish_game(won: bool, reason := "landmarks") -> void:
 	if game_over: return
+	_finish_selection_drag_poc()
 	match_statistics.record_event(0, "对局结束")
 	match_statistics.sample()
 	game_over = true
@@ -1906,6 +1917,8 @@ func _process(delta: float) -> void:
 		if iso_sort_timer <= 0.0:
 			_update_iso_depths()
 			iso_sort_timer = 0.1
+	if dragging and USE_SELECTION_DRAG_OVERLAY_POC:
+		_update_selection_drag_poc(get_viewport().get_mouse_position())
 	_pan_camera(delta)
 	_update_cursor()
 	if notice_timer > 0.0:
@@ -1930,7 +1943,7 @@ func _process(delta: float) -> void:
 	order_markers = order_markers.filter(func(marker: Dictionary) -> bool: return marker["time"] > 0.0)
 	for effect in world_effects: effect["time"] -= delta
 	world_effects = world_effects.filter(func(effect: Dictionary) -> bool: return effect["time"] > 0.0)
-	if _selection_drag_active() or build_mode != "" or not hit_lines.is_empty() or not order_markers.is_empty() or not world_effects.is_empty() or selected.any(func(entity: Node2D) -> bool: return is_instance_valid(entity) and entity is RtsUnit): queue_redraw()
+	if (_selection_drag_active() and not USE_SELECTION_DRAG_OVERLAY_POC) or build_mode != "" or not hit_lines.is_empty() or not order_markers.is_empty() or not world_effects.is_empty() or selected.any(func(entity: Node2D) -> bool: return is_instance_valid(entity) and entity is RtsUnit): queue_redraw()
 
 func _pan_camera(delta: float) -> void:
 	var direction := Vector2.ZERO
@@ -2032,9 +2045,28 @@ func _edge_pan_direction(screen_point: Vector2, viewport_size: Vector2) -> Vecto
 func _selection_drag_active() -> bool:
 	return dragging and drag_start_screen.distance_to(drag_current_screen) > SELECTION_DRAG_THRESHOLD
 
+func _begin_selection_drag_poc(screen_point: Vector2) -> void:
+	if not USE_SELECTION_DRAG_OVERLAY_POC: return
+	if selection_drag_overlay != null: selection_drag_overlay.begin(screen_point)
+
+func _update_selection_drag_poc(screen_point: Vector2) -> void:
+	drag_current_screen = screen_point
+	drag_current = get_viewport().get_canvas_transform().affine_inverse() * screen_point
+	if selection_drag_overlay != null:
+		selection_drag_overlay.update_drag(screen_point, _selection_drag_active())
+
+func _finish_selection_drag_poc() -> void:
+	if selection_drag_overlay != null: selection_drag_overlay.finish()
+
 func _update_cursor() -> void:
 	var screen_point := get_viewport().get_mouse_position()
 	cursor.position = screen_point
+	if _selection_drag_active():
+		# The select cursor has the same glyph and is already rendered during
+		# normal hovering, avoiding a cold fallback-font draw on the first drag.
+		cursor.set_state("select" if USE_SELECTION_DRAG_OVERLAY_POC else "drag")
+		cursor.set_context("")
+		return
 	var hovered := get_viewport().gui_get_hovered_control()
 	var over_ui := hovered != null and hovered != cursor
 	var world_point := get_global_mouse_position()
@@ -2105,10 +2137,10 @@ func _input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 		return
 	if not started or game_over: return
-	# Once a world drag has started, keep tracking it before GUI controls can
-	# consume motion or release events when the pointer crosses the HUD.
+	# Wall dragging and the legacy selection path still need motion before GUI
+	# controls can consume it. The POC selection path polls once per frame.
 	if event is InputEventMouseMotion:
-		if dragging:
+		if dragging and not USE_SELECTION_DRAG_OVERLAY_POC:
 			var was_drag_active := _selection_drag_active()
 			drag_current = get_global_mouse_position()
 			drag_current_screen = event.position
@@ -2141,8 +2173,9 @@ func _finish_left_drag(event: InputEventMouseButton) -> bool:
 		return true
 	if dragging:
 		dragging = false
+		_finish_selection_drag_poc()
 		_select_screen_area(drag_start_screen, event.position, event.shift_pressed)
-		queue_redraw()
+		if not USE_SELECTION_DRAG_OVERLAY_POC: queue_redraw()
 		return true
 	return false
 
@@ -2193,6 +2226,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			drag_current = drag_start
 			drag_start_screen = event.position
 			drag_current_screen = event.position
+			_begin_selection_drag_poc(event.position)
 			return
 		if event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
 			if order_mode != "":
@@ -3034,7 +3068,7 @@ func _draw() -> void:
 				draw_arc(marker, 9, 0, TAU, 24, marker_color, 2)
 				draw_line(marker + Vector2(0, 12), marker + Vector2(0, -14), marker_color, 2)
 				draw_colored_polygon(PackedVector2Array([marker + Vector2(0, -14), marker + Vector2(15, -9), marker + Vector2(0, -4)]), marker_color)
-	if _selection_drag_active():
+	if _selection_drag_active() and not USE_SELECTION_DRAG_OVERLAY_POC:
 		var projection := get_viewport().get_canvas_transform()
 		var inverse := projection.affine_inverse()
 		var screen_rect := Rect2(drag_start_screen, drag_current_screen - drag_start_screen).abs()
