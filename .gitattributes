@@ -1,0 +1,2 @@
+# Unified diffs intentionally contain a context-space before source indentation.
+*.patch -whitespace

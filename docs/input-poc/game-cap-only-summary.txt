@@ -1,0 +1,7 @@
+Physical press -> delivery (ms); -- means no matching press before next HID press / 2s
+ #     epoch             session   AppKit    Godot   max frame*  HID/Session transitions
+ 1 1790538739.634356     283.0     283.0    283.9       28.6  0:1/0 283:1/1
+ 2 1790538740.816797     232.5     233.9    234.3       28.1  0:1/0 233:1/1 728:0/0
+ 3 1790538741.740649     262.5     270.3    274.8       26.7  0:1/0 263:1/1 729:0/1 732:0/0
+ 4 1790538742.700471     248.6     249.9    250.2       21.3  0:1/0 249:1/1 349:0/0
+* frame gap during first 800ms; HID/session polling every ~2ms. Physical press includes clicks outside the POC.

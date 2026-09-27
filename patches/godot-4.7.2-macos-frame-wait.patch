@@ -1,0 +1,16 @@
+diff --git a/platform/macos/os_macos.mm b/platform/macos/os_macos.mm
+index 620666c..3c96a57 100644
+--- a/platform/macos/os_macos.mm
++++ b/platform/macos/os_macos.mm
+@@ -1146,7 +1146,10 @@ void OS_MacOS_NSApp::start_main() {
+ 							}
+ #endif
+ 
+-							if (Main::iteration() || sig_received) {
++							// A system/AX event can wake the run loop before the frame
++							// deadline. Service it without drawing another VSync-blocked
++							// frame (or resetting the still-pending frame timer).
++							if (sig_received || (wait_timer == nil && Main::iteration())) {
+ 								terminate();
+ 							}
+ 						} @catch (NSException *exception) {

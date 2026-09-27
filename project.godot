@@ -3,6 +3,7 @@ config_version=5
 [application]
 config/name="Age of Empire Lite"
 run/main_scene="res://scenes/main.tscn"
+run/max_fps.macos=120
 config/features=PackedStringArray("4.0", "GL Compatibility")
 
 [display]
@@ -14,4 +15,3 @@ window/stretch/mode="canvas_items"
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
 textures/default_filters/use_nearest_mipmap_filter=false
-

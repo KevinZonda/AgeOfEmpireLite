@@ -1,0 +1,18 @@
+diff --git a/platform/macos/os_macos.mm b/platform/macos/os_macos.mm
+index 620666c..e8d6d71 100644
+--- a/platform/macos/os_macos.mm
++++ b/platform/macos/os_macos.mm
+@@ -1146,7 +1146,12 @@ void OS_MacOS_NSApp::start_main() {
+ 							}
+ #endif
+ 
+-							if (Main::iteration() || sig_received) {
++							// A system/AX event can wake the run loop before the frame
++							// deadline. Service it without drawing another VSync-blocked
++							// frame (or resetting the still-pending frame timer).
++							// Diagnostic switch for an A/B test in the same binary.
++							const bool run_frame = wait_timer == nil || OS::get_singleton()->get_environment("AOE_POC_SKIP_WAIT_GATE") == "1";
++							if (sig_received || (run_frame && Main::iteration())) {
+ 								terminate();
+ 							}
+ 						} @catch (NSException *exception) {

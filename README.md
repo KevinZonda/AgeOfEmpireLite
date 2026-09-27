@@ -6,13 +6,18 @@
 
 ## 运行
 
-用 Godot 4 打开 `project.godot`，或在项目目录执行：
+macOS 使用本地修复版 Godot，解决 Magnet 开启时按下、拖框延迟的问题。首次在项目目录编译（需要 Xcode 命令行工具和 Python 3），随后正常启动：
 
 ```sh
+make build-macos
 make run
 ```
 
-如 Godot 安装在其他位置，可执行 `make run GODOT=/你的/Godot/路径`。
+本机修复引擎已构建，直接 `make run` 即可。其他平台默认使用 PATH 中的 `godot`；也可执行 `make run GODOT=/你的/Godot/路径` 指定引擎。
+
+补丁位于 `patches/godot-4.7.2-macos-frame-wait.patch`，构建产物位于 `docs/godot/bin/`。macOS 的 120 FPS 上限配合该引擎补丁生效，单独限帧无法修复。Godot 编辑器仍可编辑 `project.godot`；直接使用未打补丁的官方引擎运行时，Magnet 干扰仍可能出现。测量、根因和复现方法见 [输入延迟 POC](docs/input-poc/README.md)。
+
+旧 F8 光标模式对照默认关闭；需要诊断时运行 `make run RUN_ARGS="-- --selection-input-poc"`。
 
 ## 操作
 

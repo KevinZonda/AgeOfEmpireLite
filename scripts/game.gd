@@ -12,8 +12,8 @@ const SELECTION_DRAG_THRESHOLD := 12.0
 const SELECTION_DRAG_VISUAL_THRESHOLD := 1.0
 # POC switch: false restores the world-space immediate-mode selection box.
 const USE_SELECTION_DRAG_OVERLAY_POC := true
-# macOS POC: poll AppKit-backed DisplayServer state and avoid confined cursor
-# warping. F8 switches back to the old confined mode for an in-game A/B test.
+# AppKit pointer sampling does not bypass upstream input delays. The Magnet
+# fix is in the local engine; --selection-input-poc enables the old F8 probe.
 const USE_MACOS_NATIVE_SELECTION_POC := true
 const UNIT_SCENE := preload("res://scripts/entities/unit.gd")
 const BUILDING_SCENE := preload("res://scripts/entities/building.gd")
@@ -117,6 +117,7 @@ var selection_drag_phase := SelectionDragPhase.IDLE
 var selection_drag_additive := false
 var selection_poc_previous_left_down := false
 var selection_poc_hidden_mode := true
+var selection_input_probe_enabled := "--selection-input-poc" in OS.get_cmdline_user_args()
 var selection_drag_probe: Dictionary = {}
 var selection_probe_history := {"hidden": [], "confined": []}
 var selection_last_process_entry_usec := 0
@@ -258,7 +259,7 @@ func _create_cursor() -> void:
 	selection_input_probe_label.add_theme_color_override("font_color", Color("f5e597"))
 	selection_input_probe_label.add_theme_color_override("font_outline_color", Color(0.05, 0.04, 0.03, 0.9))
 	selection_input_probe_label.add_theme_constant_override("outline_size", 3)
-	selection_input_probe_label.visible = _uses_macos_native_selection_poc()
+	selection_input_probe_label.visible = selection_input_probe_enabled and _uses_macos_native_selection_poc()
 	layer.add_child(selection_input_probe_label)
 	cursor = GameCursor.new()
 	layer.add_child(cursor)
@@ -1584,11 +1585,11 @@ func _selection_poc_mode_text() -> String:
 
 func _update_selection_probe_label(detail := "等待拖拽") -> void:
 	if selection_input_probe_label == null: return
-	selection_input_probe_label.visible = _uses_macos_native_selection_poc() and started and not paused and not game_over
+	selection_input_probe_label.visible = selection_input_probe_enabled and _uses_macos_native_selection_poc() and started and not paused and not game_over
 	selection_input_probe_label.text = "触摸板 POC：%s｜%s｜F8 切换 A/B" % [_selection_poc_mode_text(), detail]
 
 func _begin_selection_probe(screen_point: Vector2, source: String) -> void:
-	if not _uses_macos_native_selection_poc(): return
+	if not selection_input_probe_enabled or not _uses_macos_native_selection_poc(): return
 	var now := Time.get_ticks_usec()
 	selection_drag_probe = {
 		"press_usec": now,
@@ -1786,7 +1787,7 @@ func _input(event: InputEvent) -> void:
 		_set_paused(not paused)
 		get_viewport().set_input_as_handled()
 		return
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F8 and _uses_macos_native_selection_poc() and not paused:
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F8 and selection_input_probe_enabled and _uses_macos_native_selection_poc() and not paused:
 		_toggle_selection_pointer_poc_mode()
 		get_viewport().set_input_as_handled()
 		return
