@@ -71,8 +71,10 @@ func activate() -> void:
 	_replan()
 
 func _replan() -> void:
-	for member in members.duplicate():
-		if not is_instance_valid(member) or member.is_queued_for_deletion(): members.erase(member)
+	var survivors: Array[RtsUnit] = []
+	for member in members:
+		if is_instance_valid(member) and not member.is_queued_for_deletion(): survivors.append(member)
+	members = survivors
 	var center := _center(not slots.is_empty())
 	if members.is_empty(): return
 	var leader := members[0]
@@ -187,7 +189,10 @@ func _tick() -> void:
 	if members.is_empty() or route.is_empty(): return
 	game.navigation._ensure_current()
 	if game.navigation.obstacle_signature != last_obstacle_signature: _replan()
+	if route.is_empty(): return
 	var center := _center()
+	while route_index < route.size() - 1 and center.distance_to(route[route_index]) < 65.0:
+		route_index += 1
 	var waypoint: Vector2 = route[route_index] if route_index < route.size() else goal
 	final_approach = route_index >= route.size() - 1 and center.distance_to(goal) < 115.0
 	var next_heading := (waypoint - center).normalized()
@@ -202,7 +207,7 @@ func target_for(unit: RtsUnit) -> Vector2:
 	var waypoint: Vector2 = route[index]
 	var direction := (waypoint - unit.position).normalized()
 	if direction.is_zero_approx(): direction = heading
-	var compressed := _corridor_is_narrow(waypoint) or _corridor_is_narrow(unit.position)
+	var compressed := narrow or _corridor_is_narrow(waypoint) or _corridor_is_narrow(unit.position)
 	var offset: Vector2 = Vector2.ZERO if compressed else slots.get(id, Vector2.ZERO)
 	var target_point: Vector2 = waypoint + offset
 	if not _grid_line_clear(unit, unit.position, target_point):
@@ -218,7 +223,7 @@ func target_for(unit: RtsUnit) -> Vector2:
 		waypoint = route[next_index]
 		direction = (waypoint - unit.position).normalized()
 		if direction.is_zero_approx(): direction = heading
-		compressed = _corridor_is_narrow(waypoint) or _corridor_is_narrow(unit.position)
+		compressed = narrow or _corridor_is_narrow(waypoint) or _corridor_is_narrow(unit.position)
 		offset = Vector2.ZERO if compressed else slots.get(id, Vector2.ZERO)
 		var next_target: Vector2 = waypoint + offset
 		if not _grid_line_clear(unit, unit.position, next_target):

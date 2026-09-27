@@ -58,8 +58,8 @@ func _run() -> void:
 	assert(game.view_mode_25d and game.camera.rotation != 0.0 and game.camera.zoom.x != game.camera.zoom.y)
 	game.view_button.pressed.emit()
 	assert(not game.view_mode_25d and game.camera.rotation == 0.0 and is_equal_approx(game.camera.zoom.x, game.camera.zoom.y))
-	var boat: RtsUnit = game.spawn_unit(0, "transport_ship", Vector2(800, 1220))
-	var landing: Dictionary = game.find_landing_pair(boat, Vector2(800, 1080))
+	var boat: RtsUnit = game.spawn_unit(0, "transport_ship", game._scaled_point(Vector2(800, 1220)))
+	var landing: Dictionary = game.find_landing_pair(boat, game._scaled_point(Vector2(800, 1080)))
 	assert(not landing.is_empty())
 	boat.position = landing["water"]
 	infantry.position = landing["land"]
@@ -77,8 +77,8 @@ func _run() -> void:
 	boat._process(0.01)
 	assert(boat.passengers.is_empty() and infantry.garrisoned_in == null and game.world_map.is_walkable(infantry.position))
 	var islands := RtsWorldMap.new()
-	islands.generate(2233, Vector2(2400, 1500), "islands")
-	assert(islands.path_between(Vector2(330, 720), Vector2(2070, 720)).is_empty(), "islands should require transports")
+	islands.generate(2233, Vector2(2400, 2400), "islands")
+	assert(islands.path_between(islands.spawn_positions()[0], islands.spawn_positions()[1]).is_empty(), "islands should require transports")
 	islands.free()
 	game.selected_map_style = "islands"
 	game.start_game("English", 2233)

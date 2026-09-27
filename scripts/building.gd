@@ -106,12 +106,13 @@ func contains_isometric_visual(world_point: Vector2, canvas: Transform2D) -> boo
 	var ne := Vector2(bounds.end.x, bounds.position.y)
 	var se := bounds.end
 	var sw := Vector2(bounds.position.x, bounds.end.y)
-	var lift := RtsIsoProjection.world_delta(canvas, Vector2(0, -isometric_height() * game.camera.zoom.x))
+	var terrain_lift := RtsIsoProjection.ground_lift(game, position)
+	var lift := terrain_lift + RtsIsoProjection.world_delta(canvas, Vector2(0, -isometric_height() * game.camera.zoom.x))
 	var local_point := world_point - position
 	for polygon in [
 		PackedVector2Array([nw + lift, ne + lift, se + lift, sw + lift]),
-		PackedVector2Array([ne + lift, se + lift, se, ne]),
-		PackedVector2Array([sw + lift, se + lift, se, sw]),
+		PackedVector2Array([ne + lift, se + lift, se + terrain_lift, ne + terrain_lift]),
+		PackedVector2Array([sw + lift, se + lift, se + terrain_lift, sw + terrain_lift]),
 	]:
 		if Geometry2D.is_point_in_polygon(local_point, polygon): return true
 	return false
@@ -384,6 +385,8 @@ func _draw_isometric() -> void:
 	var height := isometric_height()
 	var canvas := get_viewport().get_canvas_transform()
 	var lift := RtsIsoProjection.world_delta(canvas, Vector2(0, -height * game.camera.zoom.x))
+	var terrain_lift := RtsIsoProjection.ground_lift(game, position)
+	draw_set_transform_matrix(Transform2D(0.0, terrain_lift))
 	draw_colored_polygon(PackedVector2Array([nw, ne, se, sw]), Color("273a30", 0.65))
 	if height > 0.0:
 		draw_colored_polygon(PackedVector2Array([ne + lift, se + lift, se, ne]), color.darkened(0.5))
@@ -404,7 +407,7 @@ func _draw_isometric() -> void:
 		draw_line(nw + lift, se + lift, roof_color.lightened(0.25), 2.0)
 		draw_circle(roof_middle, 4.0, Color("d8bd80"))
 	# Labels and status bars are drawn in screen space so they stay legible.
-	draw_set_transform_matrix(RtsIsoProjection.upright(canvas, Vector2.ZERO))
+	draw_set_transform_matrix(RtsIsoProjection.upright(canvas, terrain_lift))
 	var font := ThemeDB.fallback_font
 	if font != null:
 		var label := display_label()

@@ -13,3 +13,9 @@ static func upright(canvas: Transform2D, origin: Vector2, pixel_scale := 1.0) ->
 
 static func world_delta(canvas: Transform2D, screen_delta: Vector2) -> Vector2:
 	return canvas.affine_inverse().basis_xform(screen_delta)
+
+static func ground_lift(game: Node2D, point: Vector2) -> Vector2:
+	if game == null or game.world_map == null: return Vector2.ZERO
+	var height: float = game.world_map.elevation_at(point)
+	if height <= 0.0: return Vector2.ZERO
+	return world_delta(game.get_viewport().get_canvas_transform(), Vector2(0, -height * game.camera.zoom.x))

@@ -32,7 +32,9 @@ func seek(index: int) -> void:
 	queue_redraw()
 
 func _draw() -> void:
-	var bounds := Rect2(Vector2(4, 4), size - Vector2(8, 8))
+	var side := minf(size.x, size.y) - 8.0
+	var bounds := Rect2((size - Vector2.ONE * side) * 0.5, Vector2.ONE * side)
+	draw_rect(Rect2(Vector2.ZERO, size), Color("283b36"))
 	draw_rect(bounds, Color("283b36"))
 	if terrain_texture != null: draw_texture_rect(terrain_texture, bounds, false)
 	if statistics == null or statistics.samples.is_empty() or world_map == null: return

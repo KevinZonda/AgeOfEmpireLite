@@ -9,7 +9,9 @@ var grid_size := Vector2i.ZERO
 var map_seed := 0
 var map_style := "balanced"
 var player_count := 2
+var isometric_view := false
 var cells := PackedByteArray()
+var elevation_levels := PackedByteArray()
 var reachable_cells := PackedByteArray()
 var plants: Array[Dictionary] = []
 var stealth_patches: Array[Dictionary] = []
@@ -62,7 +64,35 @@ func generate(seed_value: int, map_size: Vector2, style := "balanced", participa
 	_generate_wildlife()
 	_generate_fish()
 	_ensure_starter_access()
+	_build_elevations()
 	queue_redraw()
+
+func _build_elevations() -> void:
+	elevation_levels.resize(cells.size())
+	elevation_levels.fill(0)
+	for y in grid_size.y:
+		for x in grid_size.x:
+			var cell := Vector2i(x, y)
+			var terrain: int = cells[_index(cell)]
+			if terrain == Terrain.MOUNTAIN:
+				elevation_levels[_index(cell)] = 3
+				continue
+			if terrain == Terrain.WATER: continue
+			var nearest := 3
+			for dy in range(-2, 3):
+				for dx in range(-2, 3):
+					var neighbor := cell + Vector2i(dx, dy)
+					if neighbor.x < 0 or neighbor.y < 0 or neighbor.x >= grid_size.x or neighbor.y >= grid_size.y: continue
+					if cells[_index(neighbor)] == Terrain.MOUNTAIN:
+						nearest = mini(nearest, maxi(absi(dx), absi(dy)))
+			elevation_levels[_index(cell)] = 2 if nearest == 1 else 1 if nearest == 2 else 0
+
+func elevation_at(point: Vector2) -> float:
+	if elevation_levels.is_empty(): return 0.0
+	return _height_for_level(elevation_levels[_index(cell_at(point))])
+
+func _height_for_level(level: int) -> float:
+	return [0.0, 10.0, 22.0, 54.0][clampi(level, 0, 3)]
 
 func spawn_positions() -> Array[Vector2]:
 	var references := [Vector2(330, 720), Vector2(2070, 720)] if player_count <= 2 else [Vector2(330, 420), Vector2(2070, 1080), Vector2(330, 1080), Vector2(2070, 420)]
@@ -115,6 +145,9 @@ func _reference_point(point: Vector2) -> Vector2:
 func _world_point(point: Vector2) -> Vector2:
 	return point * Vector2(world_size.x / 2400.0, world_size.y / 1500.0)
 
+func _starter_point(base: Vector2, offset: Vector2) -> Vector2:
+	return _world_point(base) + offset
+
 func _mountain_scale() -> float:
 	return 1.3 if map_style == "highlands" else 0.85 if map_style == "lakes" else 1.0
 
@@ -162,14 +195,7 @@ func forest_patch_at(point: Vector2) -> int:
 	return -1
 
 func is_high_ground(point: Vector2) -> bool:
-	var cell := cell_at(point)
-	if not is_walkable(point): return false
-	for dy in range(-2, 3):
-		for dx in range(-2, 3):
-			var neighbor := cell + Vector2i(dx, dy)
-			if neighbor.x < 0 or neighbor.y < 0 or neighbor.x >= grid_size.x or neighbor.y >= grid_size.y: continue
-			if cells[_index(neighbor)] == Terrain.MOUNTAIN: return true
-	return false
+	return is_walkable(point) and not elevation_levels.is_empty() and elevation_levels[_index(cell_at(point))] > 0
 
 func is_walkable(point: Vector2) -> bool:
 	var terrain := terrain_at(point)
@@ -324,24 +350,25 @@ func _generate_starter_resources() -> void:
 			var outward := -1.0 if base.x < 1200.0 else 1.0
 			var vertical := -1.0 if base.y < 750.0 else 1.0
 			for i in 5:
-				resource_specs.append({"kind": "wood", "appearance": "tree", "position": _world_point(base + Vector2(outward * (170 + (i % 2) * 40), vertical * (20 + (i / 2) * 47))), "amount": 500})
+				resource_specs.append({"kind": "wood", "appearance": "tree", "position": _starter_point(base, Vector2(outward * (170 + (i % 2) * 40), vertical * (20 + (i / 2) * 47))), "amount": 500})
 			for i in 4:
-				resource_specs.append({"kind": "food", "appearance": "berry", "position": _world_point(base + Vector2(-outward * (125 + (i % 2) * 43), vertical * (80 + (i / 2) * 40))), "amount": 420})
+				resource_specs.append({"kind": "food", "appearance": "berry", "position": _starter_point(base, Vector2(-outward * (125 + (i % 2) * 43), vertical * (80 + (i / 2) * 40))), "amount": 420})
 			for i in 3:
-				resource_specs.append({"kind": "gold", "appearance": "ore", "position": _world_point(base + Vector2(outward * (60 + i * 48), -vertical * 190)), "amount": 580})
+				resource_specs.append({"kind": "gold", "appearance": "ore", "position": _starter_point(base, Vector2(outward * (60 + i * 48), -vertical * 190)), "amount": 580})
 			for i in 3:
-				resource_specs.append({"kind": "stone", "appearance": "ore", "position": _world_point(base + Vector2(-outward * (70 + i * 48), vertical * 180)), "amount": 560})
+				resource_specs.append({"kind": "stone", "appearance": "ore", "position": _starter_point(base, Vector2(-outward * (70 + i * 48), vertical * 180)), "amount": 560})
 		return
 	for side in [0, 1]:
 		var x := 330.0 if side == 0 else 2070.0
+		var base := Vector2(x, 720)
 		for i in 5:
-			resource_specs.append({"kind": "wood", "appearance": "tree", "position": _world_point(Vector2(x + (-270 if side == 0 else 270) + (i % 2) * 52, 570 + (i / 2) * 57)), "amount": 500})
+			resource_specs.append({"kind": "wood", "appearance": "tree", "position": _starter_point(base, Vector2((-270 if side == 0 else 270) + (i % 2) * 52, -150 + (i / 2) * 57)), "amount": 500})
 		for i in 4:
-			resource_specs.append({"kind": "food", "appearance": "berry", "position": _world_point(Vector2(x + (120 if side == 0 else -120) + (i % 2) * 55, 560 + (i / 2) * 55)), "amount": 420})
+			resource_specs.append({"kind": "food", "appearance": "berry", "position": _starter_point(base, Vector2((120 if side == 0 else -120) + (i % 2) * 55, -160 + (i / 2) * 55)), "amount": 420})
 		for i in 3:
-			resource_specs.append({"kind": "gold", "appearance": "ore", "position": _world_point(Vector2(x + (-180 if side == 0 else 180) + i * 50, 930)), "amount": 580})
+			resource_specs.append({"kind": "gold", "appearance": "ore", "position": _starter_point(base, Vector2((-180 if side == 0 else 180) + i * 50, 210)), "amount": 580})
 		for i in 3:
-			resource_specs.append({"kind": "stone", "appearance": "ore", "position": _world_point(Vector2(x + (100 if side == 0 else -100) + i * 50, 970)), "amount": 560})
+			resource_specs.append({"kind": "stone", "appearance": "ore", "position": _starter_point(base, Vector2((100 if side == 0 else -100) + i * 50, 250)), "amount": 560})
 	for i in 7:
 		resource_specs.append({"kind": "wood", "appearance": "tree", "position": _world_point(Vector2(1100 + (i % 3) * 60, 350 + (i / 3) * 60)), "amount": 550})
 	for i in 5:
@@ -384,6 +411,15 @@ func _generate_fish() -> void:
 				resource_specs.append({"kind": "food", "appearance": "fish", "position": point, "amount": 420})
 				placed += 1
 
+func _tile_lift(height: float) -> Vector2:
+	var camera := get_viewport().get_camera_2d()
+	if camera == null: return Vector2.ZERO
+	return RtsIsoProjection.world_delta(get_viewport().get_canvas_transform(), Vector2(0, -height * camera.zoom.x))
+
+func _neighbor_level(x: int, y: int) -> int:
+	if x < 0 or y < 0 or x >= grid_size.x or y >= grid_size.y: return 0
+	return elevation_levels[_index(Vector2i(x, y))]
+
 func _draw() -> void:
 	for y in grid_size.y:
 		for x in grid_size.x:
@@ -400,19 +436,49 @@ func _draw() -> void:
 			if terrain == Terrain.WATER:
 				draw_line(point + Vector2(9, 19), point + Vector2(27, 19), Color("8fc3cf", 0.45), 2)
 				draw_line(point + Vector2(24, 35), point + Vector2(43, 35), Color("8fc3cf", 0.34), 2)
-			elif terrain == Terrain.MOUNTAIN:
+				if y > 0 and cells[_index(Vector2i(x, y - 1))] != Terrain.WATER:
+					draw_line(point, point + Vector2(CELL_SIZE, 0), Color("b8c6a0", 0.7), 2.0)
+				if x > 0 and cells[_index(Vector2i(x - 1, y))] != Terrain.WATER:
+					draw_line(point, point + Vector2(0, CELL_SIZE), Color("b8c6a0", 0.7), 2.0)
+			elif terrain == Terrain.MOUNTAIN and not isometric_view:
 				draw_colored_polygon(PackedVector2Array([point + Vector2(4, 46), point + Vector2(26, 8), point + Vector2(49, 46)]), Color("969e94"))
 				draw_colored_polygon(PackedVector2Array([point + Vector2(26, 8), point + Vector2(49, 46), point + Vector2(28, 38)]), Color("596663"))
 				draw_line(point + Vector2(19, 20), point + Vector2(26, 8), Color("d8d9c7"), 2)
 			elif terrain == Terrain.ROAD and x % 3 == 0 and y % 2 == 0:
 				draw_line(point + Vector2(10, 27), point + Vector2(35, 25), Color("b1aa75", 0.25), 2)
+	if isometric_view:
+		for y in grid_size.y:
+			for x in grid_size.x:
+				var cell := Vector2i(x, y)
+				var level: int = elevation_levels[_index(cell)]
+				if level == 0: continue
+				var lift := _tile_lift(_height_for_level(level))
+				var point := Vector2(x * CELL_SIZE, y * CELL_SIZE)
+				var nw := point
+				var ne := point + Vector2(CELL_SIZE, 0)
+				var se := point + Vector2(CELL_SIZE, CELL_SIZE)
+				var sw := point + Vector2(0, CELL_SIZE)
+				var terrain: int = cells[_index(cell)]
+				var top := Color("a0a99c") if terrain == Terrain.MOUNTAIN else Color("8daa73") if terrain == Terrain.MEADOW else Color("789768")
+				var west_level := _neighbor_level(x - 1, y)
+				if west_level < level:
+					var lower := _tile_lift(_height_for_level(west_level))
+					draw_colored_polygon(PackedVector2Array([nw + lift, sw + lift, sw + lower, nw + lower]), top.darkened(0.44))
+				var south_level := _neighbor_level(x, y + 1)
+				if south_level < level:
+					var lower := _tile_lift(_height_for_level(south_level))
+					draw_colored_polygon(PackedVector2Array([sw + lift, se + lift, se + lower, sw + lower]), top.darkened(0.27))
+				draw_colored_polygon(PackedVector2Array([nw + lift, ne + lift, se + lift, sw + lift]), top)
+				if level >= 2: draw_line(sw + lift, se + lift, top.lightened(0.16), 1.5)
 	for patch in stealth_patches:
 		var center: Vector2 = patch["position"]
+		if isometric_view: center += _tile_lift(elevation_at(center))
 		var radius: float = patch["radius"]
 		draw_circle(center, radius, Color("254f37", 0.28))
 		draw_arc(center, radius, 0.0, TAU, 48, Color("a1bc80", 0.5), 2.0)
 	for plant in plants:
 		var point: Vector2 = plant["position"]
+		if isometric_view: point += _tile_lift(elevation_at(point))
 		var size: float = plant["size"]
 		if plant["flower"]:
 			draw_circle(point, size * 0.45, Color("e2c078"))

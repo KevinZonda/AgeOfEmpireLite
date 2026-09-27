@@ -5,10 +5,12 @@ var game: Node2D
 var update_timer := 0.0
 var terrain_texture: Texture2D
 var cached_seed := -1
+var cached_size := Vector2i.ZERO
 
 func setup(game_ref: Node2D) -> void:
 	game = game_ref
-	custom_minimum_size = Vector2(208, 130)
+	custom_minimum_size = Vector2(208, 208)
+	clip_contents = true
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	queue_redraw()
@@ -39,7 +41,7 @@ func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, size), Color("334934"))
 	if game == null or not game.started: return
 	var terrain_map: RtsWorldMap = game.world_map
-	if cached_seed != terrain_map.map_seed or terrain_texture == null:
+	if cached_seed != terrain_map.map_seed or cached_size != terrain_map.grid_size or terrain_texture == null:
 		_build_terrain_texture(terrain_map)
 	draw_texture_rect(terrain_texture, Rect2(Vector2.ZERO, size), false)
 	if game.fog.active and game.fog.mask_texture != null:
@@ -98,3 +100,4 @@ func _build_terrain_texture(terrain_map: RtsWorldMap) -> void:
 			image.set_pixel(x, y, color)
 	terrain_texture = ImageTexture.create_from_image(image)
 	cached_seed = terrain_map.map_seed
+	cached_size = terrain_map.grid_size

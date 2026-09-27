@@ -7,11 +7,11 @@ func _run() -> void:
 	var map := RtsWorldMap.new()
 	var matching_map := RtsWorldMap.new()
 	for seed_value in range(1, 21):
-		map.generate(seed_value * 173, Vector2(2400, 1500))
+		map.generate(seed_value * 173, Vector2(2400, 2400))
 		assert(map.cells.has(RtsWorldMap.Terrain.WATER))
 		assert(map.cells.has(RtsWorldMap.Terrain.MOUNTAIN))
 		assert(map.plants.size() > 100)
-		assert(not map.path_between(Vector2(330, 720), Vector2(2070, 720)).is_empty())
+		assert(not map.path_between(map.spawn_positions()[0], map.spawn_positions()[1]).is_empty())
 		var west_starters := {"wood": 0, "food": 0, "gold": 0, "stone": 0}
 		var east_starters := {"wood": 0, "food": 0, "gold": 0, "stone": 0}
 		for index in 15:
@@ -25,9 +25,9 @@ func _run() -> void:
 				assert(map.is_navigable(spec["position"]))
 			else:
 				assert(map.is_walkable(spec["position"]))
-				assert(not map.path_between(Vector2(1200, 750), spec["position"]).is_empty())
+				assert(not map.path_between(map.world_size * 0.5, spec["position"]).is_empty())
 		assert(deer_count >= 12)
-	matching_map.generate(map.map_seed, Vector2(2400, 1500))
+	matching_map.generate(map.map_seed, Vector2(2400, 2400))
 	assert(matching_map.cells == map.cells)
 	assert(matching_map.resource_specs == map.resource_specs)
 	map.free()
@@ -37,9 +37,9 @@ func _run() -> void:
 	await process_frame
 	game.start_game("English", 12345)
 	assert(game.map_seed == 12345 and game.resources.size() == game.world_map.resource_specs.size())
-	assert(not game.can_place("house", Vector2(800, 1220)))
+	assert(not game.can_place("house", game._scaled_point(Vector2(800, 1220))))
 	var worker: RtsUnit = game.units[0]
-	worker.order_move(Vector2(800, 1220))
+	worker.order_move(game._scaled_point(Vector2(800, 1220)))
 	assert(game.world_map.is_walkable(worker.destination))
 	assert(game.weather.rain_active)
 	game.weather.weather_remaining = 0.01

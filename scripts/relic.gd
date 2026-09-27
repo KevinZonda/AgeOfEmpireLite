@@ -17,7 +17,7 @@ func _process(_delta: float) -> void:
 
 func _draw() -> void:
 	if game != null and game.view_mode_25d:
-		draw_set_transform_matrix(RtsIsoProjection.upright(get_viewport().get_canvas_transform(), Vector2.ZERO, game.camera.zoom.x))
+		draw_set_transform_matrix(RtsIsoProjection.upright(get_viewport().get_canvas_transform(), RtsIsoProjection.ground_lift(game, position), game.camera.zoom.x))
 	draw_circle(Vector2.ZERO, 14, Color("e6d28d", 0.25))
 	draw_rect(Rect2(-5, -11, 10, 21), Color("d6bc65"))
 	draw_rect(Rect2(-11, -4, 22, 8), Color("eee2a5"))

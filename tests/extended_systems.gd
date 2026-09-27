@@ -29,7 +29,7 @@ func _run() -> void:
 	var dock_point := Vector2.INF
 	for y in range(950, 1400, 25):
 		for x in range(520, 1080, 25):
-			var candidate := Vector2(x, y)
+			var candidate: Vector2 = game._scaled_point(Vector2(x, y))
 			if game.can_place("dock", candidate):
 				dock_point = candidate
 				break
@@ -51,7 +51,7 @@ func _run() -> void:
 	assert(game.train_unit(dock, "warship"))
 	dock._process(100.0)
 	assert(game.units.back().kind == "warship" and game.world_map.is_navigable(game.units.back().position))
-	var market_point := Vector2(600, 780)
+	var market_point: Vector2 = game._scaled_point(Vector2(600, 780))
 	assert(game.can_place("market", market_point))
 	assert(game.place_building(0, "market", market_point, workers))
 	var market: RtsBuilding = game.buildings.back()
@@ -66,7 +66,7 @@ func _run() -> void:
 	trader.position = market.position + Vector2(45, 0)
 	trader._process(0.0)
 	assert(game.players[0]["gold"] > gold_before, "completed trade route should earn gold")
-	var monastery_point := Vector2(680, 860)
+	var monastery_point: Vector2 = game._scaled_point(Vector2(680, 860))
 	assert(game.can_place("monastery", monastery_point))
 	assert(game.place_building(0, "monastery", monastery_point, workers))
 	var monastery: RtsBuilding = game.buildings.back()
@@ -86,7 +86,7 @@ func _run() -> void:
 	var second_monk: RtsUnit = game.spawn_unit(0, "monk", game.objectives.sacred_sites[0]["position"])
 	game.objectives._process(8.1)
 	assert(game.objectives.sacred_sites[0]["owner_id"] == 0)
-	var wall_start := Vector2(600, 650)
+	var wall_start: Vector2 = game._scaled_point(Vector2(600, 650))
 	var wall_end := wall_start + Vector2(136, 0)
 	for point in game._wall_positions(wall_start, wall_end): assert(game.can_place("palisade_wall", point))
 	game.selected.clear()
@@ -113,24 +113,24 @@ func _run() -> void:
 	gate.take_damage(2000.0)
 	game.navigation.path_between(enemy.position, game.world_map.cell_center(breached_cell), enemy)
 	assert(not game.navigation.enemy_pathfinder.is_point_solid(breached_cell), "breaching the gate should open the route")
-	game.selected_map_size = Vector2(3000, 1800)
+	game.selected_map_size = Vector2(3000, 3000)
 	game.selected_map_style = "lakes"
 	game.start_game("Chinese", 6789)
-	assert(game.world_size == Vector2(3000, 1800) and game.world_map.map_style == "lakes")
+	assert(game.world_size == Vector2(3000, 3000) and game.world_map.map_style == "lakes")
 	assert(not game.world_map.path_between(game._scaled_point(Vector2(330, 720)), game._scaled_point(Vector2(2070, 720))).is_empty())
 	game.players[1]["age"] = 2
 	game.players[1]["wood"] = 2000
 	game.ai._construct_dock(game.units[5])
 	assert(game.ai._has_building("dock"), "AI should find a reachable shore on large lake maps")
 	var same := RtsWorldMap.new()
-	same.generate(6789, Vector2(3000, 1800), "lakes")
+	same.generate(6789, Vector2(3000, 3000), "lakes")
 	assert(same.cells == game.world_map.cells and same.resource_specs == game.world_map.resource_specs)
 	var lake_cells := same.cells.count(RtsWorldMap.Terrain.WATER)
 	var lake_mountains := same.cells.count(RtsWorldMap.Terrain.MOUNTAIN)
-	same.generate(6789, Vector2(3000, 1800), "highlands")
+	same.generate(6789, Vector2(3000, 3000), "highlands")
 	assert(same.cells.count(RtsWorldMap.Terrain.WATER) < lake_cells)
 	assert(same.cells.count(RtsWorldMap.Terrain.MOUNTAIN) > lake_mountains)
-	assert(not same.path_between(Vector2(412, 864), Vector2(2588, 864)).is_empty())
+	assert(not same.path_between(same.spawn_positions()[0], same.spawn_positions()[1]).is_empty())
 	same.free()
 	game.free()
 	print("EXTENDED_SYSTEMS_OK")

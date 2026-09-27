@@ -28,7 +28,7 @@ func _run() -> void:
 	assert(before_zoom.distance_to(after_zoom) < 2.0, "zoom should retain the map point under the cursor")
 	var soldiers: Array[RtsUnit] = []
 	for i in 8:
-		var soldier: RtsUnit = game.spawn_unit(0, "spearman", Vector2(520 + (i % 4) * 30, 650 + (i / 4) * 30))
+		var soldier: RtsUnit = game.spawn_unit(0, "spearman", game._scaled_point(Vector2(520 + (i % 4) * 30, 650 + (i / 4) * 30)))
 		soldier.order_stop()
 		soldiers.append(soldier)
 	game.selected.clear()
@@ -42,7 +42,7 @@ func _run() -> void:
 	assert(line_button != null)
 	line_button.pressed.emit()
 	assert(game.formation_mode == "line")
-	var line := RtsMovementGroup.new(game, soldiers, Vector2(940, 700), "line", 8)
+	var line := RtsMovementGroup.new(game, soldiers, game._scaled_point(Vector2(940, 700)), "line", 8)
 	line.activate()
 	assert(line.slots.size() == 8)
 	var lateral_positions: Array[float] = []
@@ -59,7 +59,7 @@ func _run() -> void:
 	assert(soldiers[0].order == "attack" and soldiers[0].target == enemy)
 	soldiers[0].position += Vector2(230, 0)
 	soldiers[0]._process_attack_order(0.01)
-	assert(soldiers[0].order == "move" and soldiers[0].destination.distance_to(soldiers[0].engagement_origin) < 25.0, "defensive units should return after pursuing")
+	assert(soldiers[0].order == "move" and soldiers[0].destination.distance_to(soldiers[0].engagement_origin) <= RtsWorldMap.CELL_SIZE, "defensive units should return after pursuing")
 	game.credit_resource(0, "wood", 25)
 	game.match_statistics.tick(5.1)
 	assert(game.match_statistics.samples.size() >= 2)

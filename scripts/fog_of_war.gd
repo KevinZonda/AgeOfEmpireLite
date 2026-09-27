@@ -130,6 +130,7 @@ func update_visibility() -> void:
 		explored_cells[owner_id] = explored
 	_update_entity_visibility()
 	_update_mask()
+	game._prune_hidden_enemy_selection()
 	queue_redraw()
 	if game.minimap != null: game.minimap.queue_redraw()
 

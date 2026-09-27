@@ -17,23 +17,30 @@ func _run() -> void:
 	game.add_player_button.pressed.emit()
 	game.add_player_button.pressed.emit()
 	assert(game.lobby_players.size() == 4 and game.add_player_button.disabled)
+	for player in game.lobby_players: player["team"] = 1
+	game._update_lobby_team_state()
+	assert(game.setup_start_button.disabled, "a match needs opposing teams")
+	game.lobby_players[1]["team"] = 2
 	game.lobby_players[1]["difficulty"] = "easy"
 	game.lobby_players[1]["civilization"] = "Chinese"
 	game.lobby_players[2]["difficulty"] = "hard"
 	game.lobby_players[3]["civilization"] = "French"
+	game.lobby_players[2]["team"] = 1
+	game.lobby_players[3]["team"] = 2
+	game._refresh_player_rows()
 	game.map_style_choice.select(3)
 	game.map_size_choice.select(1)
 	game.projection_choice.select(1)
 	game.initial_resources_choice.select(2)
-	game.team_choice.select(1)
 	game.map_seed_input.text = "54321"
 	game._begin_menu_match()
 	assert(game.started and game.players.size() == 4)
 	assert(game.teams == [0, 1, 0, 1])
+	assert(not game.is_enemy(0, 2) and game.fog.can_see(0, game.spawn_point_for(2)))
 	assert(game.civilizations == ["English", "Chinese", "Chinese", "French"])
 	assert(game.players[0]["food"] == 700 and game.players[3]["stone"] == 300)
 	assert(game.map_seed == 54321 and game.map_style == "islands")
-	assert(game.world_size == Vector2(3000, 1800) and game.view_mode_25d)
+	assert(game.world_size == Vector2(3000, 3000) and game.view_mode_25d)
 	game._process(0.01)
 	assert(game.ai_think_timers[1] == 6.0 and game.ai_think_timers[2] == 1.5)
 	game._return_to_menu()

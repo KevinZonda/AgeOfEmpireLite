@@ -69,6 +69,8 @@ var spirit_buff_timer := 0.0
 var revealed_timer := 0.0
 var artillery_shot_ready := false
 var artillery_shot_cooldown := 0.0
+var facing_right := true
+var facing_back := false
 
 func setup(game_ref: Node2D, player_id: int, unit_kind: String) -> void:
 	game = game_ref
@@ -453,7 +455,7 @@ func resume_work() -> void:
 func _continue_gather() -> void:
 	var next_resource: RtsResource
 	if gather_kind != "":
-		next_resource = game.find_nearest_resource(gather_location, gather_kind, AUTO_GATHER_RADIUS, owner_id, kind == "fishing_boat")
+		next_resource = game.find_nearest_resource(gather_location, gather_kind, AUTO_GATHER_RADIUS, owner_id, kind == "fishing_boat", self)
 	if next_resource != null:
 		order_gather(next_resource)
 	else:
@@ -938,6 +940,7 @@ func _move_toward(point: Vector2, delta: float, stop_distance: float) -> bool:
 	var old_position := position
 	position = game.navigation.move_step(self, position.move_toward(waypoint, step))
 	game.navigation.unit_moved(self, old_position)
+	_update_facing(old_position)
 	if charging: charge_distance += old_position.distance_to(position)
 	position = position.clamp(Vector2(24, 24), game.world_size - Vector2(24, 24))
 	return position.distance_to(point) <= stop_distance + 0.5
@@ -950,6 +953,7 @@ func _move_with_group(delta: float) -> void:
 	var step := effective_speed() * delta
 	position = game.navigation.move_step(self, position.move_toward(point, step))
 	game.navigation.unit_moved(self, old_position)
+	_update_facing(old_position)
 	position = position.clamp(Vector2(24, 24), game.world_size - Vector2(24, 24))
 	if position.distance_squared_to(group_last_position) < 9.0 and position.distance_to(point) > 18.0:
 		group_stuck_time += delta
@@ -962,6 +966,16 @@ func _move_with_group(delta: float) -> void:
 		movement_group = null
 		_reset_route()
 		_move_toward(destination, delta, 8.0)
+
+func _update_facing(previous_position: Vector2) -> void:
+	if not game.view_mode_25d or previous_position.distance_squared_to(position) < 0.25: return
+	var screen_move := get_viewport().get_canvas_transform().basis_xform(position - previous_position)
+	var next_right := facing_right if absf(screen_move.x) < 0.5 else screen_move.x > 0.0
+	var next_back := facing_back if absf(screen_move.y) < 0.5 else screen_move.y < 0.0
+	if next_right != facing_right or next_back != facing_back:
+		facing_right = next_right
+		facing_back = next_back
+		queue_redraw()
 
 func take_damage(damage: float) -> void:
 	hp -= damage
@@ -1015,9 +1029,11 @@ func _draw() -> void:
 func _draw_isometric() -> void:
 	var color: Color = game.player_color(owner_id)
 	var canvas := get_viewport().get_canvas_transform()
+	var ground_lift := RtsIsoProjection.ground_lift(game, position)
 	# The footprint follows the ground projection; the figure faces the screen.
+	draw_set_transform_matrix(Transform2D(0.0, ground_lift))
 	draw_circle(Vector2.ZERO, radius() + 3.0, Color("1c2928", 0.62))
-	draw_set_transform_matrix(RtsIsoProjection.upright(canvas, Vector2.ZERO, game.camera.zoom.x))
+	draw_set_transform_matrix(RtsIsoProjection.upright(canvas, ground_lift, game.camera.zoom.x))
 	if stats.get("tags", []).has("naval"):
 		draw_colored_polygon(PackedVector2Array([Vector2(-radius(), -7), Vector2(radius(), -7), Vector2(radius() * 0.65, 3), Vector2(-radius() * 0.65, 3)]), Color("765839"))
 		draw_colored_polygon(PackedVector2Array([Vector2(-radius() * 0.7, -10), Vector2(radius() * 0.7, -10), Vector2(radius() * 0.45, -6), Vector2(-radius() * 0.45, -6)]), color)
@@ -1031,7 +1047,8 @@ func _draw_isometric() -> void:
 		draw_colored_polygon(PackedVector2Array([Vector2(-body_half, body_top), Vector2(body_half, body_top), Vector2(body_half + 2, body_bottom), Vector2(-body_half - 2, body_bottom)]), color.darkened(0.18))
 		draw_line(Vector2(-4, body_bottom), Vector2(-5, 2), Color("302f2a"), 2.5)
 		draw_line(Vector2(4, body_bottom), Vector2(5, 2), Color("302f2a"), 2.5)
-		draw_circle(Vector2(0, body_top - 5), 5.0, Color("e7d1ac"))
+		draw_circle(Vector2(0, body_top - 5), 5.0, color.darkened(0.32) if facing_back else Color("e7d1ac"))
+		if not facing_back: draw_circle(Vector2(2.0 if facing_right else -2.0, body_top - 5), 1.25, Color("443a32"))
 		if kind == "monk":
 			draw_line(Vector2(9, -24), Vector2(9, 0), Color("e9dca6"), 2.0)
 			draw_line(Vector2(5, -19), Vector2(13, -19), Color("e9dca6"), 2.0)
@@ -1041,7 +1058,7 @@ func _draw_isometric() -> void:
 			draw_colored_polygon(PackedVector2Array([Vector2(-13, -5), Vector2(12, -5), Vector2(15, 0), Vector2(-12, 0)]), Color("a1835c"))
 		elif kind == "villager":
 			draw_rect(Rect2(7, -11, 6, 6), Color("b6a07a"))
-	draw_set_transform_matrix(RtsIsoProjection.upright(canvas, Vector2.ZERO))
+	draw_set_transform_matrix(RtsIsoProjection.upright(canvas, ground_lift))
 	var bar_width := maxf(18.0, radius() * 2.0)
 	draw_rect(Rect2(-bar_width * 0.5, -38, bar_width, 4), Color("422f2d"))
 	draw_rect(Rect2(-bar_width * 0.5, -38, bar_width * clampf(hp / max_hp, 0.0, 1.0), 4), Color("82dd8b"))

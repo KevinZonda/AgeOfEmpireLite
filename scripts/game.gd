@@ -1,6 +1,8 @@
 extends Node2D
 
-const WORLD_SIZE := Vector2(2400, 1500)
+const WORLD_SIZE := Vector2(2400, 2400)
+const WINDOW_RESOLUTIONS := [Vector2i(1280, 720), Vector2i(1440, 810), Vector2i(1600, 900), Vector2i(1920, 1080), Vector2i(2560, 1440)]
+const DISPLAY_SETTINGS_PATH := "user://display.cfg"
 const CAMERA_PAN_SPEED := 570.0
 const GESTURE_PAN_PIXELS := 32.0
 const EDGE_SCROLL_MARGIN := 28.0
@@ -22,7 +24,6 @@ var world_size := WORLD_SIZE
 var civilizations := ["English", "French"]
 var teams: Array[int] = [0, 1]
 var match_mode := "duel"
-var team_choice: OptionButton
 var defeated_players: Array[int] = []
 var players: Array[Dictionary] = []
 var units: Array[RtsUnit] = []
@@ -52,9 +53,11 @@ var projection_choice: OptionButton
 var initial_resources_choice: OptionButton
 var player_list: VBoxContainer
 var add_player_button: Button
+var setup_start_button: Button
+var setup_warning_label: Label
 var lobby_players: Array[Dictionary] = [
-	{"civilization": "English", "difficulty": "human"},
-	{"civilization": "French", "difficulty": "normal"},
+	{"civilization": "English", "difficulty": "human", "team": 1},
+	{"civilization": "French", "difficulty": "normal", "team": 2},
 ]
 var use_lobby_setup := false
 var selected_initial_resources := 1
@@ -78,6 +81,8 @@ var wall_start := Vector2.ZERO
 var wall_end := Vector2.ZERO
 var drag_start := Vector2.ZERO
 var drag_current := Vector2.ZERO
+var drag_start_screen := Vector2.ZERO
+var drag_current_screen := Vector2.ZERO
 var ai_think_timers: Dictionary = {}
 var iso_sort_timer := 0.0
 var ai: RtsAiController
@@ -85,6 +90,7 @@ var ai_controllers: Array[RtsAiController] = []
 var hud_timer := 0.0
 var notice_timer := 0.0
 var hit_lines: Array[Dictionary] = []
+var order_markers: Array[Dictionary] = []
 var match_statistics := RtsMatchStatistics.new()
 
 var top_label: Label
@@ -115,9 +121,14 @@ var minimap: RtsMinimap
 var menu_panel: PanelContainer
 var result_panel: PanelContainer
 var pause_overlay: ColorRect
+var settings_overlay: ColorRect
+var resolution_choice: OptionButton
+var resolution_values: Array[Vector2i] = []
+var settings_from_pause := false
 var cursor: GameCursor
 
 func _ready() -> void:
+	_load_display_settings()
 	world_map = RtsWorldMap.new()
 	world_map.z_index = -10
 	add_child(world_map)
@@ -245,7 +256,7 @@ func _create_hud() -> void:
 	var bottom := PanelContainer.new()
 	hud_bottom = bottom
 	bottom.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	bottom.offset_top = -200
+	bottom.offset_top = -270
 	bottom.add_theme_stylebox_override("panel", _hud_panel_style(Color("241d16"), 7))
 	root.add_child(bottom)
 	var dock := HBoxContainer.new()
@@ -303,6 +314,8 @@ func _create_hud() -> void:
 	detail_label.add_theme_font_size_override("font_size", 13)
 	detail_label.add_theme_color_override("font_color", Color("d3c5a8"))
 	detail_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	detail_label.custom_minimum_size.x = 420
+	detail_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var detail_scroll := ScrollContainer.new()
 	detail_scroll.custom_minimum_size.y = 85
 	detail_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -399,9 +412,11 @@ func _create_hud() -> void:
 	_add_menu_label(pause_box, "游戏已暂停", 27)
 	_add_menu_label(pause_box, "按 Esc 继续游戏", 16)
 	_add_pause_button(pause_box, "继续游戏", func() -> void: _set_paused(false))
+	_add_pause_button(pause_box, "显示设置", func() -> void: _show_display_settings(true))
 	_add_pause_button(pause_box, "重新开始", func() -> void: start_game(selected_civ, -1, selected_opponent_civ))
 	_add_pause_button(pause_box, "返回主界面", func() -> void: _return_to_menu())
 	_add_pause_button(pause_box, "退出游戏", func() -> void: get_tree().quit())
+	_create_display_settings(root)
 
 func _hud_panel_style(color: Color, margin: float) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
@@ -505,10 +520,112 @@ func _add_pause_button(parent: Node, label_text: String, action: Callable) -> vo
 	button.pressed.connect(action)
 	parent.add_child(button)
 
+func _create_display_settings(parent: Control) -> void:
+	settings_overlay = ColorRect.new()
+	settings_overlay.color = Color(0.08, 0.06, 0.04, 0.78)
+	settings_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	settings_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	parent.add_child(settings_overlay)
+	var panel := PanelContainer.new()
+	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	panel.custom_minimum_size = Vector2(500, 310)
+	panel.offset_left = -250
+	panel.offset_top = -155
+	panel.offset_right = 250
+	panel.offset_bottom = 155
+	panel.add_theme_stylebox_override("panel", _hud_panel_style(Color("30271c"), 20))
+	settings_overlay.add_child(panel)
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 16)
+	panel.add_child(box)
+	_add_menu_label(box, "显示设置", 27)
+	_add_menu_label(box, "窗口分辨率", 17)
+	resolution_choice = OptionButton.new()
+	resolution_choice.custom_minimum_size.y = 42
+	_style_button(resolution_choice)
+	box.add_child(resolution_choice)
+	_add_menu_label(box, "设置会在下次启动时保留。", 14)
+	var buttons := HBoxContainer.new()
+	buttons.add_theme_constant_override("separation", 12)
+	box.add_child(buttons)
+	var back_button := Button.new()
+	back_button.text = "返回"
+	back_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_style_button(back_button)
+	back_button.pressed.connect(_close_display_settings)
+	buttons.add_child(back_button)
+	var apply_button := Button.new()
+	apply_button.text = "应用分辨率"
+	apply_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_style_button(apply_button, true)
+	apply_button.pressed.connect(func() -> void:
+		var index := resolution_choice.selected
+		if index < 0 or index >= resolution_values.size(): return
+		_apply_window_resolution(resolution_values[index])
+		_close_display_settings()
+	)
+	buttons.add_child(apply_button)
+	settings_overlay.hide()
+
+func _show_display_settings(from_pause := false) -> void:
+	settings_from_pause = from_pause
+	_refresh_resolution_options()
+	if not from_pause: menu_panel.hide()
+	settings_overlay.show()
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	if cursor != null: cursor.hide()
+
+func _close_display_settings() -> void:
+	settings_overlay.hide()
+	if settings_from_pause:
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	else:
+		menu_panel.show()
+	settings_from_pause = false
+
+func _refresh_resolution_options() -> void:
+	resolution_choice.clear()
+	resolution_values.clear()
+	var current := get_window().size
+	var usable := DisplayServer.screen_get_usable_rect(get_window().current_screen).size
+	for resolution in WINDOW_RESOLUTIONS:
+		if DisplayServer.get_name() != "headless" and resolution != current and (resolution.x > usable.x or resolution.y > usable.y): continue
+		resolution_values.append(resolution)
+		resolution_choice.add_item("%d × %d" % [resolution.x, resolution.y])
+	if not resolution_values.has(current):
+		resolution_values.append(current)
+		resolution_choice.add_item("当前窗口：%d × %d" % [current.x, current.y])
+	resolution_choice.select(resolution_values.find(current))
+
+func _apply_window_resolution(resolution: Vector2i, save_setting := true) -> void:
+	if not WINDOW_RESOLUTIONS.has(resolution) and resolution != get_window().size: return
+	var window := get_window()
+	window.mode = Window.MODE_WINDOWED
+	window.size = resolution
+	if DisplayServer.get_name() != "headless":
+		var usable := DisplayServer.screen_get_usable_rect(window.current_screen)
+		window.position = usable.position + (usable.size - resolution) / 2
+	if started: call_deferred("_clamp_camera_position")
+	if save_setting:
+		var config := ConfigFile.new()
+		config.set_value("display", "window_size", resolution)
+		config.save(DISPLAY_SETTINGS_PATH)
+
+func _load_display_settings() -> void:
+	if DisplayServer.get_name() == "headless": return
+	var config := ConfigFile.new()
+	if config.load(DISPLAY_SETTINGS_PATH) != OK: return
+	var resolution: Variant = config.get_value("display", "window_size", Vector2i.ZERO)
+	if not resolution is Vector2i or not WINDOW_RESOLUTIONS.has(resolution): return
+	var usable := DisplayServer.screen_get_usable_rect(get_window().current_screen).size
+	if resolution.x <= usable.x and resolution.y <= usable.y:
+		_apply_window_resolution(resolution, false)
+
 func _show_menu() -> void:
 	paused = false
 	use_lobby_setup = false
 	if pause_overlay != null: pause_overlay.hide()
+	if settings_overlay != null: settings_overlay.hide()
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	if cursor != null: cursor.hide()
 	menu_backdrop.show()
@@ -549,6 +666,12 @@ func _show_home_menu() -> void:
 	_style_button(start_button, true)
 	start_button.pressed.connect(_show_setup_menu)
 	box.add_child(start_button)
+	var settings_button := Button.new()
+	settings_button.text = "显 示 设 置"
+	settings_button.custom_minimum_size.y = 43
+	_style_menu_button(settings_button)
+	settings_button.pressed.connect(func() -> void: _show_display_settings())
+	box.add_child(settings_button)
 	var quit_button := Button.new()
 	quit_button.text = "退 出 游 戏"
 	quit_button.custom_minimum_size.y = 43
@@ -578,13 +701,15 @@ func _show_setup_menu() -> void:
 	box.add_child(body)
 	var players_column := _menu_section(body, "玩家信息", 575)
 	var heading := HBoxContainer.new()
-	heading.add_theme_constant_override("separation", 8)
+	heading.add_theme_constant_override("separation", 6)
 	players_column.add_child(heading)
 	var player_heading := _menu_ink_label(heading, "玩家", 14)
-	player_heading.custom_minimum_size.x = 128
+	player_heading.custom_minimum_size.x = 100
 	var difficulty_heading := _menu_ink_label(heading, "AI 强度", 14)
-	difficulty_heading.custom_minimum_size.x = 140
-	_menu_ink_label(heading, "国家", 14)
+	difficulty_heading.custom_minimum_size.x = 115
+	var nation_heading := _menu_ink_label(heading, "国家", 14)
+	nation_heading.custom_minimum_size.x = 130
+	_menu_ink_label(heading, "队伍", 14)
 	player_list = VBoxContainer.new()
 	player_list.add_theme_constant_override("separation", 7)
 	players_column.add_child(player_list)
@@ -595,11 +720,11 @@ func _show_setup_menu() -> void:
 	add_player_button.pressed.connect(func() -> void:
 		if lobby_players.size() >= 4: return
 		var civilization_ids := GameData.CIVILIZATIONS.keys()
-		lobby_players.append({"civilization": civilization_ids[lobby_players.size() % civilization_ids.size()], "difficulty": "normal"})
+		lobby_players.append({"civilization": civilization_ids[lobby_players.size() % civilization_ids.size()], "difficulty": "normal", "team": lobby_players.size() + 1})
 		_refresh_player_rows()
 	)
 	players_column.add_child(add_player_button)
-	var player_hint := _menu_ink_label(players_column, "最多 4 位玩家；玩家 1 由你控制。", 13)
+	var player_hint := _menu_ink_label(players_column, "同队共享视野与胜利；至少需要两个队伍。", 13)
 	player_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	var settings_column := _menu_section(body, "对局设置", 0)
 	_menu_ink_label(settings_column, "地图选择", 14)
@@ -628,13 +753,6 @@ func _show_setup_menu() -> void:
 	initial_resources_choice.selected = selected_initial_resources
 	_style_menu_button(initial_resources_choice)
 	settings_column.add_child(initial_resources_choice)
-	_menu_ink_label(settings_column, "队伍", 14)
-	team_choice = OptionButton.new()
-	team_choice.add_item("自由混战")
-	team_choice.add_item("2 对 2")
-	team_choice.selected = 1 if match_mode == "team2" else 0
-	_style_menu_button(team_choice)
-	settings_column.add_child(team_choice)
 	_menu_ink_label(settings_column, "地图种子", 14)
 	map_seed_input = LineEdit.new()
 	map_seed_input.placeholder_text = "留空则随机生成"
@@ -654,12 +772,14 @@ func _show_setup_menu() -> void:
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	footer.add_child(spacer)
-	var start_button := Button.new()
-	start_button.text = "开 始 对 局"
-	start_button.custom_minimum_size = Vector2(210, 47)
-	_style_button(start_button, true)
-	start_button.pressed.connect(_begin_menu_match)
-	footer.add_child(start_button)
+	setup_warning_label = _menu_ink_label(footer, "", 13)
+	setup_warning_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	setup_start_button = Button.new()
+	setup_start_button.text = "开 始 对 局"
+	setup_start_button.custom_minimum_size = Vector2(210, 47)
+	_style_button(setup_start_button, true)
+	setup_start_button.pressed.connect(_begin_menu_match)
+	footer.add_child(setup_start_button)
 	_refresh_player_rows()
 	menu_panel.show()
 
@@ -672,13 +792,13 @@ func _refresh_player_rows() -> void:
 	for index in lobby_players.size():
 		var slot := index
 		var row := HBoxContainer.new()
-		row.add_theme_constant_override("separation", 8)
+		row.add_theme_constant_override("separation", 6)
 		player_list.add_child(row)
 		var player_name := _menu_ink_label(row, "玩家 %d%s" % [slot + 1, " (你)" if slot == 0 else ""], 15)
-		player_name.custom_minimum_size.x = 128
+		player_name.custom_minimum_size.x = 100
 		player_name.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		var difficulty := OptionButton.new()
-		difficulty.custom_minimum_size.x = 140
+		difficulty.custom_minimum_size.x = 115
 		if slot == 0:
 			difficulty.add_item("人类")
 			difficulty.disabled = true
@@ -691,7 +811,7 @@ func _refresh_player_rows() -> void:
 		_style_menu_button(difficulty)
 		row.add_child(difficulty)
 		var civilization := OptionButton.new()
-		civilization.custom_minimum_size.x = 155
+		civilization.custom_minimum_size.x = 130
 		for civ in civilization_ids: civilization.add_item(GameData.CIVILIZATIONS[civ]["label"])
 		civilization.selected = civilization_ids.find(lobby_players[slot]["civilization"])
 		civilization.item_selected.connect(func(value: int) -> void:
@@ -699,9 +819,19 @@ func _refresh_player_rows() -> void:
 		)
 		_style_menu_button(civilization)
 		row.add_child(civilization)
+		var team := OptionButton.new()
+		team.custom_minimum_size.x = 86
+		for team_id in range(1, 5): team.add_item("队伍 %d" % team_id)
+		team.selected = clampi(int(lobby_players[slot].get("team", slot + 1)) - 1, 0, 3)
+		team.item_selected.connect(func(value: int) -> void:
+			lobby_players[slot]["team"] = value + 1
+			_update_lobby_team_state()
+		)
+		_style_menu_button(team)
+		row.add_child(team)
 		var remove_button := Button.new()
 		remove_button.text = "×"
-		remove_button.custom_minimum_size.x = 37
+		remove_button.custom_minimum_size.x = 32
 		remove_button.disabled = slot == 0 or lobby_players.size() <= 2
 		remove_button.tooltip_text = "移除玩家"
 		_style_menu_button(remove_button)
@@ -711,8 +841,14 @@ func _refresh_player_rows() -> void:
 		)
 		row.add_child(remove_button)
 	add_player_button.disabled = lobby_players.size() >= 4
-	team_choice.disabled = lobby_players.size() != 4
-	if team_choice.disabled: team_choice.selected = 0
+	_update_lobby_team_state()
+
+func _update_lobby_team_state() -> void:
+	var unique_teams := {}
+	for player in lobby_players: unique_teams[int(player.get("team", 1))] = true
+	var valid := unique_teams.size() >= 2
+	setup_start_button.disabled = not valid
+	setup_warning_label.text = "至少需要两个队伍" if not valid else ""
 
 func _menu_ink_label(parent: Node, value: String, size: int) -> Label:
 	var label := Label.new()
@@ -735,9 +871,12 @@ func _menu_section(parent: HBoxContainer, heading: String, width: float) -> VBox
 	return column
 
 func _begin_menu_match() -> void:
+	var unique_teams := {}
+	for player in lobby_players: unique_teams[int(player.get("team", 1))] = true
+	if unique_teams.size() < 2: return
 	var count := lobby_players.size()
-	match_mode = "duel" if count == 2 else "ffa3" if count == 3 else "team2" if team_choice.selected == 1 else "ffa4"
-	selected_map_size = Vector2(3000, 1800) if map_size_choice.selected == 1 else WORLD_SIZE
+	match_mode = "duel" if count == 2 else "ffa3" if count == 3 else "ffa4"
+	selected_map_size = Vector2(3000, 3000) if map_size_choice.selected == 1 else WORLD_SIZE
 	selected_map_style = ["balanced", "lakes", "highlands", "islands"][map_style_choice.selected]
 	selected_initial_resources = initial_resources_choice.selected
 	selected_view_mode_25d = projection_choice.selected == 1
@@ -770,7 +909,7 @@ func start_game(civ: String, requested_seed := -1, opponent_civ := "") -> void:
 	defeated_players.clear()
 	market_supply = {"food": 0, "wood": 0, "stone": 0}
 	for owner_id in player_count:
-		teams.append(0 if owner_id == 0 or match_mode == "team2" and owner_id == 2 else 1 if match_mode == "team2" else owner_id)
+		teams.append(int(lobby_players[owner_id].get("team", owner_id + 1)) - 1 if use_lobby_setup else 0 if owner_id == 0 or match_mode == "team2" and owner_id == 2 else 1 if match_mode == "team2" else owner_id)
 		civilizations.append(lobby_players[owner_id]["civilization"] if use_lobby_setup else civ if owner_id == 0 else civilization_ids[(civilization_ids.find(opponent_civ) + owner_id - 1) % civilization_ids.size()])
 		var bank := {"food": 340 if owner_id == 0 else 420, "wood": 360 if owner_id == 0 else 420, "gold": 150 if owner_id == 0 else 170, "stone": 100, "age": 1, "researched": [], "landmarks": [], "dynasty": ""}
 		if use_lobby_setup:
@@ -820,7 +959,8 @@ func start_game(civ: String, requested_seed := -1, opponent_civ := "") -> void:
 	match_statistics.reset(self)
 	ai_controllers.clear()
 	for owner_id in range(1, player_count):
-		ai_controllers.append(RtsAiController.new(self, owner_id))
+		var ai_difficulty: String = lobby_players[owner_id]["difficulty"] if use_lobby_setup else "normal"
+		ai_controllers.append(RtsAiController.new(self, owner_id, ai_difficulty))
 		ai_think_timers[owner_id] = 0.0
 	ai = ai_controllers[0]
 	if use_lobby_setup and view_mode_25d != selected_view_mode_25d: _toggle_view_mode()
@@ -848,7 +988,7 @@ func _clear_world() -> void:
 	hit_lines.clear()
 
 func _scaled_point(point: Vector2) -> Vector2:
-	return point * Vector2(world_size.x / WORLD_SIZE.x, world_size.y / WORLD_SIZE.y)
+	return point * Vector2(world_size.x / 2400.0, world_size.y / 1500.0)
 
 func spawn_point_for(owner_id: int) -> Vector2:
 	if players.size() <= 2: return _scaled_point(Vector2(330, 720) if owner_id == 0 else Vector2(2070, 720))
@@ -921,6 +1061,7 @@ func _set_paused(value: bool) -> void:
 	paused = value
 	dragging = false
 	pause_overlay.visible = value
+	if not value and settings_overlay != null: settings_overlay.hide()
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if value else Input.MOUSE_MODE_HIDDEN
 	cursor.visible = not value
 	queue_redraw()
@@ -1418,8 +1559,25 @@ func construct_landmark(owner_id: int, landmark_id: String) -> bool:
 	if workers.size() > 2: workers.resize(2)
 	var inward := 180.0 if spawn_point_for(owner_id).x < world_size.x * 0.5 else -180.0
 	var candidates := [Vector2(0, 180), Vector2(0, -180), Vector2(inward, 0), Vector2(inward, 180), Vector2(inward, -180)]
+	for radius in [250.0, 340.0, 440.0, 540.0]:
+		for spoke in 16:
+			candidates.append(Vector2.from_angle(TAU * spoke / 16.0) * radius)
 	for offset in candidates:
 		if can_place("landmark", center.position + offset): return place_landmark(owner_id, landmark_id, center.position + offset, workers)
+	# A developed base may occupy every preferred landmark slot. Search the
+	# surrounding buildable area so age progression cannot deadlock there.
+	for radius in [240.0, 310.0, 380.0, 450.0, 520.0, 590.0]:
+		for step in 16:
+			var point: Vector2 = center.position + Vector2.from_angle(TAU * float(step) / 16.0) * radius
+			if not can_place("landmark", point): continue
+			var nearby_workers: Array[RtsUnit] = []
+			for unit in units:
+				if is_instance_valid(unit) and unit.owner_id == owner_id and unit.kind == "villager" and unit.garrisoned_in == null: nearby_workers.append(unit)
+			nearby_workers.sort_custom(func(a: RtsUnit, b: RtsUnit) -> bool: return a.position.distance_squared_to(point) < b.position.distance_squared_to(point))
+			for worker in nearby_workers:
+				if navigation.path_to_range(worker.position, point, float(GameData.BUILDINGS["landmark"]["size"].x) * 0.6 + worker.radius(), worker).is_empty(): continue
+				var builders: Array[RtsUnit] = [worker]
+				return place_landmark(owner_id, landmark_id, point, builders)
 	return false
 
 func complete_age(owner_id: int, target_age: int, landmark_id := "") -> void:
@@ -1528,7 +1686,7 @@ func count_builders(building: RtsBuilding) -> int:
 			count += 1
 	return count
 
-func find_nearest_resource(world_point: Vector2, kind: String, max_distance := INF, viewer_id := -1, naval := false) -> RtsResource:
+func find_nearest_resource(world_point: Vector2, kind: String, max_distance := INF, viewer_id := -1, naval := false, for_unit: RtsUnit = null) -> RtsResource:
 	var nearest: RtsResource
 	var shortest := max_distance * max_distance
 	for resource in resources:
@@ -1538,6 +1696,7 @@ func find_nearest_resource(world_point: Vector2, kind: String, max_distance := I
 		if viewer_id >= 0 and fog.active and not fog.can_show_resource(viewer_id, resource): continue
 		var distance := world_point.distance_squared_to(resource.position)
 		if distance < shortest:
+			if for_unit != null and navigation.path_to_range(world_point, resource.position, resource.radius + for_unit.radius() + 2.0, for_unit).is_empty(): continue
 			shortest = distance
 			nearest = resource
 	return nearest
@@ -1623,7 +1782,9 @@ func _process(delta: float) -> void:
 	for line in hit_lines:
 		line["time"] -= delta
 	hit_lines = hit_lines.filter(func(line: Dictionary) -> bool: return line["time"] > 0.0)
-	if dragging or build_mode != "" or not hit_lines.is_empty(): queue_redraw()
+	for marker in order_markers: marker["time"] -= delta
+	order_markers = order_markers.filter(func(marker: Dictionary) -> bool: return marker["time"] > 0.0)
+	if dragging or build_mode != "" or not hit_lines.is_empty() or not order_markers.is_empty(): queue_redraw()
 
 func _pan_camera(delta: float) -> void:
 	var direction := Vector2.ZERO
@@ -1647,14 +1808,18 @@ func _clamp_camera_position() -> void:
 	var extents := Vector2(absf(cos(angle)) * half_view.x + absf(sin(angle)) * half_view.y, absf(sin(angle)) * half_view.x + absf(cos(angle)) * half_view.y)
 	# A diamond-shaped projected view cannot fit inside the standard map.
 	# Keep its center navigable and allow some background at the corners.
-	var margin := extents.min(world_size * (0.25 if view_mode_25d else 0.5))
+	var margin := extents.min(world_size * (0.12 if view_mode_25d else 0.5))
 	camera.position = camera.position.clamp(margin, world_size - margin)
 
 func _toggle_view_mode() -> void:
+	var at_starting_camera := started and match_statistics.elapsed < 2.0 and camera.position.distance_to(_scaled_point(Vector2(630, 720))) < 2.0
 	view_mode_25d = not view_mode_25d
+	world_map.isometric_view = view_mode_25d
+	world_map.queue_redraw()
 	var base_zoom := camera.zoom.x
 	camera.rotation = -PI / 4.0 if view_mode_25d else 0.0
 	camera.zoom = Vector2(base_zoom, base_zoom * 0.5 if view_mode_25d else base_zoom)
+	if view_mode_25d and at_starting_camera: camera.position = spawn_point_for(0)
 	_clamp_camera_position()
 	view_button.text = "2D 视角" if view_mode_25d else "2.5D 视角"
 	_redraw_projected_entities()
@@ -1721,7 +1886,7 @@ func _cursor_state_at(world_point: Vector2, over_ui := false) -> String:
 	if build_mode != "":
 		var cost: Dictionary = RtsLandmarkCatalog.landmark(pending_landmark_id).get("cost", {}) if build_mode == "landmark" else RtsCivilizationRules.building_cost(civilizations[0], build_mode)
 		return "build_valid" if can_place(build_mode, world_point, wall_vertical) and can_afford(0, cost) else "build_invalid"
-	if dragging and drag_start.distance_to(world_point) > 12.0: return "drag"
+	if dragging and drag_start_screen.distance_to(get_viewport().get_mouse_position()) > 12.0: return "drag"
 	var entity := _entity_at(world_point)
 	var resource := _resource_at(world_point)
 	var post := _trade_post_at(world_point)
@@ -1745,7 +1910,7 @@ func _cursor_state_at(world_point: Vector2, over_ui := false) -> String:
 	if resource != null and resource.appearance == "fish" and not selected.is_empty() and selected[0] is RtsUnit and selected[0].kind == "fishing_boat": return "gather"
 	if post != null and not selected.is_empty() and selected[0] is RtsUnit and selected[0].kind == "trader": return "trade"
 	if relic != null and not selected.is_empty() and selected[0] is RtsUnit and selected[0].kind == "monk": return "relic"
-	if entity != null and entity.owner_id == 0: return "select"
+	if entity != null and (entity.owner_id == 0 or entity is RtsUnit and is_enemy(0, entity.owner_id) and not has_unit): return "select"
 	if has_unit: return "move"
 	if has_producer: return "rally"
 	return "default"
@@ -1756,6 +1921,11 @@ func _player_center(owner_id: int) -> RtsBuilding:
 	return null
 
 func _input(event: InputEvent) -> void:
+	if settings_overlay != null and settings_overlay.visible:
+		if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
+			_close_display_settings()
+			get_viewport().set_input_as_handled()
+		return
 	if not started or game_over: return
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
 		_set_paused(not paused)
@@ -1809,6 +1979,8 @@ func _unhandled_input(event: InputEvent) -> void:
 				dragging = true
 				drag_start = get_global_mouse_position()
 				drag_current = drag_start
+				drag_start_screen = event.position
+				drag_current_screen = event.position
 			else:
 				if wall_dragging:
 					wall_dragging = false
@@ -1816,7 +1988,7 @@ func _unhandled_input(event: InputEvent) -> void:
 					return
 				if dragging:
 					dragging = false
-					_select_area(drag_start, get_global_mouse_position(), event.shift_pressed)
+					_select_screen_area(drag_start_screen, event.position, event.shift_pressed)
 					queue_redraw()
 			return
 		if event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
@@ -1834,6 +2006,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			return
 	if event is InputEventMouseMotion and dragging:
 		drag_current = get_global_mouse_position()
+		drag_current_screen = event.position
 		queue_redraw()
 	if event is InputEventMouseMotion and wall_dragging:
 		wall_end = get_global_mouse_position()
@@ -1858,15 +2031,22 @@ func _unhandled_input(event: InputEvent) -> void:
 				if entity is RtsBuilding and entity.kind != "town_center": entity_destroyed(entity)
 
 func _select_area(from: Vector2, to: Vector2, additive: bool) -> void:
+	var world_to_screen := get_viewport().get_canvas_transform()
+	_select_screen_area(world_to_screen * from, world_to_screen * to, additive)
+
+func _select_screen_area(from: Vector2, to: Vector2, additive: bool) -> void:
 	if not additive: selected.clear()
 	var world_to_screen := get_viewport().get_canvas_transform()
-	var screen_area := Rect2(world_to_screen * from, world_to_screen * to - world_to_screen * from).abs()
+	var screen_area := Rect2(from, to - from).abs()
 	if screen_area.size.length() < 12:
-		var entity := _entity_at(to)
-		if entity != null and entity.owner_id == 0 and not selected.has(entity): selected.append(entity)
+		var entity := _entity_at(world_to_screen.affine_inverse() * to)
+		if entity is RtsUnit and is_enemy(0, entity.owner_id):
+			selected.clear()
+			selected.append(entity)
+		elif entity != null and entity.owner_id == 0 and not selected.has(entity): selected.append(entity)
 	else:
 		for unit in units:
-			if is_instance_valid(unit) and unit.garrisoned_in == null and unit.owner_id == 0 and screen_area.has_point(world_to_screen * unit.position) and not selected.has(unit):
+			if is_instance_valid(unit) and unit.garrisoned_in == null and unit.owner_id == 0 and screen_area.has_point(world_to_screen * (unit.position + (RtsIsoProjection.ground_lift(self, unit.position) if view_mode_25d else Vector2.ZERO))) and not selected.has(unit):
 				selected.append(unit)
 	_rebuild_actions()
 	_update_hud()
@@ -1878,7 +2058,7 @@ func _select_same_type_visible(clicked: RtsUnit, additive: bool) -> void:
 	var visible_area := get_viewport_rect()
 	for unit in units:
 		if not is_instance_valid(unit) or unit.is_queued_for_deletion() or unit.garrisoned_in != null: continue
-		if unit.owner_id == clicked.owner_id and unit.kind == clicked.kind and visible_area.has_point(world_to_screen * unit.position) and not selected.has(unit):
+		if unit.owner_id == clicked.owner_id and unit.kind == clicked.kind and visible_area.has_point(world_to_screen * (unit.position + (RtsIsoProjection.ground_lift(self, unit.position) if view_mode_25d else Vector2.ZERO))) and not selected.has(unit):
 			selected.append(unit)
 	_rebuild_actions()
 	_update_hud()
@@ -1931,7 +2111,7 @@ func _entity_at(point: Vector2) -> Node2D:
 		if not is_instance_valid(unit) or unit.is_queued_for_deletion() or unit.garrisoned_in != null: continue
 		if unit.owner_id != 0 and fog.active and not fog.can_detect_unit(0, unit): continue
 		if view_mode_25d:
-			var screen_delta := canvas.basis_xform(point - unit.position)
+			var screen_delta := canvas.basis_xform(point - unit.position - RtsIsoProjection.ground_lift(self, unit.position))
 			if absf(screen_delta.x) <= (unit.radius() + 5.0) * camera.zoom.x and screen_delta.y >= -34.0 * camera.zoom.x and screen_delta.y <= 6.0 * camera.zoom.x: return unit
 		if is_instance_valid(unit) and unit.position.distance_to(point) <= unit.radius() + 5: return unit
 	for building in navigation.nearby_buildings(point, 160.0 if view_mode_25d else 50.0):
@@ -1945,7 +2125,7 @@ func _resource_at(point: Vector2) -> RtsResource:
 	for resource in navigation.nearby_resources(point, 90.0 if view_mode_25d else 35.0):
 		if not is_instance_valid(resource) or resource.is_queued_for_deletion() or fog.active and not fog.can_show_resource(0, resource): continue
 		if view_mode_25d and resource.appearance != "fish":
-			var screen_delta := canvas.basis_xform(point - resource.position)
+			var screen_delta := canvas.basis_xform(point - resource.position - RtsIsoProjection.ground_lift(self, resource.position))
 			if absf(screen_delta.x) <= (resource.radius + 8.0) * camera.zoom.x and screen_delta.y >= -35.0 * camera.zoom.x and screen_delta.y <= 20.0 * camera.zoom.x: return resource
 		if resource.position.distance_to(point) < resource.radius + 6: return resource
 	return null
@@ -1954,7 +2134,7 @@ func _trade_post_at(point: Vector2) -> RtsTradePost:
 	for post in trade_posts:
 		if not is_instance_valid(post) or fog.active and not fog.is_explored(0, post.position): continue
 		if view_mode_25d:
-			var screen_delta := get_viewport().get_canvas_transform().basis_xform(point - post.position)
+			var screen_delta := get_viewport().get_canvas_transform().basis_xform(point - post.position - RtsIsoProjection.ground_lift(self, post.position))
 			if absf(screen_delta.x) <= 28.0 * camera.zoom.x and screen_delta.y >= -38.0 * camera.zoom.x and screen_delta.y <= 23.0 * camera.zoom.x: return post
 		if post.contains(point): return post
 	return null
@@ -1963,7 +2143,7 @@ func _relic_at(point: Vector2) -> RtsRelic:
 	for relic in relics:
 		if not is_instance_valid(relic) or not relic.available() or fog.active and not fog.can_see(0, relic.position): continue
 		if view_mode_25d:
-			var screen_delta := get_viewport().get_canvas_transform().basis_xform(point - relic.position)
+			var screen_delta := get_viewport().get_canvas_transform().basis_xform(point - relic.position - RtsIsoProjection.ground_lift(self, relic.position))
 			if absf(screen_delta.x) <= 16.0 * camera.zoom.x and screen_delta.y >= -20.0 * camera.zoom.x and screen_delta.y <= 14.0 * camera.zoom.x: return relic
 		if relic.position.distance_to(point) <= 20.0: return relic
 	return null
@@ -2029,6 +2209,9 @@ func _issue_order(point: Vector2, append_order := false) -> void:
 		else:
 			movers.append(subject)
 	issue_group_order(movers, point, false, append_order)
+	if not movers.is_empty() or entity != null or resource != null or post != null or relic != null:
+		order_markers.append({"point": point, "time": 0.55, "color": Color("e97871") if entity != null and is_enemy(0, entity.owner_id) else Color("8fd49b") if resource != null or post != null or relic != null else Color("95c7ef")})
+		queue_redraw()
 
 func _issue_mode_order(point: Vector2, append_order := false) -> void:
 	var mode := order_mode
@@ -2188,10 +2371,22 @@ func _confirm_wall_line(from: Vector2, to: Vector2, append_order := false) -> vo
 
 func _update_hud() -> void:
 	if top_label == null or players.is_empty(): return
+	_prune_hidden_enemy_selection()
 	if global_queue_panel.visible: _refresh_global_queue_panel()
 	_update_population_hud()
 	_refresh_action_buttons()
 	_update_selection_hud()
+
+func _prune_hidden_enemy_selection() -> void:
+	var changed := false
+	for entity in selected.duplicate():
+		if not is_instance_valid(entity) or entity is RtsUnit and is_enemy(0, entity.owner_id) and fog.active and not fog.can_detect_unit(0, entity):
+			selected.erase(entity)
+			changed = true
+	if changed:
+		_rebuild_actions()
+		_update_selection_hud()
+		queue_redraw()
 
 func _update_population_hud() -> void:
 	var bank := players[0]
@@ -2221,7 +2416,7 @@ func _update_selection_hud() -> void:
 		return
 	var item := selected[0]
 	selection_icon.text = "⌂" if item is RtsBuilding else "◆"
-	selection_icon.add_theme_color_override("font_color", GameData.CIVILIZATIONS[civilizations[0]]["color"].lightened(0.35))
+	selection_icon.add_theme_color_override("font_color", player_color(item.owner_id).lightened(0.35))
 	if selected.size() > 1:
 		info_label.text = "已选中 %d 个单位" % selected.size()
 		var counts: Dictionary = {}
@@ -2234,7 +2429,7 @@ func _update_selection_hud() -> void:
 		detail_label.text = "  ".join(parts)
 		return
 	var name: String = GameData.UNITS[item.kind]["label"] if item is RtsUnit else item.display_label()
-	info_label.text = name
+	info_label.text = "敌方 · %s" % name if is_enemy(0, item.owner_id) else name
 	selection_health.max_value = item.max_hp
 	selection_health.value = maxf(0.0, item.hp)
 	selection_health.show()
@@ -2290,6 +2485,7 @@ func find_nearest_free_farm(owner_id: int, point: Vector2, max_distance: float, 
 		if not is_instance_valid(farm) or farm.owner_id != owner_id or farm.kind != "farm" or not farm.is_complete() or farm_worker(farm, excluded) != null: continue
 		var distance := point.distance_squared_to(farm.position)
 		if distance < best:
+			if excluded != null and navigation.path_to_range(point, farm.position, farm.size().x * 0.5 + excluded.radius() + 2.0, excluded).is_empty(): continue
 			best = distance
 			result = farm
 	return result
@@ -2475,6 +2671,9 @@ func _rebuild_actions() -> void:
 	command_title.text = "命令"
 	if selected.is_empty() or not is_instance_valid(selected[0]): return
 	var item := selected[0]
+	if item.owner_id != 0:
+		command_title.text = "敌方单位 · 情报"
+		return
 	if item is RtsUnit: _build_unit_actions(item)
 	elif item is RtsBuilding: _build_building_actions(item)
 	_refresh_action_buttons()
@@ -2746,10 +2945,11 @@ func _draw() -> void:
 		draw_rect(Rect2(Vector2.ZERO, WORLD_SIZE), Color("638b5c"))
 	for entity in selected:
 		if not is_instance_valid(entity): continue
+		var ground_lift := RtsIsoProjection.ground_lift(self, entity.position) if view_mode_25d else Vector2.ZERO
 		if entity is RtsUnit:
-			draw_arc(entity.position, entity.radius() + 6, 0, TAU, 32, Color("f5e597"), 2)
+			draw_arc(entity.position + ground_lift, entity.radius() + 6, 0, TAU, 32, Color("f5e597"), 2)
 		elif entity is RtsBuilding:
-			draw_rect(Rect2(entity.position - entity.size() * 0.5 - Vector2(5, 5), entity.size() + Vector2(10, 10)), Color("f5e597"), false, 2)
+			draw_rect(Rect2(entity.position + ground_lift - entity.size() * 0.5 - Vector2(5, 5), entity.size() + Vector2(10, 10)), Color("f5e597"), false, 2)
 			if entity.owner_id == 0 and entity.is_complete() and RtsTechTree.PRODUCTION.has(entity.kind):
 				var marker: Vector2 = entity.rally_point
 				var marker_color := Color("f5e597")
@@ -2760,7 +2960,7 @@ func _draw() -> void:
 	if dragging:
 		var projection := get_viewport().get_canvas_transform()
 		var inverse := projection.affine_inverse()
-		var screen_rect := Rect2(projection * drag_start, projection * drag_current - projection * drag_start).abs()
+		var screen_rect := Rect2(drag_start_screen, drag_current_screen - drag_start_screen).abs()
 		var corners := [screen_rect.position, Vector2(screen_rect.end.x, screen_rect.position.y), screen_rect.end, Vector2(screen_rect.position.x, screen_rect.end.y)]
 		for index in corners.size():
 			draw_line(inverse * corners[index], inverse * corners[(index + 1) % corners.size()], Color("f5e597"), 2)
@@ -2780,3 +2980,6 @@ func _draw() -> void:
 		if fog.active and line["owner"] != 0 and not fog.can_see(0, line["to"]): continue
 		var color: Color = player_color(line["owner"]).lightened(0.45)
 		draw_line(line["from"], line["to"], color, 3)
+	for marker in order_markers:
+		var alpha: float = clampf(marker["time"] / 0.55, 0.0, 1.0)
+		draw_arc(marker["point"], 9.0 + (1.0 - alpha) * 11.0, 0.0, TAU, 24, Color(marker["color"], alpha), 2.0)
