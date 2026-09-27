@@ -17,8 +17,6 @@ make run
 
 补丁位于 `patches/godot-4.7.2-macos-frame-wait.patch`，构建产物位于 `docs/godot/bin/`。macOS 的 120 FPS 上限配合该引擎补丁生效，单独限帧无法修复。Godot 编辑器仍可编辑 `project.godot`；直接使用未打补丁的官方引擎运行时，Magnet 干扰仍可能出现。测量、根因和复现方法见 [输入延迟 POC](docs/input-poc/README.md)。
 
-旧 F8 光标模式对照默认关闭；需要诊断时运行 `make run RUN_ARGS="-- --selection-input-poc"`。
-
 ## 操作
 
 - 左键选择，拖拽框选；双击己方单位可选中屏幕内同类型单位，按住 Shift 可追加选择。

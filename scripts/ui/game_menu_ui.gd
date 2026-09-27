@@ -173,7 +173,6 @@ func _show_menu() -> void:
 	if game.settings_overlay != null: game.settings_overlay.hide()
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	if game.cursor != null: game.cursor.hide()
-	if game.selection_input_probe_label != null: game.selection_input_probe_label.hide()
 	game.menu_backdrop.show()
 	game.hud_top.hide()
 	game.hud_bottom.hide()

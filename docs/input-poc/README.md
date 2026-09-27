@@ -38,7 +38,7 @@ Magnet 全程开启，在同一测试二进制、同一个游戏窗口里多次�
 
 正式补丁在 `patches/godot-4.7.2-macos-frame-wait.patch`，没有诊断切换开关。项目设置 `application/run/max_fps.macos=120`，使已有的 Magnet 兼容计时器路径生效。两者必须配合。`make build-macos` 构建，`make run` 默认使用修复版；未修改 `/Applications/Godot_mono.app` 或 Magnet 的设置，Magnet 已恢复运行。
 
-正式运行时是本项目所需的 macOS 2D / GDScript runtime，含 Noise、字体、SVG 和 2D physics；不包含编辑器、C# 和 3D。最终 runtime 已通过 `tests/smoke.gd` 与 `tests/selection.gd`。旧 F8 / 屏幕探针仅在 `--selection-input-poc` 参数下启用。
+正式运行时是本项目所需的 macOS 2D / GDScript runtime，含 Noise、字体、SVG 和 2D physics；不包含编辑器、C# 和 3D。最终 runtime 已通过 `tests/smoke.gd` 与 `tests/selection.gd`。旧 F8 光标模式切换、屏幕探针与游戏内计时代码已移除；本目录保留定位过程与独立引擎诊断工具。
 
 `tools/input_poc/run_loop_poc.m` 用 CFRunLoop + 顺序请求线程模拟此调度：30 个请求，原逻辑约 300ms / 32 帧，带计时器检查约 17ms / 3 帧。模拟渲染每帧等待 8ms。它验证调度差异，不代替真实 Magnet 或触摸板测试。
 
