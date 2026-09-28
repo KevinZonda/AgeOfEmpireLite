@@ -1,0 +1,146 @@
+[
+  {
+    "test": "navigation_dense_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 8.01,
+    "log": "dense-final/navigation_dense_poc.log"
+  },
+  {
+    "test": "navigation_tasks_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 119.68,
+    "log": "dense-final/navigation_tasks_poc.log"
+  },
+  {
+    "test": "navigation_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 1.918,
+    "log": "dense-final/navigation_poc.log"
+  },
+  {
+    "test": "navigation_poc_matrix",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 10.627,
+    "log": "dense-final/navigation_poc_matrix.log"
+  },
+  {
+    "test": "navigation_construction_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 6.651,
+    "log": "dense-final/navigation_construction_poc.log"
+  },
+  {
+    "test": "navigation_replanning",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.927,
+    "log": "dense-final/navigation_replanning.log"
+  },
+  {
+    "test": "group_chokepoint",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 7.447,
+    "log": "dense-final/group_chokepoint.log"
+  },
+  {
+    "test": "group_mass_chokepoint",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 13.391,
+    "log": "dense-final/group_mass_chokepoint.log"
+  },
+  {
+    "test": "group_multiplayer",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 21.321,
+    "log": "dense-final/group_multiplayer.log"
+  },
+  {
+    "test": "navigation",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 6.97,
+    "log": "dense-final/navigation.log"
+  },
+  {
+    "test": "navigation_routes",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.61,
+    "log": "dense-final/navigation_routes.log"
+  },
+  {
+    "test": "terrain_selection_follow",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 6.152,
+    "log": "dense-final/terrain_selection_follow.log"
+  },
+  {
+    "test": "extended_systems",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 16.086,
+    "log": "dense-final/extended_systems.log"
+  },
+  {
+    "test": "economy_siege_controls",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 8.178,
+    "log": "dense-final/economy_siege_controls.log"
+  },
+  {
+    "test": "smoke",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 15.261,
+    "log": "dense-final/smoke.log"
+  },
+  {
+    "test": "villager_boar_escape",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 11.807,
+    "log": "dense-final/villager_boar_escape.log"
+  },
+  {
+    "test": "combat_rules",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.593,
+    "log": "dense-final/combat_rules.log"
+  },
+  {
+    "test": "navigation_grid_raster",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 1.0,
+    "log": "dense-final/navigation_grid_raster.log"
+  }
+]

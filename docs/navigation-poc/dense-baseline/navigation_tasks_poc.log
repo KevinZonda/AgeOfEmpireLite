@@ -1,0 +1,34 @@
+Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
+
+POC_FAIL farm_repair_completes hp=146.0/170.0 pos=(350.0, 350.0)
+POC_FAIL farm_repair_queue_advances repair
+POC_FAIL blacksmith_repair_completes hp=626.0/650.0 pos=(350.0, 350.0)
+POC_FAIL blacksmith_repair_queue_advances repair
+POC_FAIL monastery_repair_completes hp=436.0/460.0 pos=(350.0, 350.0)
+POC_FAIL monastery_repair_queue_advances repair
+POC_FAIL keep_repair_completes hp=1476.0/1500.0 pos=(350.0, 350.0)
+POC_FAIL keep_repair_queue_advances repair
+POC_FAIL wonder_repair_completes hp=2076.0/2100.0 pos=(350.0, 350.0)
+POC_FAIL wonder_repair_queue_advances repair
+POC_PASS dense_1_workers_build_all 8/8 in 0.10s
+POC_PASS dense_1_workers_finish_queues 1/1
+POC_PASS dense_1_workers_no_teleport
+POC_PASS dense_12_workers_build_all 96/96 in 2.92s
+POC_PASS dense_12_workers_finish_queues 12/12
+POC_PASS dense_12_workers_no_teleport
+POC_PASS dense_48_workers_build_all 96/96 in 17.06s
+POC_PASS dense_48_workers_finish_queues 48/48
+POC_PASS dense_48_workers_no_teleport
+POC_PASS dense_96_workers_build_all 96/96 in 45.82s
+POC_PASS dense_96_workers_finish_queues 96/96
+POC_PASS dense_96_workers_no_teleport
+POC_FAIL farm_1_workers_use_assigned_farms 0 working
+POC_FAIL farm_4_workers_use_assigned_farms 0 working
+POC_FAIL farm_8_workers_use_assigned_farms 0 working
+POC_PASS trader_completes_multiple_round_trips legs=10 pos=(1194.068, 688.5159)
+POC_PASS deleted_queued_build_is_skipped
+POC_PASS sealed_jobs_wait_and_preserve_queues
+POC_PASS sealed_jobs_do_not_work_through_barrier
+POC_FAIL demolition_wakes_all_repair_jobs
+POC_FAIL demolition_all_queues_finish
+NAVIGATION_TASKS_POC checks=31 failures=15

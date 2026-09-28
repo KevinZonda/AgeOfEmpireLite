@@ -1,0 +1,59 @@
+Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
+
+POC_PASS house_verticalfalse_edgefalse_placement
+POC_PASS house_verticalfalse_edgefalse_completes remaining=0.00
+POC_PASS house_verticalfalse_edgefalse_leaves_after_build position=(938.5027, 658.0255) order=idle
+POC_PASS house_verticalfalse_edgefalse_outside_footprint
+POC_PASS house_verticalfalse_edgefalse_no_teleport max_step=4.520
+POC_PASS house_verticalfalse_edgetrue_placement
+POC_PASS house_verticalfalse_edgetrue_completes remaining=0.00
+POC_PASS house_verticalfalse_edgetrue_leaves_after_build position=(937.7765, 658.8002) order=idle
+POC_PASS house_verticalfalse_edgetrue_outside_footprint
+POC_PASS house_verticalfalse_edgetrue_no_teleport max_step=4.520
+POC_PASS farm_verticalfalse_edgefalse_placement
+POC_PASS farm_verticalfalse_edgefalse_completes remaining=0.00
+POC_PASS farm_verticalfalse_edgefalse_leaves_after_build position=(937.7765, 658.8002) order=idle
+POC_PASS farm_verticalfalse_edgefalse_outside_footprint
+POC_PASS farm_verticalfalse_edgefalse_no_teleport max_step=4.520
+POC_PASS farm_verticalfalse_edgetrue_placement
+POC_PASS farm_verticalfalse_edgetrue_completes remaining=0.00
+POC_PASS farm_verticalfalse_edgetrue_leaves_after_build position=(937.7765, 658.8002) order=idle
+POC_PASS farm_verticalfalse_edgetrue_outside_footprint
+POC_PASS farm_verticalfalse_edgetrue_no_teleport max_step=4.520
+POC_PASS palisade_wall_verticalfalse_edgefalse_placement
+POC_PASS palisade_wall_verticalfalse_edgefalse_completes remaining=0.00
+POC_PASS palisade_wall_verticalfalse_edgefalse_leaves_after_build position=(938.4876, 658.039) order=idle
+POC_PASS palisade_wall_verticalfalse_edgefalse_outside_footprint
+POC_PASS palisade_wall_verticalfalse_edgefalse_no_teleport max_step=4.520
+POC_PASS palisade_wall_verticalfalse_edgetrue_placement
+POC_PASS palisade_wall_verticalfalse_edgetrue_completes remaining=0.00
+POC_PASS palisade_wall_verticalfalse_edgetrue_leaves_after_build position=(937.875, 658.6778) order=idle
+POC_PASS palisade_wall_verticalfalse_edgetrue_outside_footprint
+POC_PASS palisade_wall_verticalfalse_edgetrue_no_teleport max_step=4.520
+POC_PASS palisade_wall_verticaltrue_edgefalse_placement
+POC_PASS palisade_wall_verticaltrue_edgefalse_completes remaining=0.00
+POC_PASS palisade_wall_verticaltrue_edgefalse_leaves_after_build position=(936.8038, 660.6151) order=idle
+POC_PASS palisade_wall_verticaltrue_edgefalse_outside_footprint
+POC_PASS palisade_wall_verticaltrue_edgefalse_no_teleport max_step=4.520
+POC_PASS palisade_wall_verticaltrue_edgetrue_placement
+POC_PASS palisade_wall_verticaltrue_edgetrue_completes remaining=0.00
+POC_PASS palisade_wall_verticaltrue_edgetrue_leaves_after_build position=(937.1363, 658.6038) order=idle
+POC_PASS palisade_wall_verticaltrue_edgetrue_outside_footprint
+POC_PASS palisade_wall_verticaltrue_edgetrue_no_teleport max_step=4.520
+POC_PASS multi_builder_first_placement
+POC_PASS multi_builder_queued_placement
+POC_PASS queued_buildings_complete
+POC_PASS all_builders_leave [[(920.0254, 634.7739), "idle"], [(916.3194, 664.3852), "idle"], [(909.1775, 697.5039), "idle"]]
+POC_PASS idle_bystander_clears_foundation (712.5, 476.5)
+POC_PASS bystander_can_move_after_completion
+POC_PASS completed_target_releases_remote_builder position=(306.0, 500.0) order=idle
+POC_PASS escape_does_not_cross_neighbor
+POC_PASS escape_uses_open_side (712.5, 476.5)
+POC_PASS overlapping_wall_joint_completes
+POC_PASS wall_joint_builder_leaves
+POC_PASS sealed_builder_waits_without_crossing_buildings
+POC_PASS sealed_builder_resumes_when_exit_opens
+POC_PASS escape_respects_water_and_resource (712.5, 548.5)
+POC_PASS ordinary_collision_still_blocks_building_interior
+POC_PASS builder_continues_queued_farm_work
+NAVIGATION_CONSTRUCTION_POC checks=56 failures=0

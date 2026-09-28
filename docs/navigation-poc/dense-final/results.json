@@ -1,0 +1,26 @@
+[
+  {
+    "test": "navigation_dense_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 8.01,
+    "log": "navigation_dense_poc.log"
+  },
+  {
+    "test": "navigation_tasks_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 119.68,
+    "log": "navigation_tasks_poc.log"
+  },
+  {
+    "test": "navigation_grid_raster",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 1.0,
+    "log": "navigation_grid_raster.log"
+  }
+]

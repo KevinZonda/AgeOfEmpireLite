@@ -1,0 +1,26 @@
+[
+  {
+    "test": "performance_navigation",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 2.972,
+    "log": "performance_navigation.log"
+  },
+  {
+    "test": "performance_400",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 30.575,
+    "log": "performance_400.log"
+  },
+  {
+    "test": "performance_combat",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 9.798,
+    "log": "performance_combat.log"
+  }
+]

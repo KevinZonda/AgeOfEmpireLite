@@ -817,7 +817,7 @@ func _move_toward(point: Vector2, delta: float, stop_distance: float) -> bool:
 			route_failures = 0
 		elif stalled or exhausted:
 			route_failures += 1
-		if ["gather", "build", "field_build", "repair", "attack", "garrison", "board_transport", "trade", "deposit_relic", "relic", "supervise", "collect_tax", "board_wall", "assault_wall"].has(order):
+		if ["gather", "build", "field_build", "repair", "attack", "attack_ground", "garrison", "board_transport", "trade", "deposit_relic", "relic", "supervise", "collect_tax", "board_wall", "assault_wall"].has(order):
 			route = game.navigation.path_to_range(position, point, stop_distance, self)
 		else:
 			route = game.navigation.path_between(position, point, self)
@@ -855,7 +855,7 @@ func _move_toward(point: Vector2, delta: float, stop_distance: float) -> bool:
 	game.navigation.unit_moved(self, old_position)
 	_update_facing(old_position)
 	if charging: charge_distance += old_position.distance_to(position)
-	position = position.clamp(Vector2(24, 24), game.world_size - Vector2(24, 24))
+	position = position.clamp(Vector2.ONE * radius(), game.world_size - Vector2.ONE * radius())
 	_refresh_slope_visual(old_position)
 	return position.distance_to(point) <= stop_distance + 0.5
 
@@ -873,7 +873,7 @@ func _move_with_group(delta: float) -> void:
 	position = game.navigation.move_step(self, position.move_toward(point, step))
 	game.navigation.unit_moved(self, old_position)
 	_update_facing(old_position)
-	position = position.clamp(Vector2(24, 24), game.world_size - Vector2(24, 24))
+	position = position.clamp(Vector2.ONE * radius(), game.world_size - Vector2.ONE * radius())
 	_refresh_slope_visual(old_position)
 	var remaining := position.distance_to(point)
 	if group_progress_target.distance_squared_to(point) > 16.0:

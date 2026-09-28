@@ -61,4 +61,5 @@ func _initialize() -> void:
 	projectile._process(0.5)
 	assert(projectile.is_queued_for_deletion() and target.hp == 6.0 and game.hits == 1)
 	game.free()
+	print("COMBAT_RULES_OK")
 	quit()

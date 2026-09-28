@@ -1,0 +1,18 @@
+[
+  {
+    "test": "navigation_dense_poc",
+    "passed": false,
+    "exit_code": 1,
+    "timeout": false,
+    "seconds": 36.796,
+    "log": "navigation_dense_poc.log"
+  },
+  {
+    "test": "navigation_tasks_poc",
+    "passed": false,
+    "exit_code": 1,
+    "timeout": false,
+    "seconds": 70.881,
+    "log": "navigation_tasks_poc.log"
+  }
+]

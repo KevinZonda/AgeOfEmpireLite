@@ -1,0 +1,165 @@
+Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
+
+POC_PASS gather_oblique_0 [(955.9698, 620.6708), (764.55, 538.3739)]
+POC_PASS gather_oblique_0_arrives (764.55, 538.3739)
+POC_PASS gather_oblique_1 [(820.6708, 755.9698), (738.3739, 564.55)]
+POC_PASS gather_oblique_1_arrives (738.3739, 564.55)
+POC_PASS gather_oblique_2 [(629.3292, 755.9699), (711.6261, 564.55)]
+POC_PASS gather_oblique_2_arrives (711.6261, 564.55)
+POC_PASS gather_oblique_3 [(494.0301, 620.6709), (685.45, 538.3739)]
+POC_PASS gather_oblique_3_arrives (685.45, 538.3739)
+POC_PASS gather_oblique_4 [(494.0301, 429.3291), (685.45, 511.6261)]
+POC_PASS gather_oblique_4_arrives (685.45, 511.6261)
+POC_PASS gather_oblique_5 [(629.3291, 294.0301), (711.6261, 485.45)]
+POC_PASS gather_oblique_5_arrives (711.6261, 485.45)
+POC_PASS gather_oblique_6 [(820.6709, 294.0302), (738.3739, 485.45)]
+POC_PASS gather_oblique_6_arrives (738.3739, 485.45)
+POC_PASS gather_oblique_7 [(955.9699, 429.3291), (764.55, 511.6261)]
+POC_PASS gather_oblique_7_arrives (764.55, 511.6261)
+POC_PASS repair_oblique_0 [(955.9698, 620.6708), (764.55, 528.9826)]
+POC_PASS repair_oblique_0_arrives (764.7714, 529.0886)
+POC_PASS repair_oblique_1 [(820.6708, 755.9698), (728.9826, 564.55)]
+POC_PASS repair_oblique_1_arrives (729.0886, 564.7714)
+POC_PASS repair_oblique_2 [(629.3292, 755.9699), (721.0174, 564.55)]
+POC_PASS repair_oblique_2_arrives (720.9114, 564.7714)
+POC_PASS repair_oblique_3 [(494.0301, 620.6709), (685.45, 528.9826)]
+POC_PASS repair_oblique_3_arrives (685.2285, 529.0887)
+POC_PASS repair_oblique_4 [(494.0301, 429.3291), (685.45, 521.0174)]
+POC_PASS repair_oblique_4_arrives (685.2285, 520.9113)
+POC_PASS repair_oblique_5 [(629.3291, 294.0301), (721.0174, 485.45)]
+POC_PASS repair_oblique_5_arrives (720.9113, 485.2284)
+POC_PASS repair_oblique_6 [(820.6709, 294.0302), (728.9826, 485.45)]
+POC_PASS repair_oblique_6_arrives (729.0887, 485.2284)
+POC_PASS repair_oblique_7 [(955.9699, 429.3291), (764.55, 521.0174)]
+POC_PASS repair_oblique_7_arrives (764.7715, 520.9113)
+POC_PASS build_oblique_0 [(955.9698, 620.6708), (766.8055, 542.3164)]
+POC_PASS build_oblique_0_arrives (766.8055, 542.3164)
+POC_PASS build_oblique_1 [(820.6708, 755.9698), (742.3164, 566.8055)]
+POC_PASS build_oblique_1_arrives (742.3164, 566.8055)
+POC_PASS build_oblique_2 [(629.3292, 755.9699), (707.6836, 566.8055)]
+POC_PASS build_oblique_2_arrives (707.6836, 566.8055)
+POC_PASS build_oblique_3 [(494.0301, 620.6709), (683.1945, 542.3164)]
+POC_PASS build_oblique_3_arrives (683.1945, 542.3164)
+POC_PASS build_oblique_4 [(494.0301, 429.3291), (683.1945, 507.6836)]
+POC_PASS build_oblique_4_arrives (683.1945, 507.6836)
+POC_PASS build_oblique_5 [(629.3291, 294.0301), (707.6836, 483.1945)]
+POC_PASS build_oblique_5_arrives (707.6836, 483.1945)
+POC_PASS build_oblique_6 [(820.6709, 294.0302), (742.3164, 483.1945)]
+POC_PASS build_oblique_6_arrives (742.3164, 483.1945)
+POC_PASS build_oblique_7 [(955.9699, 429.3291), (766.8055, 507.6836)]
+POC_PASS build_oblique_7_arrives (766.8055, 507.6836)
+POC_PASS fine_detour_false_witness
+POC_PASS fine_detour_false_route points=17
+POC_PASS fine_detour_false_arrives (825.0, 331.0)
+POC_PASS fine_detour_true_witness
+POC_PASS fine_detour_true_route points=54
+POC_PASS fine_detour_true_arrives (3719.634, 1822.317)
+POC_PASS blocked_click_keeps_reachable_far_side (989.0, 525.0)
+POC_PASS edge_interaction_0 (20.12991, 426.2193)
+POC_PASS edge_interaction_1 (1479.87, 426.2193)
+POC_PASS edge_interaction_2 (725.0, 20.25)
+POC_PASS edge_interaction_3 (725.0, 979.75)
+POC_PASS attack_ground_approaches_occupied_target (544.75, 525.0)
+POC_PASS overlapping_resource_not_cached_as_walkable
+POC_PASS other_unit_resource_collision_stays_strict
+POC_PASS opposing_gather_workers_arrive [(1189.75, 525.0), (1104.75, 525.0), (1019.75, 525.0), (934.947, 523.0003), (857.7371, 514.8895), (764.75, 525.0), (700.4135, 525.2434), (613.3069, 529.0771)]
+POC_PASS opposing_build_workers_arrive [(1189.947, 526.9997), (1104.539, 525.066), (1019.75, 525.0), (934.947, 523.0003), (857.7469, 514.9021), (764.75, 525.0), (700.4135, 525.2434), (615.3804, 525.152)]
+POC_PASS opposing_repair_workers_arrive [(1189.596, 525.0237), (1122.335, 517.8918), (1019.75, 525.0), (940.8516, 515.3629), (849.947, 523.0003), (764.75, 525.0), (700.303, 525.0364), (615.4571, 525.1971)]
+POC_PASS opposing_trade_workers_arrive [(1189.75, 525.0), (1104.75, 525.0), (1019.75, 525.0), (940.8516, 515.3629), (849.947, 523.0003), (764.75, 525.0), (700.053, 523.0003), (615.4571, 525.1971)]
+POC_PASS alley_radius10_margin1_offset0 points=4
+POC_PASS alley_radius10_margin1_offset0_arrives (1019.633, 622.3167)
+POC_PASS alley_radius10_margin1_offset3 points=4
+POC_PASS alley_radius10_margin1_offset3_arrives (1019.2, 623.4654)
+POC_PASS alley_radius10_margin1_offset11 points=16
+POC_PASS alley_radius10_margin1_offset11_arrives (1019.345, 622.9935)
+POC_PASS alley_radius10_margin4_offset0 points=4
+POC_PASS alley_radius10_margin4_offset0_arrives (1019.633, 622.3167)
+POC_PASS alley_radius10_margin4_offset3 points=16
+POC_PASS alley_radius10_margin4_offset3_arrives (1019.345, 622.9935)
+POC_PASS alley_radius10_margin4_offset11 points=16
+POC_PASS alley_radius10_margin4_offset11_arrives (1019.345, 622.9935)
+POC_PASS alley_radius10_margin10_offset0 points=4
+POC_PASS alley_radius10_margin10_offset0_arrives (1019.633, 622.3167)
+POC_PASS alley_radius10_margin10_offset3 points=4
+POC_PASS alley_radius10_margin10_offset3_arrives (1019.633, 622.3167)
+POC_PASS alley_radius10_margin10_offset11 points=16
+POC_PASS alley_radius10_margin10_offset11_arrives (1019.345, 622.9935)
+POC_PASS alley_radius12_margin1_offset0 points=4
+POC_PASS alley_radius12_margin1_offset0_arrives (1019.633, 622.3167)
+POC_PASS alley_radius12_margin1_offset3 points=4
+POC_PASS alley_radius12_margin1_offset3_arrives (1019.202, 623.4576)
+POC_PASS alley_radius12_margin1_offset11 points=4
+POC_PASS alley_radius12_margin1_offset11_arrives (1019.171, 623.5779)
+POC_PASS alley_radius12_margin4_offset0 points=4
+POC_PASS alley_radius12_margin4_offset0_arrives (1019.633, 622.3167)
+POC_PASS alley_radius12_margin4_offset3 points=4
+POC_PASS alley_radius12_margin4_offset3_arrives (1019.011, 623.4316)
+POC_PASS alley_radius12_margin4_offset11 points=4
+POC_PASS alley_radius12_margin4_offset11_arrives (1019.165, 623.6006)
+POC_PASS alley_radius12_margin10_offset0 points=4
+POC_PASS alley_radius12_margin10_offset0_arrives (1019.633, 622.3167)
+POC_PASS alley_radius12_margin10_offset3 points=4
+POC_PASS alley_radius12_margin10_offset3_arrives (1019.633, 622.3167)
+POC_PASS alley_radius12_margin10_offset11 points=14
+POC_PASS alley_radius12_margin10_offset11_arrives (1019.633, 622.3168)
+POC_PASS alley_radius18_margin1_offset0 points=4
+POC_PASS alley_radius18_margin1_offset0_arrives (1019.633, 622.3167)
+POC_PASS alley_radius18_margin1_offset3 points=4
+POC_PASS alley_radius18_margin1_offset3_arrives (1019.208, 623.4334)
+POC_PASS alley_radius18_margin1_offset11 points=4
+POC_PASS alley_radius18_margin1_offset11_arrives (1019.177, 623.5554)
+POC_PASS alley_radius18_margin4_offset0 points=4
+POC_PASS alley_radius18_margin4_offset0_arrives (1019.633, 622.3167)
+POC_PASS alley_radius18_margin4_offset3 points=4
+POC_PASS alley_radius18_margin4_offset3_arrives (1019.202, 623.4561)
+POC_PASS alley_radius18_margin4_offset11 points=4
+POC_PASS alley_radius18_margin4_offset11_arrives (1019.171, 623.5784)
+POC_PASS alley_radius18_margin10_offset0 points=4
+POC_PASS alley_radius18_margin10_offset0_arrives (1019.633, 622.3167)
+POC_PASS alley_radius18_margin10_offset3 points=4
+POC_PASS alley_radius18_margin10_offset3_arrives (1019.633, 622.3167)
+POC_PASS alley_radius18_margin10_offset11 points=12
+POC_PASS alley_radius18_margin10_offset11_arrives (1019.308, 623.1027)
+POC_PASS alley_radius24_margin1_offset0 points=4
+POC_PASS alley_radius24_margin1_offset0_arrives (1019.633, 622.3167)
+POC_PASS alley_radius24_margin1_offset3 points=4
+POC_PASS alley_radius24_margin1_offset3_arrives (1019.215, 623.4084)
+POC_PASS alley_radius24_margin1_offset11 points=4
+POC_PASS alley_radius24_margin1_offset11_arrives (1019.182, 623.5322)
+POC_PASS alley_radius24_margin4_offset0 points=4
+POC_PASS alley_radius24_margin4_offset0_arrives (1019.633, 622.3167)
+POC_PASS alley_radius24_margin4_offset3 points=4
+POC_PASS alley_radius24_margin4_offset3_arrives (1019.209, 623.4315)
+POC_PASS alley_radius24_margin4_offset11 points=4
+POC_PASS alley_radius24_margin4_offset11_arrives (1019.176, 623.5555)
+POC_PASS alley_radius24_margin10_offset0 points=4
+POC_PASS alley_radius24_margin10_offset0_arrives (1019.633, 622.3167)
+POC_PASS alley_radius24_margin10_offset3 points=4
+POC_PASS alley_radius24_margin10_offset3_arrives (1019.633, 622.3167)
+POC_PASS alley_radius24_margin10_offset11 points=12
+POC_PASS alley_radius24_margin10_offset11_arrives (1019.308, 623.1027)
+POC_PASS alley_radius28_margin1_offset0 points=4
+POC_PASS alley_radius28_margin1_offset0_arrives (1019.633, 622.3167)
+POC_PASS alley_radius28_margin1_offset3 points=4
+POC_PASS alley_radius28_margin1_offset3_arrives (1019.22, 623.3914)
+POC_PASS alley_radius28_margin1_offset11 points=4
+POC_PASS alley_radius28_margin1_offset11_arrives (1019.186, 623.5162)
+POC_PASS alley_radius28_margin4_offset0 points=4
+POC_PASS alley_radius28_margin4_offset0_arrives (1019.633, 622.3167)
+POC_PASS alley_radius28_margin4_offset3 points=4
+POC_PASS alley_radius28_margin4_offset3_arrives (1019.213, 623.4147)
+POC_PASS alley_radius28_margin4_offset11 points=4
+POC_PASS alley_radius28_margin4_offset11_arrives (1019.18, 623.5399)
+POC_PASS alley_radius28_margin10_offset0 points=4
+POC_PASS alley_radius28_margin10_offset0_arrives (1019.633, 622.3167)
+POC_PASS alley_radius28_margin10_offset3 points=4
+POC_PASS alley_radius28_margin10_offset3_arrives (1019.633, 622.3167)
+POC_PASS alley_radius28_margin10_offset11 points=12
+POC_PASS alley_radius28_margin10_offset11_arrives (1019.308, 623.1027)
+POC_PASS large_fixed_corral_can_backtrack_to_exit (1119.0, 525.0707)
+POC_PASS cached_corner_route_exists
+POC_PASS cached_corner_route_invalidated_by_construction
+POC_PASS cached_corner_route_reopens_after_demolition
+POC_PASS corner_route_before_small_resource_motion
+POC_PASS corner_edges_rechecked_below_resource_refresh_threshold
+NAVIGATION_DENSE_POC checks=162 failures=0

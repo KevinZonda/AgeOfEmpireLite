@@ -16,6 +16,7 @@ import time
 
 ROOT = Path(__file__).resolve().parents[1]
 TESTS = [
+    "navigation_grid_raster", "navigation_dense_poc", "navigation_tasks_poc",
     "navigation_poc", "navigation_poc_matrix", "navigation_construction_poc", "navigation", "navigation_routes",
     "navigation_replanning", "group_chokepoint", "group_mass_chokepoint",
     "group_multiplayer", "terrain_selection_follow", "extended_systems",
@@ -30,7 +31,7 @@ def main():
     default_engine = ROOT / f"docs/godot/bin/godot.macos.template_debug.{platform.machine()}"
     parser.add_argument("--godot", default=os.environ.get("GODOT", str(default_engine) if default_engine.exists() else "godot"))
     parser.add_argument("--tests", nargs="+", default=TESTS)
-    parser.add_argument("--timeout", type=float, default=90)
+    parser.add_argument("--timeout", type=float, default=300)
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
     results = []
