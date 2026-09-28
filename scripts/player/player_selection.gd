@@ -14,7 +14,7 @@ static func select_screen_area(game: Node2D, from: Vector2, to: Vector2, additiv
 	if screen_area.size.length() < 12:
 		var point: Vector2 = world_to_screen.affine_inverse() * to
 		var entity: Node2D = game._entity_at(point)
-		if entity is RtsUnit and game.is_enemy(0, entity.owner_id):
+		if (entity is RtsUnit or entity is RtsBuilding) and game.is_enemy(0, entity.owner_id):
 			game.selected.clear()
 			game.selected.append(entity)
 		elif entity != null and entity.owner_id == 0 and not game.selected.has(entity): game.selected.append(entity)

@@ -1935,7 +1935,15 @@ func _update_hud() -> void:
 func _prune_hidden_enemy_selection() -> void:
 	var changed := false
 	for entity in selected.duplicate():
-		if not is_instance_valid(entity) or entity.is_queued_for_deletion() or entity is RtsResource and fog.active and not fog.can_show_resource(0, entity) or entity is RtsUnit and is_enemy(0, entity.owner_id) and fog.active and not fog.can_detect_unit(0, entity):
+		var hidden := false
+		if is_instance_valid(entity) and not entity.is_queued_for_deletion() and fog.active:
+			if entity is RtsResource:
+				hidden = not fog.can_show_resource(0, entity)
+			elif entity is RtsUnit and is_enemy(0, entity.owner_id):
+				hidden = not fog.can_detect_unit(0, entity)
+			elif entity is RtsBuilding and is_enemy(0, entity.owner_id):
+				hidden = not fog.can_see(0, entity.position)
+		if not is_instance_valid(entity) or entity.is_queued_for_deletion() or hidden:
 			selected.erase(entity)
 			changed = true
 	if changed:

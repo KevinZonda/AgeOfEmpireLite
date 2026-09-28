@@ -771,7 +771,7 @@ func _rebuild_actions() -> void:
 		game.action_bar.add_child(guide)
 		return
 	if item.owner_id != 0:
-		game.command_title.text = "敌方单位 · 情报"
+		game.command_title.text = "敌方建筑 · 情报" if item is RtsBuilding else "敌方单位 · 情报"
 		return
 	if item is RtsUnit: _build_unit_actions(item)
 	elif item is RtsBuilding: _build_building_actions(item)
