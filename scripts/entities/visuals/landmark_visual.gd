@@ -33,10 +33,19 @@ func battlements(center: Vector2, extent: Vector2, bottom: float, color: Color) 
 	var along := maxi(2, ceili((extent.y - tooth) / 7.0))
 	for i in range(across + 1):
 		var x := lerpf(-half.x, half.x, float(i) / across)
-		for y in [-half.y, half.y]: box(center + Vector2(x, y), Vector2.ONE * tooth, bottom, 4, color)
+		for y in [-half.y, half.y]:
+			var offset := Vector2(x, y)
+			box(center + offset, Vector2.ONE * tooth, bottom, 4, battlement_color(offset, color))
 	for i in range(1, along):
 		var y := lerpf(-half.y, half.y, float(i) / along)
-		for x in [-half.x, half.x]: box(center + Vector2(x, y), Vector2.ONE * tooth, bottom, 4, color)
+		for x in [-half.x, half.x]:
+			var offset := Vector2(x, y)
+			box(center + offset, Vector2.ONE * tooth, bottom, 4, battlement_color(offset, color))
+
+static func battlement_color(offset: Vector2, color: Color) -> Color:
+	# Ground-plane depth: the two rear edges receive a darker stone tone.
+	var depth := offset.x + offset.y
+	return color.darkened(0.22 if depth < -0.001 else 0.08 if absf(depth) <= 0.001 else 0.0)
 
 func block(u: float, v: float, width: float, depth: float, height: float, style: String, tint := Color.TRANSPARENT) -> void:
 	var center := (Vector2(u, v) - Vector2.ONE * 0.5) * dimensions

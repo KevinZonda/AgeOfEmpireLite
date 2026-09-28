@@ -1204,7 +1204,11 @@ func _draw_iso_battlements(corners: Array, rise: Vector2, color: Color, width: f
 		for i in count: teeth.append(start.lerp(finish, float(i) / count))
 	var canvas := get_viewport().get_canvas_transform()
 	teeth.sort_custom(func(a: Vector2, b: Vector2) -> bool: return canvas.basis_xform(a).y < canvas.basis_xform(b).y)
-	for tooth in teeth: draw_line(tooth, tooth + rise, color, width)
+	var center := Vector2.ZERO
+	for corner in corners: center += corner
+	center /= corners.size()
+	for tooth in teeth:
+		draw_line(tooth, tooth + rise, LandmarkVisual.battlement_color(tooth - center, color), width)
 
 func _draw_iso_fortification(nw: Vector2, ne: Vector2, se: Vector2, sw: Vector2, lift: Vector2, palette: Dictionary) -> void:
 	var material: Color = palette["trim"] if kind.begins_with("stone") else palette["timber"]
