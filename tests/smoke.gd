@@ -241,7 +241,7 @@ func _run() -> void:
 	game.selected.clear()
 	game.selected.append(barracks)
 	game._rebuild_actions()
-	assert(game.action_bar.columns == 2 and game.command_buttons[0].icon_kind == "spearman" and game.command_buttons[1].icon_kind == "man_at_arms", "barracks should place two units in the first row")
+	assert(game.action_bar.columns == 4 and game.command_buttons[0].icon_kind == "spearman" and game.command_buttons[1].icon_kind == "man_at_arms", "barracks should place units in the icon grid")
 	assert(not game.train_unit(barracks, "archer"), "a producer cannot train another building's units")
 	assert(game.train_unit(barracks, "spearman"))
 	barracks._process(GameData.training_time("English", "barracks", "spearman"))

@@ -257,7 +257,7 @@ func _hud_panel_style(color: Color, margin: float) -> StyleBoxFlat:
 	style.content_margin_bottom = margin
 	return style
 
-func _add_resource_readout(parent: HBoxContainer, kind: String, glyph: String, accent: Color) -> void:
+func _add_resource_readout(parent: HBoxContainer, kind: String) -> void:
 	var chip := PanelContainer.new()
 	chip.custom_minimum_size.x = 92
 	chip.add_theme_stylebox_override("panel", _hud_panel_style(Color("352b1e"), 5))
@@ -265,11 +265,13 @@ func _add_resource_readout(parent: HBoxContainer, kind: String, glyph: String, a
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 4)
 	chip.add_child(row)
-	var icon := Label.new()
-	icon.text = glyph
-	icon.add_theme_font_size_override("font_size", 19)
-	icon.add_theme_color_override("font_color", accent)
-	icon.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	var icon := TextureRect.new()
+	icon.texture = RtsCommandButton._texture_at("res://assets/ui/resource_icons/%s.png" % kind)
+	icon.custom_minimum_size = Vector2(30, 28)
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(icon)
 	var value := Label.new()
 	value.text = "0"

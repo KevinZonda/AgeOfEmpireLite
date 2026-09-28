@@ -2,6 +2,94 @@ class_name RtsGameHudUi
 extends CanvasLayer
 
 # Owns the HUD tree and renders command state from the game root.
+const BUILD_HELP := {
+	"town_center": "训练村民并提供人口上限，也可驻军防守。",
+	"house": "提高人口上限，让你能训练更多单位。",
+	"farm": "供村民持续采集食物。",
+	"mill": "存放食物，并研究食物采集科技。",
+	"lumber_camp": "存放木材，并研究伐木科技。",
+	"mining_camp": "存放黄金和石料，并研究采矿科技。",
+	"market": "训练商人，也可用黄金买卖资源。",
+	"dock": "建造船只并研究海军科技。",
+	"barracks": "训练近战步兵并研究步兵科技。",
+	"archery_range": "训练远程步兵并研究射击科技。",
+	"stable": "训练骑兵并研究骑兵科技。",
+	"blacksmith": "研究武器、护甲和军队科技。",
+	"university": "研究高级军队科技。",
+	"monastery": "训练修士，治疗友军并收集圣物。",
+	"outpost": "驻军和射击防御附近的敌人。",
+	"palisade_wall": "用木墙阻挡敌军；可拖拽连续铺设。",
+	"palisade_gate": "在木墙上设置可供友军通行的城门。",
+	"stone_wall": "用更坚固的石墙阻挡敌军；可拖拽连续铺设。",
+	"stone_gate": "在石墙上设置可供友军通行的城门。",
+	"keep": "坚固的防御建筑，可驻军并攻击敌人。",
+	"siege_workshop": "训练攻城器械并研究攻城科技。",
+	"wonder": "建成后守住奇观一段时间即可获胜。",
+}
+const UNIT_HELP := {
+	"villager": "采集资源、修建建筑并修复设施。",
+	"imperial_official": "中国经济单位，可监督建筑并收取税金。",
+	"scout": "高速侦察单位，用来探索地图与发现敌人。",
+	"spearman": "反骑兵近战步兵，可迎击冲锋。",
+	"man_at_arms": "披甲近战步兵，适合承受正面攻击。",
+	"palace_guard": "中国重装步兵，移动速度更快。",
+	"archer": "远程步兵，适合对付轻甲单位。",
+	"longbow": "射程更远的英格兰弓兵。",
+	"zhuge_nu": "中国连发弩兵，能快速射击。",
+	"fire_lancer": "中国轻骑兵，冲锋并擅长攻击建筑。",
+	"grenadier": "投掷火药的中国远程步兵。",
+	"crossbowman": "远程步兵，擅长对付重甲单位。",
+	"arbaletrier": "法兰西弩手，擅长对付重甲单位。",
+	"horseman": "快速轻骑兵，适合追击远程单位。",
+	"knight": "重甲骑兵，擅长冲锋和正面作战。",
+	"royal_knight": "法兰西重甲骑兵，冲锋伤害更高。",
+	"battering_ram": "近距离攻城器械，擅长摧毁建筑。",
+	"trebuchet": "远距离攻城器械，擅长攻击建筑。",
+	"handcannoneer": "高伤害火药步兵。",
+	"mangonel": "范围攻击攻城器械，适合打击成群步兵。",
+	"springald": "远程攻城器械，可攻击敌方单位和器械。",
+	"bombard": "重型火炮，擅长摧毁建筑。",
+	"cannon": "法兰西重型火炮，擅长摧毁建筑。",
+	"nest_of_bees": "中国范围攻击器械，适合打击成群步兵。",
+	"siege_tower": "运送步兵越过敌方城墙。",
+	"fishing_boat": "在水域采集食物。",
+	"warship": "重型战船，可攻击敌方船只。",
+	"springald_ship": "装有弩炮的战船，擅长远程作战。",
+	"incendiary_ship": "高速火攻船，接近敌舰后造成高额伤害。",
+	"arrow_ship": "轻型战船，以箭矢攻击敌船。",
+	"transport_ship": "运送陆地单位跨越水域。",
+	"trader": "往返贸易站，为你带回资源。",
+	"monk": "治疗友军，并可收集圣物。",
+}
+const COMMAND_HELP := {
+	"age": "选择地标并进入下一个时代，解锁新建筑和单位。",
+	"next_page": "切换到下一组建造选项。",
+	"attack_ground": "命令攻城器械攻击指定地面位置。",
+	"attack_move": "向指定位置移动，沿途主动攻击敌人。",
+	"patrol": "在当前位置与目标位置之间往返巡逻。",
+	"hold": "留在原地并攻击射程内的敌人。",
+	"focus": "让选中的部队集中攻击同一目标。",
+	"retreat": "命令选中的部队撤离战斗。",
+	"formation": "调整部队行进阵型或宽度。",
+	"stance": "切换单位主动交战的行为。",
+	"unload": "放出船上或建筑内的单位。",
+	"ungarrison": "放出建筑内驻扎的单位。",
+	"stop": "停止选中单位当前的命令。",
+	"field_ram": "让部队在野外建造攻城槌。",
+	"field_tower": "让部队在野外建造攻城塔。",
+	"market_buy": "用黄金购买 100 单位资源；价格随交易变化。",
+	"market_sell": "卖出 100 单位资源换取黄金；价格随交易变化。",
+	"town_bell": "召集村民到城镇中心避险。",
+	"return_work": "让避险的村民返回原来的工作。",
+	"collect_stockpile": "领取公会大厅累积的资源。",
+	"spy": "暂时侦察敌方村民的位置。",
+	"trade": "让商人恢复与贸易站之间的往返贸易。",
+}
+const STAT_LABELS := {
+	"hp": "生命", "damage": "攻击", "damage_melee": "近战攻击",
+	"damage_ranged": "远程攻击", "armor_melee": "近战护甲",
+	"armor_ranged": "远程护甲", "speed": "移动速度",
+}
 var game: Node2D
 
 func _init(game_ref: Node2D) -> void:
@@ -31,13 +119,8 @@ func _create_hud() -> void:
 	game.top_label.add_theme_color_override("font_color", Color("f4dfaa"))
 	game.top_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	top_row.add_child(game.top_label)
-	for spec in [
-		["food", "粮", Color("d8a65d")],
-		["wood", "木", Color("8eaa73")],
-		["gold", "金", Color("e3c26b")],
-		["stone", "石", Color("a9b5b0")],
-	]:
-		game._add_resource_readout(top_row, spec[0], spec[1], spec[2])
+	for kind in ["food", "wood", "gold", "stone"]:
+		game._add_resource_readout(top_row, kind)
 	game.population_label = Label.new()
 	game.population_label.custom_minimum_size.x = 102
 	game.population_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -101,11 +184,11 @@ func _create_hud() -> void:
 	game.command_title.add_theme_color_override("font_color", Color("e8cb85"))
 	command_column.add_child(game.command_title)
 	var action_scroll := ScrollContainer.new()
-	action_scroll.custom_minimum_size = Vector2(350, 192)
+	action_scroll.custom_minimum_size = Vector2(350, 250)
 	action_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	command_column.add_child(action_scroll)
 	game.action_bar = GridContainer.new()
-	game.action_bar.columns = 3
+	game.action_bar.columns = 4
 	game.action_bar.add_theme_constant_override("h_separation", 6)
 	game.action_bar.add_theme_constant_override("v_separation", 5)
 	action_scroll.add_child(game.action_bar)
@@ -486,7 +569,7 @@ func _rebuild_actions() -> void:
 	game.command_title.text = "命令"
 	if game.selected.is_empty() or not is_instance_valid(game.selected[0]): return
 	var item: Node2D = game.selected[0]
-	game.action_bar.columns = 2 if item is RtsBuilding and item.producer_kind() in game.MILITARY_RESEARCH_BUILDINGS else 3
+	game.action_bar.columns = 4
 	if item.owner_id != 0:
 		game.command_title.text = "敌方单位 · 情报"
 		return
@@ -647,40 +730,12 @@ func _build_building_actions(item: RtsBuilding) -> void:
 			if not train_kinds.has(kind): train_kinds.append(kind)
 		for kind in RtsTechTree.all_researches(game.civilizations[0], candidate.producer_kind()):
 			if not research_kinds.has(kind): research_kinds.append(kind)
-	if item.producer_kind() in game.MILITARY_RESEARCH_BUILDINGS:
-		for pair_start in range(0, train_kinds.size(), 2):
-			var pair: Array[String] = []
-			for index in range(pair_start, mini(pair_start + 2, train_kinds.size())):
-				pair.append(train_kinds[index])
-				_add_train_action(train_kinds[index], keys[action_index] if action_index < keys.size() else KEY_NONE)
-				action_index += 1
-			if pair.size() == 1: _add_action_spacer()
-			var rank_lists: Array[Array] = []
-			var max_rank_rows := 0
-			for unit_kind in pair:
-				var ranks: Array[String] = []
-				for tech_id in research_kinds:
-					if RtsTechTree.get_technology(tech_id).get("rank_unit", "") == unit_kind: ranks.append(tech_id)
-				rank_lists.append(ranks)
-				max_rank_rows = maxi(max_rank_rows, ranks.size())
-			for rank_index in max_rank_rows:
-				for ranks in rank_lists:
-					if rank_index < ranks.size():
-						_add_research_action(ranks[rank_index], keys[action_index] if action_index < keys.size() else KEY_NONE)
-						action_index += 1
-					else: _add_action_spacer()
-				if pair.size() == 1: _add_action_spacer()
-		for kind in research_kinds:
-			if RtsTechTree.get_technology(kind).has("rank_unit"): continue
-			_add_research_action(kind, keys[action_index] if action_index < keys.size() else KEY_NONE)
-			action_index += 1
-	else:
-		for kind in train_kinds:
-			_add_train_action(kind, keys[action_index] if action_index < keys.size() else KEY_NONE)
-			action_index += 1
-		for kind in research_kinds:
-			_add_research_action(kind, keys[action_index] if action_index < keys.size() else KEY_NONE)
-			action_index += 1
+	for kind in train_kinds:
+		_add_train_action(kind, keys[action_index] if action_index < keys.size() else KEY_NONE)
+		action_index += 1
+	for kind in research_kinds:
+		_add_research_action(kind, keys[action_index] if action_index < keys.size() else KEY_NONE)
+		action_index += 1
 	if item.kind == "market":
 		for resource_kind in ["food", "wood", "stone"]:
 			var sell_price: int = game.market_quote(resource_kind, false)
@@ -732,8 +787,8 @@ func _show_age_choice() -> void:
 	panel.set_anchors_preset(Control.PRESET_CENTER)
 	panel.offset_left = -310
 	panel.offset_right = 310
-	panel.offset_top = -174
-	panel.offset_bottom = 174
+	panel.offset_top = -225
+	panel.offset_bottom = 225
 	panel.add_theme_stylebox_override("panel", game._hud_panel_style(Color("30271c"), 18))
 	game.age_choice_overlay.add_child(panel)
 	var column := VBoxContainer.new()
@@ -754,14 +809,48 @@ func _show_age_choice() -> void:
 	for choice in choices:
 		var chosen_id: String = choice["id"]
 		var button := Button.new()
-		button.custom_minimum_size = Vector2(280, 138)
+		button.custom_minimum_size = Vector2(280, 210)
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		button.text = "%s\n\n%s\n建造：%s" % [choice["label"], choice["description"], GameData.cost_text(choice["cost"])]
 		game._style_button(button)
+		var card := VBoxContainer.new()
+		card.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		card.offset_left = 8
+		card.offset_top = 8
+		card.offset_right = -8
+		card.offset_bottom = -8
+		card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		card.add_theme_constant_override("separation", 4)
+		button.add_child(card)
+		var icon := TextureRect.new()
+		icon.texture = RtsCommandButton._texture_at("res://assets/ui/command_icons/%s.png" % chosen_id)
+		icon.custom_minimum_size = Vector2(72, 72)
+		icon.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		card.add_child(icon)
+		var name_label := Label.new()
+		name_label.text = choice["label"]
+		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		name_label.add_theme_font_size_override("font_size", 17)
+		card.add_child(name_label)
+		var effect_label := Label.new()
+		effect_label.text = choice["description"]
+		effect_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		effect_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		effect_label.custom_minimum_size.y = 48
+		effect_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		card.add_child(effect_label)
+		var cost_label := Label.new()
+		cost_label.text = "建造：%s" % GameData.cost_text(choice["cost"])
+		cost_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		cost_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		card.add_child(cost_label)
 		var status := RtsLandmarkCatalog.choice_status(game.civilizations[0], current_age, game.players[0]["landmarks"], chosen_id, game.active_landmark_id(0))
 		button.disabled = not status["available"] or not game.can_afford(0, choice["cost"])
-		if button.disabled: button.tooltip_text = status["reason"] if not status["available"] else "资源不足"
+		if button.disabled:
+			card.modulate.a = 0.55
+			button.tooltip_text = status["reason"] if not status["available"] else "资源不足"
 		button.pressed.connect(func() -> void:
 			_close_age_choice()
 			game._select_landmark_for_placement(chosen_id)
@@ -795,7 +884,7 @@ func _add_research_action(kind: String, keycode: int) -> void:
 
 func _add_action_spacer() -> void:
 	var spacer := Control.new()
-	spacer.custom_minimum_size = Vector2(108, 69)
+	spacer.custom_minimum_size = Vector2(80, 80)
 	spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	game.action_bar.add_child(spacer)
 
@@ -808,17 +897,22 @@ func _add_action(icon_kind: String, label_text: String, cost: Dictionary, keycod
 		var unit_stats := RtsUnitCatalog.unit_definition(game.civilizations[0], icon_kind, game.players[0]["researched"], game.players[0]["age"], game.players[0]["landmarks"], game.players[0].get("dynasty", ""), source_landmark)
 		var profile: Dictionary = unit_stats.get("profiles", {}).get(unit_stats.get("primary_profile", ""), {})
 		var train_seconds: float = game.selected[0]._training_time(icon_kind) if not game.selected.is_empty() and game.selected[0] is RtsBuilding else GameData.training_time(game.civilizations[0], "", icon_kind)
-		button.set_description("生命 %.0f · 攻击 %d×%.0f · 训练 %.1f 秒" % [float(unit_stats.get("hp", 0.0)), int(profile.get("hits", 1)), float(profile.get("damage", 0.0)), train_seconds])
+		button.set_description("%s\n生命 %.0f · 攻击 %d×%.0f · 训练 %.1f 秒" % [str(UNIT_HELP.get(icon_kind, "训练并指挥此单位。")), float(unit_stats.get("hp", 0.0)), int(profile.get("hits", 1)), float(profile.get("damage", 0.0)), train_seconds])
 	elif action_type == "research":
 		var technology: Dictionary = RtsTechTree.get_technology(icon_kind)
-		var effect_parts: Array[String] = []
-		for stat in technology.get("effects", {}): effect_parts.append("%s +%s" % [str(stat), str(technology["effects"][stat])])
-		var description := "研究 %.1f 秒" % float(technology.get("time", 0.0))
-		if not effect_parts.is_empty(): description += " · " + ", ".join(effect_parts)
-		if not technology.get("requires", []).is_empty(): description += " · 前置：" + ", ".join(technology["requires"])
-		button.set_description(description)
-	elif icon_kind in ["market_buy", "market_sell"]:
-		button.set_description("每次交易 100 单位；价格随供需变化")
+		button.set_description(_research_description(icon_kind, technology))
+	elif action_type == "build":
+		button.set_description(str(BUILD_HELP.get(icon_kind, "建造此建筑。")))
+	elif action_type == "landmark":
+		button.set_description(str(RtsLandmarkCatalog.landmark(icon_kind).get("description", "建造地标并解锁时代能力。")))
+	elif action_type == "convert_gate":
+		button.set_description("将现有城墙改建为可供友军通行的城门。")
+	elif COMMAND_HELP.has(icon_kind):
+		button.set_description(str(COMMAND_HELP[icon_kind]))
+	elif GameData.RESOURCE_LABELS.has(icon_kind):
+		button.set_description("设置商人贸易所得的%s。" % GameData.RESOURCE_LABELS[icon_kind])
+	elif action_type == "unit_ability":
+		button.set_description("让选中单位使用此能力。")
 	button.set_meta("cost", cost)
 	button.set_meta("action_type", action_type)
 	button.set_meta("action_kind", icon_kind)
@@ -826,3 +920,33 @@ func _add_action(icon_kind: String, label_text: String, cost: Dictionary, keycod
 	game.action_bar.add_child(button)
 	game.command_buttons.append(button)
 	if keycode != KEY_NONE: game.hotkey_buttons[keycode] = button
+
+func _research_description(kind: String, technology: Dictionary) -> String:
+	var purpose := ""
+	if technology.has("rank_unit"):
+		purpose = "将此兵种升级到更高等级，提升战斗属性。"
+	elif kind == "military_academy":
+		purpose = "军事单位的训练时间缩短 25%。"
+	elif kind == "enclosures":
+		purpose = "英格兰村民在农田工作时持续获得黄金。"
+	elif technology.get("economy", false):
+		var resource: String = GameData.RESOURCE_LABELS.get(technology.get("gather_kind", ""), "资源")
+		var bonus := roundi((float(technology.get("gather_multiplier", 1.0)) - 1.0) * 100.0)
+		purpose = "%s采集效率提高 %d%%。" % [resource, bonus]
+	else:
+		var targets: Array = technology.get("target_tags", [])
+		var target_label := "相关单位"
+		if targets.has("naval"): target_label = "船只"
+		elif targets.has("siege"): target_label = "攻城器械"
+		elif targets.has("cavalry"): target_label = "骑兵"
+		elif targets.has("infantry"): target_label = "步兵"
+		elif targets.has("ranged"): target_label = "远程单位"
+		var effects: Array[String] = []
+		for stat in technology.get("effects", {}):
+			effects.append("%s +%.0f" % [str(STAT_LABELS.get(stat, stat)), float(technology["effects"][stat])])
+		purpose = "提高%s属性：%s。" % [target_label, "、".join(effects)] if not effects.is_empty() else "强化相关单位。"
+	var lines: Array[String] = [purpose, "研究时间：%.0f 秒" % float(technology.get("time", 0.0))]
+	var prerequisites: Array[String] = []
+	for required in technology.get("requires", []): prerequisites.append(str(RtsTechTree.get_technology(str(required)).get("label", required)))
+	if not prerequisites.is_empty(): lines.append("前置科技：%s" % "、".join(prerequisites))
+	return "\n".join(lines)

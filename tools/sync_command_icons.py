@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Copy the AoE IV reference icons used by the in-game command panel.
+"""Copy the AoE IV reference icons used by the command panel and resource HUD.
 
 The game loads the small, stable asset set in assets/ rather than depending on
 the complete reference archive under docs/ at runtime.
@@ -14,6 +14,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 LIBRARY = ROOT / "docs/aoe4-icons-library"
 OUTPUT = ROOT / "assets/ui/command_icons"
+RESOURCE_OUTPUT = ROOT / "assets/ui/resource_icons"
+RESOURCE_ICONS = {"food": "肉", "wood": "木", "gold": "金", "stone": "石"}
 
 # Game labels differ from a few names in the reference archive. Keep these
 # choices explicit so a visually similar but unrelated icon is never picked by
@@ -81,6 +83,9 @@ def main() -> None:
             "place them under docs/aoe4-icons-library before syncing."
         )
     OUTPUT.mkdir(parents=True, exist_ok=True)
+    RESOURCE_OUTPUT.mkdir(parents=True, exist_ok=True)
+    for resource_id, name in RESOURCE_ICONS.items():
+        shutil.copyfile(LIBRARY / "tech" / f"{name}.png", RESOURCE_OUTPUT / f"{resource_id}.png")
     rows: list[tuple[str, str, str]] = []
     groups = [
         definitions("scripts/catalogs/game_data.gd", "BUILDINGS"),
@@ -108,6 +113,7 @@ def main() -> None:
         writer.writerows(rows)
 
     print(f"Copied {len(rows)} icons to {OUTPUT.relative_to(ROOT)}")
+    print(f"Copied {len(RESOURCE_ICONS)} resource icons to {RESOURCE_OUTPUT.relative_to(ROOT)}")
     if missing:
         print("No matching source icon: " + ", ".join(missing))
 
