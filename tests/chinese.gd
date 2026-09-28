@@ -21,6 +21,11 @@ func _run() -> void:
 	first.advance_construction(100.0)
 	assert(game.players[0]["age"] == 2 and game.players[0]["dynasty"] == "")
 	assert(RtsLandmarkCatalog.choice_status("Chinese", 2, game.players[0]["landmarks"], "zh_barbican")["available"])
+	game.selected.clear()
+	game.selected.append(game.units[0])
+	game.build_page = 2
+	game._rebuild_actions()
+	assert(game.hud_ui.build_tab_bar.get_child_count() == 4 and game.command_buttons[0].icon_kind == "zh_barbican", "China should keep its remaining dynasty landmark one tab away")
 	var archery: RtsBuilding = game.spawn_building(0, "archery_range", Vector2(700, 700))
 	assert(not game.train_unit(archery, "zhuge_nu"))
 	assert(game.train_unit(archery, "archer"))

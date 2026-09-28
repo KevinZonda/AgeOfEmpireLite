@@ -4,6 +4,7 @@ extends Node2D
 var game: Node2D
 var kind: String
 var amount: int
+var initial_amount: int
 var radius := 22.0
 var appearance := ""
 var home_position := Vector2.ZERO
@@ -18,6 +19,7 @@ var wildlife_attack := 0.0
 func setup(resource_kind: String, quantity: int, visual_kind := "") -> void:
 	kind = resource_kind
 	amount = quantity
+	initial_amount = quantity
 	appearance = visual_kind
 	wildlife_hp = 90.0 if appearance == "boar" else 1.0
 	home_position = position

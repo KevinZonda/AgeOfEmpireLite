@@ -119,7 +119,7 @@ func _run() -> void:
 	assert(trained_villager.destination == rally_destination, "trained units should travel to the rally point")
 	game.selected.clear()
 	game.selected.append(trained_villager)
-	game.build_page = 3
+	game.build_page = 0
 	game._rebuild_actions()
 	var age_button: RtsCommandButton
 	for button in game.command_buttons:
@@ -194,19 +194,16 @@ func _run() -> void:
 	assert(not RtsTechTree.can_advance(4))
 	game.selected.append(worker)
 	game._rebuild_actions()
-	assert(game.command_buttons.size() == 7, "villager economy page should show five buildings, page control, and stop")
-	game.command_buttons[5].pressed.emit()
-	assert(game.build_page == 1 and game.command_buttons[3].icon_kind == "siege_workshop", "construction page should expose the siege workshop")
-	game.command_buttons[6].pressed.emit()
-	assert(game.build_page == 2 and game.command_buttons[2].icon_kind == "stone_wall", "construction page should expose fortifications")
+	assert(game.action_bar.columns == 4 and game.action_bar.get_child_count() == 12, "economy construction page should fill a 3×4 grid")
+	assert(game.command_buttons[0].icon_kind == "house" and game.command_buttons[1].icon_kind == "lumber_camp" and game.command_buttons[4].icon_kind == "farm", "economy buildings should follow the reference order")
+	assert(game.command_buttons[11].icon_kind == "wonder" and game.command_buttons[11].disabled and game.command_buttons[11].tooltip_text.contains("当前不可用"), "the wonder should remain visible with its age requirement")
+	game.hud_ui.build_tab_bar.get_child(1).pressed.emit()
+	assert(game.build_page == 1 and game.action_bar.get_child_count() == 12, "military construction page should fill a 3×4 grid")
+	assert(game.command_buttons[0].icon_kind == "barracks" and game.command_buttons[3].icon_kind == "siege_workshop" and game.command_buttons[6].icon_kind == "palisade_wall" and game.command_buttons[9].icon_kind == "stone_gate", "military buildings should follow the reference order")
+	game.hud_ui.build_tab_bar.get_child(0).pressed.emit()
+	assert(game.build_page == 0)
 	game.command_buttons[4].pressed.emit()
-	assert(game.build_page == 3 and game.command_buttons[0].icon_kind == "wonder", "special page should expose wonder")
-	assert(game.command_buttons[0].disabled and game.command_buttons[0].availability_reason.contains("时代"), "locked wonder should explain its age requirement")
-	assert(game.command_buttons[0].tooltip_text.contains("当前不可用"), "disabled actions should explain why they cannot be used")
-	game.build_page = 0
-	game._rebuild_actions()
-	game.command_buttons[1].pressed.emit()
-	assert(game.build_mode == "farm", "second construction command should select a farm")
+	assert(game.build_mode == "farm", "economy construction command should select a farm")
 	game.build_mode = ""
 	assert(game._cursor_state_at(game._player_center(1).position) == "move", "unseen enemies should not be targetable")
 	assert(game._cursor_state_at(game.resources[0].position) == "gather")

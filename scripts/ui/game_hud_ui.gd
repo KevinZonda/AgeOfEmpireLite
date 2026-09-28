@@ -97,7 +97,12 @@ const STAT_LABELS := {
 	"damage_ranged": "远程攻击", "armor_melee": "近战护甲",
 	"armor_ranged": "远程护甲", "speed": "移动速度",
 }
+const BUILD_PAGES := [
+	{"title": "经济", "kinds": ["house", "lumber_camp", "mining_camp", "mill", "farm", "market", "dock", "age", "blacksmith", "monastery", "university", "wonder"]},
+	{"title": "军事", "kinds": ["barracks", "archery_range", "stable", "siege_workshop", "outpost", "keep", "", "", "palisade_wall", "stone_wall", "palisade_gate", "stone_gate"]},
+]
 var game: Node2D
+var build_tab_bar: HBoxContainer
 
 func _init(game_ref: Node2D) -> void:
 	game = game_ref
@@ -172,7 +177,7 @@ func _create_hud() -> void:
 	var bottom := PanelContainer.new()
 	game.hud_bottom = bottom
 	bottom.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	bottom.offset_top = -230
+	bottom.offset_top = -280
 	bottom.add_theme_stylebox_override("panel", game._hud_panel_style(Color("241d16"), 7))
 	root.add_child(bottom)
 	var dock := HBoxContainer.new()
@@ -185,13 +190,22 @@ func _create_hud() -> void:
 	var command_column := VBoxContainer.new()
 	command_column.add_theme_constant_override("separation", 6)
 	command_panel.add_child(command_column)
+	var command_header := HBoxContainer.new()
+	command_header.add_theme_constant_override("separation", 4)
+	command_column.add_child(command_header)
 	game.command_title = Label.new()
 	game.command_title.text = "命令"
+	game.command_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	game.command_title.add_theme_font_size_override("font_size", 17)
 	game.command_title.add_theme_color_override("font_color", Color("e8cb85"))
-	command_column.add_child(game.command_title)
+	command_header.add_child(game.command_title)
+	build_tab_bar = HBoxContainer.new()
+	build_tab_bar.add_theme_constant_override("separation", 3)
+	build_tab_bar.hide()
+	command_header.add_child(build_tab_bar)
 	var action_scroll := ScrollContainer.new()
-	action_scroll.custom_minimum_size = Vector2(350, 250)
+	action_scroll.custom_minimum_size = Vector2(350, 190)
+	action_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	action_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	command_column.add_child(action_scroll)
 	game.action_bar = GridContainer.new()
@@ -220,28 +234,29 @@ func _create_hud() -> void:
 	selection_column.add_child(game.info_label)
 	game.detail_label = Label.new()
 	game.detail_label.text = "左键选择 · 右键下令"
-	game.detail_label.add_theme_font_size_override("font_size", 13)
+	game.detail_label.add_theme_font_size_override("font_size", 14)
 	game.detail_label.add_theme_color_override("font_color", Color("d3c5a8"))
 	game.detail_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	game.detail_label.custom_minimum_size.x = 420
 	game.detail_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var detail_scroll := ScrollContainer.new()
-	detail_scroll.custom_minimum_size.y = 62
+	detail_scroll.custom_minimum_size.y = 84
 	detail_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	detail_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	detail_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	selection_column.add_child(detail_scroll)
 	detail_scroll.add_child(game.detail_label)
 	game.selection_health = ProgressBar.new()
 	game.selection_health.show_percentage = false
 	game.selection_health.custom_minimum_size = Vector2(285, 11)
-	game.selection_health.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	game.selection_health.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	game._style_progress_bar(game.selection_health, Color("80ad68"))
 	game.selection_health.hide()
 	selection_column.add_child(game.selection_health)
 	game.selection_progress = ProgressBar.new()
 	game.selection_progress.show_percentage = false
 	game.selection_progress.custom_minimum_size = Vector2(285, 9)
-	game.selection_progress.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	game.selection_progress.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	game._style_progress_bar(game.selection_progress, Color("d4af62"))
 	game.selection_progress.hide()
 	selection_column.add_child(game.selection_progress)
@@ -364,11 +379,11 @@ func _update_selection_hud() -> void:
 	game.selection_portrait.show_subject(item, Color("b6a877") if item is RtsResource else game.player_color(item.owner_id))
 	if item is RtsResource:
 		game.info_label.text = _resource_label(item)
-		game.detail_label.text = "剩余 %d %s" % [item.amount, GameData.RESOURCE_LABELS.get(item.kind, item.kind)]
-		if item.appearance == "boar" and item.wildlife_hp > 0.0:
-			game.detail_label.text += "  ·  生命 %.0f/90" % item.wildlife_hp
-		if item.appearance == "sheep" and item.claimed_by >= 0:
-			game.detail_label.text += "  ·  %s已认领" % ("我方" if item.claimed_by == 0 else "敌方")
+		game.detail_label.text = "资源类型  %s\n采集单位  %s\n当前状态  %s" % [GameData.RESOURCE_LABELS.get(item.kind, item.kind), "渔船" if item.appearance == "fish" else "村民", _resource_status(item)]
+		game.selection_progress.max_value = maxi(1, item.initial_amount)
+		game.selection_progress.value = item.amount
+		game.selection_progress.show()
+		game.queue_label.text = "剩余 %d / %d" % [item.amount, item.initial_amount]
 		return
 	if game.selected.size() > 1:
 		game.info_label.text = "已选中 %d 个单位" % game.selected.size()
@@ -408,6 +423,21 @@ func _update_selection_hud() -> void:
 
 func _resource_label(resource: RtsResource) -> String:
 	return {"berry": "浆果", "deer": "鹿", "sheep": "绵羊", "boar": "野猪", "fish": "鱼群"}.get(resource.appearance, {"wood": "树木", "gold": "金矿", "stone": "石矿"}.get(resource.kind, GameData.RESOURCE_LABELS.get(resource.kind, resource.kind)))
+
+func _resource_status(resource: RtsResource) -> String:
+	if resource.appearance == "boar" and resource.wildlife_hp > 0.0: return "野猪存活 · 生命 %.0f/90" % resource.wildlife_hp
+	if resource.appearance == "sheep":
+		if resource.claimed_by < 0: return "尚未认领"
+		return "我方已认领" if resource.claimed_by == 0 else "敌方已认领"
+	return "可采集"
+
+func _resource_guide(resource: RtsResource) -> String:
+	match resource.appearance:
+		"boar": return "先选中可攻击的单位，右键攻击野猪。击杀后选中村民，右键采集。"
+		"sheep": return "让侦察兵靠近羊群认领，再选中村民右键采集。"
+		"fish": return "选中渔船，右键点击鱼群捕鱼。"
+		"deer": return "选中村民，右键点击鹿群狩猎；鹿会躲避靠近的军队。"
+	return "选中村民，右键点击%s采集%s。" % [_resource_label(resource), GameData.RESOURCE_LABELS.get(resource.kind, resource.kind)]
 
 func _update_building_progress(building: RtsBuilding) -> void:
 	if not building.is_complete():
@@ -587,15 +617,27 @@ func _has_wonder(owner_id: int) -> bool:
 
 func _rebuild_actions() -> void:
 	if game.action_bar == null: return
-	for child in game.action_bar.get_children(): child.queue_free()
+	for child in game.action_bar.get_children():
+		game.action_bar.remove_child(child)
+		child.queue_free()
 	game.command_buttons.clear()
 	game.hotkey_buttons.clear()
 	game.command_title.text = "命令"
+	build_tab_bar.hide()
+	(game.action_bar.get_parent() as ScrollContainer).vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 	if game.selected.is_empty() or not is_instance_valid(game.selected[0]): return
 	var item: Node2D = game.selected[0]
 	game.action_bar.columns = 4
 	if item is RtsResource:
-		game.command_title.text = "资源 · 信息"
+		game.command_title.text = "采集方式"
+		game.action_bar.columns = 1
+		var guide := Label.new()
+		guide.text = _resource_guide(item)
+		guide.custom_minimum_size.x = 340
+		guide.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		guide.add_theme_font_size_override("font_size", 15)
+		guide.add_theme_color_override("font_color", Color("e9dbbd"))
+		game.action_bar.add_child(guide)
 		return
 	if item.owner_id != 0:
 		game.command_title.text = "敌方单位 · 情报"
@@ -620,33 +662,27 @@ func _build_unit_actions(item: RtsUnit) -> void:
 	any_worker = worker_count > 0 and worker_count >= military_count
 	any_military = military_count > 0 and military_count > worker_count
 	if any_worker:
-		var pages := [
-			{"title": "经济", "kinds": ["house", "farm", "mill", "lumber_camp", "mining_camp"]},
-			{"title": "军营", "kinds": ["barracks", "archery_range", "stable", "siege_workshop", "blacksmith", "university"]},
-			{"title": "防御", "kinds": ["outpost", "palisade_wall", "stone_wall", "keep"]},
-			{"title": "地标与奇观", "kinds": ["wonder"]},
-		]
-		if game.civilizations[0] == "Chinese": pages.append({"title": "王朝地标", "kinds": []})
-		pages.append({"title": "港口与贸易", "kinds": ["market", "dock", "monastery", "palisade_gate", "stone_gate"]})
+		var pages := BUILD_PAGES.duplicate(true)
+		if game.civilizations[0] == "Chinese": pages.append({"title": "王朝", "kinds": []})
 		game.build_page = posmod(game.build_page, pages.size())
 		var page: Dictionary = pages[game.build_page]
-		game.command_title.text = "村民 · %s (%d/%d)" % [page["title"], game.build_page + 1, pages.size()]
+		game.command_title.text = "村民 · 建造"
+		(game.action_bar.get_parent() as ScrollContainer).vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+		_show_build_tabs(pages)
 		for kind in page["kinds"]:
-			_add_build_action(kind, keys[action_index])
+			if kind.is_empty():
+				_add_action_spacer()
+			elif kind == "age":
+				if RtsTechTree.can_advance(game.players[0]["age"]): _add_action("age", "(%s) 升时代" % ["", "II", "III", "IV"][game.players[0]["age"]], {}, KEY_NONE, "order", _show_age_choice)
+				else: _add_action_spacer()
+			else:
+				_add_build_action(kind, keys[action_index] if action_index < keys.size() else KEY_NONE)
 			action_index += 1
-		if game.build_page == 3:
-			if RtsTechTree.can_advance(game.players[0]["age"]):
-				_add_action("age", "(%s) 升时代" % ["", "II", "III", "IV"][game.players[0]["age"]], {}, keys[action_index], "order", _show_age_choice)
-				action_index += 1
-		if game.civilizations[0] == "Chinese" and game.build_page == 4:
+		if game.civilizations[0] == "Chinese" and game.build_page == 2:
 			for choice in RtsLandmarkCatalog.choices_for(game.civilizations[0], game.players[0]["age"], game.players[0]["landmarks"]):
 				if int(choice["age"]) > game.players[0]["age"]: continue
-				_add_landmark_action(choice, keys[action_index])
+				_add_landmark_action(choice, keys[action_index] if action_index < keys.size() else KEY_NONE)
 				action_index += 1
-		_add_action("next_page", "下一页", {}, KEY_9 if page["kinds"].size() >= 5 else KEY_5, "order", func() -> void:
-			game.build_page = (game.build_page + 1) % pages.size()
-			_rebuild_actions()
-		)
 	if (any_military or any_special) and not any_worker:
 		game.command_title.text = "部队 · 命令"
 		if any_military:
@@ -729,7 +765,31 @@ func _build_unit_actions(item: RtsUnit) -> void:
 			for chosen in game.selected:
 				if is_instance_valid(chosen) and chosen is RtsUnit and chosen.kind == "trader" and is_instance_valid(chosen.trade_post): chosen.issue_command("trade", Vector2.INF, chosen.trade_post)
 		)
-	_add_action("stop", "停止", {}, KEY_6 if any_worker else KEY_2, "order", func() -> void: game._stop_selected_units())
+	if not any_worker: _add_action("stop", "停止", {}, KEY_2, "order", func() -> void: game._stop_selected_units())
+
+func _show_build_tabs(pages: Array) -> void:
+	for child in build_tab_bar.get_children():
+		build_tab_bar.remove_child(child)
+		child.queue_free()
+	build_tab_bar.show()
+	for index in pages.size():
+		var tab_index := index
+		var tab := Button.new()
+		tab.text = pages[index]["title"]
+		tab.custom_minimum_size = Vector2(40, 26)
+		game._style_button(tab, tab_index == game.build_page)
+		tab.pressed.connect(func() -> void:
+			game.build_page = tab_index
+			_rebuild_actions()
+		)
+		build_tab_bar.add_child(tab)
+	var stop := Button.new()
+	stop.text = "■"
+	stop.tooltip_text = "停止选中村民当前的命令"
+	stop.custom_minimum_size = Vector2(26, 26)
+	game._style_button(stop)
+	stop.pressed.connect(func() -> void: game._stop_selected_units())
+	build_tab_bar.add_child(stop)
 
 func _selected_has_ability(ability: Dictionary) -> bool:
 	if ability.has("civilization") and game.civilizations[0] != ability["civilization"]: return false
@@ -912,7 +972,7 @@ func _add_research_action(kind: String, keycode: int) -> void:
 
 func _add_action_spacer() -> void:
 	var spacer := Control.new()
-	spacer.custom_minimum_size = Vector2(80, 80)
+	spacer.custom_minimum_size = Vector2(68, 68)
 	spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	game.action_bar.add_child(spacer)
 

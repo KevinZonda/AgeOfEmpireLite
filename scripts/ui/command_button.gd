@@ -19,7 +19,7 @@ func configure(kind: String, label_text: String, key_text: String, slot: int = -
 	shortcut_label = key_text
 	slot_index = slot
 	icon_texture = _load_icon(kind)
-	custom_minimum_size = Vector2(80, 80)
+	custom_minimum_size = Vector2(68, 68)
 	add_theme_stylebox_override("normal", _tile_style(Color("473725"), Color("8d7549")))
 	add_theme_stylebox_override("hover", _tile_style(Color("634a29"), Color("ebca7c")))
 	add_theme_stylebox_override("pressed", _tile_style(Color("2f281c"), Color("f4d58a")))
@@ -57,19 +57,19 @@ func _refresh_tooltip() -> void:
 
 func _draw() -> void:
 	var color := Color("f1d99b") if not disabled else Color("8b8679")
-	var icon_rect := Rect2((size - Vector2(68, 68)) * 0.5, Vector2(68, 68))
+	var icon_rect := Rect2((size - Vector2(60, 60)) * 0.5, Vector2(60, 60))
 	if icon_texture != null:
 		draw_texture_rect(icon_texture, icon_rect, false, Color(1, 1, 1, 0.38) if disabled else Color.WHITE)
 	else:
 		draw_rect(icon_rect, Color("211d16") if not disabled else Color("272722"))
 		draw_rect(icon_rect, Color("a68b53") if not disabled else Color("59574d"), false, 1)
-		draw_set_transform(icon_rect.get_center(), 0.0, Vector2(1.7, 1.7))
+		draw_set_transform(icon_rect.get_center(), 0.0, Vector2(1.5, 1.5))
 		_draw_icon(Vector2.ZERO, color)
 		draw_set_transform(Vector2.ZERO)
 	var font := ThemeDB.fallback_font
 	if font == null: return
 	if rank_icon_fallback:
-		var rank_badge := Rect2(icon_rect.position + Vector2(0, 52), Vector2(22, 16))
+		var rank_badge := Rect2(icon_rect.position + Vector2(0, 44), Vector2(22, 16))
 		draw_rect(rank_badge, Color("211b14"))
 		draw_rect(rank_badge, Color("a68b53"), false, 1)
 		draw_string(font, rank_badge.position + Vector2(2, 12), "III" if icon_kind.ends_with("_3") else "IV", HORIZONTAL_ALIGNMENT_CENTER, 18, 10, color)

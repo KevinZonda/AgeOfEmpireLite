@@ -41,9 +41,9 @@ func _run() -> void:
 	var workers: Array[RtsUnit] = [game.units[0]]
 	game.selected.clear()
 	game.selected.append(workers[0])
-	game.build_page = 4
+	game.build_page = 0
 	game._rebuild_actions()
-	assert(game.command_buttons[0].icon_kind == "market" and game.command_buttons[1].icon_kind == "dock" and game.command_buttons[2].icon_kind == "monastery")
+	assert(game.command_buttons[5].icon_kind == "market" and game.command_buttons[6].icon_kind == "dock" and game.command_buttons[9].icon_kind == "monastery")
 	game.build_page = 0
 	assert(game.place_building(0, "dock", dock_point, workers))
 	var dock: RtsBuilding = game.buildings.back()

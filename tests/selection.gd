@@ -8,6 +8,9 @@ func _run() -> void:
 	root.add_child(game)
 	await process_frame
 	game.start_game("English", 4242)
+	await process_frame
+	assert(game.hud_bottom.get_rect().end.y <= game.get_viewport_rect().size.y, "bottom HUD should remain inside the default viewport")
+	assert(game.detail_label.get_parent().size.y >= 100.0, "selection details should use the available panel height")
 	var worker: RtsUnit = game.units[0]
 	var scout: RtsUnit = game.spawn_unit(0, "scout", Vector2(800, 700))
 	var distant_worker: RtsUnit = game.spawn_unit(0, "villager", Vector2(2100, 820))
@@ -40,8 +43,9 @@ func _run() -> void:
 		assert(resource != null, "test needs a clickable %s" % expected["label"])
 		game._select_area(resource.position, resource.position, false)
 		assert(game.selected.size() == 1 and game.selected[0] == resource, "click should select %s" % expected["label"])
-		assert(game.info_label.text == expected["label"] and game.detail_label.text.contains(str(resource.amount)), "selected resource should show its name and amount")
-		assert(game.command_title.text == "资源 · 信息")
+		assert(game.info_label.text == expected["label"] and game.queue_label.text.contains(str(resource.amount)), "selected resource should show its name and amount")
+		assert(game.detail_label.text.contains("资源类型") and game.detail_label.text.contains("当前状态"))
+		assert(game.command_title.text == "采集方式")
 		assert(game._cursor_state_at(resource.position) == "select")
 		if expected["label"] == "浆果":
 			game._select_area(worker.position, worker.position, true)

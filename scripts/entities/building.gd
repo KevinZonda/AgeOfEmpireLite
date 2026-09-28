@@ -33,12 +33,15 @@ var landmark_ability_cooldown := 0.0
 var tax_stockpile := 0
 var tax_timer := 4.0
 var damage_flash_timer := 0.0
+var building_icon: Texture2D
 
 func setup(game_ref: Node2D, player_id: int, building_kind: String, under_construction := false, chosen_landmark := "") -> void:
 	game = game_ref
 	owner_id = player_id
 	kind = building_kind
 	landmark_id = chosen_landmark
+	var icon_kind := landmark_id if kind == "landmark" else "scout" if kind == "scout_camp" else kind
+	building_icon = RtsCommandButton._texture_at("res://assets/ui/command_icons/%s.png" % icon_kind)
 	var definition := definition()
 	stats = definition.duplicate(true)
 	stats["armor"] = definition.get("armor", {"melee": 0.0, "ranged": 0.0}).duplicate(true)
@@ -391,11 +394,14 @@ func _draw() -> void:
 		draw_colored_polygon(PackedVector2Array([Vector2(-26, -19), Vector2(0, -35), Vector2(26, -19)]), Color("513c36"))
 	elif construction_ratio >= 0.65:
 		draw_colored_polygon(PackedVector2Array([Vector2(-size().x * 0.4, -size().y * 0.4), Vector2(0, -size().y * 0.65), Vector2(size().x * 0.4, -size().y * 0.4)]), Color("513c36"))
+	var icon_size := 20.0 if kind.ends_with("_wall") or kind.ends_with("_gate") or kind == "scout_camp" else 26.0
+	_draw_building_icon(Vector2(0, -size().y * 0.5 - icon_size * 0.5 - 8.0), icon_size)
 	var font := ThemeDB.fallback_font
 	if font != null:
 		draw_string(font, Vector2(-size().x * 0.5, size().y * 0.5 + 15), display_label(), HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color.WHITE)
-	draw_rect(Rect2(-size().x * 0.5, -size().y * 0.5 - 10, size().x, 5), Color("432e2b"))
-	draw_rect(Rect2(-size().x * 0.5, -size().y * 0.5 - 10, size().x * clampf(hp / max_hp, 0.0, 1.0), 5), Color("7fd47a"))
+	var bar_y := -size().y * 0.5 - icon_size - 18.0
+	draw_rect(Rect2(-size().x * 0.5, bar_y, size().x, 5), Color("432e2b"))
+	draw_rect(Rect2(-size().x * 0.5, bar_y, size().x * clampf(hp / max_hp, 0.0, 1.0), 5), Color("7fd47a"))
 	if not is_complete():
 		draw_arc(Vector2.ZERO, 14, 0, TAU * (1.0 - build_remaining / maxf(build_total, 0.1)), 20, Color.WHITE, 3)
 	if not production_queue.is_empty():
@@ -452,6 +458,8 @@ func _draw_isometric() -> void:
 		draw_polyline(PackedVector2Array([nw + lift, ne + lift, se + lift, sw + lift, nw + lift]), Color("f7d091", damage_flash_timer * 3.4), 3.0)
 	# Labels and status bars are drawn in screen space so they stay legible.
 	draw_set_transform_matrix(RtsIsoProjection.upright(canvas, terrain_lift))
+	var icon_size := 20.0 if kind.ends_with("_wall") or kind.ends_with("_gate") or kind == "scout_camp" else 26.0
+	_draw_building_icon(Vector2(0, -height * game.camera.zoom.x - icon_size * 0.5 + 1.0), icon_size)
 	var font := ThemeDB.fallback_font
 	if font != null:
 		var label := display_label()
@@ -464,3 +472,16 @@ func _draw_isometric() -> void:
 	if not is_complete(): draw_arc(Vector2.ZERO, 14, 0, TAU * (1.0 - build_remaining / maxf(build_total, 0.1)), 20, Color.WHITE, 3)
 	if not production_queue.is_empty(): draw_circle(Vector2(bar_width * 0.5 + 5, bar_y + 2), 6, Color("e5c45d"))
 	draw_set_transform_matrix(Transform2D.IDENTITY)
+
+func _draw_building_icon(center: Vector2, icon_size: float) -> void:
+	var badge := Rect2(center - Vector2.ONE * icon_size * 0.5, Vector2.ONE * icon_size)
+	if building_icon != null:
+		draw_texture_rect(building_icon, badge, false, Color(1, 1, 1, 0.55) if not is_complete() else Color.WHITE)
+	else:
+		draw_rect(badge, Color("24313a"))
+		# Wonders have no command icon asset yet; a small column marks them on the map.
+		draw_colored_polygon(PackedVector2Array([center + Vector2(-9, -5), center + Vector2(0, -11), center + Vector2(9, -5)]), Color("e8d5a1"))
+		for offset in [-6.0, 0.0, 6.0]:
+			draw_rect(Rect2(center + Vector2(offset - 1.5, -4), Vector2(3, 11)), Color("e8d5a1"))
+		draw_rect(Rect2(center + Vector2(-10, 7), Vector2(20, 3)), Color("e8d5a1"))
+	draw_rect(badge, Color("e4c785"), false, 1.0)
