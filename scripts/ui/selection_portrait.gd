@@ -6,6 +6,7 @@ const NavalVisual = preload("res://scripts/entities/visuals/naval_visual.gd")
 const ChineseVisual = preload("res://scripts/entities/visuals/chinese_visual.gd")
 const InfantryVisual = preload("res://scripts/entities/visuals/infantry_visual.gd")
 const SupportVisual = preload("res://scripts/entities/visuals/support_visual.gd")
+const OreVisual = preload("res://scripts/entities/visuals/ore_visual.gd")
 
 var subject: Node2D
 var owner_tint := Color("8a9a8e")
@@ -53,6 +54,11 @@ func _draw_resource() -> void:
 		for x in [-18.0, 18.0]: draw_line(center + Vector2(x, 10), center + Vector2(x, 35), color.darkened(0.35), 4)
 	elif resource.appearance == "fish":
 		draw_colored_polygon(PackedVector2Array([center + Vector2(-30, 0), center + Vector2(5, -18), center + Vector2(31, 0), center + Vector2(5, 18)]), Color("c5d9cf"))
+	elif resource.kind == "gold" or resource.kind == "stone":
+		var fraction := clampf(float(resource.amount) / maxf(float(resource.initial_amount), 1.0), 0.0, 1.0)
+		draw_set_transform_matrix(Transform2D(Vector2(1.55, 0), Vector2(0, 1.55), center + Vector2(0, 16)))
+		OreVisual.draw_25d(self, resource.kind, fraction)
+		draw_set_transform_matrix(Transform2D.IDENTITY)
 	else:
 		draw_circle(center, 28, color)
 		if resource.appearance == "berry":

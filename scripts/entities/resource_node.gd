@@ -1,6 +1,8 @@
 class_name RtsResource
 extends Node2D
 
+const OreVisual = preload("res://scripts/entities/visuals/ore_visual.gd")
+
 var game: Node2D
 var kind: String
 var amount: int
@@ -167,6 +169,10 @@ func _draw() -> void:
 		draw_arc(Vector2.ZERO, radius, 0, TAU, 28, outline, 2.0)
 		for point in [Vector2(-10, -8), Vector2(8, -11), Vector2(4, 9), Vector2(-11, 8)]:
 			draw_circle(point, 5, Color("d86b65"))
+	elif kind == "gold" or kind == "stone":
+		var fraction := clampf(float(amount) / maxf(float(initial_amount), 1.0), 0.0, 1.0)
+		if isometric: OreVisual.draw_25d(self, kind, fraction)
+		else: OreVisual.draw_2d(self, kind, fraction)
 	else:
 		var points := PackedVector2Array([Vector2(-22, 14), Vector2(-16, -10), Vector2(2, -20), Vector2(22, -8), Vector2(20, 17)])
 		draw_colored_polygon(points, color)
