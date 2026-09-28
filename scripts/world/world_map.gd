@@ -25,6 +25,11 @@ var resource_specs: Array[Dictionary] = []
 var pathfinder := AStarGrid2D.new()
 var rng := RandomNumberGenerator.new()
 var lift_per_height := Vector2.ZERO
+var ground_mesh: ArrayMesh
+var accents_mesh: ArrayMesh
+var plants_mesh: ArrayMesh
+var apron_mesh: ArrayMesh
+var relief_mesh: ArrayMesh
 
 func generate(seed_value: int, map_size: Vector2, style := "balanced", participants := 2) -> void:
 	map_seed = seed_value

@@ -1385,8 +1385,9 @@ func _pan_camera(delta: float) -> void:
 	if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT): direction.x += 1
 	if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP): direction.y -= 1
 	if Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN): direction.y += 1
-	if get_window().has_focus():
-		direction += _edge_pan_direction(_selection_pointer_screen_position(), get_viewport_rect().size)
+	# A pointer resting at the screen edge must not cancel or skew WASD movement.
+	if direction == Vector2.ZERO and get_window().has_focus():
+		direction = _edge_pan_direction(_selection_pointer_screen_position(), get_viewport_rect().size)
 	if direction != Vector2.ZERO:
 		_move_camera_screen_delta(direction.normalized() * CAMERA_PAN_SPEED * delta)
 
