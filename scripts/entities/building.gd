@@ -1,6 +1,10 @@
 class_name RtsBuilding
 extends Node2D
 
+const LandmarkVisual = preload("res://scripts/entities/visuals/landmark_visual.gd")
+var landmark_geometry
+var landmark_geometry_key := ""
+
 var game: Node2D
 var owner_id := 0
 var kind: String
@@ -128,10 +132,13 @@ func isometric_height() -> float:
 	return 26.0
 
 func _landmark_extra_height() -> float:
-	if kind == "wonder": return 75.0
-	if kind != "landmark": return 0.0
-	if landmark_id in ["eng_white_tower", "fr_guild_hall", "zh_clocktower", "zh_gatehouse"]: return 65.0
-	return 49.0
+	if kind not in ["landmark", "wonder"]: return 0.0
+	var canvas := get_viewport().get_canvas_transform()
+	var top := 0.0
+	for polygon in _landmark_geometry().projected_faces(canvas, game.camera.zoom.x, Vector2.ZERO):
+		for point in polygon["points"]:
+			top = minf(top, canvas.basis_xform(point).y)
+	return -top / game.camera.zoom.x
 
 func _visual_kind() -> String:
 	if kind != "landmark": return kind
@@ -457,9 +464,9 @@ func _draw_isometric() -> void:
 	var bounds := Rect2(-size() * 0.5, size())
 	var art_kind := _visual_kind()
 	var body_bounds := bounds
-	if art_kind == "monastery":
+	if art_kind == "monastery" and kind != "landmark":
 		body_bounds = Rect2(Vector2(-size().x * 0.34, -size().y * 0.5), Vector2(size().x * 0.68, size().y))
-	var open_yard := art_kind in ["archery_range", "stable", "market", "dock", "lumber_camp", "mining_camp", "scout_camp"]
+	var open_yard := kind != "landmark" and art_kind in ["archery_range", "stable", "market", "dock", "lumber_camp", "mining_camp", "scout_camp"]
 	var palette := _architecture_palette()
 	var color: Color = palette["wall"]
 	var construction_ratio := 1.0 - build_remaining / maxf(build_total, 0.1)
@@ -494,7 +501,7 @@ func _draw_isometric() -> void:
 		draw_colored_polygon(PackedVector2Array([nw + wall_lift, ne + wall_lift, se + wall_lift, sw + wall_lift]), roof_color if not open_yard else palette["timber"])
 		draw_polyline(PackedVector2Array([nw + wall_lift, ne + wall_lift, se + wall_lift, sw + wall_lift, nw + wall_lift]), Color("1f2929"), 2.0)
 		_draw_iso_architecture(art_kind, nw, ne, se, sw, lift, palette, canvas)
-		if kind == "landmark" or kind == "wonder": _draw_iso_landmark_architecture(nw, ne, se, sw, lift, palette, canvas)
+		if kind == "landmark" or kind == "wonder": _draw_iso_landmark_architecture(lift, canvas)
 	else:
 		var scaffold := Color("c5a878")
 		for corner in [nw, ne, sw, se]:
@@ -512,7 +519,7 @@ func _draw_isometric() -> void:
 	if font != null:
 		var label := display_label()
 		var label_width := font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 13).x
-		draw_string(font, Vector2(-label_width * 0.5, size().y * 0.28 + 22.0), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color.WHITE)
+		draw_string(font, Vector2(-label_width * 0.5, canvas.basis_xform(se).y + 18.0), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color.WHITE)
 	var bar_width := minf(72.0, size().x * 0.8)
 	var bar_y: float = minf(-icon_height * game.camera.zoom.x - size().y * 0.25 - 16.0, -icon_height * game.camera.zoom.x - side - 20.0)
 	draw_rect(Rect2(-bar_width * 0.5, bar_y, bar_width, 5), Color("422f2d"))
@@ -698,7 +705,7 @@ func _draw_iso_architecture(art_kind: String, nw: Vector2, ne: Vector2, se: Vect
 	if art_kind.ends_with("_wall") or art_kind.ends_with("_gate"):
 		_draw_iso_fortification(nw, ne, se, sw, lift, palette)
 		return
-	if art_kind in ["archery_range", "stable", "market", "dock", "lumber_camp", "mining_camp", "scout_camp"]:
+	if kind != "landmark" and art_kind in ["archery_range", "stable", "market", "dock", "lumber_camp", "mining_camp", "scout_camp"]:
 		_draw_iso_open_structure(art_kind, nw, ne, se, sw, lift, palette, canvas)
 		return
 	var timber: Color = palette["timber"]
@@ -723,6 +730,9 @@ func _draw_iso_architecture(art_kind: String, nw: Vector2, ne: Vector2, se: Vect
 		draw_line(window_base - half_width, window_base + half_width, trim, 1.6)
 	# The faction color is an accent; the wall and roof retain their material colors.
 	draw_line(sw.lerp(se, 0.08) + lift * 0.88, sw.lerp(se, 0.92) + lift * 0.88, game.player_color(owner_id), 3.0)
+	# Landmark wings share a flat terrace; no generic pitched roof or tower
+	# may intersect the bespoke geometry drawn above it.
+	if kind in ["landmark", "wonder"]: return
 	_draw_iso_roof(art_kind, nw, ne, se, sw, lift, palette, canvas)
 	_draw_iso_building_feature(art_kind, nw, ne, se, sw, lift, palette, canvas)
 
@@ -975,145 +985,20 @@ func _draw_iso_landmark_crown(base: Vector2, palette: Dictionary, canvas: Transf
 		var accent: Color = Color("c99657") if kind == "landmark" else game.player_color(owner_id)
 		draw_colored_polygon(PackedVector2Array([top, top + Vector2(10, 3), top + Vector2(0, 7)]), accent)
 
-# Landmark masses sit on the existing roof plane. Their width, height and roof
-# profiles are deliberately different so a landmark can be read without its badge.
-func _landmark_roof_point(nw: Vector2, ne: Vector2, sw: Vector2, lift: Vector2, u: float, v: float) -> Vector2:
-	return nw + (ne - nw) * u + (sw - nw) * v + lift
+func _landmark_geometry():
+	var key := str([kind, landmark_id, size(), game.civilizations[owner_id]])
+	if landmark_geometry == null or landmark_geometry_key != key:
+		landmark_geometry = LandmarkVisual.new()
+		landmark_geometry.dimensions = size()
+		landmark_geometry.palette = _architecture_palette()
+		landmark_geometry.populate(kind, landmark_id, game.player_color(owner_id))
+		landmark_geometry.prepare()
+		landmark_geometry_key = key
+	return landmark_geometry
 
-func _draw_landmark_block(nw: Vector2, ne: Vector2, sw: Vector2, lift: Vector2, canvas: Transform2D, palette: Dictionary, u: float, v: float, width: float, depth: float, height: float, roof_style: String, roof_tint: Color = Color.TRANSPARENT) -> void:
-	var center := _landmark_roof_point(nw, ne, sw, lift, u, v)
-	var across := (ne - nw) * width * 0.5
-	var down := (sw - nw) * depth * 0.5
-	var a := center - across - down
-	var b := center + across - down
-	var c := center + across + down
-	var d := center - across + down
-	var up := RtsIsoProjection.world_delta(canvas, Vector2(0, -height * game.camera.zoom.x))
-	var roof_up := RtsIsoProjection.world_delta(canvas, Vector2(0, -(14.0 if roof_style in ["spire", "pagoda"] else 9.0) * game.camera.zoom.x))
-	var wall: Color = palette["wall"]
-	var trim: Color = palette["trim"]
-	var roof: Color = palette["roof"] if roof_tint.a == 0.0 else roof_tint
-	var dark: Color = palette["roof_dark"]
-	draw_colored_polygon(PackedVector2Array([b + up, c + up, c, b]), wall.darkened(0.22))
-	draw_colored_polygon(PackedVector2Array([d + up, c + up, c, d]), wall)
-	draw_line(d + up, c + up, trim.darkened(0.12), 2.0)
-	if roof_style == "flat" or roof_style == "clock":
-		draw_colored_polygon(PackedVector2Array([a + up, b + up, c + up, d + up]), dark)
-		for p in [d + up, d.lerp(c, 0.33) + up, d.lerp(c, 0.66) + up, c + up, b + up]:
-			draw_line(p, p + up * 0.13, trim, 3.8)
-	elif roof_style == "gable":
-		var ridge_a := (a + b) * 0.5 + up + roof_up
-		var ridge_d := (d + c) * 0.5 + up + roof_up
-		draw_colored_polygon(PackedVector2Array([a + up, ridge_a, ridge_d, d + up]), roof.lightened(0.12))
-		draw_colored_polygon(PackedVector2Array([ridge_a, b + up, c + up, ridge_d]), roof)
-		draw_line(ridge_a, ridge_d, trim, 2.0)
-	else:
-		var peak := center + up + roof_up * (1.9 if roof_style == "spire" else 1.0)
-		draw_colored_polygon(PackedVector2Array([a + up, b + up, peak]), roof.lightened(0.13))
-		draw_colored_polygon(PackedVector2Array([b + up, c + up, peak]), roof)
-		draw_colored_polygon(PackedVector2Array([c + up, d + up, peak]), dark)
-		draw_line(d + up, c + up, trim, 2.0)
-		if roof_style == "pagoda":
-			var upper := center + up + roof_up * 0.82
-			var eave_a := upper - across * 0.65 - down * 0.65
-			var eave_b := upper + across * 0.65 - down * 0.65
-			var eave_c := upper + across * 0.65 + down * 0.65
-			var eave_d := upper - across * 0.65 + down * 0.65
-			var second_peak := upper + roof_up * 1.2
-			draw_colored_polygon(PackedVector2Array([eave_a, eave_b, second_peak]), roof.lightened(0.15))
-			draw_colored_polygon(PackedVector2Array([eave_b, eave_c, second_peak]), roof)
-			draw_colored_polygon(PackedVector2Array([eave_c, eave_d, second_peak]), dark)
-			draw_line(eave_d, eave_c, trim, 2.2)
-	if roof_style == "clock":
-		var clock_face := (d + c) * 0.5 + up * 0.55
-		draw_circle(clock_face, 7.3, trim)
-		draw_circle(clock_face, 5.4, dark)
-		draw_line(clock_face, clock_face + Vector2(0, -3.5), trim, 1.3)
-		draw_line(clock_face, clock_face + Vector2(2.6, 1), trim, 1.3)
-	if roof_style == "dome":
-		var dome_center := center + up + roof_up * 0.55
-		var radius := minf(across.length() * 1.15, 23.0)
-		draw_circle(dome_center, radius, roof.lightened(0.18))
-		draw_arc(dome_center, radius, PI, TAU, 12, trim, 1.6)
-	for fraction in [0.25, 0.75]:
-		var window := d.lerp(c, fraction) + up * 0.62
-		draw_line(window, window + up * 0.18, Color("36474a"), 3.0)
-
-func _draw_iso_landmark_architecture(nw: Vector2, ne: Vector2, se: Vector2, sw: Vector2, lift: Vector2, palette: Dictionary, canvas: Transform2D) -> void:
-	var player: Color = game.player_color(owner_id)
-	if kind == "wonder":
-		# Broad plinth, colonnade, cupola and four corner pinnacles.
-		_draw_landmark_block(nw, ne, sw, lift, canvas, palette, 0.5, 0.5, 1.04, 1.04, 12, "flat")
-		for u in [0.1, 0.9]:
-			for v in [0.1, 0.9]: _draw_landmark_block(nw, ne, sw, lift, canvas, palette, u, v, 0.17, 0.17, 35, "spire")
-		_draw_landmark_block(nw, ne, sw, lift, canvas, palette, 0.5, 0.5, 0.62, 0.62, 48, "dome", Color("bda36b"))
-		var column_rise := RtsIsoProjection.world_delta(canvas, Vector2(0, -20.0 * game.camera.zoom.x))
-		for u in [0.27, 0.42, 0.58, 0.73]:
-			var column := _landmark_roof_point(nw, ne, sw, lift, u, 0.94)
-			draw_line(column, column + column_rise, palette["trim"], 4.0)
-			draw_circle(column + column_rise, 2.5, Color("bda36b"))
-		return
-	match landmark_id:
-		"eng_council_hall":
-			_draw_landmark_block(nw, ne, sw, lift, canvas, palette, 0.5, 0.49, 0.78, 0.48, 21, "gable")
-			for u in [0.27, 0.5, 0.73]:
-				var foot := _landmark_roof_point(nw, ne, sw, lift, u, 0.83)
-				draw_line(foot, foot + lift * 0.4, palette["trim"], 4.0)
-		"eng_kings_mill":
-			for u in [0.24, 0.76]: _draw_landmark_block(nw, ne, sw, lift, canvas, palette, u, 0.5, 0.21, 0.28, 39, "spire")
-			_draw_landmark_block(nw, ne, sw, lift, canvas, palette, 0.5, 0.52, 0.43, 0.59, 18, "gable")
-		"eng_white_tower":
-			_draw_landmark_block(nw, ne, sw, lift, canvas, palette, 0.5, 0.48, 0.48, 0.55, 57, "flat")
-		"eng_abbey":
-			_draw_landmark_block(nw, ne, sw, lift, canvas, palette, 0.5, 0.43, 0.39, 0.7, 21, "gable")
-			for u in [0.25, 0.75]: _draw_landmark_block(nw, ne, sw, lift, canvas, palette, u, 0.69, 0.18, 0.19, 34, "spire")
-		"eng_berkshire_fortress":
-			for u in [0.15, 0.85]:
-				for v in [0.16, 0.84]: _draw_landmark_block(nw, ne, sw, lift, canvas, palette, u, v, 0.21, 0.21, 37, "flat")
-			_draw_landmark_block(nw, ne, sw, lift, canvas, palette, 0.5, 0.5, 0.37, 0.38, 27, "flat")
-		"eng_wynguard_palace":
-			_draw_landmark_block(nw, ne, sw, lift, canvas, palette, 0.5, 0.48, 0.49, 0.55, 32, "hip")
-			for u in [0.15, 0.85]: _draw_landmark_block(nw, ne, sw, lift, canvas, palette, u, 0.55, 0.21, 0.33, 24, "spire")
-		"fr_school_of_cavalry":
-			for u in [0.19, 0.81]: _draw_landmark_block(nw, ne, sw, lift, canvas, palette, u, 0.48, 0.25, 0.7, 20, "gable")
-			_draw_landmark_block(nw, ne, sw, lift, canvas, palette, 0.5, 0.18, 0.37, 0.23, 31, "hip")
-		"fr_chamber_of_commerce":
-			for u in [0.19, 0.5, 0.81]: _draw_landmark_block(nw, ne, sw, lift, canvas, palette, u, 0.32, 0.28, 0.42, 19, "gable", player.darkened(0.12))
-			_draw_landmark_block(nw, ne, sw, lift, canvas, palette, 0.5, 0.73, 0.3, 0.24, 22, "hip")
-		"fr_royal_institute":
-			for u in [0.2, 0.8]: _draw_landmark_block(nw, ne, sw, lift, canvas, palette, u, 0.58, 0.3, 0.41, 23, "gable")
-			_draw_landmark_block(nw, ne, sw, lift, canvas, palette, 0.5, 0.43, 0.38, 0.48, 35, "dome")
-		"fr_guild_hall":
-			for u in [0.22, 0.78]: _draw_landmark_block(nw, ne, sw, lift, canvas, palette, u, 0.61, 0.27, 0.4, 20, "gable")
-			_draw_landmark_block(nw, ne, sw, lift, canvas, palette, 0.5, 0.42, 0.37, 0.37, 52, "spire")
-		"fr_red_palace":
-			var red := Color("a45e4e")
-			for u in [0.17, 0.83]:
-				for v in [0.19, 0.81]: _draw_landmark_block(nw, ne, sw, lift, canvas, palette, u, v, 0.23, 0.23, 35, "spire", red)
-			_draw_landmark_block(nw, ne, sw, lift, canvas, palette, 0.5, 0.49, 0.4, 0.4, 29, "flat", red)
-		"fr_college_of_artillery":
-			_draw_landmark_block(nw, ne, sw, lift, canvas, palette, 0.5, 0.47, 0.65, 0.55, 22, "gable")
-			for u in [0.23, 0.77]: _draw_landmark_block(nw, ne, sw, lift, canvas, palette, u, 0.24, 0.15, 0.16, 45, "flat", Color("7a7166"))
-			var muzzle := _landmark_roof_point(nw, ne, sw, lift, 0.5, 0.8)
-			draw_line(muzzle, muzzle + Vector2(0, 18), Color("3c4548"), 8.0)
-		"zh_imperial_academy":
-			for u in [0.17, 0.83]: _draw_landmark_block(nw, ne, sw, lift, canvas, palette, u, 0.5, 0.24, 0.47, 25, "pagoda")
-			_draw_landmark_block(nw, ne, sw, lift, canvas, palette, 0.5, 0.24, 0.43, 0.29, 24, "gable")
-		"zh_barbican":
-			for u in [0.2, 0.8]: _draw_landmark_block(nw, ne, sw, lift, canvas, palette, u, 0.65, 0.24, 0.33, 37, "pagoda")
-			_draw_landmark_block(nw, ne, sw, lift, canvas, palette, 0.5, 0.34, 0.4, 0.29, 26, "flat")
-		"zh_clocktower":
-			_draw_landmark_block(nw, ne, sw, lift, canvas, palette, 0.5, 0.49, 0.4, 0.42, 58, "clock")
-			for u in [0.17, 0.83]: _draw_landmark_block(nw, ne, sw, lift, canvas, palette, u, 0.64, 0.18, 0.3, 17, "gable")
-		"zh_imperial_palace":
-			_draw_landmark_block(nw, ne, sw, lift, canvas, palette, 0.5, 0.28, 0.7, 0.32, 25, "pagoda")
-			_draw_landmark_block(nw, ne, sw, lift, canvas, palette, 0.5, 0.61, 0.56, 0.32, 32, "pagoda")
-		"zh_gatehouse":
-			for u in [0.14, 0.86]: _draw_landmark_block(nw, ne, sw, lift, canvas, palette, u, 0.52, 0.23, 0.37, 42, "flat")
-			_draw_landmark_block(nw, ne, sw, lift, canvas, palette, 0.5, 0.45, 0.47, 0.39, 43, "pagoda")
-		"zh_spirit_way":
-			for u in [0.2, 0.8]: _draw_landmark_block(nw, ne, sw, lift, canvas, palette, u, 0.62, 0.16, 0.25, 30, "flat")
-			_draw_landmark_block(nw, ne, sw, lift, canvas, palette, 0.5, 0.37, 0.59, 0.31, 29, "pagoda")
+func _draw_iso_landmark_architecture(lift: Vector2, canvas: Transform2D) -> void:
+	for polygon in _landmark_geometry().projected_faces(canvas, game.camera.zoom.x, lift):
+		draw_colored_polygon(polygon["points"], polygon["color"])
 
 func _draw_iso_fortification(nw: Vector2, ne: Vector2, se: Vector2, sw: Vector2, lift: Vector2, palette: Dictionary) -> void:
 	var top_left := sw + lift
