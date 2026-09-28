@@ -63,7 +63,7 @@ class PreviewBackdrop:
 		for index in 5:
 			var y := bounds.y * 0.54 + index * bounds.y * 0.09
 			draw_line(Vector2(0, y), Vector2(bounds.x, y), Color("799068", 0.13), 1.0)
-		var center := Vector2(bounds.x * 0.5, bounds.y * 0.72)
+		var center := Vector2(bounds.x * 0.5, bounds.y * 0.63)
 		draw_arc(center, minf(bounds.x, bounds.y) * 0.23, 0.0, TAU, 48, Color("a6bb8b", 0.24), 1.5)
 		draw_circle(center, 4.0, Color("d2bc7b", 0.5))
 
@@ -311,7 +311,7 @@ func _refresh_preview() -> void:
 	preview_unit.max_hp = float(stats.get("hp", 1.0))
 	preview_unit.hp = preview_unit.max_hp
 	var view_size := Vector2(preview_viewport.size)
-	preview_unit.position = Vector2(view_size.x * 0.5, view_size.y * (0.72 if preview_context.view_mode_25d else 0.54))
+	preview_unit.position = Vector2(view_size.x * 0.5, view_size.y * (0.63 if preview_context.view_mode_25d else 0.52))
 	preview_unit.scale = Vector2.ONE * clampf(minf(view_size.x / 400.0, view_size.y / 420.0) * 4.0, 3.4, 6.0)
 	preview_unit.queue_redraw()
 
@@ -340,7 +340,10 @@ func _refresh_stats() -> void:
 	var resistance: Dictionary = stats.get("resistance", {})
 	if float(resistance.get("ranged", 0.0)) > 0.0: _label(stats_box, "远程减伤：%.0f%%" % [float(resistance["ranged"]) * 100.0], 14, Color("e2d3b0"))
 	var profiles: Dictionary = stats.get("profiles", {})
-	if not profiles.is_empty():
+	var has_attack := false
+	for profile_id in profiles:
+		if float(profiles[profile_id].get("damage", 0.0)) > 0.0: has_attack = true
+	if has_attack:
 		_label(stats_box, "攻击方式", 16, Color("e4bd79"))
 		for profile_id in profiles:
 			var profile: Dictionary = profiles[profile_id]
@@ -351,7 +354,8 @@ func _refresh_stats() -> void:
 			for bonus in profile.get("bonuses", []):
 				var bonus_label := _label(stats_box, "   %s +%.0f" % [bonus.get("source_label", "额外伤害"), float(bonus.get("amount", 0.0))], 12, Color("b9d4f0"))
 				bonus_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	if profiles.is_empty(): _label(stats_box, "无直接攻击", 13, Color("c4b492"))
+	else:
+		_label(stats_box, "无直接攻击", 13, Color("c4b492"))
 
 func _refresh_bonuses() -> void:
 	_clear(bonus_box)
