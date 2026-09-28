@@ -287,8 +287,8 @@ func _create_hud() -> void:
 	game.notice_label.add_theme_font_size_override("font_size", 13)
 	selection_column.add_child(game.notice_label)
 	var map_panel := PanelContainer.new()
-	map_panel.custom_minimum_size = Vector2(180, 180)
-	map_panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	map_panel.custom_minimum_size = Vector2(230, 230)
+	map_panel.size_flags_vertical = Control.SIZE_FILL
 	map_panel.add_theme_stylebox_override("panel", game._hud_panel_style(Color("30261b"), 7))
 	dock.add_child(map_panel)
 	game.minimap = RtsMinimap.new()

@@ -26,6 +26,7 @@ func _run() -> void:
 		assert(is_equal_approx(game.hud_bottom.get_rect().end.y, float(resolution.y)), "bottom HUD should stay at the window edge")
 		assert(is_equal_approx(game.minimap.size.x, game.minimap.size.y), "the 2D minimap should remain square at every resolution")
 		assert(is_equal_approx(game.minimap.get_parent().size.x, game.minimap.get_parent().size.y), "the minimap panel should have a 1:1 footprint")
+		assert(is_equal_approx(game.minimap.get_parent().size.y, game.minimap.get_parent().get_parent().size.y), "the minimap panel should fill the bottom HUD without vertical gaps")
 	var center: RtsBuilding = game._player_center(0)
 	center.enqueue("villager")
 	game.selected.clear()
