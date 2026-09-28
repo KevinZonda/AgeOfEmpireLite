@@ -60,6 +60,15 @@ UPGRADE_NAMES = {
     "palace_guard": "皇宫卫兵",
 }
 
+# Some upgrade images omit the rank word or use the source game's unit name.
+UPGRADE_ICON_OVERRIDES = {
+    "rank_man_at_arms_4": "升级到精锐武士",
+    "rank_palace_guard_3": "升级到皇宫卫兵",
+    "rank_grenadier_4": "升级到掷弹兵",
+    "rank_arbaletrier_4": "升级到精锐弓弩手",
+}
+EARLY_UPGRADE_ICONS = {"rank_man_at_arms_2": "升级到武士"}
+
 
 def definitions(path: str, constant: str) -> dict[str, str]:
     source = (ROOT / path).read_text(encoding="utf-8")
@@ -105,7 +114,11 @@ def main() -> None:
     for unit_id, label in units.items():
         name = UPGRADE_NAMES.get(unit_id, label)
         for age, rank in ((3, "老练"), (4, "精锐")):
-            copy_icon(rows, f"rank_{unit_id}_{age}", "upgrade", f"升级到{rank}{name}")
+            icon_id = f"rank_{unit_id}_{age}"
+            icon_name = UPGRADE_ICON_OVERRIDES.get(icon_id, f"升级到{rank}{name}")
+            copy_icon(rows, icon_id, "upgrade", icon_name)
+    for icon_id, icon_name in EARLY_UPGRADE_ICONS.items():
+        copy_icon(rows, icon_id, "upgrade", icon_name)
 
     with (OUTPUT / "sources.csv").open("w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file, lineterminator="\n")
