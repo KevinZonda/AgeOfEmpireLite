@@ -1,4 +1,4 @@
-Noto Sans SC Regular is used as the default game UI font so Chinese labels render consistently on every platform.
+Noto Sans SC Regular is loaded from its bundled bytes when the game scene starts, so Chinese labels render consistently without an editor asset-import step.
 
 Source: https://github.com/notofonts/noto-cjk/blob/main/Sans/SubsetOTF/SC/NotoSansSC-Regular.otf
 

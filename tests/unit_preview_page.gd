@@ -49,6 +49,7 @@ func _run() -> void:
 	var preview_font: Font = page.stats_box.get_child(0).get_theme_font("font")
 	for character in "远程护甲减伤攻城":
 		assert(preview_font.has_char(character.unicode_at(0)), "the UI font should contain every preview stat glyph")
+		assert(ThemeDB.fallback_font.has_char(character.unicode_at(0)), "world labels should use the bundled Chinese font")
 	var fallback_stats := RtsStatResolver.unit("English", "bombard", 1)
 	assert(fallback_stats["profiles"]["ranged"]["bonuses"][0]["source_label"] == "对建筑", "fallback attack bonuses should use readable Chinese labels")
 	var escape := InputEventKey.new()

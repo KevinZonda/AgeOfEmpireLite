@@ -187,6 +187,7 @@ var cursor: GameCursor
 var selection_drag_overlay: Variant
 
 func _ready() -> void:
+	_load_ui_font()
 	# The headless display starts at 64×64 with stretch disabled; use the
 	# game's minimum supported viewport for simulation and UI tests.
 	if DisplayServer.get_name() == "headless" and get_window().size == Vector2i(64, 64):
@@ -235,6 +236,21 @@ func _ready() -> void:
 	_create_cursor()
 	_show_menu()
 	queue_redraw()
+
+func _load_ui_font() -> void:
+	var font_data := FileAccess.get_file_as_bytes("res://assets/fonts/NotoSansSC-Regular.otf")
+	if font_data.is_empty():
+		push_error("Unable to read the bundled UI font")
+		return
+	var font := FontFile.new()
+	font.data = font_data
+	ThemeDB.fallback_font = font
+	var default_theme := ThemeDB.get_default_theme()
+	default_theme.default_font = font
+	for font_name in ["bold_font", "italics_font", "bold_italics_font"]:
+		var variation := default_theme.get_font(font_name, "RichTextLabel") as FontVariation
+		if variation != null:
+			variation.base_font = font
 
 func _exit_tree() -> void:
 	if get_tree().node_added.is_connected(_on_ui_node_added): get_tree().node_added.disconnect(_on_ui_node_added)
