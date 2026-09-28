@@ -1,6 +1,8 @@
 class_name RtsSelectionPortrait
 extends Control
 
+const CharacterVisual = preload("res://scripts/entities/visuals/character_visual.gd")
+
 var subject: Node2D
 var owner_tint := Color("8a9a8e")
 
@@ -87,6 +89,11 @@ func _draw_unit() -> void:
 		draw_colored_polygon(PackedVector2Array([center + Vector2(-32, 18), center + Vector2(32, 18), center + Vector2(21, 36), center + Vector2(-21, 36)]), Color("8e6640"))
 		draw_line(center + Vector2(0, 17), center + Vector2(0, -40), Color("d3c393"), 3)
 		draw_colored_polygon(PackedVector2Array([center + Vector2(2, -36), center + Vector2(25, -7), center + Vector2(2, -7)]), Color("eee2bc"))
+		return
+	if CharacterVisual.handles(unit.kind):
+		draw_set_transform_matrix(Transform2D(Vector2(1.5, 0), Vector2(0, 1.5), center + Vector2(0, 21)))
+		CharacterVisual.draw_25d(self, unit.kind, owner_tint, 0.0, 0.0)
+		draw_set_transform_matrix(Transform2D.IDENTITY)
 		return
 	if cavalry:
 		draw_colored_polygon(PackedVector2Array([center + Vector2(-34, 9), center + Vector2(22, 9), center + Vector2(30, 24), center + Vector2(-22, 26)]), Color("886b4e"))

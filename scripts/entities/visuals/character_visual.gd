@@ -14,25 +14,25 @@ const GOLD := Color("d8ae56")
 static func handles(kind: String) -> bool:
 	return kind in ["crossbowman", "arbaletrier", "trader", "imperial_official", "horseman", "scout", "knight", "royal_knight", "handcannoneer"]
 
-static func draw_2d(unit: Node2D, kind: String, team: Color, gait: float, swing: float) -> void:
+static func draw_2d(unit: CanvasItem, kind: String, team: Color, gait: float, swing: float) -> void:
 	if kind in ["horseman", "scout", "knight", "royal_knight"]:
 		_cavalry_2d(unit, kind, team, swing)
 	else:
 		_infantry_2d(unit, kind, team, gait, swing)
 
-static func draw_25d(unit: Node2D, kind: String, team: Color, gait: float, swing: float) -> void:
+static func draw_25d(unit: CanvasItem, kind: String, team: Color, gait: float, swing: float) -> void:
 	if kind in ["horseman", "scout", "knight", "royal_knight"]:
 		_cavalry_25d(unit, kind, team, swing)
 	else:
 		_infantry_25d(unit, kind, team, gait, swing)
 
-static func _poly(unit: Node2D, points: Array, fill: Color, stroke: Color = OUTLINE, width: float = 1.5) -> void:
+static func _poly(unit: CanvasItem, points: Array, fill: Color, stroke: Color = OUTLINE, width: float = 1.5) -> void:
 	var shape := PackedVector2Array(points)
 	unit.draw_colored_polygon(shape, fill)
 	if width > 0.0:
 		unit.draw_polyline(shape + PackedVector2Array([shape[0]]), stroke, width)
 
-static func _crossbow(unit: Node2D, center: Vector2, large: bool) -> void:
+static func _crossbow(unit: CanvasItem, center: Vector2, large: bool) -> void:
 	var width := 15.0 if large else 12.0
 	unit.draw_line(center + Vector2(0, 10), center + Vector2(0, -9), OUTLINE, 4.5)
 	unit.draw_line(center + Vector2(0, 9), center + Vector2(0, -9), WOOD, 2.6)
@@ -41,20 +41,20 @@ static func _crossbow(unit: Node2D, center: Vector2, large: bool) -> void:
 	unit.draw_line(center + Vector2(0, 5), center + Vector2(0, -15), STEEL_LIGHT, 1.3)
 	unit.draw_circle(center + Vector2(0, 2), 2.0, LEATHER)
 
-static func _pavise(unit: Node2D, center: Vector2, team: Color, tall: bool) -> void:
+static func _pavise(unit: CanvasItem, center: Vector2, team: Color, tall: bool) -> void:
 	var height := 20.0 if tall else 16.0
 	_poly(unit, [center + Vector2(-7, -height * 0.5), center + Vector2(6, -height * 0.5), center + Vector2(7, height * 0.18), center + Vector2(0, height * 0.6), center + Vector2(-7, height * 0.18)], STEEL)
 	_poly(unit, [center + Vector2(-4, -height * 0.35), center + Vector2(3, -height * 0.35), center + Vector2(4, height * 0.08), center + Vector2(0, height * 0.35), center + Vector2(-4, height * 0.08)], team.darkened(0.15), OUTLINE, 0.8)
 	unit.draw_line(center + Vector2(-5, -height * 0.15), center + Vector2(5, -height * 0.15), GOLD, 1.1)
 
-static func _sword(unit: Node2D, grip: Vector2, swing: float) -> void:
+static func _sword(unit: CanvasItem, grip: Vector2, swing: float) -> void:
 	var tip := grip + Vector2(12 + swing * 8, -19 + swing * 8)
 	unit.draw_line(grip, tip, OUTLINE, 4.0)
 	unit.draw_line(grip + Vector2(1, -2), tip, STEEL_LIGHT, 2.0)
 	unit.draw_line(grip + Vector2(-3, -4), grip + Vector2(5, 0), GOLD, 2.4)
 	unit.draw_circle(grip + Vector2(-1, 2), 1.7, LEATHER)
 
-static func _cavalry_2d(unit: Node2D, kind: String, team: Color, swing: float) -> void:
+static func _cavalry_2d(unit: CanvasItem, kind: String, team: Color, swing: float) -> void:
 	var heavy := kind in ["knight", "royal_knight"]
 	var royal := kind == "royal_knight"
 	# Horse, mane, tail and reins remain visible beneath the rider.
@@ -91,7 +91,7 @@ static func _cavalry_2d(unit: Node2D, kind: String, team: Color, swing: float) -
 		_sword(unit, Vector2(8, 2), swing)
 		if heavy: _pavise(unit, Vector2(-11, -1), team, false)
 
-static func _cavalry_25d(unit: Node2D, kind: String, team: Color, swing: float) -> void:
+static func _cavalry_25d(unit: CanvasItem, kind: String, team: Color, swing: float) -> void:
 	var heavy := kind in ["knight", "royal_knight"]
 	var royal := kind == "royal_knight"
 	# Side-on horse with separate neck, legs and barding.
@@ -125,7 +125,7 @@ static func _cavalry_25d(unit: Node2D, kind: String, team: Color, swing: float) 
 		_sword(unit, Vector2(8, -17), swing)
 		if heavy: _pavise(unit, Vector2(-11, -20), team, true)
 
-static func _infantry_2d(unit: Node2D, kind: String, team: Color, gait: float, swing: float) -> void:
+static func _infantry_2d(unit: CanvasItem, kind: String, team: Color, gait: float, swing: float) -> void:
 	var armored := kind == "arbaletrier"
 	var official := kind == "imperial_official"
 	var trader := kind == "trader"
@@ -168,7 +168,7 @@ static func _infantry_2d(unit: Node2D, kind: String, team: Color, gait: float, s
 		_crossbow(unit, Vector2(12 + swing * 2, -1), armored)
 		if armored: _pavise(unit, Vector2(-12, -2), team, true)
 
-static func _infantry_25d(unit: Node2D, kind: String, team: Color, gait: float, swing: float) -> void:
+static func _infantry_25d(unit: CanvasItem, kind: String, team: Color, gait: float, swing: float) -> void:
 	var armored := kind == "arbaletrier"
 	var official := kind == "imperial_official"
 	var trader := kind == "trader"
