@@ -7,6 +7,8 @@ const ROUTE_RETRY_BASE := 0.7
 const ROUTE_RETRY_MAX := 4.0
 const UnitWork = preload("res://scripts/entities/unit_work.gd")
 const UnitCombat = preload("res://scripts/entities/unit_combat.gd")
+const SiegeVisual2D = preload("res://scripts/entities/visuals/siege_visual_2d.gd")
+const SiegeVisual25D = preload("res://scripts/entities/visuals/siege_visual_25d.gd")
 
 var game: Node2D
 var owner_id := 0
@@ -948,11 +950,7 @@ func _draw() -> void:
 		draw_colored_polygon(PackedVector2Array([Vector2(1, -5), Vector2(10, 2), Vector2(1, 3)]), Color("eee7cf"))
 		if kind == "transport_ship": draw_string(ThemeDB.fallback_font, Vector2(-5, 8), str(passengers.size()), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color.WHITE)
 	elif stats.get("tags", []).has("siege"):
-		draw_rect(Rect2(-r + 3, -8, 2.0 * r - 6, 15), Color("745239"))
-		draw_rect(Rect2(-r + 6, -5, 2.0 * r - 12, 9), color.darkened(0.18))
-		draw_circle(Vector2(-r + 5, 9), 4.0, Color("2e302d"))
-		draw_circle(Vector2(r - 5, 9), 4.0, Color("2e302d"))
-		draw_line(Vector2(-4, 0), Vector2(6, -r), Color("c3a479"), 3.0)
+		SiegeVisual2D.draw(self, kind, r, color, swing)
 	elif stats.get("tags", []).has("cavalry"):
 		draw_colored_polygon(PackedVector2Array([Vector2(-r + 2, -5), Vector2(r - 5, -8), Vector2(r + 3, -2), Vector2(r - 3, 8), Vector2(-r + 1, 7)]), Color("95734e"))
 		draw_circle(Vector2(r - 1, -7), 5.0, Color("a28058"))
@@ -1002,6 +1000,8 @@ func _draw_isometric() -> void:
 		draw_line(Vector2(0, -9), Vector2(0, -26), Color("e6d3a5"), 2.0)
 		draw_colored_polygon(PackedVector2Array([Vector2(1, -25), Vector2(11, -15), Vector2(1, -14)]), Color("eee4cc"))
 		if kind == "transport_ship": draw_string(ThemeDB.fallback_font, Vector2(-5, -2), str(passengers.size()), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color.WHITE)
+	elif stats.get("tags", []).has("siege"):
+		SiegeVisual25D.draw(self, kind, radius(), color, swing)
 	else:
 		var body_half := 7.0 if stats.get("tags", []).has("cavalry") else 5.5
 		var body_bottom := -3.0
@@ -1028,6 +1028,7 @@ func _draw_isometric() -> void:
 		draw_arc(Vector2(0, -16), radius() + 7.0, 0.0, TAU, 24, Color("ffe5ac", hit_flash_timer / 0.18), 2.0)
 	if hp < max_hp:
 		var bar_width := maxf(18.0, radius() * 2.0)
-		draw_rect(Rect2(-bar_width * 0.5, -38, bar_width, 4), Color("422f2d"))
-		draw_rect(Rect2(-bar_width * 0.5, -38, bar_width * clampf(hp / max_hp, 0.0, 1.0), 4), Color("82dd8b"))
+		var bar_y := SiegeVisual25D.overlay_y(kind) if stats.get("tags", []).has("siege") else -38.0
+		draw_rect(Rect2(-bar_width * 0.5, bar_y, bar_width, 4), Color("422f2d"))
+		draw_rect(Rect2(-bar_width * 0.5, bar_y, bar_width * clampf(hp / max_hp, 0.0, 1.0), 4), Color("82dd8b"))
 	draw_set_transform_matrix(Transform2D.IDENTITY)
