@@ -31,8 +31,21 @@ func _run() -> void:
 	game.minimap_size = 264
 	game.hud_ui._apply_minimap_size()
 	await process_frame
+	assert(is_equal_approx(game.hud_bottom.size.y, 244.0), "changing minimap size should not change the bottom HUD height")
 	assert(is_equal_approx(game.hud_bottom.get_rect().end.y, 720.0), "a large minimap should not push the HUD below the screen")
 	assert(game.minimap.size.is_equal_approx(Vector2(264, 264)), "the 2D minimap should follow its size setting")
+	assert(game.hud_ui.minimap_panel.get_global_rect().position.y < game.hud_bottom.get_global_rect().position.y, "the large 2D minimap should extend above the bottom HUD")
+	var protruding_map_point := Vector2(game.minimap.size.x * 0.5, 10.0)
+	var protruding_click := InputEventMouseButton.new()
+	protruding_click.button_index = MOUSE_BUTTON_LEFT
+	protruding_click.pressed = true
+	protruding_click.position = game.minimap.get_global_transform_with_canvas() * protruding_map_point
+	game.get_viewport().push_input(protruding_click, true)
+	assert(game.camera.position.distance_to(game.minimap.map_to_world(protruding_map_point)) < 1.0, "the protruding 2D map should remain clickable")
+	game.minimap_size = 160
+	game.hud_ui._apply_minimap_size()
+	await process_frame
+	assert(game.hud_ui.minimap_panel.size.is_equal_approx(Vector2(174, 174)), "switching from large to small should shrink the frame")
 	game.minimap_size = 216
 	game.hud_ui._apply_minimap_size()
 	await process_frame

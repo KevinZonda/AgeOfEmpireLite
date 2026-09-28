@@ -17,7 +17,7 @@ func _run() -> void:
 	assert(map_rect.position.y < panel_rect.position.y, "the diamond should extend above its panel")
 	assert(map_rect.position.x >= panel_rect.position.x and map_rect.end.x <= panel_rect.end.x, "the panel should reserve the diamond's full width")
 	assert(map_rect.end.y <= panel_rect.end.y, "the diamond should remain inside the screen's lower edge")
-	var information_panel: Control = game.hud_ui.minimap_panel.get_parent().get_child(1)
+	var information_panel: Control = game.hud_ui.minimap_anchor.get_parent().get_child(1)
 	assert(information_panel.get_global_rect().end.x <= map_rect.position.x, "the diamond should not cover the information panel")
 	assert(is_equal_approx(minimap.size.x * minimap.size.y * 0.5, float(game.minimap_size * game.minimap_size)), "2.5D should show the same map area as 2D")
 	assert(minimap.world_to_map(Vector2.ZERO).is_equal_approx(Vector2(center.x, 0.0)), "the northwest corner should be the diamond's top point")

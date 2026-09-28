@@ -104,6 +104,7 @@ const BUILD_PAGES := [
 const COMMANDS_PER_PAGE := 12
 var game: Node2D
 var build_tab_bar: HBoxContainer
+var minimap_anchor: Control
 var minimap_panel: PanelContainer
 var minimap_panel_style_2d: StyleBoxFlat
 var minimap_panel_style_25d: StyleBoxFlat
@@ -290,20 +291,24 @@ func _create_hud() -> void:
 	game.notice_label.add_theme_color_override("font_color", Color("f0d783"))
 	game.notice_label.add_theme_font_size_override("font_size", 13)
 	selection_column.add_child(game.notice_label)
+	minimap_anchor = Control.new()
+	minimap_anchor.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	dock.add_child(minimap_anchor)
 	minimap_panel = PanelContainer.new()
-	minimap_panel.size_flags_vertical = Control.SIZE_SHRINK_END
+	minimap_panel.mouse_filter = Control.MOUSE_FILTER_PASS
 	minimap_panel_style_2d = game._hud_panel_style(Color("30261b"), 7)
 	minimap_panel_style_25d = game._hud_panel_style(Color.TRANSPARENT, 7)
 	minimap_panel_style_25d.border_color = Color.TRANSPARENT
 	minimap_panel_style_25d.shadow_color = Color.TRANSPARENT
 	minimap_panel.add_theme_stylebox_override("panel", minimap_panel_style_2d)
-	dock.add_child(minimap_panel)
+	minimap_anchor.add_child(minimap_panel)
 	minimap_slot = Control.new()
 	minimap_slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	minimap_panel.add_child(minimap_slot)
 	game.minimap = RtsMinimap.new()
 	minimap_slot.add_child(game.minimap)
 	game.minimap.setup(game)
+	minimap_anchor.resized.connect(_layout_minimap)
 	minimap_slot.resized.connect(_layout_minimap)
 	_apply_minimap_size()
 
@@ -355,9 +360,12 @@ func _create_hud() -> void:
 
 func _apply_minimap_size() -> void:
 	var map_width: float = game.minimap_size * (sqrt(2.0) if game.view_mode_25d else 1.0)
-	game.hud_bottom.offset_top = -maxf(244.0, float(game.minimap_size + 28))
-	minimap_panel.custom_minimum_size = Vector2(map_width + 14.0, game.minimap_size + 14.0)
+	game.hud_bottom.offset_top = -244.0
+	var panel_size := Vector2(map_width + 14.0, game.minimap_size + 14.0)
+	minimap_anchor.custom_minimum_size = Vector2(panel_size.x, 230.0)
 	minimap_slot.custom_minimum_size = Vector2(map_width, game.minimap_size)
+	minimap_panel.custom_minimum_size = panel_size
+	minimap_panel.size = panel_size
 	_layout_minimap()
 
 func _layout_minimap() -> void:
@@ -365,6 +373,7 @@ func _layout_minimap() -> void:
 	var panel_style := minimap_panel_style_25d if game.view_mode_25d else minimap_panel_style_2d
 	if minimap_panel.get_theme_stylebox("panel") != panel_style:
 		minimap_panel.add_theme_stylebox_override("panel", panel_style)
+	minimap_panel.position = Vector2(0, minimap_anchor.size.y - minimap_panel.size.y)
 	# Reserve the diamond's full width so it cannot cover the adjacent panel.
 	# Its top extends above the bottom HUD; its lower tip stays at the edge.
 	var side: float = game.minimap_size * (sqrt(2.0) if game.view_mode_25d else 1.0)
