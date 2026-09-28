@@ -105,7 +105,8 @@ const COMMANDS_PER_PAGE := 12
 var game: Node2D
 var build_tab_bar: HBoxContainer
 var minimap_panel: PanelContainer
-var minimap_panel_style: StyleBoxFlat
+var minimap_panel_style_2d: StyleBoxFlat
+var minimap_panel_style_25d: StyleBoxFlat
 var minimap_slot: Control
 var command_page := 0
 var command_selection_id := 0
@@ -291,8 +292,11 @@ func _create_hud() -> void:
 	selection_column.add_child(game.notice_label)
 	minimap_panel = PanelContainer.new()
 	minimap_panel.size_flags_vertical = Control.SIZE_SHRINK_END
-	minimap_panel_style = game._hud_panel_style(Color("30261b"), 7)
-	minimap_panel.add_theme_stylebox_override("panel", minimap_panel_style)
+	minimap_panel_style_2d = game._hud_panel_style(Color("30261b"), 7)
+	minimap_panel_style_25d = game._hud_panel_style(Color.TRANSPARENT, 7)
+	minimap_panel_style_25d.border_color = Color.TRANSPARENT
+	minimap_panel_style_25d.shadow_color = Color.TRANSPARENT
+	minimap_panel.add_theme_stylebox_override("panel", minimap_panel_style_2d)
 	dock.add_child(minimap_panel)
 	minimap_slot = Control.new()
 	minimap_slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -350,19 +354,19 @@ func _create_hud() -> void:
 	game._create_settings(root)
 
 func _apply_minimap_size() -> void:
-	var panel_side: int = game.minimap_size + 14
-	game.hud_bottom.offset_top = -maxf(244.0, float(panel_side + 14))
-	minimap_panel.custom_minimum_size = Vector2.ONE * panel_side
-	minimap_slot.custom_minimum_size = Vector2.ONE * game.minimap_size
+	var map_width: float = game.minimap_size * (sqrt(2.0) if game.view_mode_25d else 1.0)
+	game.hud_bottom.offset_top = -maxf(244.0, float(game.minimap_size + 28))
+	minimap_panel.custom_minimum_size = Vector2(map_width + 14.0, game.minimap_size + 14.0)
+	minimap_slot.custom_minimum_size = Vector2(map_width, game.minimap_size)
 	_layout_minimap()
 
 func _layout_minimap() -> void:
 	if game.minimap == null or minimap_slot == null: return
-	minimap_panel_style.bg_color = Color.TRANSPARENT if game.view_mode_25d else Color("30261b")
-	minimap_panel_style.border_color = Color.TRANSPARENT if game.view_mode_25d else Color("a7894f")
-	minimap_panel_style.shadow_color = Color.TRANSPARENT if game.view_mode_25d else Color(0.0, 0.0, 0.0, 0.38)
-	# Keep the lower-right tip in the slot while letting the diamond extend
-	# above and left of the bottom HUD. A 2D square stays inside the slot.
+	var panel_style := minimap_panel_style_25d if game.view_mode_25d else minimap_panel_style_2d
+	if minimap_panel.get_theme_stylebox("panel") != panel_style:
+		minimap_panel.add_theme_stylebox_override("panel", panel_style)
+	# Reserve the diamond's full width so it cannot cover the adjacent panel.
+	# Its top extends above the bottom HUD; its lower tip stays at the edge.
 	var side: float = game.minimap_size * (sqrt(2.0) if game.view_mode_25d else 1.0)
 	game.minimap.size = Vector2.ONE * side
 	game.minimap.position = minimap_slot.size - game.minimap.size
@@ -442,7 +446,7 @@ func _update_selection_hud() -> void:
 		game.detail_label.text = "生命 %.0f/%.0f   %s" % [item.hp, item.max_hp, "建造中" if not item.is_complete() else "已建成"]
 		if item.kind == "monastery": game.detail_label.text += "   圣物 %d（每 4 秒每件 +12 黄金）" % item.relics.size()
 		if not item.garrisoned_units.is_empty(): game.detail_label.text += "   驻军 %d/%d" % [item.garrisoned_units.size(), item.garrison_capacity()]
-		if item.is_complete() and RtsTechTree.PRODUCTION.has(item.producer_kind()):
+		if item.can_set_rally():
 			game.detail_label.text += "   右键设置集结点"
 		_update_building_progress(item)
 		_refresh_queue_controls(item)

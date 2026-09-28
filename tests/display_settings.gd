@@ -146,7 +146,7 @@ func _run() -> void:
 	game._unhandled_input(magnify)
 	assert(game.camera.zoom.x > zoom_before, "enabled magnify gesture should zoom")
 	assert(not game.minimap.clip_contents)
-	assert(game.minimap.size.x > game.minimap.get_parent().size.x, "the 2.5D map should extend beyond its panel")
+	assert(game.minimap.size.y > game.minimap.get_parent().size.y, "the 2.5D map should extend above its panel")
 	assert(game.hud_bottom.get_global_rect().end.y <= game.get_viewport_rect().size.y)
 	assert(game.minimap.get_global_rect().end.y <= game.get_viewport_rect().size.y)
 	game._set_paused(true)

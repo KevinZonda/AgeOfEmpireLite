@@ -69,6 +69,9 @@ func definition() -> Dictionary:
 func producer_kind() -> String:
 	return RtsLandmarkCatalog.producer(landmark_id) if kind == "landmark" else kind
 
+func can_set_rally() -> bool:
+	return is_complete() and not RtsTechTree.PRODUCTION.get(producer_kind(), []).is_empty()
+
 func garrison_capacity() -> int:
 	return int(stats.get("garrison_capacity", 0))
 

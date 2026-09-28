@@ -21,7 +21,7 @@ static func issue_order(game: Node2D, point: Vector2, append_order := false) -> 
 		var assigned := false
 		for subject in game.selected:
 			if not is_instance_valid(subject) or not subject is RtsBuilding: continue
-			if subject.owner_id != 0 or not subject.is_complete() or not RtsTechTree.PRODUCTION.has(subject.kind): continue
+			if subject.owner_id != 0 or not subject.can_set_rally(): continue
 			var rally_target: Node2D = resource if resource != null else post if post != null else entity if entity is RtsBuilding and entity.owner_id == 0 and entity.kind == "farm" else null
 			var rally_point: Vector2 = rally_target.position if rally_target != null else ground_point
 			subject.set_rally(rally_point.clamp(Vector2(24, 24), game.world_size - Vector2(24, 24)), rally_target)
