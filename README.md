@@ -4,7 +4,7 @@
 
 模块边界和后续拆分顺序见 [架构说明](scripts/ARCHITECTURE.md)。
 
-寻路的路径复用、失败退避、性能计数与对比结果见 [寻路优化与验证](docs/navigation.md)。
+寻路的路径复用、失败退避、性能计数与对比结果见 [寻路优化与验证](docs/navigation.md)。 绕路、停滞和编队指令故障的复现、修复与测试入口见 [寻路 PoC 报告](docs/navigation-poc/README.md)。
 
 ## 运行
 

@@ -1,0 +1,50 @@
+[
+  {
+    "test": "navigation_poc",
+    "passed": true
+  },
+  {
+    "test": "navigation_poc_matrix",
+    "passed": true
+  },
+  {
+    "test": "navigation",
+    "passed": true
+  },
+  {
+    "test": "navigation_routes",
+    "passed": true
+  },
+  {
+    "test": "navigation_replanning",
+    "passed": true
+  },
+  {
+    "test": "group_chokepoint",
+    "passed": true
+  },
+  {
+    "test": "group_mass_chokepoint",
+    "passed": true
+  },
+  {
+    "test": "group_multiplayer",
+    "passed": true
+  },
+  {
+    "test": "terrain_selection_follow",
+    "passed": true
+  },
+  {
+    "test": "extended_systems",
+    "passed": true
+  },
+  {
+    "test": "economy_siege_controls",
+    "passed": true
+  },
+  {
+    "test": "smoke",
+    "passed": true
+  }
+]

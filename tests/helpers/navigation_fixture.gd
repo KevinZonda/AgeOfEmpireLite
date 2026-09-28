@@ -2,6 +2,12 @@ extends Node2D
 
 # Minimal world for deterministic movement tests without UI or AI updates.
 var players := [{}, {}]
+var started := true
+var paused := false
+var game_over := false
+var formation_mode := "balanced"
+var formation_width := 5
+var selected: Array[Node2D] = []
 var units: Array[RtsUnit] = []
 var resources: Array[RtsResource] = []
 var buildings: Array[RtsBuilding] = []
@@ -37,3 +43,6 @@ func spawn_unit(point: Vector2) -> RtsUnit:
 	units.append(unit)
 	navigation.invalidate_spatial_index()
 	return unit
+
+func nearest_enemy(_unit: RtsUnit, _reach: float) -> Node2D:
+	return null

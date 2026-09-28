@@ -53,8 +53,11 @@ var route_recovery_distance := INF
 var route_stalled_time := 0.0
 var movement_group: RtsMovementGroup
 var group_stuck_time := 0.0
+var group_progress_target := Vector2.INF
+var group_best_distance := INF
 var avoidance_cooldown := 0.0
-var group_last_position := Vector2.INF
+var yield_timer := 0.0
+var yield_request_cooldown := 0.0
 var command_queue: Array[Dictionary] = []
 var garrisoned_in: Node2D
 var wall_host: RtsBuilding
@@ -264,16 +267,15 @@ func _start_command(command: Dictionary) -> bool:
 			movement_group = command.get("group")
 			if movement_group == null: return false
 			movement_group.activate()
-			if movement_group.route.is_empty():
-				movement_group = null
-				return false
+
 			order = "attack_move" if command["type"] == "group_attack_move" else "move"
 			destination = movement_group.destination_for(self)
 			target = null
 			charging = false
 			resume_destination = Vector2.INF
 			group_stuck_time = 0.0
-			group_last_position = position
+			group_progress_target = Vector2.INF
+			group_best_distance = INF
 			_reset_route()
 		"move": order_move(command["point"])
 		"patrol":
@@ -471,6 +473,7 @@ func order_build(building: Node2D) -> void:
 	_reset_route()
 
 func _reset_route() -> void:
+	yield_timer = 0.0
 	route.clear()
 	route_index = 0
 	route_goal = Vector2.INF
@@ -753,6 +756,10 @@ func _heal_ally(delta: float) -> void:
 func _finish_conversion() -> void:
 	UnitCombat.finish_conversion(self)
 func _move_toward(point: Vector2, delta: float, stop_distance: float) -> bool:
+	yield_request_cooldown = maxf(0.0, yield_request_cooldown - delta)
+	if yield_timer > 0.0:
+		yield_timer = maxf(0.0, yield_timer - delta)
+		return false
 	var distance := position.distance_to(point)
 	if distance <= stop_distance + 0.5: return true
 	if paling_timer > 0.0: paling_timer = 0.0
@@ -766,7 +773,7 @@ func _move_toward(point: Vector2, delta: float, stop_distance: float) -> bool:
 		route_check_pending = true
 		# A newly opened route should wake up an unreachable unit immediately.
 		if route.is_empty(): route_retry = 0.0
-	while route_index < route.size() - 1 and position.distance_to(route[route_index]) < 8.0:
+	while route_index < route.size() - 1 and position.distance_to(route[route_index]) < 2.0:
 		route_index += 1
 		route_best_distance = INF
 		route_stalled_time = 0.0
@@ -785,6 +792,13 @@ func _move_toward(point: Vector2, delta: float, stop_distance: float) -> bool:
 	var stalled := route_stalled_time >= ROUTE_STALL_SECONDS
 	var needs_route := target_changed or route.is_empty() or route_blocked or exhausted or stalled
 	if needs_route and route_retry <= 0.0:
+		if (stalled or exhausted or route_failures > 0) and order in ["move", "attack_move"] and point == destination and not game.navigation.can_occupy(point, radius(), self):
+			# A slot can become occupied after the order was issued. Finish at
+			# the nearest reachable free point instead of retrying it forever.
+			point = game.navigation.nearest_walkable_point(point, radius(), self, true)
+			destination = point
+			distance = position.distance_to(point)
+			if distance <= stop_distance + 0.5: return true
 		if target_changed:
 			route_failures = 0
 		elif stalled or exhausted:
@@ -793,6 +807,9 @@ func _move_toward(point: Vector2, delta: float, stop_distance: float) -> bool:
 			route = game.navigation.path_to_range(position, point, stop_distance, self)
 		else:
 			route = game.navigation.path_between(position, point, self)
+		if stalled and not route.is_empty() and game.navigation.has_fixed_unit_blocker(self, route[mini(1, route.size() - 1)]):
+			var escape: PackedVector2Array = game.navigation.path_around_units(self, route[mini(1, route.size() - 1)])
+			if not escape.is_empty(): route = escape
 		route_index = 1 if route.size() > 1 and position.distance_to(route[0]) < 8.0 else 0
 		route_goal = point
 		route_stop_distance = stop_distance
@@ -829,6 +846,10 @@ func _move_toward(point: Vector2, delta: float, stop_distance: float) -> bool:
 	return position.distance_to(point) <= stop_distance + 0.5
 
 func _move_with_group(delta: float) -> void:
+	yield_request_cooldown = maxf(0.0, yield_request_cooldown - delta)
+	if yield_timer > 0.0:
+		yield_timer = maxf(0.0, yield_timer - delta)
+		return
 	var point := movement_group.target_for(self)
 	avoidance_cooldown = maxf(0.0, avoidance_cooldown - delta)
 	# Direct local steering shares the squad path. Only a genuinely stuck member
@@ -840,11 +861,19 @@ func _move_with_group(delta: float) -> void:
 	_update_facing(old_position)
 	position = position.clamp(Vector2(24, 24), game.world_size - Vector2(24, 24))
 	_refresh_slope_visual(old_position)
-	if position.distance_squared_to(group_last_position) < 9.0 and position.distance_to(point) > 18.0:
-		group_stuck_time += delta
-	else:
+	var remaining := position.distance_to(point)
+	if group_progress_target.distance_squared_to(point) > 16.0:
+		group_progress_target = point
+		group_best_distance = remaining
 		group_stuck_time = 0.0
-		group_last_position = position
+	elif remaining < group_best_distance - 2.0:
+		group_best_distance = remaining
+		group_stuck_time = 0.0
+	else:
+		# Sideways jitter is not progress. Also recover when sitting on an
+		# intermediate waypoint while the actual destination is still far away.
+		group_stuck_time += delta
+
 	if group_stuck_time > 1.1:
 		# A member that cannot follow the shared route computes its own escape
 		# path to its assigned slot. It leaves the formation until the order ends.

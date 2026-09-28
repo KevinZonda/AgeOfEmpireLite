@@ -41,7 +41,7 @@ func _run() -> void:
 	var previous_height: float = game.world_map.elevation_at(previous)
 	for step in 15:
 		unit._process(0.12)
-		assert(unit.position.distance_to(previous) <= unit.radius() * 0.6 + 0.1, "a move command must not teleport the unit")
+		assert(unit.position.distance_to(previous) <= unit.effective_speed() * 0.12 + 0.1, "movement must stay within the speed budget for this frame")
 		previous = unit.position
 	await process_frame
 	assert(absf(game.world_map.elevation_at(unit.position) - previous_height) > 1.0, "the unit should traverse the slope")

@@ -23,11 +23,14 @@ var final_approach := false
 var formation := "balanced"
 var formation_width := 5
 var corridor_cache: Dictionary = {}
+var member_segments: Dictionary = {}
+var requested_goal: Vector2
 
 func _init(game_ref: Node2D, squad: Array[RtsUnit], world_goal: Vector2, chosen_formation := "balanced", chosen_width := 5) -> void:
 	game = game_ref
 	members = squad.duplicate()
 	goal = world_goal
+	requested_goal = world_goal
 	formation = chosen_formation if chosen_formation in ["balanced", "line", "compact", "column"] else "balanced"
 	formation_width = clampi(chosen_width, 2, 8)
 
@@ -71,6 +74,7 @@ func activate() -> void:
 	_replan()
 
 func _replan() -> void:
+	var previous_goal := goal
 	var survivors: Array[RtsUnit] = []
 	for member in members:
 		if is_instance_valid(member) and not member.is_queued_for_deletion(): survivors.append(member)
@@ -79,14 +83,14 @@ func _replan() -> void:
 	if members.is_empty(): return
 	var leader := members[0]
 	for member in members:
-		if member.movement_group == self:
+		if game.navigation.can_occupy(member.position, member.radius(), member, false):
 			leader = member
 			break
-	goal = game.navigation.nearest_walkable_point(goal, leader.radius(), leader, false)
-	route = game.navigation.path_between(center, goal, leader, false)
-	if route.is_empty():
-		goal = game.navigation.nearest_walkable_point(goal, leader.radius(), leader, true)
-		route = game.navigation.path_between(center, goal, leader, false)
+	goal = game.navigation.nearest_walkable_point(requested_goal, leader.radius(), leader, false, false)
+	route = game.navigation.path_between(leader.position, goal, leader, false)
+	if route.is_empty() and game.navigation.can_occupy(leader.position, leader.radius(), leader, false):
+		goal = game.navigation.nearest_walkable_point(goal, leader.radius(), leader, true, false)
+		route = game.navigation.path_between(leader.position, goal, leader, false)
 	route_index = 1 if route.size() > 1 else 0
 	member_route_index.clear()
 	for unit in members:
@@ -100,9 +104,17 @@ func _replan() -> void:
 		member_route_index[unit.get_instance_id()] = mini(closest + 1, maxi(0, route.size() - 1))
 	last_obstacle_revision = game.navigation.obstacle_revision
 	corridor_cache.clear()
+	member_segments.clear()
 	heading = (goal - center).normalized()
 	if heading.is_zero_approx(): heading = Vector2.RIGHT
-	_assign_slots(center)
+	if slots.is_empty(): _assign_slots(center)
+	else:
+		for unit in members:
+			if unit.movement_group != self: continue
+			var id := unit.get_instance_id()
+			if previous_goal.distance_squared_to(goal) > 1.0 or not game.navigation.can_occupy(final_destinations[id], unit.radius(), unit, false):
+				final_destinations[id] = game.navigation.nearest_walkable_point(goal + slots[id], unit.radius(), unit, true)
+			unit.destination = final_destinations[id]
 
 func _role_rank(unit: RtsUnit) -> int:
 	var tags: Array = unit.stats.get("tags", [])
@@ -112,6 +124,7 @@ func _role_rank(unit: RtsUnit) -> int:
 	return 1
 
 func _assign_slots(center: Vector2) -> void:
+	var started := Time.get_ticks_usec() if game.navigation.profiling_enabled else 0
 	var lateral := Vector2(-heading.y, heading.x)
 	var ordered := members.duplicate()
 	ordered.sort_custom(func(a: RtsUnit, b: RtsUnit) -> bool:
@@ -129,6 +142,7 @@ func _assign_slots(center: Vector2) -> void:
 		"line": columns = mini(formation_width, ordered.size())
 		"compact": spacing = 26.0
 		"column": columns = 2
+	for unit in ordered: spacing = maxf(spacing, unit.radius() * 2.0 + 8.0)
 	for i in ordered.size():
 		var col := i % columns
 		var row := i / columns
@@ -140,7 +154,80 @@ func _assign_slots(center: Vector2) -> void:
 	final_destinations.clear()
 	for unit in ordered:
 		var id: int = unit.get_instance_id()
-		final_destinations[id] = game.navigation.nearest_walkable_point(goal + slots[id], unit.radius(), unit, false)
+		final_destinations[id] = _free_slot(unit, goal + slots[id])
+	_match_slots(ordered)
+	if game.navigation.profiling_enabled: game.navigation._record_profile(&"group_slots", started)
+
+func _match_slots(ordered: Array) -> void:
+	# Minimum total travel assignment prevents rear units being sent through
+	# front units that have already parked. Keep the existing role bands.
+	var count := ordered.size()
+	var potentials: Array[float] = []
+	var slot_potentials: Array[float] = []
+	var occupants: Array[int] = []
+	var previous: Array[int] = []
+	potentials.resize(count + 1)
+	slot_potentials.resize(count + 1)
+	occupants.resize(count + 1)
+	previous.resize(count + 1)
+	var points: Array[Vector2] = []
+	var offsets: Array[Vector2] = []
+	for unit in ordered:
+		points.append(final_destinations[unit.get_instance_id()])
+		offsets.append(slots[unit.get_instance_id()])
+	for i in range(1, count + 1):
+		occupants[0] = i
+		var column := 0
+		var minimum: Array[float] = []
+		minimum.resize(count + 1)
+		minimum.fill(INF)
+		var used: Array[bool] = []
+		used.resize(count + 1)
+		while true:
+			used[column] = true
+			var row := occupants[column]
+			var delta := INF
+			var next := 0
+			for j in range(1, count + 1):
+				if used[j]: continue
+				var cost: float = ordered[row - 1].position.distance_to(points[j - 1])
+				if _role_rank(ordered[row - 1]) != _role_rank(ordered[j - 1]): cost += 10000.0
+				cost -= potentials[row] + slot_potentials[j]
+				if cost < minimum[j]:
+					minimum[j] = cost
+					previous[j] = column
+				if minimum[j] < delta:
+					delta = minimum[j]
+					next = j
+			for j in range(count + 1):
+				if used[j]:
+					potentials[occupants[j]] += delta
+					slot_potentials[j] -= delta
+				else: minimum[j] -= delta
+			column = next
+			if occupants[column] == 0: break
+		while column != 0:
+			var next := previous[column]
+			occupants[column] = occupants[next]
+			column = next
+	for j in range(1, count + 1):
+		var id: int = ordered[occupants[j] - 1].get_instance_id()
+		final_destinations[id] = points[j - 1]
+		slots[id] = offsets[j - 1]
+
+func _free_slot(unit: RtsUnit, desired: Vector2) -> Vector2:
+	var candidate: Vector2 = game.navigation.nearest_walkable_point(desired, unit.radius(), unit, false, false)
+	for ring in range(25):
+		for i in (1 if ring == 0 else 16):
+			var point := candidate + Vector2.from_angle(TAU * i / 16.0) * ring * 12.0
+			var free := true
+			for other in members:
+				if other == unit or not final_destinations.has(other.get_instance_id()): continue
+				if point.distance_to(final_destinations[other.get_instance_id()]) < unit.radius() + other.radius() + 8.0:
+					free = false
+					break
+			if free and game.navigation.can_occupy(point, unit.radius(), unit, false): return point
+	return candidate
 
 func _center(active_only := true) -> Vector2:
 	var sum := Vector2.ZERO
@@ -174,25 +261,18 @@ func _corridor_is_narrow(point: Vector2) -> bool:
 	corridor_cache[cache_key] = result
 	return result
 
-func _grid_line_clear(unit: RtsUnit, from: Vector2, to: Vector2) -> bool:
-	var grid: AStarGrid2D = game.navigation._grid_for(unit)
-	var samples := maxi(1, ceili(from.distance_to(to) / 20.0))
-	for sample in range(1, samples + 1):
-		if grid.is_point_solid(game.world_map.cell_at(from.lerp(to, float(sample) / samples))): return false
-	return true
-
 func _tick() -> void:
 	var frame := Engine.get_process_frames()
 	if frame == last_frame: return
 	last_frame = frame
 	if not active: activate()
-	if members.is_empty() or route.is_empty(): return
+	if members.is_empty(): return
 	game.navigation._ensure_current()
 	if game.navigation.obstacle_revision != last_obstacle_revision: _replan()
 	if route.is_empty(): return
 	var center := _center()
-	while route_index < route.size() - 1 and center.distance_to(route[route_index]) < 65.0:
-		route_index += 1
+	for i in range(route_index, route.size() - 1):
+		if center.distance_to(route[i]) < 65.0: route_index = i + 1
 	var waypoint: Vector2 = route[route_index] if route_index < route.size() else goal
 	final_approach = route_index >= route.size() - 1 and center.distance_to(goal) < 115.0
 	var next_heading := (waypoint - center).normalized()
@@ -201,50 +281,43 @@ func _tick() -> void:
 
 func target_for(unit: RtsUnit) -> Vector2:
 	_tick()
-	if route.is_empty(): return goal
+	if route.is_empty(): return destination_for(unit)
 	var id := unit.get_instance_id()
-	var index: int = member_route_index.get(id, 0)
-	var waypoint: Vector2 = route[index]
-	var direction := (waypoint - unit.position).normalized()
-	if direction.is_zero_approx(): direction = heading
-	var compressed := narrow or _corridor_is_narrow(waypoint) or _corridor_is_narrow(unit.position)
-	var offset: Vector2 = Vector2.ZERO if compressed else slots.get(id, Vector2.ZERO)
-	var target_point: Vector2 = waypoint + offset
-	if not _grid_line_clear(unit, unit.position, target_point):
-		for earlier in range(index, -1, -1):
-			var candidate: Vector2 = route[earlier]
-			if _grid_line_clear(unit, unit.position, candidate):
-				index = earlier
-				target_point = candidate
-				compressed = true
-				break
-	while index < route.size() - 1 and unit.position.distance_to(target_point) < 48.0:
-		var next_index := index + 1
-		waypoint = route[next_index]
-		direction = (waypoint - unit.position).normalized()
-		if direction.is_zero_approx(): direction = heading
-		compressed = narrow or _corridor_is_narrow(waypoint) or _corridor_is_narrow(unit.position)
-		offset = Vector2.ZERO if compressed else slots.get(id, Vector2.ZERO)
-		var next_target: Vector2 = waypoint + offset
-		if not _grid_line_clear(unit, unit.position, next_target):
-			# The offset can sit beside a gate even when the path center is
-			# traversable. Follow the centerline until the formation fits again.
-			if _grid_line_clear(unit, unit.position, waypoint):
-				index = next_index
-				target_point = waypoint
-			else:
-				for earlier in range(index, -1, -1):
-					var centerline: Vector2 = route[earlier]
-					if _grid_line_clear(unit, unit.position, centerline) and unit.position.distance_to(centerline) > 12.0:
-						index = earlier
-						target_point = centerline
-						break
-			break
-		index = next_index
-		target_point = next_target
+	var final_point := destination_for(unit)
+	# A clear final approach avoids steering a rear rank through already parked
+	# front ranks, and does not cut corners just because the goal is nearby.
+	if (route.size() <= 2 or unit.position.distance_to(final_point) < 200.0) and _segment_clear_for(unit, final_point): return final_point
+	var index: int = clampi(member_route_index.get(id, 0), 0, route.size() - 1)
+	var offset: Vector2 = slots.get(id, Vector2.ZERO)
+	var formation_center := unit.position - offset
+	for i in range(index, mini(route.size() - 1, index + 5)):
+		if formation_center.distance_to(route[i]) < 55.0 or unit.position.distance_to(route[i]) < 35.0: index = i + 1
 	member_route_index[id] = index
-	if index >= route.size() - 1 and unit.position.distance_to(goal) < 115.0: return destination_for(unit)
+	var target_point := route[index]
+	# Advance only onto segments the full unit can traverse. Look ahead through
+	# bends instead of repeatedly backing up to an offset beside a wall.
+	var found := false
+	for next_index in range(mini(route.size() - 1, index + 4), maxi(-1, index - 3), -1):
+		if next_index < route.size() - 1 and not _corridor_is_narrow(route[next_index]) and _segment_clear_for(unit, route[next_index] + offset):
+			target_point = route[next_index] + offset
+			found = true
+			break
+		if _segment_clear_for(unit, route[next_index]):
+			target_point = route[next_index]
+			found = true
+			break
+	if not found: return target_point
 	return target_point
+
+func _segment_clear_for(unit: RtsUnit, point: Vector2) -> bool:
+	var id := unit.get_instance_id()
+	if member_segments.has(id):
+		var cached: Dictionary = member_segments[id]
+		if cached["to"] == point and unit.position.distance_squared_to(Geometry2D.get_closest_point_to_segment(unit.position, cached["from"], point)) < 0.0625:
+			return true
+	if not game.navigation._static_segment_clear(unit.position, point, unit.radius(), unit): return false
+	member_segments[id] = {"from": unit.position, "to": point}
+	return true
 
 func destination_for(unit: RtsUnit) -> Vector2:
 	return final_destinations.get(unit.get_instance_id(), goal)
