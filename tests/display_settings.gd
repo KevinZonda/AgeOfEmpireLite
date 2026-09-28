@@ -116,8 +116,6 @@ func _run() -> void:
 	assert(game.get_window().size == Vector2i(1280, 720))
 	assert(not game.edge_scroll_enabled)
 	assert(not game.zoom_gesture_enabled and game.selected_view_mode_25d)
-	var bottom_transform: Transform2D = game.hud_bottom.get_global_transform_with_canvas()
-	assert(game._selection_point_over_hud(bottom_transform * Vector2(20, 20)))
 	game.ui_scale = 1.0
 	game.text_scale = 1.0
 	game._apply_ui_scales()
@@ -126,6 +124,12 @@ func _run() -> void:
 	assert(game._edge_pan_direction(Vector2(2, 360), Vector2(1280, 720)) == Vector2.LEFT)
 	game.start_game("English", 12345)
 	await process_frame
+	game.ui_scale = 0.75
+	game._apply_ui_scales()
+	var bottom_transform: Transform2D = game.hud_bottom.get_global_transform_with_canvas()
+	assert(game._selection_point_over_hud(bottom_transform * Vector2(20, 20)))
+	game.ui_scale = 1.0
+	game._apply_ui_scales()
 	assert(game.view_mode_25d, "saved view preference should apply to a new match")
 	var magnify := InputEventMagnifyGesture.new()
 	magnify.factor = 1.2
