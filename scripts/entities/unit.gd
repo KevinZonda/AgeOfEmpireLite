@@ -502,6 +502,10 @@ func _process(delta: float) -> void:
 		queue_redraw()
 	if field_build_remaining > 0.0: return
 	if _tick_status(delta): return
+	# Garrison entry and units stationed on walls intentionally use the building
+	# footprint. Other ground units must clear newly placed foundations first.
+	var entering_garrison: bool = order == "garrison" and is_instance_valid(target) and target is RtsBuilding and target.is_complete() and position.distance_to(target.position) <= target.size().x * 0.5 + radius() + 5.5
+	if not is_instance_valid(wall_host) and not entering_garrison and order != "siege_tower_docked" and game.navigation.recover_building_overlap(self, delta): return
 	if order == "hold":
 		if position.distance_to(hold_position) > 6.0:
 			_move_toward(hold_position, delta, 4.0)
@@ -674,6 +678,9 @@ func _process(delta: float) -> void:
 		_process_gather_order(delta)
 		return
 	if order == "build":
+		if target.is_queued_for_deletion() or target.is_complete():
+			_advance_command()
+			return
 		if not _move_toward(target.position, delta, target.size().x * 0.6 + radius()): return
 		if visual_action_timer <= 0.0: _start_visual_action("build", 0.45)
 		target.advance_construction(delta * GameData.construction_multiplier(game.civilizations[owner_id]))

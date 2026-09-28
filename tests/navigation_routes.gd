@@ -21,6 +21,7 @@ func _run() -> void:
 	world.cells.resize(400)
 	world.cells.fill(RtsWorldMap.Terrain.GRASS)
 	game.add_child(world)
+	world.hide() # This synthetic map has no generated render geometry.
 	var unit := RtsUnit.new()
 	unit.stats = {"radius": 12.0}
 	unit.position = Vector2(125, 125)

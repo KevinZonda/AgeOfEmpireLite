@@ -1,0 +1,18 @@
+[
+  {
+    "test": "navigation_construction_poc",
+    "passed": false,
+    "exit_code": 1,
+    "timeout": false,
+    "seconds": 6.447,
+    "log": "navigation_construction_poc.log"
+  },
+  {
+    "test": "navigation_routes",
+    "passed": false,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.603,
+    "log": "navigation_routes.log"
+  }
+]

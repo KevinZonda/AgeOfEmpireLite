@@ -63,7 +63,9 @@ func _run() -> void:
 	trader._process(0.0)
 	assert(trader.trade_returning)
 	var gold_before: int = game.players[0]["gold"]
-	trader.position = market.position + Vector2(45, 0)
+	# Keep the trader outside the market's footprint, within trade range.
+	trader.position = market.position + Vector2(market.size().x * 0.5 + trader.radius() + 0.1, 0)
+	assert(game.navigation.can_occupy(trader.position, trader.radius(), trader, false))
 	trader._process(0.0)
 	assert(game.players[0]["gold"] > gold_before, "completed trade route should earn gold")
 	var monastery_point: Vector2 = game._scaled_point(Vector2(680, 860))

@@ -25,4 +25,5 @@ func _initialize() -> void:
 	var ram_damage: float = CombatRules.damage(GameData.UNITS["battering_ram"], GameData.BUILDINGS["stone_wall"])
 	var ram_vs_unit: float = CombatRules.damage(GameData.UNITS["battering_ram"], GameData.UNITS["spearman"])
 	assert(ram_damage > ram_vs_unit * 3.0)
+	print("SIEGE_RULES_OK")
 	quit()

@@ -1,0 +1,18 @@
+[
+  {
+    "test": "navigation_construction_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 2.757,
+    "log": "navigation_construction_poc.log"
+  },
+  {
+    "test": "siege_rules",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.454,
+    "log": "siege_rules.log"
+  }
+]

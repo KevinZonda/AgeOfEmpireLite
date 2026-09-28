@@ -691,7 +691,7 @@ func can_occupy(point: Vector2, radius: float, self_unit: RtsUnit, include_units
 	_record_profile(&"can_occupy", started)
 	return result
 
-func _can_occupy(point: Vector2, radius: float, self_unit: RtsUnit, include_units: bool) -> bool:
+func _can_occupy(point: Vector2, radius: float, self_unit: RtsUnit, include_units: bool, escape_from := Vector2.INF) -> bool:
 	_ensure_spatial_index()
 	if point.x < radius or point.y < radius or point.x > world_map.world_size.x - radius or point.y > world_map.world_size.y - radius: return false
 	var naval: bool = self_unit != null and self_unit.stats.get("tags", []).has("naval")
@@ -709,7 +709,12 @@ func _can_occupy(point: Vector2, radius: float, self_unit: RtsUnit, include_unit
 	for building in buildings_by_cell.get(_spatial_cell(point), []):
 		if not is_instance_valid(building) or building.is_queued_for_deletion(): continue
 		if self_unit != null and not game.is_enemy(self_unit.owner_id, building.owner_id) and building.kind.ends_with("_gate") and building.is_complete(): continue
-		if Rect2(building.position - building.size() * 0.5, building.size()).grow(radius).has_point(point): return false
+		var bounds := Rect2(building.position - building.size() * 0.5, building.size()).grow(radius)
+		if bounds.has_point(point):
+			# Only the dedicated overlap recovery may leave an existing overlap.
+			# Ordinary collision checks and cached pathfinding grids remain strict.
+			if escape_from == Vector2.INF or not bounds.has_point(escape_from): return false
+			if _rect_depth(bounds, point) > _rect_depth(bounds, escape_from) + 0.001: return false
 	var center_cell := _spatial_cell(point)
 	var search_radius := ceili((radius + max_dynamic_radius) / SPATIAL_CELL_SIZE)
 	for y in range(center_cell.y - search_radius, center_cell.y + search_radius + 1):
@@ -730,4 +735,55 @@ func _can_occupy(point: Vector2, radius: float, self_unit: RtsUnit, include_unit
 				var personal_space: float = radius + other.radius()
 				if point.distance_squared_to(other.position) < personal_space * personal_space:
 					if self_unit == null or point.distance_squared_to(other.position) <= self_unit.position.distance_squared_to(other.position): return false
+	return true
+
+func _rect_depth(bounds: Rect2, point: Vector2) -> float:
+	return minf(minf(point.x - bounds.position.x, bounds.end.x - point.x), minf(point.y - bounds.position.y, bounds.end.y - point.y))
+
+func _building_escape_clear(unit: RtsUnit, destination: Vector2) -> bool:
+	var samples := maxi(1, ceili(unit.position.distance_to(destination) / maxf(1.0, unit.radius() * 0.3)))
+	var previous := unit.position
+	for i in range(1, samples + 1):
+		var point := unit.position.lerp(destination, float(i) / samples)
+		if not _can_occupy(point, unit.radius(), unit, true, previous): return false
+		previous = point
+	return true
+
+func recover_building_overlap(unit: RtsUnit, delta: float) -> bool:
+	# Foundations can be placed over builders and bystanders. Walk them out
+	# before doing work, preserving their command queue and normal movement speed.
+	_ensure_spatial_index()
+	var candidates: Array[Vector2] = []
+	var overlapping := false
+	for building in buildings_by_cell.get(_spatial_cell(unit.position), []):
+		if not is_instance_valid(building) or building.is_queued_for_deletion(): continue
+		if not game.is_enemy(unit.owner_id, building.owner_id) and building.kind.ends_with("_gate") and building.is_complete(): continue
+		var bounds := Rect2(building.position - building.size() * 0.5, building.size()).grow(unit.radius())
+		if not bounds.has_point(unit.position): continue
+		overlapping = true
+		bounds = bounds.grow(1.0)
+		candidates.append(Vector2(bounds.position.x, unit.position.y))
+		candidates.append(Vector2(bounds.end.x, unit.position.y))
+		candidates.append(Vector2(unit.position.x, bounds.position.y))
+		candidates.append(Vector2(unit.position.x, bounds.end.y))
+		# Sample each edge too: a neighboring building or unit may block the
+		# closest perpendicular exit while leaving a diagonal exit available.
+		var segments := maxi(2, ceili(maxf(bounds.size.x, bounds.size.y) / unit.radius()))
+		for i in range(segments + 1):
+			var fraction := float(i) / segments
+			candidates.append(Vector2(lerpf(bounds.position.x, bounds.end.x, fraction), bounds.position.y))
+			candidates.append(Vector2(lerpf(bounds.position.x, bounds.end.x, fraction), bounds.end.y))
+			candidates.append(Vector2(bounds.position.x, lerpf(bounds.position.y, bounds.end.y, fraction)))
+			candidates.append(Vector2(bounds.end.x, lerpf(bounds.position.y, bounds.end.y, fraction)))
+	if not overlapping: return false
+	candidates.sort_custom(func(a: Vector2, b: Vector2) -> bool: return unit.position.distance_squared_to(a) < unit.position.distance_squared_to(b))
+	for candidate in candidates:
+		if not can_occupy(candidate, unit.radius(), unit) or not _building_escape_clear(unit, candidate): continue
+		var previous := unit.position
+		unit.position = unit.position.move_toward(candidate, minf(unit.effective_speed() * delta, unit.radius() * 4.8))
+		unit_moved(unit, previous)
+		unit._reset_route()
+		unit._update_facing(previous)
+		unit._refresh_slope_visual(previous)
+		break
 	return true

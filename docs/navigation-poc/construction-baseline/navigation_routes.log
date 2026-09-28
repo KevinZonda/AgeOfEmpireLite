@@ -1,0 +1,17 @@
+Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
+
+NAVIGATION_ROUTES_OK
+ERROR: Condition "array_len == 0" is true. Returning: ERR_INVALID_DATA
+   at: mesh_create_surface_data_from_arrays (servers/rendering/rendering_server.cpp:1212)
+   GDScript backtrace (most recent call first):
+       [0] finish (res://scripts/world/world_map_renderer.gd:45)
+       [1] _plants_mesh (res://scripts/world/world_map_renderer.gd:86)
+       [2] draw_map (res://scripts/world/world_map_renderer.gd:278)
+       [3] _draw (res://scripts/world/world_map.gd:497)
+ERROR: Condition "err != OK" is true.
+   at: add_surface_from_arrays (scene/resources/mesh.cpp:1827)
+   GDScript backtrace (most recent call first):
+       [0] finish (res://scripts/world/world_map_renderer.gd:45)
+       [1] _plants_mesh (res://scripts/world/world_map_renderer.gd:86)
+       [2] draw_map (res://scripts/world/world_map_renderer.gd:278)
+       [3] _draw (res://scripts/world/world_map.gd:497)

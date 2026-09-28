@@ -16,7 +16,7 @@ import time
 
 ROOT = Path(__file__).resolve().parents[1]
 TESTS = [
-    "navigation_poc", "navigation_poc_matrix", "navigation", "navigation_routes",
+    "navigation_poc", "navigation_poc_matrix", "navigation_construction_poc", "navigation", "navigation_routes",
     "navigation_replanning", "group_chokepoint", "group_mass_chokepoint",
     "group_multiplayer", "terrain_selection_follow", "extended_systems",
     "economy_siege_controls", "smoke",
