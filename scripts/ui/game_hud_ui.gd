@@ -206,7 +206,7 @@ func _create_hud() -> void:
 	command_panel.add_theme_stylebox_override("panel", game._hud_panel_style(Color("30261b"), 7))
 	dock.add_child(command_panel)
 	var command_column := VBoxContainer.new()
-	command_column.add_theme_constant_override("separation", 6)
+	command_column.add_theme_constant_override("separation", 5)
 	command_panel.add_child(command_column)
 	var command_header := HBoxContainer.new()
 	command_header.add_theme_constant_override("separation", 4)

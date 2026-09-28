@@ -3,6 +3,13 @@ extends RefCounted
 
 # One resolution path for simulation and UI. The reference rank is applied
 # before game-specific civilization, research, landmark and dynasty effects.
+const BONUS_TARGET_LABELS := {
+	"cavalry": "对骑兵", "heavy": "对重甲单位", "light": "对轻甲单位",
+	"infantry": "对步兵", "melee_unit": "对近战单位", "ranged": "对远程单位",
+	"naval": "对船只", "ship": "对船只", "siege": "对攻城器械",
+	"structure": "对建筑",
+}
+
 static func unit(civilization: String, unit_kind: String, age: int, researched: Array = [], landmarks: Array = [], dynasty := "", producer_landmark_id := "") -> Dictionary:
 	if not GameData.UNITS.has(unit_kind): return {}
 	var stats: Dictionary = GameData.UNITS[unit_kind].duplicate(true)
@@ -34,7 +41,7 @@ static func unit(civilization: String, unit_kind: String, age: int, researched: 
 	if stats["profiles"].is_empty() and float(stats.get("damage", 0.0)) > 0.0:
 		var fallback_bonuses: Array[Dictionary] = []
 		for target_tag in stats.get("bonus", {}):
-			fallback_bonuses.append({"required_tags": [target_tag], "amount": float(stats["bonus"][target_tag]), "source_label": target_tag})
+			fallback_bonuses.append({"required_tags": [target_tag], "amount": float(stats["bonus"][target_tag]), "source_label": BONUS_TARGET_LABELS.get(target_tag, target_tag)})
 		stats["profiles"]["ranged" if stats.get("attack_type") == "ranged" else "melee"] = {
 			"damage": float(stats["damage"]), "damage_kind": stats.get("attack_type", "melee"),
 			"range": float(stats["range"]), "cooldown": float(stats["cooldown"]), "hits": 1, "bonuses": fallback_bonuses,
