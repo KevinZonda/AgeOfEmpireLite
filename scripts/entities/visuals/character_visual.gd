@@ -16,13 +16,13 @@ static func handles(kind: String) -> bool:
 
 static func draw_2d(unit: CanvasItem, kind: String, team: Color, gait: float, swing: float) -> void:
 	if kind in ["horseman", "scout", "knight", "royal_knight"]:
-		_cavalry_2d(unit, kind, team, swing)
+		_cavalry_2d(unit, kind, team, gait, swing)
 	else:
 		_infantry_2d(unit, kind, team, gait, swing)
 
 static func draw_25d(unit: CanvasItem, kind: String, team: Color, gait: float, swing: float) -> void:
 	if kind in ["horseman", "scout", "knight", "royal_knight"]:
-		_cavalry_25d(unit, kind, team, swing)
+		_cavalry_25d(unit, kind, team, gait, swing)
 	else:
 		_infantry_25d(unit, kind, team, gait, swing)
 
@@ -54,24 +54,60 @@ static func _sword(unit: CanvasItem, grip: Vector2, swing: float) -> void:
 	unit.draw_line(grip + Vector2(-3, -4), grip + Vector2(5, 0), GOLD, 2.4)
 	unit.draw_circle(grip + Vector2(-1, 2), 1.7, LEATHER)
 
-static func _cavalry_2d(unit: CanvasItem, kind: String, team: Color, swing: float) -> void:
+static func _spyglass(unit: CanvasItem, start: Vector2) -> void:
+	var end := start + Vector2(13, -3)
+	unit.draw_line(start, end, OUTLINE, 5.0)
+	unit.draw_line(start + Vector2(1, 0), end - Vector2(1, 0), WOOD, 3.2)
+	unit.draw_line(start + Vector2(5, -1), start + Vector2(5, 2), GOLD, 1.5)
+	unit.draw_circle(end, 2.7, GOLD)
+	unit.draw_circle(end + Vector2(0.5, 0), 1.4, Color("8db4bd"))
+
+static func _hand_cannon(unit: CanvasItem, team: Color, lift: float, swing: float) -> void:
+	var offset := Vector2(-swing * 2.5, lift + swing)
+	# Both arms support the wooden stock; the short metal barrel has a clear muzzle.
+	unit.draw_line(Vector2(-7, -3) + offset, Vector2(4, 2) + offset, OUTLINE, 5.0)
+	unit.draw_line(Vector2(-7, -3) + offset, Vector2(4, 2) + offset, team.darkened(0.25), 3.0)
+	unit.draw_line(Vector2(7, -4) + offset, Vector2(13, -3) + offset, OUTLINE, 5.0)
+	unit.draw_line(Vector2(7, -4) + offset, Vector2(13, -3) + offset, team.darkened(0.25), 3.0)
+	_poly(unit, [Vector2(-11, 3) + offset, Vector2(-6, 0) + offset, Vector2(9, -5) + offset, Vector2(12, 0) + offset, Vector2(-5, 7) + offset, Vector2(-12, 7) + offset], WOOD)
+	unit.draw_line(Vector2(8, -4) + offset, Vector2(27, -10) + offset, OUTLINE, 8.0)
+	unit.draw_line(Vector2(8, -4) + offset, Vector2(27, -10) + offset, Color("77898b"), 5.1)
+	unit.draw_line(Vector2(11, -6) + offset, Vector2(24, -10) + offset, STEEL_LIGHT, 1.4)
+	unit.draw_line(Vector2(10, -2) + offset, Vector2(12, -8) + offset, GOLD, 2.0)
+	unit.draw_circle(Vector2(27, -10) + offset, 3.9, STEEL_LIGHT)
+	unit.draw_circle(Vector2(27, -10) + offset, 2.2, OUTLINE)
+	unit.draw_circle(Vector2(4, 2) + offset, 2.5, SKIN)
+	unit.draw_circle(Vector2(13, -3) + offset, 2.5, SKIN)
+
+static func _cavalry_2d(unit: CanvasItem, kind: String, team: Color, gait: float, swing: float) -> void:
 	var heavy := kind in ["knight", "royal_knight"]
 	var royal := kind == "royal_knight"
-	# Horse, mane, tail and reins remain visible beneath the rider.
-	_poly(unit, [Vector2(-20, -7), Vector2(8, -10), Vector2(18, -5), Vector2(18, 7), Vector2(-18, 9)], Color("8d6547"))
-	_poly(unit, [Vector2(-18, -5), Vector2(6, -8), Vector2(16, -4), Vector2(16, 5), Vector2(-17, 6)], Color("b18962"), OUTLINE, 0.8)
-	unit.draw_line(Vector2(-17, 5), Vector2(-26, 11), LEATHER, 3.0)
-	unit.draw_line(Vector2(-12, 7), Vector2(-13, 14), OUTLINE, 3.0)
-	unit.draw_line(Vector2(9, 6), Vector2(11, 14), OUTLINE, 3.0)
-	unit.draw_circle(Vector2(16, -8), 6.0, OUTLINE)
-	unit.draw_circle(Vector2(16, -8), 4.8, Color("b99269"))
-	unit.draw_line(Vector2(15, -13), Vector2(11, -9), LEATHER, 2.0)
-	unit.draw_circle(Vector2(20, -8), 1.0, OUTLINE)
+	# Four offset legs and a tapered body still read as a horse at map scale.
+	for x in [-13.0, 10.0]:
+		var stride := gait if x < 0.0 else -gait
+		for side in [-1.0, 1.0]:
+			var hip := Vector2(x, side * 6.0)
+			var hoof := Vector2(x + stride, side * 13.0)
+			unit.draw_line(hip, hoof, OUTLINE, 4.5)
+			unit.draw_line(hip, hoof, Color("8d6547"), 2.7)
+			unit.draw_line(hoof, hoof + Vector2(3, side), OUTLINE, 2.0)
+	_poly(unit, [Vector2(-22, -5), Vector2(-17, -9), Vector2(4, -10), Vector2(15, -6), Vector2(17, 4), Vector2(6, 9), Vector2(-17, 8), Vector2(-23, 4)], Color("9a7452"))
+	_poly(unit, [Vector2(-18, -7), Vector2(3, -8), Vector2(13, -5), Vector2(10, 2), Vector2(-1, 5), Vector2(-18, 4)], Color("b58a60"), OUTLINE, 0.8)
+	_poly(unit, [Vector2(-17, 4), Vector2(3, 5), Vector2(14, 2), Vector2(7, 8), Vector2(-17, 7)], Color("76543e"), OUTLINE, 0.0)
+	unit.draw_line(Vector2(-20, 2), Vector2(-28, 9 + gait * 0.5), OUTLINE, 3.2)
+	unit.draw_line(Vector2(-21, 2), Vector2(-27, 8 + gait * 0.5), LEATHER, 1.8)
+	_poly(unit, [Vector2(8, -7), Vector2(15, -13), Vector2(21, -12), Vector2(21, -5), Vector2(15, 0)], Color("a47b56"))
+	_poly(unit, [Vector2(17, -14), Vector2(25, -14), Vector2(29, -9), Vector2(26, -5), Vector2(19, -6)], Color("bd9368"))
+	_poly(unit, [Vector2(19, -13), Vector2(20, -18), Vector2(23, -14)], Color("8d6547"))
+	unit.draw_circle(Vector2(24, -11), 1.1, OUTLINE)
+	unit.draw_line(Vector2(22, -6), Vector2(27, -6), LEATHER, 1.4)
+	unit.draw_line(Vector2(16, -12), Vector2(20, -5), LEATHER, 1.2)
 	if heavy:
-		_poly(unit, [Vector2(-18, -8), Vector2(1, -10), Vector2(5, 6), Vector2(-18, 7)], team.darkened(0.2))
-		unit.draw_line(Vector2(-15, 4), Vector2(3, 4), GOLD, 1.5)
+		_poly(unit, [Vector2(-19, -8), Vector2(1, -9), Vector2(7, -3), Vector2(4, 6), Vector2(-18, 6)], team.darkened(0.22))
+		unit.draw_line(Vector2(-17, 4), Vector2(3, 4), GOLD, 1.5)
 	# Saddle, rider and helm/cap.
 	_poly(unit, [Vector2(-9, -9), Vector2(6, -10), Vector2(8, 4), Vector2(-8, 6)], STEEL if heavy else team.darkened(0.12))
+	_poly(unit, [Vector2(-7, -8), Vector2(2, -9), Vector2(6, 3), Vector2(-3, 4)], STEEL_LIGHT if heavy else team.lightened(0.12), OUTLINE, 0.0)
 	unit.draw_line(Vector2(-8, 2), Vector2(8, 2), LEATHER, 2.0)
 	unit.draw_circle(Vector2(0, -8), 5.7, OUTLINE)
 	unit.draw_circle(Vector2(0, -8), 4.3, SKIN)
@@ -82,32 +118,43 @@ static func _cavalry_2d(unit: CanvasItem, kind: String, team: Color, swing: floa
 	else:
 		_poly(unit, [Vector2(-5, -10), Vector2(5, -10), Vector2(3, -14), Vector2(-3, -14)], team.darkened(0.3))
 	if kind == "scout":
-		# The scout carries a map case and a spyglass, with no blade.
-		unit.draw_line(Vector2(7, -4), Vector2(18, -15), LEATHER, 3.0)
-		unit.draw_line(Vector2(15, -13), Vector2(21, -18), GOLD, 2.2)
-		unit.draw_circle(Vector2(-8, 3), 4.0, WOOD)
-		unit.draw_line(Vector2(-11, 1), Vector2(-5, 5), Color("e4d3aa"), 1.3)
+		# The lens and brass rings distinguish the telescope from a blade.
+		unit.draw_line(Vector2(5, -5), Vector2(11, -8), team.darkened(0.2), 3.5)
+		_spyglass(unit, Vector2(8, -9))
+		_poly(unit, [Vector2(-13, -1), Vector2(-6, -2), Vector2(-5, 4), Vector2(-12, 5)], WOOD)
+		unit.draw_line(Vector2(-11, 0), Vector2(-7, 3), Color("e4d3aa"), 1.3)
 	else:
+		unit.draw_line(Vector2(5, -2), Vector2(9, 2), STEEL if heavy else team.darkened(0.18), 4.0)
 		_sword(unit, Vector2(8, 2), swing)
 		if heavy: _pavise(unit, Vector2(-11, -1), team, false)
 
-static func _cavalry_25d(unit: CanvasItem, kind: String, team: Color, swing: float) -> void:
+static func _cavalry_25d(unit: CanvasItem, kind: String, team: Color, gait: float, swing: float) -> void:
 	var heavy := kind in ["knight", "royal_knight"]
 	var royal := kind == "royal_knight"
-	# Side-on horse with separate neck, legs and barding.
-	for x in [-13.0, 8.0]:
-		unit.draw_line(Vector2(x, -5), Vector2(x - 2, 4), OUTLINE, 4.0)
-		unit.draw_line(Vector2(x, -5), Vector2(x - 2, 3), LEATHER, 2.2)
-	_poly(unit, [Vector2(-20, -13), Vector2(9, -15), Vector2(16, -11), Vector2(14, -3), Vector2(-19, -3)], Color("9a7452"))
-	unit.draw_line(Vector2(-19, -7), Vector2(-28, 0), LEATHER, 3.4)
-	_poly(unit, [Vector2(8, -14), Vector2(15, -24), Vector2(20, -23), Vector2(21, -13)], Color("a5805b"))
-	_poly(unit, [Vector2(15, -23), Vector2(23, -22), Vector2(25, -17), Vector2(18, -16)], Color("b88d63"))
-	unit.draw_circle(Vector2(21, -21), 1.0, OUTLINE)
-	unit.draw_line(Vector2(16, -19), Vector2(24, -18), LEATHER, 1.4)
+	# Near and far leg pairs move in opposite phases during a gallop.
+	for x in [-14.0, -8.0, 7.0, 13.0]:
+		var stride := gait * (1.0 if x < 0.0 else -1.0) * (0.75 if x == -8.0 or x == 7.0 else 1.0)
+		var hoof := Vector2(x + stride, 4.0 + absf(stride) * 0.23)
+		unit.draw_line(Vector2(x, -8), hoof, OUTLINE, 4.4)
+		unit.draw_line(Vector2(x, -8), hoof + Vector2(-0.5, -1), Color("936b4b"), 2.7)
+		unit.draw_line(hoof + Vector2(-2, 0), hoof + Vector2(2.5, 0), OUTLINE, 2.0)
+	_poly(unit, [Vector2(-22, -10), Vector2(-18, -15), Vector2(-7, -17), Vector2(8, -17), Vector2(15, -12), Vector2(13, -6), Vector2(4, -3), Vector2(-17, -4), Vector2(-23, -7)], Color("98704f"))
+	_poly(unit, [Vector2(-18, -14), Vector2(-7, -16), Vector2(7, -16), Vector2(12, -12), Vector2(5, -9), Vector2(-16, -9)], Color("bd9167"), OUTLINE, 0.0)
+	_poly(unit, [Vector2(-17, -8), Vector2(4, -8), Vector2(12, -11), Vector2(11, -6), Vector2(3, -4), Vector2(-17, -5)], Color("78563f"), OUTLINE, 0.0)
+	unit.draw_line(Vector2(-20, -10), Vector2(-27, -3 + gait * 0.5), OUTLINE, 3.8)
+	unit.draw_line(Vector2(-21, -10), Vector2(-27, -3 + gait * 0.5), LEATHER, 2.0)
+	_poly(unit, [Vector2(7, -16), Vector2(13, -25), Vector2(18, -29), Vector2(22, -25), Vector2(19, -14), Vector2(13, -9)], Color("a87d58"))
+	_poly(unit, [Vector2(16, -28), Vector2(22, -28), Vector2(28, -23), Vector2(27, -19), Vector2(20, -18), Vector2(17, -21)], Color("c2986d"))
+	_poly(unit, [Vector2(17, -28), Vector2(18, -34), Vector2(21, -29)], Color("8d6547"))
+	_poly(unit, [Vector2(21, -28), Vector2(23, -33), Vector2(24, -27)], Color("8d6547"))
+	unit.draw_circle(Vector2(23, -25), 1.1, OUTLINE)
+	unit.draw_line(Vector2(21, -20), Vector2(27, -20), LEATHER, 1.5)
+	unit.draw_line(Vector2(15, -26), Vector2(19, -18), LEATHER, 1.4)
 	if heavy:
-		_poly(unit, [Vector2(-19, -16), Vector2(7, -17), Vector2(9, -5), Vector2(-18, -5)], team.darkened(0.18))
-		unit.draw_line(Vector2(-17, -8), Vector2(8, -8), GOLD, 1.3)
+		_poly(unit, [Vector2(-19, -15), Vector2(6, -16), Vector2(11, -10), Vector2(7, -5), Vector2(-18, -6)], team.darkened(0.20))
+		unit.draw_line(Vector2(-17, -8), Vector2(7, -8), GOLD, 1.3)
 	_poly(unit, [Vector2(-9, -25), Vector2(5, -25), Vector2(8, -12), Vector2(-8, -11)], STEEL if heavy else team.darkened(0.13))
+	_poly(unit, [Vector2(-7, -24), Vector2(1, -24), Vector2(5, -14), Vector2(-5, -13)], STEEL_LIGHT if heavy else team.lightened(0.12), OUTLINE, 0.0)
 	unit.draw_line(Vector2(-7, -14), Vector2(7, -14), LEATHER, 1.8)
 	unit.draw_circle(Vector2(-1, -29), 5.5, OUTLINE)
 	unit.draw_circle(Vector2(-1, -29), 4.1, SKIN)
@@ -118,10 +165,12 @@ static func _cavalry_25d(unit: CanvasItem, kind: String, team: Color, swing: flo
 	else:
 		_poly(unit, [Vector2(-6, -31), Vector2(5, -31), Vector2(3, -35), Vector2(-5, -35)], team.darkened(0.25))
 	if kind == "scout":
-		unit.draw_line(Vector2(7, -21), Vector2(17, -30), LEATHER, 3.0)
-		unit.draw_line(Vector2(15, -29), Vector2(22, -35), GOLD, 2.0)
-		unit.draw_circle(Vector2(-12, -13), 4.0, WOOD)
+		unit.draw_line(Vector2(5, -25), Vector2(9, -28), team.darkened(0.2), 3.5)
+		_spyglass(unit, Vector2(7, -29))
+		_poly(unit, [Vector2(-16, -18), Vector2(-8, -19), Vector2(-7, -10), Vector2(-15, -10)], WOOD)
+		unit.draw_line(Vector2(-14, -16), Vector2(-9, -13), Color("e4d3aa"), 1.3)
 	else:
+		unit.draw_line(Vector2(5, -20), Vector2(9, -17), STEEL if heavy else team.darkened(0.18), 4.0)
 		_sword(unit, Vector2(8, -17), swing)
 		if heavy: _pavise(unit, Vector2(-11, -20), team, true)
 
@@ -157,12 +206,10 @@ static func _infantry_2d(unit: CanvasItem, kind: String, team: Color, gait: floa
 		unit.draw_line(Vector2(14, 2), Vector2(16, -15), WOOD, 2.0)
 	elif kind == "handcannoneer":
 		_poly(unit, [Vector2(-6, -14), Vector2(6, -14), Vector2(5, -18), Vector2(-5, -18)], Color("4e5250"))
-		unit.draw_line(Vector2(6, 5), Vector2(18 + swing * 4, -17), OUTLINE, 7.0)
-		unit.draw_line(Vector2(7, 4), Vector2(18 + swing * 4, -17), Color("666e6d"), 4.5)
-		unit.draw_circle(Vector2(18 + swing * 4, -17), 3.2, OUTLINE)
-		unit.draw_circle(Vector2(18 + swing * 4, -17), 1.8, Color("cfd5ca"))
-		unit.draw_line(Vector2(7, 2), Vector2(13, -8), WOOD, 2.4)
-		unit.draw_circle(Vector2(-10, 4), 3.2, Color("bb803f"))
+		_poly(unit, [Vector2(-9, -5), Vector2(-5, -5), Vector2(5, 6), Vector2(2, 8)], Color("816043"), OUTLINE, 0.0)
+		_poly(unit, [Vector2(-15, 0), Vector2(-9, -1), Vector2(-7, 7), Vector2(-14, 8)], Color("b57a3d"))
+		unit.draw_line(Vector2(-13, 1), Vector2(-9, 1), GOLD, 1.1)
+		_hand_cannon(unit, team, 0.0, swing)
 	else:
 		_poly(unit, [Vector2(-7, -14), Vector2(7, -14), Vector2(5, -18), Vector2(-5, -18)], STEEL if armored else Color("746e5d"))
 		_crossbow(unit, Vector2(12 + swing * 2, -1), armored)
@@ -201,12 +248,10 @@ static func _infantry_25d(unit: CanvasItem, kind: String, team: Color, gait: flo
 		unit.draw_circle(Vector2(12, -8), 1.8, GOLD)
 	elif kind == "handcannoneer":
 		_poly(unit, [Vector2(-6, -28), Vector2(6, -28), Vector2(4, -33), Vector2(-4, -33)], Color("525754"))
-		unit.draw_line(Vector2(4, -15), Vector2(19 + swing * 4, -31), OUTLINE, 7.0)
-		unit.draw_line(Vector2(5, -15), Vector2(19 + swing * 4, -31), Color("626d6d"), 4.4)
-		unit.draw_circle(Vector2(19 + swing * 4, -31), 3.3, OUTLINE)
-		unit.draw_circle(Vector2(19 + swing * 4, -31), 1.8, Color("d8d6c8"))
-		unit.draw_line(Vector2(5, -13), Vector2(12, -21), WOOD, 2.2)
-		unit.draw_circle(Vector2(-11, -7), 3.3, Color("b57a3d"))
+		_poly(unit, [Vector2(-9, -19), Vector2(-5, -19), Vector2(5, -8), Vector2(2, -6)], Color("816043"), OUTLINE, 0.0)
+		_poly(unit, [Vector2(-15, -14), Vector2(-9, -15), Vector2(-7, -7), Vector2(-14, -6)], Color("b57a3d"))
+		unit.draw_line(Vector2(-13, -13), Vector2(-9, -13), GOLD, 1.1)
+		_hand_cannon(unit, team, -14.0, swing)
 	else:
 		_poly(unit, [Vector2(-7, -29), Vector2(7, -29), Vector2(5, -33), Vector2(-5, -33)], STEEL if armored else Color("756e5d"))
 		_crossbow(unit, Vector2(12 + swing * 2, -17), armored)
