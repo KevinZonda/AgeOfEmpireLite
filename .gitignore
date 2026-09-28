@@ -5,3 +5,5 @@
 assets/ui/command_icons/*.import
 assets/ui/command_icons/*.library.translation
 docs/openage
+__pycache__
+*.pyc
