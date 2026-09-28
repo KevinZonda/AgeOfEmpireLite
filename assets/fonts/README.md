@@ -1,4 +1,5 @@
-`unit_preview_sc.ttf` is a subset of Adobe Source Han Sans CN Regular 2.004.
-It contains the characters used by the unit preview screen and is renamed
-"Empire Preview Sans". The font is distributed under the SIL Open Font
-License 1.1 in `OFL.txt`.
+Noto Sans SC Regular is used as the default game UI font so Chinese labels render consistently on every platform.
+
+Source: https://github.com/notofonts/noto-cjk/blob/main/Sans/SubsetOTF/SC/NotoSansSC-Regular.otf
+
+License: SIL Open Font License 1.1 (see `OFL.txt`).

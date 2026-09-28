@@ -43,6 +43,14 @@ func _run() -> void:
 	page.producer_landmark = "zh_clocktower"
 	page._refresh_selection()
 	assert(float(page._resolved_stats()["hp"]) > normal_ram_hp, "landmark production bonus should update unit stats")
+	page.selected_kind = "bombard"
+	page.age = 4
+	page._refresh_selection()
+	var preview_font: Font = page.stats_box.get_child(0).get_theme_font("font")
+	for character in "远程护甲减伤攻城":
+		assert(preview_font.has_char(character.unicode_at(0)), "the UI font should contain every preview stat glyph")
+	var fallback_stats := RtsStatResolver.unit("English", "bombard", 1)
+	assert(fallback_stats["profiles"]["ranged"]["bonuses"][0]["source_label"] == "对建筑", "fallback attack bonuses should use readable Chinese labels")
 	var escape := InputEventKey.new()
 	escape.keycode = KEY_ESCAPE
 	escape.pressed = true

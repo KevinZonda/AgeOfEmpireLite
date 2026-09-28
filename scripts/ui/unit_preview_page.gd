@@ -90,10 +90,6 @@ var refresh_timer := 0.0
 func build(parent: Control, initial_civilization: String, button_style: Callable) -> void:
 	style_button = button_style
 	civilization = initial_civilization if GameData.CIVILIZATIONS.has(initial_civilization) else "English"
-	theme = Theme.new()
-	var preview_font := FontFile.new()
-	preview_font.data = FileAccess.get_file_as_bytes("res://assets/fonts/unit_preview_sc.ttf")
-	theme.default_font = preview_font
 	color = Color("100f0d")
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
