@@ -36,11 +36,21 @@ func _run() -> void:
 		var landmark: String = {"English": "议会厅", "French": "骑兵学校", "Chinese": "翰林院"}[civilization]
 		assert(labels.any(func(value: String) -> bool: return value.contains(landmark)), "civilization landmarks should come from the game data")
 		assert(game.tech_tree_civilization_choice.item_count == 3)
-		assert(game.tech_tree_page.age_scroll.horizontal_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED)
+		assert(game.tech_tree_page.age_scroll.horizontal_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO)
+		assert(game.tech_tree_page.building_columns[0] == "town_center")
+		assert(game.tech_tree_page.building_columns.size() == RtsTechTree.BUILD_MENU.size() + 1)
+		for age_row in game.tech_tree_page.age_pages:
+			assert(age_row.visible and age_row.get_child_count() == game.tech_tree_page.building_columns.size(), "every era should have one cell per building")
+		assert(game.tech_tree_page.age_pages[0].get_child(0).position.x == game.tech_tree_page.age_pages[1].get_child(0).position.x, "building columns should align between eras")
+		game.tech_tree_page.age_scroll.scroll_horizontal = 400
+		game.tech_tree_page.age_scroll.scroll_vertical = 200
+		assert(is_equal_approx(game.tech_tree_page.matrix_header.position.x, -400.0), "building headings should stay visible while scrolling")
+		assert(is_equal_approx(game.tech_tree_page.age_rail.position.y, -200.0), "era labels should stay visible while scrolling")
 		game.tech_tree_page.age_buttons[3].pressed.emit()
 		await process_frame
 		assert(game.tech_tree_page.selected_age == 4 and game.tech_tree_page.age_pages[3].visible)
-		assert(not game.tech_tree_page.age_pages[0].visible, "age tabs should show only one era")
+		assert(game.tech_tree_page.age_scroll.scroll_vertical > 200, "era buttons should jump down the matrix")
+		assert(game.tech_tree_page.age_pages[0].visible, "age tabs should jump within the full matrix")
 		game._close_tech_tree()
 		assert(game.tech_tree_overlay == null and game.menu_panel.visible)
 		assert(game.lobby_players[0]["civilization"] == civilization)
