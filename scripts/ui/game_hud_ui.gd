@@ -101,8 +101,11 @@ const BUILD_PAGES := [
 	{"title": "经济", "kinds": ["house", "lumber_camp", "mining_camp", "mill", "farm", "market", "dock", "age", "blacksmith", "monastery", "university", "wonder"]},
 	{"title": "军事", "kinds": ["barracks", "archery_range", "stable", "siege_workshop", "outpost", "keep", "", "", "palisade_wall", "stone_wall", "palisade_gate", "stone_gate"]},
 ]
+const COMMANDS_PER_PAGE := 12
 var game: Node2D
 var build_tab_bar: HBoxContainer
+var command_page := 0
+var command_selection_id := 0
 
 func _init(game_ref: Node2D) -> void:
 	game = game_ref
@@ -207,6 +210,7 @@ func _create_hud() -> void:
 	action_scroll.custom_minimum_size = Vector2(350, 190)
 	action_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	action_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	action_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	command_column.add_child(action_scroll)
 	game.action_bar = GridContainer.new()
 	game.action_bar.columns = 4
@@ -624,9 +628,15 @@ func _rebuild_actions() -> void:
 	game.hotkey_buttons.clear()
 	game.command_title.text = "命令"
 	build_tab_bar.hide()
-	(game.action_bar.get_parent() as ScrollContainer).vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
-	if game.selected.is_empty() or not is_instance_valid(game.selected[0]): return
+	if game.selected.is_empty() or not is_instance_valid(game.selected[0]):
+		command_page = 0
+		command_selection_id = 0
+		return
 	var item: Node2D = game.selected[0]
+	var selection_id := item.get_instance_id()
+	if selection_id != command_selection_id:
+		command_page = 0
+		command_selection_id = selection_id
 	game.action_bar.columns = 4
 	if item is RtsResource:
 		game.command_title.text = "采集方式"
@@ -645,6 +655,7 @@ func _rebuild_actions() -> void:
 	if item is RtsUnit: _build_unit_actions(item)
 	elif item is RtsBuilding: _build_building_actions(item)
 	_refresh_action_buttons()
+	if not build_tab_bar.visible: _paginate_actions()
 
 func _build_unit_actions(item: RtsUnit) -> void:
 	var keys := [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9]
@@ -667,7 +678,6 @@ func _build_unit_actions(item: RtsUnit) -> void:
 		game.build_page = posmod(game.build_page, pages.size())
 		var page: Dictionary = pages[game.build_page]
 		game.command_title.text = "村民 · 建造"
-		(game.action_bar.get_parent() as ScrollContainer).vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 		_show_build_tabs(pages)
 		for kind in page["kinds"]:
 			if kind.is_empty():
@@ -768,9 +778,7 @@ func _build_unit_actions(item: RtsUnit) -> void:
 	if not any_worker: _add_action("stop", "停止", {}, KEY_2, "order", func() -> void: game._stop_selected_units())
 
 func _show_build_tabs(pages: Array) -> void:
-	for child in build_tab_bar.get_children():
-		build_tab_bar.remove_child(child)
-		child.queue_free()
+	_clear_command_tabs()
 	build_tab_bar.show()
 	for index in pages.size():
 		var tab_index := index
@@ -790,6 +798,33 @@ func _show_build_tabs(pages: Array) -> void:
 	game._style_button(stop)
 	stop.pressed.connect(func() -> void: game._stop_selected_units())
 	build_tab_bar.add_child(stop)
+
+func _paginate_actions() -> void:
+	var actions: Array[Node] = game.action_bar.get_children()
+	var page_count := ceili(float(actions.size()) / COMMANDS_PER_PAGE)
+	if page_count <= 1: return
+	command_page = clampi(command_page, 0, page_count - 1)
+	var first := command_page * COMMANDS_PER_PAGE
+	for index in actions.size(): actions[index].visible = index >= first and index < first + COMMANDS_PER_PAGE
+	_clear_command_tabs()
+	build_tab_bar.show()
+	for index in page_count:
+		var page_index := index
+		var tab := Button.new()
+		tab.text = str(index + 1)
+		tab.tooltip_text = "命令第 %d 页" % (index + 1)
+		tab.custom_minimum_size = Vector2(26, 26)
+		game._style_button(tab, index == command_page)
+		tab.pressed.connect(func() -> void:
+			command_page = page_index
+			_rebuild_actions()
+		)
+		build_tab_bar.add_child(tab)
+
+func _clear_command_tabs() -> void:
+	for child in build_tab_bar.get_children():
+		build_tab_bar.remove_child(child)
+		child.queue_free()
 
 func _selected_has_ability(ability: Dictionary) -> bool:
 	if ability.has("civilization") and game.civilizations[0] != ability["civilization"]: return false
