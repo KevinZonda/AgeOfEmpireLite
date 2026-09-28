@@ -122,12 +122,8 @@ func _draw() -> void:
 	else:
 		for index in corners.size():
 			draw_line(corners[index], corners[(index + 1) % corners.size()], Color("f4dd89"), 1.5)
-	if diamond:
-		var center := size * 0.5
-		var radius := minf(size.x, size.y) * 0.5
-		draw_polyline(PackedVector2Array([center + Vector2(0, -radius), center + Vector2(radius, 0), center + Vector2(0, radius), center + Vector2(-radius, 0), center + Vector2(0, -radius)]), Color("c8b987"), 2.0)
-	else:
-		draw_rect(Rect2(Vector2.ZERO, size), Color("c8b987"), false, 2)
+	# The frame follows the square control; the projected terrain can remain a diamond.
+	draw_rect(Rect2(Vector2.ZERO, size), Color("c8b987"), false, 2)
 
 func _build_terrain_texture(terrain_map: RtsWorldMap) -> void:
 	var image := Image.create(terrain_map.grid_size.x, terrain_map.grid_size.y, false, Image.FORMAT_RGBA8)
