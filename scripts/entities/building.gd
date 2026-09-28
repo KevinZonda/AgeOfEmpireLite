@@ -112,7 +112,7 @@ func contains_icon_visual(world_point: Vector2, canvas: Transform2D) -> bool:
 	var height := isometric_height() * (0.25 + 0.75 * construction_ratio)
 	var terrain_lift := RtsIsoProjection.world_delta(canvas, Vector2(0, -foundation_height() * game.camera.zoom.x))
 	var screen_point := canvas.basis_xform(world_point - position - terrain_lift)
-	var center := Vector2(0, -height * game.camera.zoom.x - side * 0.5 + 1.0)
+	var center := Vector2(0, -height * game.camera.zoom.x - side * 0.5 - 9.0)
 	return Rect2(center - Vector2.ONE * side * 0.5, Vector2.ONE * side).has_point(screen_point)
 
 func isometric_height() -> float:
@@ -488,14 +488,14 @@ func _draw_isometric() -> void:
 	# Labels and status bars are drawn in screen space so they stay legible.
 	draw_set_transform_matrix(RtsIsoProjection.upright(canvas, terrain_lift))
 	var side := icon_size()
-	_draw_building_icon(Vector2(0, -height * game.camera.zoom.x - side * 0.5 + 1.0), side)
+	_draw_building_icon(Vector2(0, -height * game.camera.zoom.x - side * 0.5 - 9.0), side)
 	var font := ThemeDB.fallback_font
 	if font != null:
 		var label := display_label()
 		var label_width := font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 13).x
 		draw_string(font, Vector2(-label_width * 0.5, size().y * 0.28 + 22.0), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color.WHITE)
 	var bar_width := minf(72.0, size().x * 0.8)
-	var bar_y: float = minf(-height * game.camera.zoom.x - size().y * 0.25 - 16.0, -height * game.camera.zoom.x - side - 8.0)
+	var bar_y: float = minf(-height * game.camera.zoom.x - size().y * 0.25 - 16.0, -height * game.camera.zoom.x - side - 20.0)
 	draw_rect(Rect2(-bar_width * 0.5, bar_y, bar_width, 5), Color("422f2d"))
 	draw_rect(Rect2(-bar_width * 0.5, bar_y, bar_width * clampf(hp / max_hp, 0.0, 1.0), 5), Color("7fd47a"))
 	if not is_complete(): draw_arc(Vector2.ZERO, 14, 0, TAU * (1.0 - build_remaining / maxf(build_total, 0.1)), 20, Color.WHITE, 3)
@@ -750,12 +750,29 @@ func _draw_iso_roof(art_kind: String, nw: Vector2, ne: Vector2, se: Vector2, sw:
 				var tooth := start.lerp(finish, portion)
 				draw_line(tooth, tooth + lift * 0.13, masonry, 4.5)
 		return
+	if art_kind == "blacksmith":
+		var soot: Color = palette["roof_dark"]
+		draw_colored_polygon(PackedVector2Array([nw + lift, ne + lift, se + lift, sw + lift]), soot)
+		draw_polyline(PackedVector2Array([nw + lift, ne + lift, se + lift, sw + lift, nw + lift]), palette["timber"], 3.0)
+		for portion in [0.2, 0.5, 0.8]:
+			draw_line(nw.lerp(sw, portion) + lift, ne.lerp(se, portion) + lift, Color("99795c"), 1.4)
+		return
+	if art_kind == "mill":
+		var eave := lift
+		var apex := center + lift + RtsIsoProjection.world_delta(canvas, Vector2(0, -20.0 * game.camera.zoom.x))
+		var mill_roof: Color = palette["roof"]
+		draw_colored_polygon(PackedVector2Array([nw + eave, ne + eave, apex]), mill_roof.lightened(0.1))
+		draw_colored_polygon(PackedVector2Array([ne + eave, se + eave, apex]), palette["roof"])
+		draw_colored_polygon(PackedVector2Array([se + eave, sw + eave, apex]), palette["roof_dark"])
+		draw_line(sw + eave, se + eave, palette["trim"], 2.0)
+		return
 	var overhang := 1.1 if game.civilizations[owner_id] == "Chinese" else 1.06
 	var a := center + (nw - center) * overhang + lift
 	var b := center + (ne - center) * overhang + lift
 	var c := center + (se - center) * overhang + lift
 	var d := center + (sw - center) * overhang + lift
-	var rise := RtsIsoProjection.world_delta(canvas, Vector2(0, -(15.0 if art_kind in ["town_center", "palace", "wonder", "university", "monastery"] else 9.0) * game.camera.zoom.x))
+	var roof_height := 23.0 if art_kind in ["monastery", "wonder"] else 15.0 if art_kind in ["town_center", "palace", "university", "barracks"] else 9.0
+	var rise := RtsIsoProjection.world_delta(canvas, Vector2(0, -roof_height * game.camera.zoom.x))
 	var ridge_back := (a + b) * 0.5 + rise
 	var ridge_front := (d + c) * 0.5 + rise
 	var roof: Color = palette["roof"]
@@ -766,6 +783,15 @@ func _draw_iso_roof(art_kind: String, nw: Vector2, ne: Vector2, se: Vector2, sw:
 		b += upturn
 		c += upturn
 		d += upturn
+	if art_kind == "barracks":
+		var ridge_left := (a + d) * 0.5 + rise
+		var ridge_right := (b + c) * 0.5 + rise
+		draw_colored_polygon(PackedVector2Array([a, b, ridge_right, ridge_left]), roof.lightened(0.09))
+		draw_colored_polygon(PackedVector2Array([ridge_left, ridge_right, c, d]), roof)
+		draw_line(ridge_left, ridge_right, palette["trim"], 2.5)
+		draw_polyline(PackedVector2Array([a, ridge_left, d]), dark, 2.0)
+		draw_polyline(PackedVector2Array([b, ridge_right, c]), dark, 2.0)
+		return
 	draw_colored_polygon(PackedVector2Array([a, ridge_back, ridge_front, d]), roof.lightened(0.09))
 	draw_colored_polygon(PackedVector2Array([ridge_back, b, c, ridge_front]), roof)
 	draw_polyline(PackedVector2Array([a, ridge_back, b]), dark, 2.0)
@@ -875,7 +901,7 @@ func _draw_iso_landmark_crown(base: Vector2, palette: Dictionary, canvas: Transf
 	elif landmark_id in ["eng_kings_mill", "eng_abbey", "zh_spirit_way"]:
 		draw_line(top + Vector2(-5, 4), top + Vector2(5, 4), palette["trim"], 2.2)
 	else:
-		var accent := Color("c99657") if kind == "landmark" else game.player_color(owner_id)
+		var accent: Color = Color("c99657") if kind == "landmark" else game.player_color(owner_id)
 		draw_colored_polygon(PackedVector2Array([top, top + Vector2(10, 3), top + Vector2(0, 7)]), accent)
 
 func _draw_iso_fortification(nw: Vector2, ne: Vector2, se: Vector2, sw: Vector2, lift: Vector2, palette: Dictionary) -> void:
