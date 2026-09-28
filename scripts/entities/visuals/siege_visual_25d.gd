@@ -82,7 +82,7 @@ static func _draw_trebuchet(unit: Node2D, radius: float, owner_color: Color, swi
 	unit.draw_colored_polygon(PackedVector2Array([
 		Vector2(-13.0, -24.0), Vector2(-3.0, -24.0),
 		Vector2(-5.0, -14.0), Vector2(-12.0, -14.0)
-	]), Color("73674d"))
+	]), owner_color.darkened(0.26))
 	unit.draw_line(tip, tip + Vector2(2.0, 5.0), Color("d3bf93"), 1.4)
 	unit.draw_circle(tip + Vector2(2.0, 6.0), 3.2, Color("77776d"))
 	unit.draw_rect(Rect2(-5.0, -9.0, 10.0, 2.0), owner_color.darkened(0.15))
@@ -117,7 +117,7 @@ static func _draw_springald(unit: Node2D, radius: float, owner_color: Color, swi
 	unit.draw_colored_polygon(PackedVector2Array([
 		Vector2(-3.0, -29.0), Vector2(0.0, -35.0), Vector2(3.0, -29.0)
 	]), Color("c6cac2"))
-	unit.draw_rect(Rect2(-5.0, -13.0, 10.0, 2.5), owner_color.darkened(0.13))
+	unit.draw_rect(Rect2(-8.0, -13.0, 16.0, 3.5), owner_color.darkened(0.13))
 
 static func _draw_bombard(unit: Node2D, radius: float, owner_color: Color, swing: float) -> void:
 	# A short, heavy hand cannon rides a low push cart.
@@ -136,7 +136,7 @@ static func _draw_bombard(unit: Node2D, radius: float, owner_color: Color, swing
 	unit.draw_line(Vector2(-5.0, -21.0), Vector2(12.0, -21.0), Color("c3a56f"), 1.5)
 	unit.draw_circle(Vector2(16.0 + swing * 2.0, -17.0), 5.0, Color("5a5444"))
 	unit.draw_circle(Vector2(16.0 + swing * 2.0, -17.0), 2.6, Color("252927"))
-	unit.draw_line(Vector2(-7.0, -13.0), Vector2(5.0, -13.0), owner_color, 2.1)
+	unit.draw_line(Vector2(-9.0, -13.0), Vector2(8.0, -13.0), owner_color, 4.0)
 
 static func _draw_cannon(unit: Node2D, radius: float, owner_color: Color, swing: float) -> void:
 	# Long iron barrel, large spoked wheels and rear trail, unlike the bombard.
@@ -145,7 +145,7 @@ static func _draw_cannon(unit: Node2D, radius: float, owner_color: Color, swing:
 		Vector2(-14.0, -15.0), Vector2(12.0, -19.0),
 		Vector2(17.0, -12.0), Vector2(-10.0, -9.0)
 	]), Color("966e43"))
-	unit.draw_line(Vector2(-13.0, -12.0), Vector2(12.0, -15.0), owner_color.darkened(0.22), 2.2)
+	unit.draw_line(Vector2(-13.0, -12.0), Vector2(12.0, -15.0), owner_color.darkened(0.22), 3.6)
 	unit.draw_colored_polygon(PackedVector2Array([
 		Vector2(-10.0, -24.0), Vector2(20.0 + swing * 2.0, -28.0),
 		Vector2(22.0 + swing * 2.0, -20.0), Vector2(-10.0, -16.0)

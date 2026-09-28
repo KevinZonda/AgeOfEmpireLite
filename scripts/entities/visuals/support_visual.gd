@@ -63,7 +63,7 @@ static func _staff(canvas: CanvasItem, base: Vector2, has_relic: bool, swing: fl
 
 static func _match_2d(canvas: CanvasItem, kind: String, team: Color, gait: float, swing: float, gather_kind: String, has_relic: bool, braced: bool) -> void:
 	_boots(canvas, Vector2(-5, 6), Vector2(5, 6), gait)
-	var cloth := Color("997b4f") if kind == "villager" else team.darkened(0.18) if kind == "spearman" else Color("6a6262")
+	var cloth := team.darkened(0.27) if kind == "monk" else team.darkened(0.18)
 	_poly(canvas, [Vector2(-8, -7), Vector2(8, -7), Vector2(9, 8), Vector2(-9, 8)], cloth)
 	canvas.draw_line(Vector2(-8, 3), Vector2(8, 3), Color("d4b06a") if kind == "monk" else Color("634733"), 1.7)
 	canvas.draw_circle(Vector2(0, -11), 6.7, EDGE)
@@ -85,7 +85,7 @@ static func _match_2d(canvas: CanvasItem, kind: String, team: Color, gait: float
 
 static func _match_25d(canvas: CanvasItem, kind: String, team: Color, gait: float, swing: float, gather_kind: String, has_relic: bool, braced: bool) -> void:
 	_boots(canvas, Vector2(-5, -4), Vector2(5, -4), gait)
-	var cloth := Color("a48556") if kind == "villager" else team.darkened(0.18) if kind == "spearman" else Color("716a68")
+	var cloth := team.darkened(0.27) if kind == "monk" else team.darkened(0.18)
 	_poly(canvas, [Vector2(-8, -20), Vector2(8, -20), Vector2(9, -4), Vector2(-9, -4)], cloth)
 	if kind == "monk": _poly(canvas, [Vector2(-8, -11), Vector2(8, -11), Vector2(12, -2), Vector2(-12, -2)], cloth.darkened(0.09))
 	canvas.draw_line(Vector2(-8, -10), Vector2(8, -10), GOLD if kind == "monk" else Color("684b35"), 1.5)

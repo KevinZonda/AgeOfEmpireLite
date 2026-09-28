@@ -178,7 +178,7 @@ static func _infantry_2d(unit: CanvasItem, kind: String, team: Color, gait: floa
 	var armored := kind == "arbaletrier"
 	var official := kind == "imperial_official"
 	var trader := kind == "trader"
-	var coat := Color("983e36") if official else Color("ad8552") if trader else Color("53636b") if kind == "handcannoneer" else team.darkened(0.14)
+	var coat := team.darkened(0.2) if official else team.darkened(0.14)
 	unit.draw_line(Vector2(-5, 5), Vector2(-6 + gait, 15), OUTLINE, 5.0)
 	unit.draw_line(Vector2(5, 5), Vector2(6 - gait, 15), OUTLINE, 5.0)
 	unit.draw_line(Vector2(-5, 5), Vector2(-6 + gait, 14), LEATHER, 2.6)
@@ -219,7 +219,7 @@ static func _infantry_25d(unit: CanvasItem, kind: String, team: Color, gait: flo
 	var armored := kind == "arbaletrier"
 	var official := kind == "imperial_official"
 	var trader := kind == "trader"
-	var coat := Color("a4473d") if official else Color("ad8552") if trader else Color("52636a") if kind == "handcannoneer" else team.darkened(0.17)
+	var coat := team.darkened(0.22) if official else team.darkened(0.17)
 	if trader:
 		_poly(unit, [Vector2(-13, -20), Vector2(9, -20), Vector2(13, -5), Vector2(-14, -5)], LEATHER)
 		unit.draw_rect(Rect2(-13, -18, 7, 10), WOOD)

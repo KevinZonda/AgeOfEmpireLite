@@ -665,8 +665,7 @@ func is_enemy(a: int, b: int) -> bool:
 func player_color(owner_id: int) -> Color:
 	if use_lobby_setup and owner_id >= 0 and owner_id < lobby_players.size():
 		return PLAYER_COLORS[clampi(int(lobby_players[owner_id].get("color", owner_id)), 0, PLAYER_COLORS.size() - 1)]
-	if players.size() <= 2: return GameData.CIVILIZATIONS[civilizations[owner_id]]["color"]
-	return [Color("4e9bea"), Color("e65852"), Color("4ac59a"), Color("e5ae4b")][owner_id]
+	return PLAYER_COLORS[posmod(owner_id, PLAYER_COLORS.size())]
 
 func highest_enemy_age(owner_id: int) -> int:
 	var age := 1

@@ -71,11 +71,11 @@ static func _trebuchet(unit: Node2D, radius: float, team_color: Color, swing: fl
 	unit.draw_line(Vector2(11, 7), Vector2(0, -12), WOOD_DARK, 5.0)
 	unit.draw_line(Vector2(-10, 6), Vector2(0, -10), WOOD_LIGHT, 2.2)
 	unit.draw_line(Vector2(10, 6), Vector2(0, -10), WOOD_LIGHT, 2.2)
-	unit.draw_line(Vector2(-8, 1), Vector2(8, 1), team_color.darkened(0.2), 2.5)
+	unit.draw_line(Vector2(-10, 2), Vector2(10, 2), team_color.darkened(0.2), 3.5)
 	var arm_end := Vector2(13 - swing * 3.0, -21 + swing * 3.0)
 	unit.draw_line(Vector2(-8, 11), arm_end, WOOD_DARK, 5.0)
 	unit.draw_line(Vector2(-7, 9), arm_end, WOOD_LIGHT, 2.2)
-	_poly(unit, [Vector2(-13, 7), Vector2(-5, 6), Vector2(-4, 14), Vector2(-12, 15)], IRON)
+	_poly(unit, [Vector2(-13, 7), Vector2(-5, 6), Vector2(-4, 14), Vector2(-12, 15)], team_color.darkened(0.25))
 	unit.draw_line(arm_end, arm_end + Vector2(2, 3), ROPE, 1.1)
 	unit.draw_circle(arm_end + Vector2(2, 4), 3.1, Color("5c5f58"))
 	unit.draw_circle(Vector2(0, -11), 2.5, IRON)
@@ -90,7 +90,8 @@ static func _mangonel(unit: Node2D, radius: float, team_color: Color, swing: flo
 	unit.draw_line(Vector2(0, 7), Vector2(5 + swing * 2.0, -14 - swing * 2.0), WOOD_LIGHT, 2.5)
 	_poly(unit, [Vector2(-1 + swing * 2.0, -13 - swing * 2.0), Vector2(11 + swing * 2.0, -14 - swing * 2.0), Vector2(9 + swing * 2.0, -19 - swing * 2.0), Vector2(1 + swing * 2.0, -19 - swing * 2.0)], WOOD_DARK)
 	unit.draw_circle(Vector2(5 + swing * 2.0, -16 - swing * 2.0), 3.4, Color("686a61"))
-	unit.draw_line(Vector2(-9, -9), Vector2(9, -9), team_color, 1.5)
+	unit.draw_line(Vector2(-9, -9), Vector2(9, -9), team_color, 3.2)
+	unit.draw_rect(Rect2(-8, 4, 16, 4), team_color.darkened(0.18))
 
 static func _springald(unit: Node2D, radius: float, team_color: Color, swing: float) -> void:
 	# Oversized horizontal bow and one heavy central bolt.
@@ -103,6 +104,7 @@ static func _springald(unit: Node2D, radius: float, team_color: Color, swing: fl
 	unit.draw_line(Vector2(0, 7), Vector2(0, -21), IRON_LIGHT, 2.1)
 	_poly(unit, [Vector2(-3, -18), Vector2(0, -24), Vector2(3, -18)], IRON)
 	unit.draw_circle(Vector2(0, -10), 2.3, team_color)
+	unit.draw_line(Vector2(-12, -13), Vector2(12, -13), team_color.darkened(0.18), 2.5)
 
 static func _bombard(unit: Node2D, radius: float, team_color: Color, swing: float) -> void:
 	# Hand-pushed bombard: short bronze barrel, broad muzzle and rear handles.
@@ -116,7 +118,8 @@ static func _bombard(unit: Node2D, radius: float, team_color: Color, swing: floa
 	unit.draw_rect(Rect2(-9, -17 - swing * 1.5, 18, 5), Color("8f744e"))
 	unit.draw_line(Vector2(-7, -16 - swing * 1.5), Vector2(7, -16 - swing * 1.5), Color("d2b576"), 1.4)
 	unit.draw_circle(Vector2(0, -17 - swing * 1.5), 3.2, IRON)
-	unit.draw_rect(Rect2(-5, 3, 10, 3), team_color.darkened(0.15))
+	unit.draw_rect(Rect2(-8, 3, 16, 4), team_color.darkened(0.15))
+	unit.draw_rect(Rect2(-8, -17 - swing * 1.5, 16, 2), team_color.darkened(0.18))
 
 static func _cannon(unit: Node2D, radius: float, team_color: Color, swing: float) -> void:
 	# Long iron cannon on large spoked wheels and a tapered wooden trail.

@@ -36,7 +36,7 @@ static func _poly(canvas: CanvasItem, points: Array, fill: Color, stroke: Color 
 
 static func _infantry(canvas: CanvasItem, kind: String, team: Color, gait: float, swing: float, iso: bool) -> void:
 	var y := -14.0 if iso else 0.0
-	var coat := team.darkened(0.12) if kind == "zhuge_nu" else Color("835141")
+	var coat := team.darkened(0.12) if kind == "zhuge_nu" else team.darkened(0.2)
 	# Boots, short padded coat, belt, face and a low Chinese helmet.
 	for side in [-1.0, 1.0]:
 		var x: float = side * 5.0
