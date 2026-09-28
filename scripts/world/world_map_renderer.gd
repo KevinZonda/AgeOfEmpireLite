@@ -47,6 +47,7 @@ static func grass_vertex_colors(map: RtsWorldMap) -> PackedColorArray:
 				var east_slope := (visual_vertex_height(map, x + 1, y) - visual_vertex_height(map, x - 1, y)) / (2.0 * RtsWorldMap.CELL_SIZE)
 				var south_slope := (visual_vertex_height(map, x, y + 1) - visual_vertex_height(map, x, y - 1)) / (2.0 * RtsWorldMap.CELL_SIZE)
 				color *= clampf(0.98 - east_slope * 0.16 - south_slope * 0.12, 0.72, 1.15)
+				color.a = 1.0
 			colors[y * width + x] = color
 	return colors
 
