@@ -443,14 +443,9 @@ func _enable_research(tech_id: String) -> void:
 
 func _disable_research(tech_id: String) -> void:
 	selected_research.erase(tech_id)
-	var changed := true
-	while changed:
-		changed = false
-		for other_id in selected_research.keys():
-			if RtsTechTree.get_technology(other_id).get("requires", []).has(tech_id):
-				selected_research.erase(other_id)
-				changed = true
-				_disable_research(other_id)
+	for other_id in selected_research.keys():
+		if RtsTechTree.get_technology(other_id).get("requires", []).has(tech_id):
+			_disable_research(other_id)
 
 func _research_ids() -> Array[String]:
 	var result: Array[String] = []

@@ -15,6 +15,9 @@ func _run() -> void:
 	await process_frame
 	var page = game.unit_preview_page
 	assert(page != null and page.visible and not game.menu_panel.visible)
+	var preview_panel: Control = page.get_child(0)
+	assert(preview_panel.get_global_rect().end.x <= game.get_viewport_rect().size.x)
+	assert(preview_panel.get_global_rect().end.y <= game.get_viewport_rect().size.y)
 	assert(page.preview_unit is RtsUnit and page.preview_unit.kind == "villager")
 	assert(page.roster.has("battering_ram") and page.roster.has("siege_tower"))
 	page.selected_kind = "spearman"
@@ -34,6 +37,12 @@ func _run() -> void:
 	page.civilization_choice.item_selected.emit(chinese_index)
 	assert(page.roster.has("zhuge_nu") and page.roster.has("imperial_official"))
 	assert(not page.roster.has("longbow"))
+	page.selected_kind = "battering_ram"
+	page._refresh_selection()
+	var normal_ram_hp := float(page._resolved_stats()["hp"])
+	page.producer_landmark = "zh_clocktower"
+	page._refresh_selection()
+	assert(float(page._resolved_stats()["hp"]) > normal_ram_hp, "landmark production bonus should update unit stats")
 	var escape := InputEventKey.new()
 	escape.keycode = KEY_ESCAPE
 	escape.pressed = true
