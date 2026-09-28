@@ -10,8 +10,17 @@ func _run() -> void:
 	game.start_game("English", 4242)
 	await process_frame
 	assert(game.hud_bottom.get_rect().end.y <= game.get_viewport_rect().size.y, "bottom HUD should remain inside the default viewport")
-	assert(game.detail_label.get_parent().size.y >= 100.0, "selection details should use the available panel height")
+	assert(game.hud_ui.selection_summary.visible and not game.hud_ui.selection_details_scroll.visible, "selection should start with a compact summary")
 	var worker: RtsUnit = game.units[0]
+	game.selected.clear()
+	game.selected.append(worker)
+	game._update_hud()
+	assert(game.hud_ui.selection_summary.text.contains("工作速度"), "the compact summary should show the villager's current work")
+	game.hud_ui.selection_details_button.pressed.emit()
+	await process_frame
+	assert(game.hud_ui.selection_details_scroll.visible and game.hud_ui.selection_details_scroll.size.y >= 70.0, "full unit details should be readable on demand")
+	game.hud_ui.selection_details_button.pressed.emit()
+	game.selected.clear()
 	var scout: RtsUnit = game.spawn_unit(0, "scout", Vector2(800, 700))
 	var distant_worker: RtsUnit = game.spawn_unit(0, "villager", Vector2(2100, 820))
 	game.selected.clear()

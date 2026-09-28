@@ -14,12 +14,12 @@ func _run() -> void:
 	var center := minimap.size * 0.5
 	var panel_rect: Rect2 = game.hud_ui.minimap_panel.get_global_rect()
 	var map_rect: Rect2 = minimap.get_global_rect()
-	assert(map_rect.position.y < panel_rect.position.y, "the diamond should extend above its panel")
+	assert(map_rect.position.y >= panel_rect.position.y, "the default diamond should fit inside its panel")
 	assert(map_rect.position.x >= panel_rect.position.x and map_rect.end.x <= panel_rect.end.x, "the panel should reserve the diamond's full width")
 	assert(map_rect.end.y <= panel_rect.end.y, "the diamond should remain inside the screen's lower edge")
 	var information_panel: Control = game.hud_ui.minimap_anchor.get_parent().get_child(1)
 	assert(information_panel.get_global_rect().end.x <= map_rect.position.x, "the diamond should not cover the information panel")
-	assert(is_equal_approx(minimap.size.x * minimap.size.y * 0.5, float(game.minimap_size * game.minimap_size)), "2.5D should show the same map area as 2D")
+	assert(minimap.size.is_equal_approx(Vector2.ONE * game.minimap_size), "both projections should use the selected minimap footprint")
 	assert(minimap.world_to_map(Vector2.ZERO).is_equal_approx(Vector2(center.x, 0.0)), "the northwest corner should be the diamond's top point")
 	assert(minimap.world_to_map(game.world_size).is_equal_approx(Vector2(center.x, minimap.size.y)), "the southeast corner should be the diamond's bottom point")
 	for point in [Vector2.ZERO, game.world_size, game.world_size * Vector2(0.27, 0.63), game.world_size * 0.5]:
@@ -34,18 +34,17 @@ func _run() -> void:
 	outside_click.position = center
 	minimap._gui_input(outside_click)
 	assert(game.camera.position.distance_to(game.world_size * 0.5) < 1.0, "clicking the diamond center should locate the map center")
-	var overhang_point := center + Vector2(0, -minimap.size.y * 0.45)
-	assert(minimap._inside_map(overhang_point))
-	assert((minimap.get_global_transform_with_canvas() * overhang_point).y < panel_rect.position.y, "a clickable part of the map should protrude above the panel")
-	assert(game._selection_point_over_hud(minimap.get_global_transform_with_canvas() * overhang_point), "selection should not pass through the overhanging map")
-	assert(not game._selection_point_over_hud(minimap.get_global_transform_with_canvas() * Vector2(2, 2)), "empty corners of the diamond should leave the world interactive")
+	var tip_point := center + Vector2(0, -minimap.size.y * 0.45)
+	assert(minimap._inside_map(tip_point))
+	assert((minimap.get_global_transform_with_canvas() * tip_point).y >= game.hud_bottom.get_global_rect().position.y, "the default diamond should not cover the battlefield")
+	assert(game._selection_point_over_hud(minimap.get_global_transform_with_canvas() * tip_point), "selection should not pass through the minimap")
 	game.camera.position = game.world_size * 0.5
 	var protruding_click := InputEventMouseButton.new()
 	protruding_click.button_index = MOUSE_BUTTON_LEFT
 	protruding_click.pressed = true
-	protruding_click.position = minimap.get_global_transform_with_canvas() * overhang_point
+	protruding_click.position = minimap.get_global_transform_with_canvas() * tip_point
 	game.get_viewport().push_input(protruding_click, true)
-	assert(game.camera.position.distance_to(minimap.map_to_world(overhang_point)) < 1.0, "clicks on the protruding diamond should reach the minimap")
+	assert(game.camera.position.distance_to(minimap.map_to_world(tip_point)) < 1.0, "clicks on the diamond should reach the minimap")
 	game.minimap_size = 264
 	game.hud_ui._apply_minimap_size()
 	await process_frame
