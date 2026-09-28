@@ -1403,6 +1403,7 @@ func _toggle_view_mode(save_setting := false) -> void:
 	view_mode_25d = not view_mode_25d
 	world_map.isometric_view = view_mode_25d
 	world_map.queue_redraw()
+	minimap.queue_redraw()
 	var base_zoom := camera.zoom.x
 	camera.rotation = -PI / 4.0 if view_mode_25d else 0.0
 	camera.zoom = Vector2(base_zoom, base_zoom * 0.5 if view_mode_25d else base_zoom)

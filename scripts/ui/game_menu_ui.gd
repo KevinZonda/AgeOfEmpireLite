@@ -65,10 +65,12 @@ func _create_settings(parent: Control) -> void:
 	game._style_button(game.projection_choice)
 	_add_settings_option_row(display_tab, "视角", game.projection_choice)
 	game.ui_scale_choice = OptionButton.new()
+	game.ui_scale_choice.tooltip_text = "调整按钮、图标和面板大小；不改变地图与镜头。"
 	game.ui_scale_choice.custom_minimum_size.y = 42
 	game._style_button(game.ui_scale_choice)
 	_add_settings_option_row(display_tab, "界面缩放", game.ui_scale_choice)
 	game.text_scale_choice = OptionButton.new()
+	game.text_scale_choice.tooltip_text = "调整菜单、战斗界面和提示文字大小。"
 	for scale in game.TEXT_SCALE_OPTIONS: game.text_scale_choice.add_item("%d%%" % roundi(scale * 100.0))
 	game.text_scale_choice.custom_minimum_size.y = 42
 	game._style_button(game.text_scale_choice)
@@ -199,7 +201,7 @@ func _refresh_ui_scale_options() -> void:
 		wanted_scale = game.ui_scale_values[game.ui_scale_choice.selected]
 	var available_size: Vector2
 	if game.window_mode_choice.selected == 1 and DisplayServer.get_name() != "headless":
-		available_size = Vector2(DisplayServer.screen_get_usable_rect(game.get_window().current_screen).size)
+		available_size = Vector2(DisplayServer.screen_get_size(game.get_window().current_screen))
 	elif game.resolution_choice.selected >= 0 and game.resolution_choice.selected < game.resolution_values.size():
 		available_size = Vector2(game.resolution_values[game.resolution_choice.selected])
 	else:

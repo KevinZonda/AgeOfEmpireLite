@@ -23,29 +23,55 @@ func _process(delta: float) -> void:
 		update_timer = 0.15
 
 func world_to_map(world_point: Vector2) -> Vector2:
-	return Vector2(world_point.x / game.world_size.x * size.x, world_point.y / game.world_size.y * size.y)
+	var uv := Vector2(world_point.x / game.world_size.x, world_point.y / game.world_size.y)
+	if not game.view_mode_25d: return uv * size
+	var radius := minf(size.x, size.y) * 0.5
+	return size * 0.5 + Vector2(uv.x - uv.y, uv.x + uv.y - 1.0) * radius
 
 func map_to_world(map_point: Vector2) -> Vector2:
-	return Vector2(map_point.x / size.x * game.world_size.x, map_point.y / size.y * game.world_size.y).clamp(Vector2.ZERO, game.world_size)
+	if not game.view_mode_25d:
+		return Vector2(map_point.x / size.x * game.world_size.x, map_point.y / size.y * game.world_size.y).clamp(Vector2.ZERO, game.world_size)
+	var delta := (map_point - size * 0.5) / maxf(minf(size.x, size.y) * 0.5, 1.0)
+	var uv := Vector2((delta.x + delta.y + 1.0) * 0.5, (delta.y - delta.x + 1.0) * 0.5)
+	return (uv * game.world_size).clamp(Vector2.ZERO, game.world_size)
+
+func _inside_map(map_point: Vector2) -> bool:
+	if not game.view_mode_25d: return Rect2(Vector2.ZERO, size).has_point(map_point)
+	var delta := map_point - size * 0.5
+	return absf(delta.x) + absf(delta.y) <= minf(size.x, size.y) * 0.5
 
 func _gui_input(event: InputEvent) -> void:
 	if game == null or not game.started or game.paused or game.game_over: return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		if not _inside_map(event.position): return
 		game.camera.position = map_to_world(event.position)
 		accept_event()
 	elif event is InputEventMouseMotion and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+		if not _inside_map(event.position): return
 		game.camera.position = map_to_world(event.position)
 		accept_event()
 
 func _draw() -> void:
-	draw_rect(Rect2(Vector2.ZERO, size), Color("334934"))
+	var diamond: bool = game != null and game.view_mode_25d
+	if diamond:
+		var center := size * 0.5
+		var radius := minf(size.x, size.y) * 0.5
+		draw_colored_polygon(PackedVector2Array([center + Vector2(0, -radius), center + Vector2(radius, 0), center + Vector2(0, radius), center + Vector2(-radius, 0)]), Color("334934"))
+	else:
+		draw_rect(Rect2(Vector2.ZERO, size), Color("334934"))
 	if game == null or not game.started: return
 	var terrain_map: RtsWorldMap = game.world_map
 	if cached_seed != terrain_map.map_seed or cached_size != terrain_map.grid_size or terrain_texture == null:
 		_build_terrain_texture(terrain_map)
-	draw_texture_rect(terrain_texture, Rect2(Vector2.ZERO, size), false)
+	var texture_rect := Rect2(Vector2.ZERO, size)
+	if diamond:
+		var side := minf(size.x, size.y) / sqrt(2.0)
+		draw_set_transform(size * 0.5, PI / 4.0)
+		texture_rect = Rect2(Vector2.ONE * -side * 0.5, Vector2.ONE * side)
+	draw_texture_rect(terrain_texture, texture_rect, false)
 	if game.fog.active and game.fog.mask_texture != null:
-		draw_texture_rect(game.fog.mask_texture, Rect2(Vector2.ZERO, size), false)
+		draw_texture_rect(game.fog.mask_texture, texture_rect, false)
+	if diamond: draw_set_transform(Vector2.ZERO)
 	if game.objectives != null:
 		for site in game.objectives.sacred_sites:
 			var site_color := Color("f1dfa0")
@@ -84,9 +110,24 @@ func _draw() -> void:
 		world_to_map(inverse * viewport_size),
 		world_to_map(inverse * Vector2(0, viewport_size.y)),
 	])
-	for index in corners.size():
-		draw_line(corners[index], corners[(index + 1) % corners.size()], Color("f4dd89"), 1.5)
-	draw_rect(Rect2(Vector2.ZERO, size), Color("c8b987"), false, 2)
+	if diamond:
+		var center := size * 0.5
+		var radius := minf(size.x, size.y) * 0.5
+		var bounds := PackedVector2Array([center + Vector2(0, -radius), center + Vector2(radius, 0), center + Vector2(0, radius), center + Vector2(-radius, 0)])
+		for clipped in Geometry2D.intersect_polygons(corners, bounds):
+			if clipped.size() < 2: continue
+			var outline := clipped.duplicate()
+			outline.append(clipped[0])
+			draw_polyline(outline, Color("f4dd89"), 1.5)
+	else:
+		for index in corners.size():
+			draw_line(corners[index], corners[(index + 1) % corners.size()], Color("f4dd89"), 1.5)
+	if diamond:
+		var center := size * 0.5
+		var radius := minf(size.x, size.y) * 0.5
+		draw_polyline(PackedVector2Array([center + Vector2(0, -radius), center + Vector2(radius, 0), center + Vector2(0, radius), center + Vector2(-radius, 0), center + Vector2(0, -radius)]), Color("c8b987"), 2.0)
+	else:
+		draw_rect(Rect2(Vector2.ZERO, size), Color("c8b987"), false, 2)
 
 func _build_terrain_texture(terrain_map: RtsWorldMap) -> void:
 	var image := Image.create(terrain_map.grid_size.x, terrain_map.grid_size.y, false, Image.FORMAT_RGBA8)
