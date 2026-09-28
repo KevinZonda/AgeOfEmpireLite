@@ -62,12 +62,13 @@ UPGRADE_NAMES = {
 
 # Some upgrade images omit the rank word or use the source game's unit name.
 UPGRADE_ICON_OVERRIDES = {
+    "rank_man_at_arms_3": "升级到武士",
     "rank_man_at_arms_4": "升级到精锐武士",
     "rank_palace_guard_3": "升级到皇宫卫兵",
     "rank_grenadier_4": "升级到掷弹兵",
     "rank_arbaletrier_4": "升级到精锐弓弩手",
 }
-EARLY_UPGRADE_ICONS = {"rank_man_at_arms_2": "升级到武士"}
+EARLY_UPGRADE_ICONS = {"rank_man_at_arms_2": "升级到早期武士"}
 
 
 def definitions(path: str, constant: str) -> dict[str, str]:

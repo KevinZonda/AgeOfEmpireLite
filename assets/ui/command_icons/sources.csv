@@ -98,6 +98,7 @@ zh_gatehouse,tech,长城门楼
 zh_spirit_way,tech,皇陵
 rank_spearman_3,upgrade,升级到老练长矛兵
 rank_spearman_4,upgrade,升级到精锐长矛兵
+rank_man_at_arms_3,upgrade,升级到武士
 rank_man_at_arms_4,upgrade,升级到精锐武士
 rank_palace_guard_3,upgrade,升级到皇宫卫兵
 rank_palace_guard_4,upgrade,升级到精锐皇宫卫兵
@@ -116,4 +117,4 @@ rank_horseman_4,upgrade,升级到精锐骑手
 rank_knight_4,upgrade,升级到精锐骑士
 rank_royal_knight_3,upgrade,升级到老练皇家骑士
 rank_royal_knight_4,upgrade,升级到精锐皇家骑士
-rank_man_at_arms_2,upgrade,升级到武士
+rank_man_at_arms_2,upgrade,升级到早期武士
