@@ -1449,19 +1449,18 @@ func _update_iso_depths() -> void:
 			unit.z_index = clampi(roundi((unit.position.x + unit.position.y) * 0.5), 0, 2800) + (8 if is_instance_valid(unit.wall_host) else 0) if view_mode_25d else (3 if is_instance_valid(unit.wall_host) else 0)
 
 func _adjust_zoom(factor: float, screen_anchor := Vector2.INF) -> void:
+	var base_zoom := clampf(camera.zoom.x * factor, 0.7, 1.65)
+	if is_equal_approx(base_zoom, camera.zoom.x): return
 	if screen_anchor == Vector2.INF: screen_anchor = get_viewport_rect().size * 0.5
 	camera.force_update_scroll()
 	var anchor_world := get_viewport().get_canvas_transform().affine_inverse() * screen_anchor
-	var base_zoom := clampf(camera.zoom.x * factor, 0.7, 1.65)
 	camera.zoom = Vector2(base_zoom, base_zoom * 0.5 if view_mode_25d else base_zoom)
 	camera.force_update_scroll()
 	var shifted_world := get_viewport().get_canvas_transform().affine_inverse() * screen_anchor
 	camera.position += anchor_world - shifted_world
 	_clamp_camera_position()
-	if view_mode_25d:
-		world_map.queue_redraw()
-		fog.update_projection()
-		_redraw_projected_entities()
+	# Projection geometry depends on zoom.x / zoom.y, which stays fixed here.
+	# Camera2D scales the existing map, fog mesh and entity drawings itself.
 	queue_redraw()
 
 func _edge_pan_direction(screen_point: Vector2, viewport_size: Vector2) -> Vector2:
