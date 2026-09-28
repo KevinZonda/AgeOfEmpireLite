@@ -17,10 +17,11 @@ func _initialize() -> void:
 
 func _run() -> void:
 	var output := OS.get_environment("RTS_RENDER_OUTPUT")
+	if not OS.get_cmdline_user_args().is_empty(): output = OS.get_cmdline_user_args()[0]
 	if output.is_empty(): output = "res://.godot/landmark-rendering"
 	DirAccess.make_dir_recursive_absolute(output)
 	var viewport := SubViewport.new()
-	viewport.size = Vector2i(420, 400)
+	viewport.size = Vector2i(420, 480)
 	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	viewport.transparent_bg = false
 	root.add_child(viewport)
@@ -29,12 +30,12 @@ func _run() -> void:
 	viewport.add_child(context)
 	context.camera.enabled = false
 	context.add_child(context.camera)
-	var scale := 1.8
+	var scale := 1.65
 	context.camera.zoom = Vector2(scale, scale * 0.5)
-	viewport.canvas_transform = Transform2D(Vector2(0.70710678, 0.35355339) * scale, Vector2(-0.70710678, 0.35355339) * scale, Vector2(210, 288))
+	viewport.canvas_transform = Transform2D(Vector2(0.70710678, 0.35355339) * scale, Vector2(-0.70710678, 0.35355339) * scale, Vector2(210, 355))
 	var ids: Array = RtsLandmarkCatalog.LANDMARKS.keys()
 	ids.append_array(["wonder_English", "wonder_French", "wonder_Chinese"])
-	var sheet := Image.create(420 * 3, 400 * 7, false, Image.FORMAT_RGB8)
+	var sheet := Image.create(420 * 3, 480 * 7, false, Image.FORMAT_RGB8)
 	for i in ids.size():
 		var id: String = ids[i]
 		var wonder := id.begins_with("wonder_")
@@ -49,7 +50,7 @@ func _run() -> void:
 		assert(captured != null and not captured.is_empty())
 		captured.convert(Image.FORMAT_RGB8)
 		assert(captured.save_png(output.path_join(id + ".png")) == OK)
-		sheet.blit_rect(captured, Rect2i(Vector2i.ZERO, viewport.size), Vector2i(i % 3 * 420, i / 3 * 400))
+		sheet.blit_rect(captured, Rect2i(Vector2i.ZERO, viewport.size), Vector2i(i % 3 * 420, i / 3 * 480))
 		building.free()
 	assert(sheet.save_png(output.path_join("all.png")) == OK)
 	print("LANDMARK_RENDERING_OK 18 landmarks + 3 wonders: ", output)

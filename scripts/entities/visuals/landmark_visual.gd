@@ -9,6 +9,7 @@ var ordered_faces: Array[Dictionary] = []
 var dimensions := Vector2.ZERO
 var palette: Dictionary
 var base_z := 0.0
+var height_above_origin := 0.0
 
 func face(points: Array, color: Color) -> void:
 	faces.append({"points": PackedVector3Array(points), "color": color})
@@ -84,7 +85,8 @@ func block(u: float, v: float, width: float, depth: float, height: float, style:
 		hub.y += 0.04
 		disc(hub, 6, trim)
 		disc(hub + Vector3(0, 0.01, 0), 4.5, palette["roof_dark"])
-		face([hub + Vector3(-0.5, 0.02, -0.5), hub + Vector3(2.8, 0.02, -0.5), hub + Vector3(2.8, 0.02, 0.5), hub + Vector3(0.5, 0.02, 0.5), hub + Vector3(0.5, 0.02, 3.5), hub + Vector3(-0.5, 0.02, 3.5)], trim)
+		face([hub + Vector3(-0.5, 0.02, -0.5), hub + Vector3(2.8, 0.02, -0.5), hub + Vector3(2.8, 0.02, 0.5), hub + Vector3(-0.5, 0.02, 0.5)], trim)
+		face([hub + Vector3(-0.5, 0.02, 0), hub + Vector3(0.5, 0.02, 0), hub + Vector3(0.5, 0.02, 3.5), hub + Vector3(-0.5, 0.02, 3.5)], trim)
 
 func pyramid(a: Vector3, b: Vector3, c: Vector3, d: Vector3, rise: float, roof: Color) -> void:
 	var peak := (a + c) * 0.5 + Vector3(0, 0, rise)
@@ -106,7 +108,10 @@ func column(u: float, v: float, height: float) -> void:
 func _insert(tree: Dictionary, polygon: Dictionary) -> Dictionary:
 	var points: PackedVector3Array = polygon["points"]
 	if tree.is_empty():
-		var normal := (points[1] - points[0]).cross(points[2] - points[0]).normalized()
+		var normal := Vector3.ZERO
+		for i in range(2, points.size()):
+			normal = (points[i - 1] - points[0]).cross(points[i] - points[0]).normalized()
+			if not normal.is_zero_approx(): break
 		if normal.is_zero_approx(): return tree
 		return {"normal": normal, "distance": normal.dot(points[0]), "same": [polygon], "front": {}, "back": {}}
 	var front: Array = []
@@ -149,6 +154,10 @@ func _traverse(tree: Dictionary, toward_camera: Vector3) -> void:
 	_traverse(tree["back"] if front_first else tree["front"], toward_camera)
 
 func prepare() -> void:
+	height_above_origin = 0.0
+	for polygon in faces:
+		for p in polygon["points"]:
+			height_above_origin = maxf(height_above_origin, p.z - (p.x + p.y) * sqrt(0.125))
 	var tree: Dictionary = {}
 	for polygon in faces: tree = _insert(tree, polygon)
 	ordered_faces.clear()

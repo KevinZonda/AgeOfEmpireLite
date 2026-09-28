@@ -133,12 +133,7 @@ func isometric_height() -> float:
 
 func _landmark_extra_height() -> float:
 	if kind not in ["landmark", "wonder"]: return 0.0
-	var canvas := get_viewport().get_canvas_transform()
-	var top := 0.0
-	for polygon in _landmark_geometry().projected_faces(canvas, game.camera.zoom.x, Vector2.ZERO):
-		for point in polygon["points"]:
-			top = minf(top, canvas.basis_xform(point).y)
-	return -top / game.camera.zoom.x
+	return _landmark_geometry().height_above_origin
 
 func _visual_kind() -> String:
 	if kind != "landmark": return kind
@@ -168,9 +163,11 @@ func contains_isometric_visual(world_point: Vector2, canvas: Transform2D) -> boo
 	var se := bounds.end
 	var sw := Vector2(bounds.position.x, bounds.end.y)
 	var terrain_lift := RtsIsoProjection.world_delta(canvas, Vector2(0, -foundation_height() * game.camera.zoom.x))
-	var lift := terrain_lift + RtsIsoProjection.world_delta(canvas, Vector2(0, -isometric_height() * game.camera.zoom.x))
+	var construction_ratio := 1.0 - build_remaining / maxf(build_total, 0.1)
+	var height := isometric_height() * (0.25 + 0.75 * construction_ratio)
+	var lift := terrain_lift + RtsIsoProjection.world_delta(canvas, Vector2(0, -height * game.camera.zoom.x))
 	var local_point := world_point - position
-	if not kind in ["farm", "palisade_wall", "stone_wall", "palisade_gate", "stone_gate"]:
+	if not kind in ["landmark", "wonder", "farm", "barracks", "archery_range", "stable", "palisade_wall", "stone_wall", "palisade_gate", "stone_gate"]:
 		var center := (nw + ne + se + sw) * 0.25
 		var overhang := 1.1 if game.civilizations[owner_id] == "Chinese" else 1.06
 		var a := center + (nw - center) * overhang + lift
@@ -189,12 +186,28 @@ func contains_isometric_visual(world_point: Vector2, canvas: Transform2D) -> boo
 		PackedVector2Array([sw + lift, se + lift, se + terrain_lift, sw + terrain_lift]),
 	]:
 		if Geometry2D.is_point_in_polygon(local_point, polygon): return true
-	if (kind == "landmark" or kind == "wonder") and is_complete():
-		var roof_center := (nw + ne + se + sw) * 0.25 + lift
-		var top := roof_center + RtsIsoProjection.world_delta(canvas, Vector2(0, -_landmark_extra_height() * game.camera.zoom.x))
-		var half_width := (ne - nw).length() * 0.36
-		var tower_hit := PackedVector2Array([roof_center + Vector2(-half_width, 8), roof_center + Vector2(half_width, 8), top + Vector2(half_width, -8), top + Vector2(-half_width, -8)])
-		if Geometry2D.is_point_in_polygon(local_point, tower_hit): return true
+	if kind in ["barracks", "archery_range"] and construction_ratio >= 0.65:
+		var floor_lift := terrain_lift + (lift - terrain_lift) * 0.18
+		var towers: Array = [[0.14, 0.75, 0.15, 0.17, 32.0], [0.72, 0.75, 0.15, 0.17, 32.0]] if kind == "barracks" else [[0.76, 0.09, 0.18, 0.24, 38.0]]
+		for tower in towers:
+			var u: float = tower[0]
+			var v: float = tower[1]
+			var width: float = tower[2]
+			var depth: float = tower[3]
+			var up := RtsIsoProjection.world_delta(canvas, Vector2(0, -float(tower[4]) * game.camera.zoom.x))
+			var corners := PackedVector2Array([
+				_military_point(nw, ne, sw, u, v) + floor_lift,
+				_military_point(nw, ne, sw, u + width, v) + floor_lift,
+				_military_point(nw, ne, sw, u + width, v + depth) + floor_lift,
+				_military_point(nw, ne, sw, u, v + depth) + floor_lift,
+			])
+			var hull_points := PackedVector2Array(corners)
+			for corner in corners: hull_points.append(corner + up)
+			hull_points.append(_military_point(nw, ne, sw, u + width * 0.5, v + depth * 0.5) + floor_lift + up + RtsIsoProjection.world_delta(canvas, Vector2(0, -16.0 * game.camera.zoom.x)))
+			if Geometry2D.is_point_in_polygon(local_point, Geometry2D.convex_hull(hull_points)): return true
+	if kind in ["landmark", "wonder"] and construction_ratio >= 0.65:
+		for polygon in _landmark_geometry().projected_faces(canvas, game.camera.zoom.x, lift):
+			if Geometry2D.is_point_in_polygon(local_point, polygon["points"]): return true
 	return false
 
 func is_complete() -> bool:
@@ -466,7 +479,7 @@ func _draw_isometric() -> void:
 	var body_bounds := bounds
 	if art_kind == "monastery" and kind != "landmark":
 		body_bounds = Rect2(Vector2(-size().x * 0.34, -size().y * 0.5), Vector2(size().x * 0.68, size().y))
-	var open_yard := kind != "landmark" and art_kind in ["archery_range", "stable", "market", "dock", "lumber_camp", "mining_camp", "scout_camp"]
+	var open_yard := kind != "landmark" and art_kind in ["barracks", "archery_range", "stable", "market", "dock", "lumber_camp", "mining_camp", "scout_camp"]
 	var palette := _architecture_palette()
 	var color: Color = palette["wall"]
 	var construction_ratio := 1.0 - build_remaining / maxf(build_total, 0.1)
@@ -568,7 +581,10 @@ func _draw_topdown_architecture(bounds: Rect2, palette: Dictionary) -> void:
 			draw_rect(Rect2(x - 3, roof_bounds.end.y - 3, 6, 5), trim)
 		draw_rect(Rect2(-5, -5, 10, 10), dark)
 		return
-	if art_kind in ["archery_range", "stable", "market", "dock", "lumber_camp", "mining_camp", "scout_camp"]:
+	if art_kind in ["barracks", "archery_range", "stable"]:
+		_draw_topdown_military_structure(art_kind, roof_bounds, palette)
+		return
+	if art_kind in ["market", "dock", "lumber_camp", "mining_camp", "scout_camp"]:
 		_draw_topdown_open_structure(art_kind, roof_bounds, palette)
 		return
 	var top_left := roof_bounds.position
@@ -650,6 +666,70 @@ func _draw_topdown_open_structure(art_kind: String, roof_bounds: Rect2, palette:
 			draw_colored_polygon(PackedVector2Array([center + Vector2(-13, 7), center + Vector2(0, -12), center + Vector2(13, 7)]), Color("a98458"))
 			draw_circle(center + Vector2(0, 14), 3.0, Color("d88a47"))
 
+func _military_rect(bounds: Rect2, u: float, v: float, width: float, depth: float) -> Rect2:
+	return Rect2(bounds.position + bounds.size * Vector2(u, v), bounds.size * Vector2(width, depth))
+
+func _draw_topdown_military_roof(box: Rect2, palette: Dictionary, ridge_along_width := true) -> void:
+	var roof: Color = palette["roof"]
+	var dark: Color = palette["roof_dark"]
+	var trim: Color = palette["trim"]
+	draw_rect(box, roof)
+	draw_rect(box, dark, false, 1.6)
+	if ridge_along_width:
+		draw_line(Vector2(box.position.x + 2, box.get_center().y), Vector2(box.end.x - 2, box.get_center().y), trim, 2.0)
+	else:
+		draw_line(Vector2(box.get_center().x, box.position.y + 2), Vector2(box.get_center().x, box.end.y - 2), trim, 2.0)
+
+func _draw_topdown_military_structure(art_kind: String, bounds: Rect2, palette: Dictionary) -> void:
+	var timber: Color = palette["timber"]
+	var trim: Color = palette["trim"]
+	var wall: Color = palette["wall"]
+	draw_rect(bounds, Color("a99b77"))
+	for portion in [0.16, 0.37, 0.58, 0.79]:
+		var y := lerpf(bounds.position.y, bounds.end.y, portion)
+		draw_line(Vector2(bounds.position.x, y), Vector2(bounds.end.x, y), Color(timber, 0.28), 1.0)
+	match art_kind:
+		"barracks":
+			_draw_topdown_military_roof(_military_rect(bounds, 0.08, 0.07, 0.84, 0.27), palette)
+			_draw_topdown_military_roof(_military_rect(bounds, 0.08, 0.28, 0.23, 0.46), palette, false)
+			_draw_topdown_military_roof(_military_rect(bounds, 0.69, 0.28, 0.23, 0.46), palette, false)
+			for u in [0.22, 0.78]:
+				var tower := _military_rect(bounds, u - 0.1, 0.72, 0.2, 0.2)
+				draw_rect(tower, palette["roof_dark"])
+				draw_rect(tower, trim, false, 2.0)
+			var yard := _military_rect(bounds, 0.35, 0.42, 0.3, 0.39)
+			for u in [0.42, 0.58]:
+				var target := bounds.position + bounds.size * Vector2(u, 0.53)
+				draw_line(target, target + Vector2(0, 11), timber, 2.0)
+				draw_line(target + Vector2(-4, 5), target + Vector2(4, 5), timber, 1.6)
+				draw_circle(target, 2.5, wall)
+			draw_line(yard.position + Vector2(0, yard.size.y), yard.end, trim, 2.0)
+		"archery_range":
+			_draw_topdown_military_roof(_military_rect(bounds, 0.06, 0.07, 0.7, 0.27), palette)
+			_draw_topdown_military_roof(_military_rect(bounds, 0.06, 0.29, 0.22, 0.45), palette, false)
+			var tower := _military_rect(bounds, 0.72, 0.1, 0.22, 0.24)
+			draw_rect(tower, palette["roof_dark"])
+			draw_rect(tower, trim, false, 2.0)
+			for u in [0.4, 0.59, 0.78]:
+				var target := bounds.position + bounds.size * Vector2(u, 0.57)
+				draw_line(target + Vector2(0, 5), target + Vector2(0, 13), timber, 1.6)
+				draw_circle(target, 5.2, wall)
+				draw_circle(target, 3.3, Color("ad654a"))
+				draw_circle(target, 1.4, trim)
+				draw_line(target + Vector2(0, 14), target + Vector2(0, 20), trim, 1.2)
+		"stable":
+			_draw_topdown_military_roof(_military_rect(bounds, 0.06, 0.06, 0.88, 0.3), palette)
+			_draw_topdown_military_roof(_military_rect(bounds, 0.06, 0.32, 0.24, 0.38), palette, false)
+			_draw_topdown_military_roof(_military_rect(bounds, 0.7, 0.72, 0.22, 0.18), palette)
+			var paddock := _military_rect(bounds, 0.34, 0.43, 0.55, 0.43)
+			draw_rect(paddock, timber, false, 2.0)
+			for u in [0.46, 0.74]:
+				var stall := bounds.position + bounds.size * Vector2(u, 0.47)
+				draw_line(stall, stall + Vector2(0, 11), timber, 1.5)
+			var horse := bounds.position + bounds.size * Vector2(0.59, 0.66)
+			draw_colored_polygon(PackedVector2Array([horse + Vector2(-7, -3), horse + Vector2(5, -3), horse + Vector2(8, 1), horse + Vector2(-5, 4)]), Color("765039"))
+			draw_circle(horse + Vector2(9, 0), 2.5, Color("765039"))
+
 func _draw_topdown_landmark(bounds: Rect2, palette: Dictionary) -> void:
 	var forms: Array = []
 	if kind == "wonder":
@@ -705,7 +785,10 @@ func _draw_iso_architecture(art_kind: String, nw: Vector2, ne: Vector2, se: Vect
 	if art_kind.ends_with("_wall") or art_kind.ends_with("_gate"):
 		_draw_iso_fortification(nw, ne, se, sw, lift, palette)
 		return
-	if kind != "landmark" and art_kind in ["archery_range", "stable", "market", "dock", "lumber_camp", "mining_camp", "scout_camp"]:
+	if kind != "landmark" and art_kind in ["barracks", "archery_range", "stable"]:
+		_draw_iso_military_structure(art_kind, nw, ne, sw, lift, palette, canvas)
+		return
+	if kind != "landmark" and art_kind in ["market", "dock", "lumber_camp", "mining_camp", "scout_camp"]:
 		_draw_iso_open_structure(art_kind, nw, ne, se, sw, lift, palette, canvas)
 		return
 	var timber: Color = palette["timber"]
@@ -812,6 +895,121 @@ func _draw_iso_open_structure(art_kind: String, nw: Vector2, ne: Vector2, se: Ve
 			draw_circle(ore_point + Vector2(-2, -2), 2.0, Color("bbb4a0"))
 	if kind == "landmark":
 		_draw_iso_landmark_crown((back_left + back_right) * 0.5 + eave, palette, canvas)
+
+func _military_point(nw: Vector2, ne: Vector2, sw: Vector2, u: float, v: float) -> Vector2:
+	return nw + (ne - nw) * u + (sw - nw) * v
+
+func _draw_iso_military_block(nw: Vector2, ne: Vector2, sw: Vector2, floor_lift: Vector2, canvas: Transform2D, palette: Dictionary, u: float, v: float, width: float, depth: float, height: float, style: String) -> void:
+	var a := _military_point(nw, ne, sw, u, v) + floor_lift
+	var b := _military_point(nw, ne, sw, u + width, v) + floor_lift
+	var c := _military_point(nw, ne, sw, u + width, v + depth) + floor_lift
+	var d := _military_point(nw, ne, sw, u, v + depth) + floor_lift
+	var up := RtsIsoProjection.world_delta(canvas, Vector2(0, -height * game.camera.zoom.x))
+	var rise := RtsIsoProjection.world_delta(canvas, Vector2(0, -8.0 * game.camera.zoom.x))
+	var wall: Color = palette["wall"]
+	var roof: Color = palette["roof"]
+	var dark: Color = palette["roof_dark"]
+	var trim: Color = palette["trim"]
+	draw_colored_polygon(PackedVector2Array([b + up, c + up, c, b]), wall.darkened(0.2))
+	draw_colored_polygon(PackedVector2Array([d + up, c + up, c, d]), wall)
+	draw_line(d + up, c + up, trim.darkened(0.18), 2.0)
+	if style == "tower":
+		match game.civilizations[owner_id]:
+			"English":
+				draw_colored_polygon(PackedVector2Array([a + up, b + up, c + up, d + up]), dark)
+				for p in [a + up, b + up, c + up, d + up]: draw_line(p, p + up * 0.16, trim, 3.5)
+			"Chinese":
+				var peak := (a + c) * 0.5 + up + rise * 1.3
+				draw_colored_polygon(PackedVector2Array([a + up, b + up, peak]), roof.lightened(0.12))
+				draw_colored_polygon(PackedVector2Array([b + up, c + up, peak]), roof)
+				draw_colored_polygon(PackedVector2Array([c + up, d + up, peak]), dark)
+				draw_line(d + up, c + up, trim, 2.6)
+				var upper := (a + c) * 0.5 + up + rise * 0.85
+				draw_line(upper - (b - a) * 0.3, upper + (b - a) * 0.3, trim, 2.0)
+			_:
+				var peak := (a + c) * 0.5 + up + rise * 1.8
+				draw_colored_polygon(PackedVector2Array([a + up, b + up, peak]), roof.lightened(0.1))
+				draw_colored_polygon(PackedVector2Array([b + up, c + up, peak]), roof)
+				draw_colored_polygon(PackedVector2Array([c + up, d + up, peak]), dark)
+		var slit := (d + c) * 0.5 + up * 0.6
+		draw_line(slit, slit + up * 0.16, Color("344343"), 3.0)
+	else:
+		if style == "gable_v":
+			var ridge_back := (a + b) * 0.5 + up + rise
+			var ridge_front := (d + c) * 0.5 + up + rise
+			draw_colored_polygon(PackedVector2Array([a + up, ridge_back, ridge_front, d + up]), roof.lightened(0.13))
+			draw_colored_polygon(PackedVector2Array([ridge_back, b + up, c + up, ridge_front]), roof)
+			draw_line(ridge_back, ridge_front, trim, 2.0)
+		else:
+			var ridge_left := (a + d) * 0.5 + up + rise
+			var ridge_right := (b + c) * 0.5 + up + rise
+			draw_colored_polygon(PackedVector2Array([a + up, b + up, ridge_right, ridge_left]), roof.lightened(0.13))
+			draw_colored_polygon(PackedVector2Array([ridge_left, ridge_right, c + up, d + up]), roof)
+			draw_line(ridge_left, ridge_right, trim, 2.0)
+		if game.civilizations[owner_id] == "Chinese":
+			for corner in [a + up, b + up, c + up, d + up]: draw_circle(corner + rise * 0.2, 2.2, trim)
+		for portion in [0.22, 0.51, 0.8]:
+			var post := d.lerp(c, portion)
+			draw_line(post, post + up * 0.82, palette["timber"], 1.8)
+		var doorway := (d + c) * 0.5
+		draw_line(doorway, doorway + up * 0.56, Color("39433d"), 5.0)
+
+func _draw_iso_military_structure(art_kind: String, nw: Vector2, ne: Vector2, sw: Vector2, lift: Vector2, palette: Dictionary, canvas: Transform2D) -> void:
+	var floor_lift := lift * 0.18
+	var timber: Color = palette["timber"]
+	var trim: Color = palette["trim"]
+	var deck := PackedVector2Array([nw + floor_lift, ne + floor_lift, ne + sw - nw + floor_lift, sw + floor_lift])
+	draw_colored_polygon(deck, Color("a69a74"))
+	for portion in [0.17, 0.37, 0.57, 0.77]:
+		draw_line(_military_point(nw, ne, sw, 0.05, portion) + floor_lift, _military_point(nw, ne, sw, 0.95, portion) + floor_lift, Color(timber, 0.32), 1.0)
+	match art_kind:
+		"barracks":
+			_draw_iso_military_block(nw, ne, sw, floor_lift, canvas, palette, 0.07, 0.07, 0.86, 0.28, 21, "gable_u")
+			_draw_iso_military_block(nw, ne, sw, floor_lift, canvas, palette, 0.07, 0.33, 0.22, 0.39, 17, "gable_v")
+			_draw_iso_military_block(nw, ne, sw, floor_lift, canvas, palette, 0.71, 0.33, 0.22, 0.39, 17, "gable_v")
+			for u in [0.42, 0.58]:
+				var dummy := _military_point(nw, ne, sw, u, 0.58) + floor_lift
+				var head := dummy + lift * 0.46
+				draw_line(dummy, head, timber, 2.5)
+				draw_line(dummy + lift * 0.27 - (ne - nw) * 0.05, dummy + lift * 0.27 + (ne - nw) * 0.05, timber, 2.1)
+				draw_circle(head, 3.3, palette["wall"])
+			for u in [0.14, 0.72]: _draw_iso_military_block(nw, ne, sw, floor_lift, canvas, palette, u, 0.75, 0.15, 0.17, 32, "tower")
+		"archery_range":
+			_draw_iso_military_block(nw, ne, sw, floor_lift, canvas, palette, 0.06, 0.06, 0.7, 0.28, 21, "gable_u")
+			_draw_iso_military_block(nw, ne, sw, floor_lift, canvas, palette, 0.06, 0.33, 0.2, 0.42, 16, "gable_v")
+			_draw_iso_military_block(nw, ne, sw, floor_lift, canvas, palette, 0.76, 0.09, 0.18, 0.24, 38, "tower")
+			for u in [0.39, 0.58, 0.77]:
+				var foot := _military_point(nw, ne, sw, u, 0.57) + floor_lift
+				var board := foot + RtsIsoProjection.world_delta(canvas, Vector2(0, -12.0 * game.camera.zoom.x))
+				draw_line(foot, board, timber, 2.2)
+				draw_circle(board, 6.1, trim)
+				draw_circle(board, 4.2, Color("ad654a"))
+				draw_circle(board, 2.0, trim)
+				var lane := _military_point(nw, ne, sw, u, 0.87) + floor_lift
+				draw_line(lane, foot, Color("d4bd86"), 1.5)
+		"stable":
+			_draw_iso_military_block(nw, ne, sw, floor_lift, canvas, palette, 0.06, 0.06, 0.88, 0.3, 22, "gable_u")
+			_draw_iso_military_block(nw, ne, sw, floor_lift, canvas, palette, 0.06, 0.34, 0.24, 0.36, 16, "gable_v")
+			for u in [0.46, 0.69]:
+				var stall := _military_point(nw, ne, sw, u, 0.39) + floor_lift
+				draw_line(stall, stall + lift * 0.38, timber.darkened(0.14), 2.0)
+			var horse := _military_point(nw, ne, sw, 0.55, 0.64) + floor_lift
+			var horse_up := RtsIsoProjection.world_delta(canvas, Vector2(0, -10.0 * game.camera.zoom.x))
+			var horse_right := RtsIsoProjection.world_delta(canvas, Vector2(8.0 * game.camera.zoom.x, 0))
+			var horse_body := horse + horse_up
+			draw_colored_polygon(PackedVector2Array([horse_body - horse_right - horse_up * 0.35, horse_body + horse_right - horse_up * 0.35, horse_body + horse_right + horse_up * 0.35, horse_body - horse_right + horse_up * 0.35]), Color("765039"))
+			for side in [-1.0, 1.0]: draw_line(horse_body + horse_right * side - horse_up * 0.3, horse + horse_right * side * 0.82, Color("66432f"), 2.0)
+			draw_line(horse_body + horse_right * 0.8, horse_body + horse_right * 1.35 + horse_up * 0.45, Color("765039"), 3.4)
+			draw_circle(horse_body + horse_right * 1.48 + horse_up * 0.45, 3.8, Color("765039"))
+			for u in [0.34, 0.54, 0.74, 0.92]:
+				var post := _military_point(nw, ne, sw, u, 0.9) + floor_lift
+				draw_line(post, post + lift * 0.28, timber, 2.5)
+			var fence_left := _military_point(nw, ne, sw, 0.34, 0.9) + floor_lift + lift * 0.24
+			var fence_right := _military_point(nw, ne, sw, 0.92, 0.9) + floor_lift + lift * 0.24
+			draw_line(fence_left, fence_right, timber, 2.8)
+			var fence_back := _military_point(nw, ne, sw, 0.92, 0.41) + floor_lift + lift * 0.24
+			draw_line(fence_right, fence_back, timber, 2.8)
+			_draw_iso_military_block(nw, ne, sw, floor_lift, canvas, palette, 0.72, 0.72, 0.2, 0.19, 12, "gable_u")
 
 func _draw_iso_roof(art_kind: String, nw: Vector2, ne: Vector2, se: Vector2, sw: Vector2, lift: Vector2, palette: Dictionary, canvas: Transform2D) -> void:
 	var center := (nw + ne + se + sw) * 0.25
@@ -986,7 +1184,7 @@ func _draw_iso_landmark_crown(base: Vector2, palette: Dictionary, canvas: Transf
 		draw_colored_polygon(PackedVector2Array([top, top + Vector2(10, 3), top + Vector2(0, 7)]), accent)
 
 func _landmark_geometry():
-	var key := str([kind, landmark_id, size(), game.civilizations[owner_id]])
+	var key := str([kind, landmark_id, size(), game.civilizations[owner_id], game.player_color(owner_id)])
 	if landmark_geometry == null or landmark_geometry_key != key:
 		landmark_geometry = LandmarkVisual.new()
 		landmark_geometry.dimensions = size()
