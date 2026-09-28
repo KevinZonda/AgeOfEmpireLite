@@ -56,6 +56,9 @@ func _run() -> void:
 	assert(game.window_mode_choice.selected == 0)
 	assert(game.edge_scroll_toggle.button_pressed)
 	assert(game.zoom_gesture_toggle.button_pressed)
+	assert(game.building_icons_toggle.button_pressed and game.building_names_toggle.button_pressed)
+	game.building_icons_toggle.button_pressed = false
+	game.building_names_toggle.button_pressed = false
 	game.projection_choice.select(1)
 	game.window_mode_choice.select(1)
 	game.resolution_choice.select(game.resolution_values.find(Vector2i(1280, 720)))
@@ -67,6 +70,7 @@ func _run() -> void:
 	game.zoom_gesture_toggle.button_pressed = false
 	game._close_settings()
 	assert(game.edge_scroll_enabled, "return should discard unsaved control changes")
+	assert(game.show_building_icons and game.show_building_names, "return should discard unsaved building display changes")
 	assert(game.zoom_gesture_enabled and not game.selected_view_mode_25d, "return should discard unsaved view and gesture changes")
 	assert(game.ui_scale == 1.0 and game.text_scale == 1.0 and game.minimap_size == 216, "return should discard unsaved scale changes")
 	assert(not game._window_is_fullscreen(), "return should discard unsaved window mode")
@@ -75,6 +79,9 @@ func _run() -> void:
 	assert(game.window_mode_choice.selected == 0)
 	assert(game.edge_scroll_toggle.button_pressed)
 	assert(game.zoom_gesture_toggle.button_pressed and game.projection_choice.selected == 0)
+	assert(game.building_icons_toggle.button_pressed and game.building_names_toggle.button_pressed)
+	game.building_icons_toggle.button_pressed = false
+	game.building_names_toggle.button_pressed = false
 	game.projection_choice.select(1)
 	game.window_mode_choice.select(1)
 	game.resolution_choice.select(game.resolution_values.find(Vector2i(1280, 720)))
@@ -109,6 +116,9 @@ func _run() -> void:
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(settings_path))
 	assert(save_result == OK and saved_edge_scroll == false and saved_zoom_gesture == false and saved_view == true)
 	assert(saved_ui_scale == 0.75 and saved_text_scale == 1.25 and saved_minimap_size == 264)
+	assert(saved.get_value("display", "show_building_icons", null) == false)
+	assert(saved.get_value("display", "show_building_names", null) == false)
+	assert(not game.show_building_icons and not game.show_building_names)
 	assert(is_equal_approx(game.hud_ui.transform.get_scale().x, 0.75))
 	assert(is_equal_approx(game.ui_root.size.x, game.get_viewport_rect().size.x / 0.75))
 	var top_base_font: int = game.top_label.get_meta("base_ui_font_size")
@@ -165,6 +175,7 @@ func _run() -> void:
 		if child is Button and child.text == "设置": pause_settings = child
 	assert(pause_settings != null)
 	pause_settings.pressed.emit()
+	assert(not game.building_icons_toggle.button_pressed and not game.building_names_toggle.button_pressed)
 	assert(game.ui_scale_values == [0.75, 1.0, 1.25, 1.5])
 	game.ui_scale = 1.5
 	game._apply_ui_scales()

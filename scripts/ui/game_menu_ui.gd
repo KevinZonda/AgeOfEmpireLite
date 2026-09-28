@@ -42,10 +42,16 @@ func _create_settings(parent: Control) -> void:
 	game.settings_tabs.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	game.settings_tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	settings_layout.add_child(game.settings_tabs)
+	var display_scroll := ScrollContainer.new()
+	display_scroll.name = "显示设置"
+	display_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	display_scroll.follow_focus = true
+	game.settings_tabs.add_child(display_scroll)
 	var display_tab := VBoxContainer.new()
 	display_tab.name = "显示设置"
+	display_tab.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	display_tab.add_theme_constant_override("separation", 12)
-	game.settings_tabs.add_child(display_tab)
+	display_scroll.add_child(display_tab)
 	game.window_mode_choice = OptionButton.new()
 	game.window_mode_choice.add_item("窗口化")
 	game.window_mode_choice.add_item("全屏")
@@ -64,6 +70,18 @@ func _create_settings(parent: Control) -> void:
 	game.projection_choice.custom_minimum_size.y = 42
 	game._style_button(game.projection_choice)
 	_add_settings_option_row(display_tab, "视角", game.projection_choice)
+	game.building_icons_toggle = CheckButton.new()
+	game.building_icons_toggle.text = "显示建筑图标"
+	game.building_icons_toggle.tooltip_text = "显示地图上建筑上方的图标"
+	game.building_icons_toggle.custom_minimum_size.y = 42
+	game.building_icons_toggle.add_theme_color_override("font_color", Color("f5e4bf"))
+	display_tab.add_child(game.building_icons_toggle)
+	game.building_names_toggle = CheckButton.new()
+	game.building_names_toggle.text = "显示建筑名称"
+	game.building_names_toggle.tooltip_text = "显示地图上建筑下方的名称"
+	game.building_names_toggle.custom_minimum_size.y = 42
+	game.building_names_toggle.add_theme_color_override("font_color", Color("f5e4bf"))
+	display_tab.add_child(game.building_names_toggle)
 	game.minimap_size_choice = OptionButton.new()
 	game.minimap_size_choice.tooltip_text = "单独调整小地图尺寸；2.5D 菱形会伸出底部面板。"
 	for index in game.MINIMAP_SIZE_OPTIONS.size():
@@ -135,6 +153,9 @@ func _create_settings(parent: Control) -> void:
 			game._apply_window_resolution(resolution, false)
 		game.edge_scroll_enabled = game.edge_scroll_toggle.button_pressed
 		game.zoom_gesture_enabled = game.zoom_gesture_toggle.button_pressed
+		game.show_building_icons = game.building_icons_toggle.button_pressed
+		game.show_building_names = game.building_names_toggle.button_pressed
+		game._redraw_projected_entities()
 		game.selected_view_mode_25d = game.projection_choice.selected == 1
 		game.ui_scale = game.ui_scale_values[game.ui_scale_choice.selected]
 		game.text_scale = game.TEXT_SCALE_OPTIONS[game.text_scale_choice.selected]
@@ -175,6 +196,8 @@ func _show_settings(from_pause := false) -> void:
 	game.text_scale_choice.select(game.TEXT_SCALE_OPTIONS.find(game.text_scale))
 	game.edge_scroll_toggle.button_pressed = game.edge_scroll_enabled
 	game.zoom_gesture_toggle.button_pressed = game.zoom_gesture_enabled
+	game.building_icons_toggle.button_pressed = game.show_building_icons
+	game.building_names_toggle.button_pressed = game.show_building_names
 	game.projection_choice.select(1 if game.selected_view_mode_25d else 0)
 	game.minimap_size_choice.select(game.MINIMAP_SIZE_OPTIONS.find(game.minimap_size))
 	game.settings_tabs.current_tab = 0

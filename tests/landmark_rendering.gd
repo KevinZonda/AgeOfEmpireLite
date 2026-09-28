@@ -3,6 +3,8 @@ extends SceneTree
 # Run with a real rendering driver; saves every landmark and a contact sheet.
 class PreviewContext extends Node2D:
 	var view_mode_25d := true
+	var show_building_icons := true
+	var show_building_names := true
 	var world_map: Node2D
 	var camera := Camera2D.new()
 	var civilizations := ["English"]

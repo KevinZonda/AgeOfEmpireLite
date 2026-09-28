@@ -108,6 +108,7 @@ func icon_size() -> float:
 	return 24.0 if kind.ends_with("_wall") or kind.ends_with("_gate") or kind == "scout_camp" else 30.0
 
 func contains_icon_visual(world_point: Vector2, canvas: Transform2D) -> bool:
+	if game.get("show_building_icons") == false: return false
 	var side := icon_size()
 	if not game.view_mode_25d:
 		var center := Vector2(0, -size().y * 0.5 - side * 0.5 - 8.0)
@@ -463,7 +464,7 @@ func _draw() -> void:
 	var side := icon_size()
 	_draw_building_icon(Vector2(0, -size().y * 0.5 - side * 0.5 - 8.0), side)
 	var font := ThemeDB.fallback_font
-	if font != null:
+	if font != null and game.get("show_building_names") != false:
 		draw_string(font, Vector2(-size().x * 0.5, size().y * 0.5 + 15), display_label(), HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color.WHITE)
 	var bar_y := -size().y * 0.5 - side - 18.0
 	draw_rect(Rect2(-size().x * 0.5, bar_y, size().x, 5), Color("432e2b"))
@@ -529,7 +530,7 @@ func _draw_isometric() -> void:
 	var icon_height := height + (_landmark_extra_height() if construction_ratio >= 0.65 else 0.0)
 	_draw_building_icon(Vector2(0, -icon_height * game.camera.zoom.x - side * 0.5 - 9.0), side)
 	var font := ThemeDB.fallback_font
-	if font != null:
+	if font != null and game.get("show_building_names") != false:
 		var label := display_label()
 		var label_width := font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 13).x
 		draw_string(font, Vector2(-label_width * 0.5, canvas.basis_xform(se).y + 18.0), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color.WHITE)
@@ -1255,6 +1256,7 @@ func _draw_iso_farm(nw: Vector2, ne: Vector2, se: Vector2, sw: Vector2, lift: Ve
 		draw_line(crop, crop + Vector2(0, -4), Color("91a760"), 1.5)
 
 func _draw_building_icon(center: Vector2, icon_size: float) -> void:
+	if game.get("show_building_icons") == false: return
 	var badge := Rect2(center - Vector2.ONE * icon_size * 0.5, Vector2.ONE * icon_size)
 	if building_icon != null:
 		draw_texture_rect(building_icon, badge, false, Color(1, 1, 1, 0.55) if not is_complete() else Color.WHITE)

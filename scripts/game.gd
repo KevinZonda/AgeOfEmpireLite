@@ -157,6 +157,10 @@ var ui_root: Control
 var ui_scale := 1.0
 var text_scale := 1.0
 var minimap_size := 216
+var show_building_icons := true
+var show_building_names := true
+var building_icons_toggle: CheckButton
+var building_names_toggle: CheckButton
 var ui_scale_choice: OptionButton
 var text_scale_choice: OptionButton
 var minimap_size_choice: OptionButton
@@ -463,6 +467,8 @@ func _save_settings() -> void:
 	config.set_value("display", "ui_scale", ui_scale)
 	config.set_value("display", "text_scale", text_scale)
 	config.set_value("display", "minimap_size", minimap_size)
+	config.set_value("display", "show_building_icons", show_building_icons)
+	config.set_value("display", "show_building_names", show_building_names)
 	config.set_value("controls", "edge_scroll_enabled", edge_scroll_enabled)
 	config.set_value("controls", "zoom_gesture_enabled", zoom_gesture_enabled)
 	config.save(SETTINGS_PATH)
@@ -473,6 +479,8 @@ func _load_settings() -> void:
 	var config := ConfigFile.new()
 	if config.load(SETTINGS_PATH) != OK and config.load(LEGACY_DISPLAY_SETTINGS_PATH) != OK: return
 	selected_view_mode_25d = bool(config.get_value("display", "view_mode_25d", false))
+	show_building_icons = bool(config.get_value("display", "show_building_icons", true))
+	show_building_names = bool(config.get_value("display", "show_building_names", true))
 	var saved_ui_scale: float = float(config.get_value("display", "ui_scale", 1.0))
 	var saved_text_scale: float = float(config.get_value("display", "text_scale", 1.0))
 	var saved_minimap_size: int = int(config.get_value("display", "minimap_size", 216))

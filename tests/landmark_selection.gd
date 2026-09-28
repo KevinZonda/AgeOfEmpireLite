@@ -35,6 +35,19 @@ func _run() -> void:
 					assert(building.contains_isometric_visual(building.position + center, canvas), "%s: displayed face must remain clickable" % id)
 					checked += 1
 				assert(building._landmark_geometry() == geometry, "drawing and hit testing must reuse prepared geometry")
+				var icon_height: float = building.isometric_height() * (0.25 + 0.75 * completed) + building._landmark_extra_height()
+				var icon_point := building.position + RtsIsoProjection.world_delta(canvas, Vector2(0, -icon_height * zoom - building.icon_size() * 0.5 - 9.0))
+				assert(building.contains_icon_visual(icon_point, canvas))
+				context.show_building_icons = false
+				assert(not building.contains_icon_visual(icon_point, canvas), "hidden badges must not intercept clicks")
+				context.show_building_icons = true
+		context.view_mode_25d = false
+		var topdown_icon := building.position + Vector2(0, -building.size().y * 0.5 - building.icon_size() * 0.5 - 8.0)
+		assert(building.contains_icon_visual(topdown_icon, Transform2D.IDENTITY))
+		context.show_building_icons = false
+		assert(not building.contains_icon_visual(topdown_icon, Transform2D.IDENTITY))
+		context.show_building_icons = true
+		context.view_mode_25d = true
 		building.free()
 	context.free()
 	print("LANDMARK_SELECTION_OK face_centers=%d across 21 appearances, 3 zooms, 2 construction stages" % checked)
