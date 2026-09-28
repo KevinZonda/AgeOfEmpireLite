@@ -35,14 +35,18 @@ func _run() -> void:
 	viewport.canvas_transform = Transform2D(Vector2(0.70710678, 0.35355339) * scale, Vector2(-0.70710678, 0.35355339) * scale, Vector2(210, 355))
 	var ids: Array = RtsLandmarkCatalog.LANDMARKS.keys()
 	ids.append_array(["wonder_English", "wonder_French", "wonder_Chinese"])
-	var sheet := Image.create(420 * 3, 480 * 7, false, Image.FORMAT_RGB8)
+	if OS.get_cmdline_user_args().has("--fortifications"):
+		ids = ["keep", "outpost", "stone_wall", "stone_gate", "stone_wall_vertical", "stone_gate_vertical"]
+	var sheet := Image.create(420 * 3, 480 * ceili(ids.size() / 3.0), false, Image.FORMAT_RGB8)
 	for i in ids.size():
 		var id: String = ids[i]
 		var wonder := id.begins_with("wonder_")
-		context.civilizations[0] = id.trim_prefix("wonder_") if wonder else RtsLandmarkCatalog.LANDMARKS[id]["civilization"]
+		var regular := GameData.BUILDINGS.has(id.trim_suffix("_vertical"))
+		context.civilizations[0] = "English" if regular else id.trim_prefix("wonder_") if wonder else RtsLandmarkCatalog.LANDMARKS[id]["civilization"]
 		var building := RtsBuilding.new()
 		context.add_child(building)
-		building.setup(context, 0, "wonder" if wonder else "landmark", false, "" if wonder else id)
+		building.wall_vertical = id.ends_with("_vertical")
+		building.setup(context, 0, id.trim_suffix("_vertical") if regular else "wonder" if wonder else "landmark", false, "" if wonder or regular else id)
 		building.set_process(false)
 		await process_frame
 		await RenderingServer.frame_post_draw
@@ -53,5 +57,5 @@ func _run() -> void:
 		sheet.blit_rect(captured, Rect2i(Vector2i.ZERO, viewport.size), Vector2i(i % 3 * 420, i / 3 * 480))
 		building.free()
 	assert(sheet.save_png(output.path_join("all.png")) == OK)
-	print("LANDMARK_RENDERING_OK 18 landmarks + 3 wonders: ", output)
+	print("LANDMARK_RENDERING_OK appearances=%d: %s" % [ids.size(), output])
 	quit()

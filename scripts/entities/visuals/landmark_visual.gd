@@ -24,6 +24,20 @@ func box(center: Vector2, extent: Vector2, bottom: float, height: float, color: 
 	face([d, c, c + up, d + up], color)
 	face([a + up, b + up, c + up, d + up], color.lightened(0.08))
 
+func battlements(center: Vector2, extent: Vector2, bottom: float, color: Color) -> void:
+	# Inset complete merlons onto all four edges. Each corner is emitted once,
+	# so adjacent edges do not create overlapping teeth or solid corner clumps.
+	var tooth := 3.0
+	var half := (extent - Vector2.ONE * tooth) * 0.5
+	var across := maxi(2, ceili((extent.x - tooth) / 7.0))
+	var along := maxi(2, ceili((extent.y - tooth) / 7.0))
+	for i in range(across + 1):
+		var x := lerpf(-half.x, half.x, float(i) / across)
+		for y in [-half.y, half.y]: box(center + Vector2(x, y), Vector2.ONE * tooth, bottom, 4, color)
+	for i in range(1, along):
+		var y := lerpf(-half.y, half.y, float(i) / along)
+		for x in [-half.x, half.x]: box(center + Vector2(x, y), Vector2.ONE * tooth, bottom, 4, color)
+
 func block(u: float, v: float, width: float, depth: float, height: float, style: String, tint := Color.TRANSPARENT) -> void:
 	var center := (Vector2(u, v) - Vector2.ONE * 0.5) * dimensions
 	var extent := Vector2(width, depth) * dimensions
@@ -38,11 +52,7 @@ func block(u: float, v: float, width: float, depth: float, height: float, style:
 	match style:
 		"flat", "clock":
 			face([a, b, c, d], palette["roof_dark"])
-			for t in [0.05, 0.35, 0.65, 0.95]:
-				var front := d.lerp(c, t)
-				box(Vector2(front.x, front.y), Vector2(3, 3), front.z, 4, trim)
-				var side := b.lerp(c, t)
-				box(Vector2(side.x, side.y), Vector2(3, 3), side.z, 4, trim)
+			battlements(center, extent, base_z + height, trim)
 		"gable":
 			var back := (a + b) * 0.5 + Vector3(0, 0, 9)
 			var front := (d + c) * 0.5 + Vector3(0, 0, 9)

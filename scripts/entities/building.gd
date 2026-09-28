@@ -1021,9 +1021,7 @@ func _draw_iso_roof(art_kind: String, nw: Vector2, ne: Vector2, se: Vector2, sw:
 			var start: Vector2 = edge[0] + lift
 			var finish: Vector2 = edge[1] + lift
 			draw_line(start, finish, masonry, 3.2)
-			for portion in [0.12, 0.38, 0.64, 0.9]:
-				var tooth := start.lerp(finish, portion)
-				draw_line(tooth, tooth + lift * 0.13, masonry, 4.5)
+		_draw_iso_battlements([nw + lift, ne + lift, se + lift, sw + lift], lift * 0.13, masonry, 4.5)
 		return
 	if art_kind == "blacksmith":
 		var soot: Color = palette["roof_dark"]
@@ -1141,9 +1139,7 @@ func _draw_iso_tower(art_kind: String, nw: Vector2, ne: Vector2, se: Vector2, sw
 	draw_colored_polygon(PackedVector2Array([a + rise, b + rise, c + rise, d + rise]), palette["roof_dark"])
 	draw_polyline(PackedVector2Array([a + rise, b + rise, c + rise, d + rise, a + rise]), palette["trim"], 1.6)
 	if art_kind == "keep":
-		for portion in [0.1, 0.4, 0.7]:
-			var battlement := (d + rise).lerp(c + rise, portion)
-			draw_line(battlement, battlement + rise * 0.2, palette["trim"], 3.0)
+		_draw_iso_battlements([a + rise, b + rise, c + rise, d + rise], rise * 0.2, palette["trim"], 3.0)
 	elif art_kind in ["palace", "wonder"]:
 		var upper_center := (a + b + c + d) * 0.25 + rise
 		var upper_a := upper_center + (a + rise - upper_center) * 0.64
@@ -1198,13 +1194,21 @@ func _draw_iso_landmark_architecture(lift: Vector2, canvas: Transform2D) -> void
 	for polygon in _landmark_geometry().projected_faces(canvas, game.camera.zoom.x, lift):
 		draw_colored_polygon(polygon["points"], polygon["color"])
 
+func _draw_iso_battlements(corners: Array, rise: Vector2, color: Color, width: float) -> void:
+	var teeth: Array[Vector2] = []
+	for edge in corners.size():
+		var start: Vector2 = corners[edge]
+		var finish: Vector2 = corners[(edge + 1) % corners.size()]
+		var count := maxi(2, ceili(start.distance_to(finish) / 9.0))
+		# Half-open intervals include every corner exactly once.
+		for i in count: teeth.append(start.lerp(finish, float(i) / count))
+	var canvas := get_viewport().get_canvas_transform()
+	teeth.sort_custom(func(a: Vector2, b: Vector2) -> bool: return canvas.basis_xform(a).y < canvas.basis_xform(b).y)
+	for tooth in teeth: draw_line(tooth, tooth + rise, color, width)
+
 func _draw_iso_fortification(nw: Vector2, ne: Vector2, se: Vector2, sw: Vector2, lift: Vector2, palette: Dictionary) -> void:
-	var top_left := sw + lift
-	var top_right := se + lift
 	var material: Color = palette["trim"] if kind.begins_with("stone") else palette["timber"]
-	for portion in [0.07, 0.25, 0.43, 0.61, 0.79, 0.95]:
-		var tooth := top_left.lerp(top_right, portion)
-		draw_line(tooth, tooth + lift * 0.25, material, 4.0)
+	_draw_iso_battlements([nw + lift, ne + lift, se + lift, sw + lift], lift * 0.25, material, 4.0)
 	if kind.ends_with("_gate"):
 		var mid := (sw + se) * 0.5
 		var half_width := (se - sw) * 0.19
