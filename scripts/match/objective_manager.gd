@@ -8,7 +8,6 @@ const SITE_RADIUS := 95.0
 const CAPTURE_TIME := 8.0
 const SACRED_VICTORY_TIME := 90.0
 const WONDER_VICTORY_TIME := 120.0
-const SITE_FRACTIONS := [Vector2(0.5, 0.23), Vector2(0.5, 0.5), Vector2(0.5, 0.77)]
 
 var game: Node2D
 var sacred_sites: Array[Dictionary] = []
@@ -36,9 +35,12 @@ func _is_enemy(a: int, b: int) -> bool:
 func setup(game_ref: Node2D) -> void:
 	game = game_ref
 	sacred_sites.clear()
-	var size: Vector2 = game.world_map.world_size
-	for fraction in SITE_FRACTIONS:
-		var desired: Vector2 = Vector2(size.x * fraction.x, size.y * fraction.y)
+	var positions: Array[Vector2] = []
+	if game.world_map.has_method("sacred_site_positions"):
+		positions = game.world_map.sacred_site_positions()
+	else:
+		for fraction in [Vector2(0.5, 0.23), Vector2(0.5, 0.5), Vector2(0.5, 0.77)]: positions.append(fraction * game.world_map.world_size)
+	for desired in positions:
 		var position: Vector2 = game.world_map.nearest_walkable_point(desired)
 		sacred_sites.append({"position": position, "owner_id": -1, "capture_owner": -1, "capture_progress": 0.0, "contested": false})
 	reset()

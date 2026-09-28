@@ -567,7 +567,7 @@ func start_game(civ: String, requested_seed := -1, opponent_civ := "") -> void:
 	for owner_id in player_count:
 		teams.append(int(lobby_players[owner_id].get("team", owner_id + 1)) - 1 if use_lobby_setup else 0 if owner_id == 0 or match_mode == "team2" and owner_id == 2 else 1 if match_mode == "team2" else owner_id)
 		civilizations.append(lobby_players[owner_id]["civilization"] if use_lobby_setup else civ if owner_id == 0 else civilization_ids[(civilization_ids.find(opponent_civ) + owner_id - 1) % civilization_ids.size()])
-		var bank := {"food": 340 if owner_id == 0 else 420, "wood": 360 if owner_id == 0 else 420, "gold": 150 if owner_id == 0 else 170, "stone": 100, "age": 1, "researched": [], "landmarks": [], "dynasty": ""}
+		var bank := {"food": 340 if owner_id == 0 else 420, "wood": 360 if owner_id == 0 else 420, "gold": 150 if owner_id == 0 else 170, "stone": 100, "age": 1, "researched": [], "landmarks": [], "dynasty": "Tang" if civilizations[owner_id] == "Chinese" else ""}
 		if use_lobby_setup:
 			var presets := [
 				{"food": 200, "wood": 220, "gold": 100, "stone": 0},
@@ -590,7 +590,7 @@ func start_game(civ: String, requested_seed := -1, opponent_civ := "") -> void:
 	build_page = 0
 	order_mode = ""
 	ai_think_timers.clear()
-	camera.position = _scaled_point(START_CAMERA_POINT)
+	camera.position = spawn_point_for(0) + _scaled_point(START_CAMERA_POINT - Vector2(330, 720))
 	menu_panel.hide()
 	menu_backdrop.hide()
 	hud_top.show()
@@ -655,9 +655,8 @@ func _scaled_point(point: Vector2) -> Vector2:
 	return point * Vector2(world_size.x / 2400.0, world_size.y / 1500.0)
 
 func spawn_point_for(owner_id: int) -> Vector2:
-	if players.size() <= 2: return _scaled_point(Vector2(330, 720) if owner_id == 0 else Vector2(2070, 720))
-	var positions := [Vector2(330, 420), Vector2(2070, 1080), Vector2(330, 1080), Vector2(2070, 420)]
-	return _scaled_point(positions[owner_id])
+	var positions := world_map.spawn_positions()
+	return positions[owner_id] if owner_id >= 0 and owner_id < positions.size() else _scaled_point(Vector2(330, 720))
 
 func is_enemy(a: int, b: int) -> bool:
 	return a >= 0 and b >= 0 and a < teams.size() and b < teams.size() and teams[a] != teams[b]
@@ -708,10 +707,10 @@ func strategic_target_for(owner_id: int) -> Node2D:
 	return nearest_enemy_center(owner_id)
 
 func _spawn_neutral_sites() -> void:
-	for desired in [_scaled_point(Vector2(1200, 190)), _scaled_point(Vector2(1200, 1310))]:
+	for desired in world_map.trade_post_positions():
 		var post := RtsTradePost.new()
 		post.game = self
-		post.position = world_map.nearest_walkable_point(desired)
+		post.position = desired
 		add_child(post)
 		trade_posts.append(post)
 	for site in objectives.sacred_sites:
@@ -1431,7 +1430,7 @@ func _clamp_camera_position() -> void:
 	camera.position = camera.position.clamp(margin, world_size - margin)
 
 func _toggle_view_mode(save_setting := false) -> void:
-	var at_starting_camera := started and match_statistics.elapsed < 2.0 and camera.position.distance_to(_scaled_point(START_CAMERA_POINT)) < 2.0
+	var at_starting_camera := started and match_statistics.elapsed < 2.0 and camera.position.distance_to(spawn_point_for(0) + _scaled_point(START_CAMERA_POINT - Vector2(330, 720))) < 2.0
 	view_mode_25d = not view_mode_25d
 	world_map.isometric_view = view_mode_25d
 	world_map.queue_redraw()

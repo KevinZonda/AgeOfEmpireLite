@@ -39,7 +39,7 @@ make run
 - 磨坊、伐木场和采矿场附近的对应采集点有采集加成，相应经济科技在这些建筑内研究。城镇中心的「镇钟」可召回附近村民，随后「返回原工作」恢复先前采集或施工。
 - 选择建筑训练单位或研究科技；军事建筑把单位、对应兵种升级和特色科技分组显示，磨坊、伐木场、采矿场分别研究食物、木材、采矿科技。选中村民并切到「地标与奇观」页，点击「升时代」后可比较两座地标的效果与费用，再选择其一放置。村民建成地标后进入下一个时代。训练与研究共用建筑生产队列；可在队列中取消任务并返还资源。
 - 中国可在进入新时代后补建该时代的第二座地标，在村民的王朝页选择；两座地标解锁对应王朝加成。
-- 中国村民建造速度提高 15%；宋朝使村民训练加快 20%，元朝使军事单位速度 +8，明朝使军事单位生命值 +15。当前王朝显示在顶部状态栏。
+- 中国从唐朝开始，唐朝斥候额外获得 70 视野；宋朝使村民训练加快 20%，元朝使军事单位速度 +8，明朝使军事单位生命值 +15。当前王朝显示在顶部状态栏。
 - 文明经济与战术进一步分化：英格兰农田木材成本降低，城镇中心／防御建筑附近可触发城堡网络；法兰西村民与骑兵训练较快，城堡附近的生产建筑有成本优惠，商人可选择回收资源；中国的朝廷命官可监督生产与征税，并提升金矿采集效率。经济科技可提高相应资源的采集速度。
 - 未满足时代、前置科技、人口或资源要求的命令会灰显，并在按钮上说明原因。
 - 选中部队后按 1 进入攻击移动模式，再点击地图指定目标；按住 Shift 点击可排队多个目标。按 2 停止。村民的下一页和停止键分别为 5、6。
@@ -51,6 +51,8 @@ make run
 - 城镇中心、哨塔和城堡可驻军并自动射击附近敌人；选中建筑可放出驻军。攻城器械厂可训练攻城槌、攻城塔、弹簧弩炮、轻型投石车、投石机和手推炮；中国用蜂巢炮替代轻型投石车，法兰西用加农炮替代手推炮。
 - 野外资源点耗尽时，村民会自动转向附近的同类资源点继续采集。
 - 每局会生成新地图，并检查双方起始资源数量与距离。山地不可通行，陆军会绕开水域，船只则在水域航行；鹿会躲避军队，野猪需要击杀后才能采集，鱼群可由渔船采集。高地可扩大视野，潜伏森林能遮蔽其中的单位，近距离侦察可发现他们。
+- 地图类型改变路线和争夺重点：平衡图保留开阔中路，山湖和圣地随种子移动；大湖图由三处渡口连接两岸，鱼群分布在河湖水域；高地图由三处山口连接两侧，金矿、石矿和鹿群靠近争夺路线；群岛图需要运输船登上有资源和三处圣地的中央岛。出生点、贸易站及中立资源随地图布局生成。电脑会按文明和地图选择地标、生产顺序与防御位置，在群岛使用本岛贸易站并运送修士登陆。
+- 种子 431 的地形与资源预览：[平衡](docs/map-previews/balanced-seed-431.png) · [大湖](docs/map-previews/lakes-seed-431.png) · [高地](docs/map-previews/highlands-seed-431.png) · [群岛](docs/map-previews/islands-seed-431.png)。蓝／红方块是出生点，浅金方块是圣地，紫色方块是贸易站；运行 `tools/render_map_previews.gd` 可重新生成。
 - 单位和建筑提供视野；未探索区域全黑，探索后失去视野的区域变暗，山地会挡住视线。敌军与鹿群只有在当前视野内才会显示。
 - 底部命令网格显示各按钮快捷键；开局选中城镇中心，信息栏用单位或建筑肖像显示当前对象，并列出生命、护甲、攻击档案、射程与攻击间隔。资源剩余量在鼠标悬停时显示。点击可见的敌方单位可查看其数值，离开视野或隐蔽后面板会清除该单位，小地图也不会泄露隐蔽敌军。顶部显示人口已用／上限（及空余），「空闲村民」按钮或句号键可循环选中空闲村民；右下角小地图可点击定位。
 - WASD / 方向键、鼠标移到窗口边缘或 Mac 触控板双指滑动可移动镜头，四角可斜向移动；滚轮缩放，启用缩放手势时可双指捏合缩放。
@@ -67,6 +69,7 @@ make run
 - 地标可直接生产、研究、驻军、防御、积累资源或侦察；中国第二座地标解锁王朝。未满足要求的兵种和科技继续显示在面板并说明原因。
 - 电脑对手能够采集、选择并建造地标升级、研究、建造、根据视野内敌军兵种训练部队。村民目标随时代增长，闲置工人按当前采集人数和资源缺口分配；资源点耗尽时会寻找其他可达资源并派村民探索。城堡时代优先保留木材建造攻城器械厂、攻城槌和修道院，再扩建兵营、靶场和马厩。军队会在基地防守、低血量撤退、骑兵袭击可见村民、集结后成波进攻之间切换；攻城槌主动攻击建筑，卡住的攻击会重新选路，修士分别前往可达的圣地，军队会支援争夺中的圣地。简单／普通／困难使用不同的村民目标、出兵门槛、升时代时机和思考间隔；长局中会继续建房与农田，资源不足时通过市场交易，并为升时代保留资源。卡住的施工会更换工人或重新选址。
 - 地图由种子生成山地、湖泊、草地、植物群、树林、矿点与鹿群；雨会周期性出现。可用 `start_game("English", 12345)` 复现指定地图。
+- 英格兰电脑优先组织长弓与山口防御，法兰西电脑在开阔图优先马厩、在水道图优先贸易，按库存调整商人运回的资源，并会采石建城堡；中国电脑选择适合地形的地标、训练朝廷命官并在唐朝获得更宽的斥候视野。文明优势来自现有建筑、兵种和地标机制，不随地图直接改写兵种属性。
 - 地图还生成鱼群、中立贸易站与圣物；标准地图为 2400×2400，大型地图为 3000×3000，支持四种地形类型。陆军、水军分别寻路，港口生产水军。
 - 市场贸易、修士占领圣地与存放圣物、拖拽式连续墙段和可通行城门均已接入玩家与电脑对局。
 - 战争迷雾分别记录各玩家当前视野与探索范围，同队共享当前视野，并同步到主地图、小地图和鼠标目标判定。
@@ -107,6 +110,9 @@ RTS_BENCH_UNITS=200 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/performance_400.gd
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/performance_combat.gd
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/map_fairness.gd
+/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/map_strategy.gd
+/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/island_ai_strategy.gd
+/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/civ_map_ai.gd
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/economy_siege_controls.gd
 RTS_BENCH_PROJECTION=2d /Applications/Godot_mono.app/Contents/MacOS/Godot --path . --script res://tests/performance_visible.gd --windowed --resolution 1280x720
 RTS_BENCH_PROJECTION=2.5d /Applications/Godot_mono.app/Contents/MacOS/Godot --path . --script res://tests/performance_visible.gd --windowed --resolution 1280x720

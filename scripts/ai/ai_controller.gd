@@ -62,7 +62,12 @@ func tick() -> void:
 				var target: Node2D = game.nearest_enemy(unit, 350.0)
 				if target != null: unit.order_attack(target)
 		elif unit.stats.get("tags", []).has("military"): army.append(unit)
-		elif unit.kind == "trader" and unit.order == "idle" and not game.trade_posts.is_empty(): unit.issue_command("trade", Vector2.INF, game.trade_posts[0])
+		elif unit.kind == "trader":
+			if game.civilizations[owner_id] == "French": unit.trade_resource_kind = _french_trade_resource()
+			if unit.order == "idle" and not game.trade_posts.is_empty():
+				var post: RtsTradePost = _reachable_trade_post(unit)
+				if post != null: unit.issue_command("trade", Vector2.INF, post)
+		elif unit.kind == "imperial_official" and unit.order == "idle": _assign_official(unit)
 		elif unit.kind == "fishing_boat" and unit.order == "idle":
 			var fish: RtsResource = game.find_nearest_resource(unit.position, "food", INF, owner_id, true)
 			if fish != null: unit.issue_command("gather", Vector2.INF, fish)
@@ -97,7 +102,7 @@ func tick() -> void:
 					gathering["food"] += 1
 			if worker.order == "idle" and economic_explorers < 2 and _explore_for_resources(worker, workers): economic_explorers += 1
 	if game.players[owner_id]["age"] == 1:
-		if game._player_center(owner_id) != null: game.advance_age(owner_id)
+		if game._player_center(owner_id) != null: game.advance_age(owner_id, RtsLandmarkCatalog.preferred_landmark(game.civilizations[owner_id], 1, game.map_style))
 		if army.is_empty(): return
 	var center: RtsBuilding = game._player_center(owner_id)
 	var age: int = game.players[owner_id]["age"]
@@ -108,24 +113,25 @@ func tick() -> void:
 		var timing: float = {"easy": 220.0, "normal": 150.0, "hard": 105.0}[difficulty]
 		var should_advance: bool = game.highest_enemy_age(owner_id) > age or army.size() >= attack_threshold() + 2 or game.match_statistics.elapsed >= timing * float(age - 1)
 		if should_advance and game.can_afford(owner_id, RtsTechTree.age_cost(age)):
-			game.advance_age(owner_id)
+			game.advance_age(owner_id, RtsLandmarkCatalog.preferred_landmark(game.civilizations[owner_id], age, game.map_style))
 	if game.civilizations[owner_id] == "Chinese" and not game.is_age_queued(owner_id):
 		for choice in RtsLandmarkCatalog.choices_for("Chinese", age, game.players[owner_id]["landmarks"]):
 			if choice["age"] > age or not game.can_afford(owner_id, choice["cost"]): continue
 			if game.construct_landmark(owner_id, choice["id"]): break
 	if center != null and _unit_count("villager") < worker_goal(): game.train_unit(center, "villager")
+	if center != null and game.civilizations[owner_id] == "Chinese" and age >= 2 and _unit_count("imperial_official") < (2 if age >= 3 else 1) and not reserving_strategic_wood:
+		game.train_unit(center, "imperial_official")
 	if not workers.is_empty() and game.population_cap(owner_id) - game.population_used(owner_id) <= 4 and not _has_unfinished_house():
 		_construct("house", workers[0])
 	if not workers.is_empty() and age >= 2 and not reserving_strategic_wood and game.players[owner_id]["food"] < 450 and _building_count("farm") < mini(12, maxi(2, workers.size() / 3)) and not _has_unfinished_building("farm"):
 		_construct("farm", workers[0])
-	if not workers.is_empty() and not _has_building("barracks") and not reserving_strategic_wood:
-		_construct("barracks", workers[0])
-	elif not workers.is_empty() and not _has_building("archery_range") and not reserving_strategic_wood:
-		_construct("archery_range", workers[0])
-	elif not workers.is_empty() and not _has_building("stable") and not reserving_strategic_wood:
-		_construct("stable", workers[0])
-	elif not workers.is_empty() and not _has_building("blacksmith") and not reserving_strategic_wood:
-		_construct("blacksmith", workers[0])
+	if not workers.is_empty() and not reserving_strategic_wood:
+		for kind in _production_order():
+			if not _has_building(kind):
+				_construct(kind, workers[0])
+				break
+	if not workers.is_empty() and age >= 3 and game.civilizations[owner_id] == "French" and game.map_style != "islands" and not _has_building("keep") and game.can_afford(owner_id, GameData.BUILDINGS["keep"]["cost"]):
+		_economy._construct_french_keep()
 	if not workers.is_empty() and wants_siege and not _has_building("siege_workshop") and game.can_afford(owner_id, GameData.BUILDINGS["siege_workshop"]["cost"]):
 		_construct("siege_workshop", workers[0])
 	_expand_production(workers, army.size(), age)
@@ -189,6 +195,42 @@ func tick() -> void:
 	if _tactical_orders(army): return
 	_secure_sacred_site(army)
 	_tactics.push(army, center, age)
+
+func _production_order() -> Array[String]:
+	if game.map_style == "islands": return ["archery_range", "barracks", "stable", "blacksmith"]
+	match game.civilizations[owner_id]:
+		"English": return ["archery_range", "barracks", "stable", "blacksmith"]
+		"French":
+			return ["archery_range", "stable", "barracks", "blacksmith"] if game.map_style in ["lakes", "highlands"] else ["stable", "archery_range", "barracks", "blacksmith"]
+		"Chinese": return ["barracks", "archery_range", "stable", "blacksmith"] if game.map_style == "highlands" else ["archery_range", "barracks", "stable", "blacksmith"]
+	return ["barracks", "archery_range", "stable", "blacksmith"]
+
+func _assign_official(official: RtsUnit) -> void:
+	for other in game.units:
+		if is_instance_valid(other) and other != official and other.owner_id == owner_id and other.kind == "imperial_official" and other.order == "supervise": return
+	for building in game.buildings:
+		if not is_instance_valid(building) or building.owner_id != owner_id or not building.is_complete() or building.production_queue.is_empty(): continue
+		if building.producer_kind() not in ["town_center", "archery_range", "stable", "barracks", "siege_workshop"]: continue
+		if game.navigation.path_to_range(official.position, building.position, 70.0, official).is_empty(): continue
+		official.issue_command("supervise", Vector2.INF, building)
+		return
+
+func _reachable_trade_post(trader: RtsUnit) -> RtsTradePost:
+	var best: RtsTradePost
+	var best_distance := INF
+	for post in game.trade_posts:
+		if not is_instance_valid(post): continue
+		var distance := trader.position.distance_squared_to(post.position)
+		if distance >= best_distance or game.navigation.path_to_range(trader.position, post.position, 46.0, trader).is_empty(): continue
+		best = post
+		best_distance = distance
+	return best
+
+func _french_trade_resource() -> String:
+	var bank: Dictionary = game.players[owner_id]
+	if int(bank["wood"]) < 180: return "wood"
+	if int(bank["food"]) < 160: return "food"
+	return "gold"
 
 func _assign_scout(scout: RtsUnit) -> void:
 	var center: RtsBuilding = game.find_nearest_owned_building(owner_id, "town_center", scout.position)
@@ -258,16 +300,41 @@ func _assign_transport(boat: RtsUnit) -> void:
 			if int(transport_wait[boat_id]) < 5: return
 		transport_wait.erase(boat_id)
 		var target: Node2D = game.strategic_target_for(owner_id)
-		if target != null: boat.issue_command("unload", target.position)
+		var landing: Vector2 = target.position if target != null else game.world_size * 0.5
+		for passenger in boat.passengers:
+			if is_instance_valid(passenger) and passenger.kind == "monk":
+				landing = game.objectives.sacred_sites[1]["position"]
+				break
+		boat.issue_command("unload", landing)
 		return
 	if game.map_style != "islands": return
 	var boarded := 0
+	for monk in game.units:
+		if not is_instance_valid(monk) or monk.owner_id != owner_id or monk.kind != "monk" or monk.garrisoned_in != null or monk.order != "idle" or monk.position.distance_to(boat.position) > 700.0: continue
+		if not _can_reach_boat(monk, boat): continue
+		monk.issue_command("board_transport", Vector2.INF, boat)
+		boarded += 1
 	for soldier in game.units:
 		if not is_instance_valid(soldier) or soldier.owner_id != owner_id or soldier.garrisoned_in != null or soldier.kind == "scout" or not soldier.stats.get("tags", []).has("military") or soldier.stats.get("tags", []).has("naval"): continue
 		if soldier.position.distance_to(boat.position) > 700.0: continue
+		if not _can_reach_boat(soldier, boat): continue
 		soldier.issue_command("board_transport", Vector2.INF, boat)
 		boarded += 1
 		if boarded >= 6: break
+	if boarded == 0:
+		var home_shore: Dictionary = game.find_landing_pair(boat, game.spawn_point_for(owner_id))
+		if not home_shore.is_empty() and boat.position.distance_to(home_shore["water"]) > 25.0: boat.order_move(home_shore["water"])
+
+func _can_reach_boat(unit: RtsUnit, boat: RtsUnit) -> bool:
+	var origin: Vector2i = game.world_map.cell_at(boat.position)
+	for dy in range(-2, 3):
+		for dx in range(-2, 3):
+			var cell := origin + Vector2i(dx, dy)
+			if cell.x < 0 or cell.y < 0 or cell.x >= game.world_map.grid_size.x or cell.y >= game.world_map.grid_size.y: continue
+			var shore: Vector2 = game.world_map.cell_center(cell)
+			if not game.world_map.is_walkable(shore) or shore.distance_to(boat.position) > 95.0: continue
+			if not game.world_map.path_between(unit.position, shore).is_empty(): return true
+	return false
 
 func _enemy_profile() -> Dictionary:
 	var profile := {"cavalry": 0, "ranged": 0, "heavy": 0}

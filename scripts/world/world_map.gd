@@ -22,6 +22,13 @@ var reachable_cells := PackedByteArray()
 var plants: Array[Dictionary] = []
 var stealth_patches: Array[Dictionary] = []
 var resource_specs: Array[Dictionary] = []
+var layout_bases: Array[Vector2] = []
+var terrain_shapes: Array[Dictionary] = []
+var sacred_site_references: Array[Vector2] = []
+var trade_site_references: Array[Vector2] = []
+var fish_site_references: Array[Vector2] = []
+var crossing_references: Array[float] = []
+var barrier_x := 1200.0
 var pathfinder := AStarGrid2D.new()
 var rng := RandomNumberGenerator.new()
 var lift_per_height := Vector2.ZERO
@@ -38,6 +45,7 @@ func generate(seed_value: int, map_size: Vector2, style := "balanced", participa
 	world_size = map_size
 	grid_size = Vector2i(ceili(map_size.x / CELL_SIZE), ceili(map_size.y / CELL_SIZE))
 	rng.seed = seed_value
+	_plan_layout()
 	cells.resize(grid_size.x * grid_size.y)
 	plants.clear()
 	stealth_patches.clear()
@@ -51,26 +59,14 @@ func generate(seed_value: int, map_size: Vector2, style := "balanced", participa
 		for x in grid_size.x:
 			var point := _reference_point(cell_center(Vector2i(x, y)))
 			var variation := noise.get_noise_2d(point.x, point.y)
-			var terrain := Terrain.GRASS
-			if map_style == "islands":
-				var on_island := _ellipse(point, Vector2(330, 750), Vector2(435, 690)) < 1.0 or _ellipse(point, Vector2(2070, 750), Vector2(435, 690)) < 1.0 or _ellipse(point, Vector2(1200, 750), Vector2(350, 650)) < 1.0
-				terrain = Terrain.MEADOW if on_island and variation > 0.13 else Terrain.GRASS if on_island else Terrain.WATER
-			elif _is_road(point):
-				terrain = Terrain.ROAD
-			elif _is_base_clearance(point) or _is_corridor_clearance(point):
-				terrain = Terrain.MEADOW if variation > 0.13 else Terrain.GRASS
-			elif _ellipse(point, Vector2(790, 255), Vector2(285, 205) * _mountain_scale()) < 1.0 + variation * 0.24 or _ellipse(point, Vector2(1660, 265), Vector2(270, 195) * _mountain_scale()) < 1.0 + variation * 0.22:
-				terrain = Terrain.MOUNTAIN
-			elif _ellipse(point, Vector2(800, 1220), Vector2(270, 195) * _water_scale()) < 1.0 - variation * 0.25 or _ellipse(point, Vector2(1580, 1190), Vector2(290, 205) * _water_scale()) < 1.0 - variation * 0.25:
-				terrain = Terrain.WATER
-			elif variation > 0.13:
-				terrain = Terrain.MEADOW
+			var terrain := _layout_terrain(point, variation)
 			cells[_index(Vector2i(x, y))] = terrain
 	_setup_pathfinder()
 	_mark_reachable_cells()
 	_generate_stealth_patches()
 	_generate_plants()
 	_generate_starter_resources()
+	_generate_contested_resources()
 	_generate_resource_clusters()
 	_generate_sheep()
 	_generate_wildlife()
@@ -78,6 +74,92 @@ func generate(seed_value: int, map_size: Vector2, style := "balanced", participa
 	_ensure_starter_access()
 	_build_elevations()
 	queue_redraw()
+
+func _plan_layout() -> void:
+	terrain_shapes.clear()
+	layout_bases.clear()
+	sacred_site_references.clear()
+	trade_site_references.clear()
+	fish_site_references.clear()
+	crossing_references.clear()
+	barrier_x = 1200.0 + rng.randf_range(-85.0, 85.0)
+	var base_y := 720.0 + rng.randf_range(-65.0, 65.0)
+	if player_count <= 2:
+		layout_bases.append_array([Vector2(330, base_y), Vector2(2070, base_y)])
+	else:
+		var upper_y := 420.0 + rng.randf_range(-45.0, 45.0)
+		layout_bases.append_array([Vector2(330, upper_y), Vector2(2070, 1500.0 - upper_y), Vector2(330, 1500.0 - upper_y), Vector2(2070, upper_y)])
+	if map_style == "balanced":
+		terrain_shapes.append(_shape(Terrain.MOUNTAIN, Vector2(790 + rng.randf_range(-145, 145), 255 + rng.randf_range(-65, 65)), Vector2(275, 190)))
+		terrain_shapes.append(_shape(Terrain.MOUNTAIN, Vector2(1660 + rng.randf_range(-165, 165), 265 + rng.randf_range(-70, 70)), Vector2(260, 185)))
+		terrain_shapes.append(_shape(Terrain.WATER, Vector2(800 + rng.randf_range(-120, 120), 1220 + rng.randf_range(-60, 60)), Vector2(270, 195)))
+		terrain_shapes.append(_shape(Terrain.WATER, Vector2(1580 + rng.randf_range(-170, 170), 1190 + rng.randf_range(-70, 70)), Vector2(280, 205)))
+		sacred_site_references.append_array([Vector2(barrier_x - 125, 360), Vector2(barrier_x, 750), Vector2(barrier_x + 125, 1130)])
+		trade_site_references.append_array([Vector2(barrier_x, 175), Vector2(barrier_x, 1325)])
+		for shape in terrain_shapes:
+			if shape["kind"] == Terrain.WATER: fish_site_references.append(shape["center"])
+	elif map_style == "lakes":
+		crossing_references.append_array([350.0 + rng.randf_range(-45, 45), 750.0 + rng.randf_range(-45, 45), 1150.0 + rng.randf_range(-45, 45)])
+		terrain_shapes.append(_shape(Terrain.MOUNTAIN, Vector2(745 + rng.randf_range(-60, 60), 220), Vector2(180, 140)))
+		terrain_shapes.append(_shape(Terrain.MOUNTAIN, Vector2(1660 + rng.randf_range(-60, 60), 240), Vector2(180, 140)))
+		for y in crossing_references: sacred_site_references.append(Vector2(_barrier_center(y), y))
+		trade_site_references.append_array([Vector2(barrier_x - 245, 175), Vector2(barrier_x + 245, 1325)])
+		var upper_water := (crossing_references[0] + crossing_references[1]) * 0.5
+		var lower_water := (crossing_references[1] + crossing_references[2]) * 0.5
+		fish_site_references.append_array([Vector2(_barrier_center(170), 170), Vector2(_barrier_center(upper_water), upper_water), Vector2(_barrier_center(lower_water), lower_water), Vector2(_barrier_center(1330), 1330)])
+	elif map_style == "highlands":
+		crossing_references.append_array([340.0 + rng.randf_range(-50, 50), 750.0 + rng.randf_range(-45, 45), 1160.0 + rng.randf_range(-50, 50)])
+		terrain_shapes.append(_shape(Terrain.MOUNTAIN, Vector2(845 + rng.randf_range(-85, 85), 205), Vector2(215, 165)))
+		terrain_shapes.append(_shape(Terrain.MOUNTAIN, Vector2(1570 + rng.randf_range(-85, 85), 225), Vector2(215, 165)))
+		terrain_shapes.append(_shape(Terrain.WATER, Vector2(790 + rng.randf_range(-100, 100), 1260), Vector2(175, 130)))
+		terrain_shapes.append(_shape(Terrain.WATER, Vector2(1620 + rng.randf_range(-100, 100), 1260), Vector2(175, 130)))
+		for y in crossing_references: sacred_site_references.append(Vector2(_barrier_center(y), y))
+		trade_site_references.append_array([Vector2(barrier_x - 255, 170), Vector2(barrier_x + 255, 1330)])
+		for shape in terrain_shapes:
+			if shape["kind"] == Terrain.WATER: fish_site_references.append(shape["center"])
+	else:
+		sacred_site_references.append_array([Vector2(barrier_x, 350), Vector2(barrier_x, 750), Vector2(barrier_x, 1150)])
+		trade_site_references.append_array([Vector2(600, 750), Vector2(1800, 750)])
+		fish_site_references.append_array([Vector2(800, 750), Vector2(1600, 750)])
+	# Three and four player maps use the same terrain rules, with bases protected
+	# separately. The small seeded shifts avoid identical openings each match.
+
+func _shape(kind: int, center: Vector2, radius: Vector2) -> Dictionary:
+	return {"kind": kind, "center": center, "radius": radius}
+
+func _barrier_center(y: float) -> float:
+	return barrier_x + sin(y / 210.0 + float(map_seed % 31)) * 45.0
+
+func _is_crossing(point: Vector2) -> bool:
+	for y in crossing_references:
+		if absf(point.y - y) < (58.0 if map_style == "highlands" else 67.0) and absf(point.x - _barrier_center(point.y)) < 270.0: return true
+	return false
+
+func _layout_terrain(point: Vector2, variation: float) -> int:
+	if map_style == "islands":
+		var on_island := _ellipse(point, Vector2(330, 750), Vector2(435, 690)) < 1.0 + variation * 0.09 or _ellipse(point, Vector2(2070, 750), Vector2(435, 690)) < 1.0 + variation * 0.09 or _ellipse(point, Vector2(barrier_x, 750), Vector2(350, 650)) < 1.0 + variation * 0.09
+		return Terrain.MEADOW if on_island and variation > 0.13 else Terrain.GRASS if on_island else Terrain.WATER
+	if _is_base_clearance(point): return Terrain.GRASS
+	if (map_style == "balanced" and _is_road(point)) or (map_style != "balanced" and _is_crossing(point)): return Terrain.ROAD
+	if map_style == "lakes":
+		var river_width := 115.0 + 18.0 * sin(point.y / 145.0)
+		if absf(point.x - _barrier_center(point.y)) < river_width or _ellipse(point, Vector2(barrier_x, 125), Vector2(280, 270)) < 1.0 + variation * 0.1 or _ellipse(point, Vector2(barrier_x, 1375), Vector2(295, 255)) < 1.0 + variation * 0.1: return Terrain.WATER
+	elif map_style == "highlands":
+		if absf(point.x - _barrier_center(point.y)) < 112.0 + 18.0 * variation: return Terrain.MOUNTAIN
+	for shape in terrain_shapes:
+		var edge := 1.0 + variation * (0.24 if shape["kind"] == Terrain.MOUNTAIN else -0.2)
+		if _ellipse(point, shape["center"], shape["radius"]) < edge: return shape["kind"]
+	return Terrain.MEADOW if variation > 0.13 else Terrain.GRASS
+
+func sacred_site_positions() -> Array[Vector2]:
+	var result: Array[Vector2] = []
+	for reference in sacred_site_references: result.append(nearest_walkable_point(_world_point(reference)))
+	return result
+
+func trade_post_positions() -> Array[Vector2]:
+	var result: Array[Vector2] = []
+	for reference in trade_site_references: result.append(nearest_walkable_point(_world_point(reference)))
+	return result
 
 func _build_elevations() -> void:
 	elevation_levels.resize(cells.size())
@@ -146,25 +228,19 @@ func _mountain_height_at(point: Vector2) -> float:
 	var shoulder := clampf(1.0 - nearest / (CELL_SIZE * 4.5), 0.0, 1.0)
 	var height := 74.0 * shoulder * shoulder * (3.0 - 2.0 * shoulder)
 	var world_scale := Vector2(world_size.x / 2400.0, world_size.y / 1500.0)
-	var peak_scale := 1.2 if map_style == "highlands" else 0.85 if map_style == "lakes" else 1.0
-	for peak in [
-		[Vector2(790, 255), Vector2(285, 205), 195.0],
-		[Vector2(705, 190), Vector2(145, 118), 135.0],
-		[Vector2(1660, 265), Vector2(270, 195), 190.0],
-		[Vector2(1740, 208), Vector2(142, 110), 130.0],
-	]:
-		var center: Vector2 = peak[0] * world_scale
-		var radius: Vector2 = peak[1] * world_scale * _mountain_scale()
+	for shape in terrain_shapes:
+		if shape["kind"] != Terrain.MOUNTAIN: continue
+		var center: Vector2 = shape["center"] * world_scale
+		var radius: Vector2 = shape["radius"] * world_scale
 		var radial := ((point - center) / radius).length_squared()
 		if radial >= 1.0: continue
 		var crest: float = pow(1.0 - sqrt(radial), 0.82)
-		height = maxf(height, float(peak[2]) * peak_scale * crest)
+		height = maxf(height, (180.0 if map_style == "highlands" else 155.0 if map_style == "lakes" else 190.0) * crest)
 	return height
 
 func spawn_positions() -> Array[Vector2]:
-	var references := [Vector2(330, 720), Vector2(2070, 720)] if player_count <= 2 else [Vector2(330, 420), Vector2(2070, 1080), Vector2(330, 1080), Vector2(2070, 420)]
 	var result: Array[Vector2] = []
-	for index in player_count: result.append(_world_point(references[index]))
+	for index in mini(player_count, layout_bases.size()): result.append(_world_point(layout_bases[index]))
 	return result
 
 func fairness_report() -> Dictionary:
@@ -202,7 +278,7 @@ func _ensure_starter_access() -> void:
 		resource_specs[index] = spec
 
 func _generate_wildlife() -> void:
-	for reference in [Vector2(900, 690), Vector2(1500, 810)]:
+	for reference in [Vector2(barrier_x - 305, 650), Vector2(barrier_x + 305, 850)]:
 		var point := nearest_walkable_point(_world_point(reference))
 		resource_specs.append({"kind": "food", "appearance": "boar", "position": point, "amount": 420})
 
@@ -215,12 +291,6 @@ func _world_point(point: Vector2) -> Vector2:
 func _starter_point(base: Vector2, offset: Vector2) -> Vector2:
 	return _world_point(base) + offset
 
-func _mountain_scale() -> float:
-	return 1.3 if map_style == "highlands" else 0.85 if map_style == "lakes" else 1.0
-
-func _water_scale() -> float:
-	return 1.35 if map_style == "lakes" else 0.8 if map_style == "highlands" else 1.0
-
 func _ellipse(point: Vector2, center: Vector2, radius: Vector2) -> float:
 	var delta := (point - center) / radius
 	return delta.length_squared()
@@ -229,19 +299,16 @@ func _is_road(point: Vector2) -> bool:
 	return absf(point.y - (750.0 + sin(point.x / 245.0) * 24.0)) <= 43.0
 
 func _is_corridor_clearance(point: Vector2) -> bool:
-	if point.y >= 550 and point.y <= 950: return true
-	if player_count <= 2: return false
-	for base: Vector2 in [Vector2(330, 420), Vector2(2070, 1080), Vector2(330, 1080), Vector2(2070, 420)]:
-		var to_center: Vector2 = Vector2(1200, 750) - base
-		var fraction := clampf((point - base).dot(to_center) / to_center.length_squared(), 0.0, 1.0)
-		if point.distance_to(base + to_center * fraction) < 65.0: return true
+	if map_style == "balanced" and _is_road(point): return true
+	for site in sacred_site_references:
+		if point.distance_to(site) < 115.0: return true
+	if _is_crossing(point): return true
 	return false
 
 func _is_base_clearance(point: Vector2) -> bool:
-	if player_count > 2:
-		for base in [Vector2(330, 420), Vector2(2070, 1080), Vector2(330, 1080), Vector2(2070, 420)]:
-			if _ellipse(point, base, Vector2(280, 245)) < 1.0: return true
-	return _ellipse(point, Vector2(330, 720), Vector2(390, 335)) < 1.0 or _ellipse(point, Vector2(2070, 720), Vector2(390, 335)) < 1.0
+	for base in layout_bases:
+		if _ellipse(point, base, Vector2(280, 245) if player_count > 2 else Vector2(390, 335)) < 1.0: return true
+	return false
 
 func _index(cell: Vector2i) -> int:
 	return cell.y * grid_size.x + cell.x
@@ -396,6 +463,39 @@ func _generate_resource_clusters() -> void:
 	for cluster in 3: _add_cluster("gold", "ore", rng.randi_range(2, 3), 550)
 	for cluster in 3: _add_cluster("stone", "ore", rng.randi_range(2, 3), 500)
 
+func _generate_contested_resources() -> void:
+	if map_style == "islands":
+		_add_cluster_near("gold", "ore", 3, 550, Vector2(barrier_x - 115, 650))
+		_add_cluster_near("gold", "ore", 3, 550, Vector2(barrier_x + 115, 850))
+		_add_cluster_near("food", "deer", 4, 170, Vector2(barrier_x, 530))
+		_add_cluster_near("wood", "tree", 5, 500, Vector2(barrier_x, 1040))
+		return
+	var upper: float = crossing_references[0] if not crossing_references.is_empty() else 390.0
+	var lower: float = crossing_references.back() if not crossing_references.is_empty() else 1110.0
+	for side in [-1.0, 1.0]:
+		var x: float = barrier_x + side * (330.0 if map_style == "balanced" else 295.0)
+		_add_cluster_near("gold", "ore", 3, 550, Vector2(x, upper + 95.0))
+		_add_cluster_near("stone", "ore", 2, 500, Vector2(x, lower - 95.0))
+		_add_cluster_near("food", "deer", 3, 170, Vector2(x, 760.0))
+
+func _add_cluster_near(kind: String, appearance: String, count: int, amount: int, reference: Vector2) -> void:
+	var center := _world_point(reference)
+	var placed := 0
+	for attempt in 120:
+		if placed >= count: break
+		var point := center + Vector2.from_angle(rng.randf_range(0.0, TAU)) * rng.randf_range(20.0, 115.0)
+		if point.x < 45.0 or point.y < 45.0 or point.x > world_size.x - 45.0 or point.y > world_size.y - 45.0: continue
+		if not is_area_buildable(Rect2(point - Vector2(24, 24), Vector2(48, 48))): continue
+		if _is_base_clearance(_reference_point(point)) or _is_corridor_clearance(_reference_point(point)): continue
+		var clear := true
+		for spec in resource_specs:
+			if point.distance_squared_to(spec["position"]) < 42.0 * 42.0:
+				clear = false
+				break
+		if not clear: continue
+		resource_specs.append({"kind": kind, "appearance": appearance, "position": point, "amount": amount})
+		placed += 1
+
 func _generate_sheep() -> void:
 	for cluster in 5:
 		for retry in 40:
@@ -411,9 +511,8 @@ func _generate_sheep() -> void:
 
 func _generate_starter_resources() -> void:
 	if player_count > 2:
-		var bases := [Vector2(330, 420), Vector2(2070, 1080), Vector2(330, 1080), Vector2(2070, 420)]
 		for owner_id in player_count:
-			var base: Vector2 = bases[owner_id]
+			var base: Vector2 = layout_bases[owner_id]
 			var outward := -1.0 if base.x < 1200.0 else 1.0
 			var vertical := -1.0 if base.y < 750.0 else 1.0
 			for i in 5:
@@ -426,8 +525,7 @@ func _generate_starter_resources() -> void:
 				resource_specs.append({"kind": "stone", "appearance": "ore", "position": _starter_point(base, Vector2(-outward * (70 + i * 48), vertical * 180)), "amount": 560})
 		return
 	for side in [0, 1]:
-		var x := 330.0 if side == 0 else 2070.0
-		var base := Vector2(x, 720)
+		var base: Vector2 = layout_bases[side]
 		for i in 5:
 			resource_specs.append({"kind": "wood", "appearance": "tree", "position": _starter_point(base, Vector2((-270 if side == 0 else 270) + (i % 2) * 52, -150 + (i / 2) * 57)), "amount": 500})
 		for i in 4:
@@ -436,10 +534,6 @@ func _generate_starter_resources() -> void:
 			resource_specs.append({"kind": "gold", "appearance": "ore", "position": _starter_point(base, Vector2((-180 if side == 0 else 180) + i * 50, 210)), "amount": 580})
 		for i in 3:
 			resource_specs.append({"kind": "stone", "appearance": "ore", "position": _starter_point(base, Vector2((100 if side == 0 else -100) + i * 50, 250)), "amount": 560})
-	for i in 7:
-		resource_specs.append({"kind": "wood", "appearance": "tree", "position": _world_point(Vector2(1100 + (i % 3) * 60, 350 + (i / 3) * 60)), "amount": 550})
-	for i in 5:
-		resource_specs.append({"kind": "gold", "appearance": "ore", "position": _world_point(Vector2(1100 + (i % 3) * 60, 1130 + (i / 3) * 60)), "amount": 550})
 
 func _add_cluster(kind: String, appearance: String, count: int, amount: int) -> void:
 	for retry in 16:
@@ -462,7 +556,8 @@ func _add_cluster(kind: String, appearance: String, count: int, amount: int) -> 
 			return
 
 func _generate_fish() -> void:
-	for center: Vector2 in [_world_point(Vector2(800, 1220)), _world_point(Vector2(1580, 1190))]:
+	for reference in fish_site_references:
+		var center: Vector2 = _world_point(reference)
 		var placed := 0
 		for attempt in 70:
 			if placed >= 7: break

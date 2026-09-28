@@ -116,6 +116,7 @@ func update_visibility() -> void:
 		for unit in game.units:
 			if not is_instance_valid(unit) or unit.is_queued_for_deletion() or unit.owner_id != owner_id or unit.garrisoned_in != null: continue
 			var radius := 360.0 if unit.kind == "scout" else 185.0 if unit.kind == "villager" else 250.0
+			if unit.kind == "scout" and game.civilizations[owner_id] == "Chinese" and game.players[owner_id].get("dynasty", "") == "Tang": radius += 70.0
 			if game.world_map.is_high_ground(unit.position): radius += 65.0
 			for camp in game.buildings:
 				if is_instance_valid(camp) and camp.owner_id == owner_id and camp.kind == "scout_camp" and camp.position.distance_to(unit.position) <= 180.0:

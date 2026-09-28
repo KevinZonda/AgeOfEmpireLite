@@ -6,7 +6,7 @@ func _initialize() -> void:
 func _run() -> void:
 	var map := RtsWorldMap.new()
 	for style in ["balanced", "lakes", "highlands", "islands"]:
-		for participants in [2, 4]:
+		for participants in [2, 3, 4]:
 			for map_size in [Vector2(2400, 2400), Vector2(3000, 3000)]:
 				for seed_value in [17, 431, 9021]:
 					map.generate(seed_value, map_size, style, participants)

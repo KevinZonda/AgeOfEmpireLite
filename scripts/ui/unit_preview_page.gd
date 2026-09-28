@@ -90,6 +90,7 @@ var refresh_timer := 0.0
 func build(parent: Control, initial_civilization: String, button_style: Callable) -> void:
 	style_button = button_style
 	civilization = initial_civilization if GameData.CIVILIZATIONS.has(initial_civilization) else "English"
+	dynasty = "Tang" if civilization == "Chinese" else ""
 	color = Color("100f0d")
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -136,7 +137,7 @@ func _build_header(parent: VBoxContainer) -> void:
 	civilization_choice.item_selected.connect(func(index: int) -> void:
 		civilization = str(civilization_ids[index])
 		selected_research.clear()
-		dynasty = ""
+		dynasty = "Tang" if civilization == "Chinese" else ""
 		producer_landmark = ""
 		_refresh_roster()
 		_refresh_selection()
@@ -150,7 +151,7 @@ func _build_header(parent: VBoxContainer) -> void:
 	style_button.call(age_choice)
 	age_choice.item_selected.connect(func(index: int) -> void:
 		age = index + 1
-		if dynasty == "Ming" and age < 4 or dynasty == "Yuan" and age < 3 or dynasty == "Song" and age < 2: dynasty = ""
+		if dynasty == "Ming" and age < 4 or dynasty == "Yuan" and age < 3 or dynasty == "Song" and age < 2: dynasty = "Tang"
 		producer_landmark = ""
 		_refresh_roster()
 		_refresh_selection()
@@ -361,7 +362,7 @@ func _refresh_bonuses() -> void:
 	_clear(bonus_box)
 	if selected_kind.is_empty(): return
 	if civilization == "Chinese":
-		_add_option_row("王朝", ["无王朝", "宋", "元", "明"].slice(0, age), ["", "Song", "Yuan", "Ming"].slice(0, age), dynasty, func(value: String) -> void:
+		_add_option_row("王朝", ["唐", "宋", "元", "明"].slice(0, age), ["Tang", "Song", "Yuan", "Ming"].slice(0, age), dynasty, func(value: String) -> void:
 			dynasty = value
 			_refresh_preview()
 			_refresh_stats()

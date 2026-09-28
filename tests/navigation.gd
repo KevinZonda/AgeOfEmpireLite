@@ -38,17 +38,32 @@ func _run() -> void:
 	var occupied_goal: Vector2 = game.units[1].position
 	var open_goal: Vector2 = game.navigation.nearest_walkable_point(occupied_goal, worker.radius(), worker)
 	assert(game.navigation.can_occupy(open_goal, worker.radius(), worker), "move orders should choose a free destination")
-	var movable_resource: RtsResource = game.spawn_resource("stone", Vector2(1200, 750), 100)
+	game.navigation.refresh()
+	var old_point := Vector2.INF
+	var new_point := Vector2.INF
+	for y in range(8, game.world_map.grid_size.y - 8):
+		for x in range(8, game.world_map.grid_size.x - 8):
+			var cell := Vector2i(x, y)
+			var point: Vector2 = game.world_map.cell_center(cell)
+			if game.navigation.pathfinder.is_point_solid(cell): continue
+			if old_point == Vector2.INF:
+				old_point = point
+			elif point.distance_to(old_point) > 250.0:
+				new_point = point
+				break
+		if new_point != Vector2.INF: break
+	assert(old_point != Vector2.INF and new_point != Vector2.INF)
+	var movable_resource: RtsResource = game.spawn_resource("stone", old_point, 100)
 	game.navigation.refresh()
 	var old_cell: Vector2i = game.world_map.cell_at(movable_resource.position)
 	assert(game.navigation.pathfinder.is_point_solid(old_cell))
-	movable_resource.position = Vector2(1450, 750)
+	movable_resource.position = new_point
 	game.navigation.resource_moved(movable_resource, game.world_map.cell_center(old_cell))
 	game.navigation.path_between(worker.position, movable_resource.position)
 	assert(not game.navigation.pathfinder.is_point_solid(old_cell), "moved resources should release old path cells")
 	assert(game.navigation.pathfinder.is_point_solid(game.world_map.cell_at(movable_resource.position)), "moved resources should block their new path cells")
 	var blocker: RtsUnit = game.units[1]
-	var blocker_destination := Vector2(1350, 750)
+	var blocker_destination := old_point
 	game.navigation.invalidate_spatial_index()
 	assert(game.navigation.can_occupy(blocker_destination, worker.radius(), worker))
 	var blocker_previous := blocker.position

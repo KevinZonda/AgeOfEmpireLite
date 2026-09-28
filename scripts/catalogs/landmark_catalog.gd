@@ -27,7 +27,7 @@ const LANDMARKS := {
 }
 const LANDMARK_HP := 1350.0
 const LANDMARK_SIZE := Vector2(110, 100)
-const DYNASTY_NAMES := {"Song": "宋", "Yuan": "元", "Ming": "明"}
+const DYNASTY_NAMES := {"Tang": "唐", "Song": "宋", "Yuan": "元", "Ming": "明"}
 
 
 static func landmark(landmark_id: String) -> Dictionary:
@@ -97,6 +97,24 @@ static func choices_for(civilization: String, current_age: int, completed: Array
 			result.append(landmark(landmark_id))
 	return result
 
+static func preferred_landmark(civilization: String, current_age: int, map_style: String) -> String:
+	# AI choices express each civilization's existing economy and battlefield
+	# strengths without applying arbitrary terrain-based stat modifiers.
+	match civilization:
+		"English":
+			if current_age == 1: return "eng_kings_mill" if map_style == "islands" else "eng_council_hall"
+			if current_age == 2: return "eng_white_tower" if map_style in ["lakes", "highlands"] else "eng_abbey"
+			if current_age == 3: return "eng_berkshire_fortress" if map_style in ["lakes", "highlands"] else "eng_wynguard_palace"
+		"French":
+			if current_age == 1: return "fr_chamber_of_commerce" if map_style in ["lakes", "islands"] else "fr_school_of_cavalry"
+			if current_age == 2: return "fr_guild_hall" if map_style in ["lakes", "islands"] else "fr_royal_institute"
+			if current_age == 3: return "fr_college_of_artillery" if map_style == "balanced" else "fr_red_palace"
+		"Chinese":
+			if current_age == 1: return "zh_barbican" if map_style in ["lakes", "highlands"] else "zh_imperial_academy"
+			if current_age == 2: return "zh_imperial_palace" if map_style == "islands" else "zh_clocktower"
+			if current_age == 3: return "zh_gatehouse" if map_style in ["lakes", "highlands"] else "zh_spirit_way"
+	return ""
+
 
 static func choice_status(civilization: String, current_age: int, completed: Array, landmark_id: String, active_id: String = "") -> Dictionary:
 	if not GameData.CIVILIZATIONS.has(civilization): return _locked("未知文明")
@@ -121,7 +139,7 @@ static func dynasty_for(completed: Array) -> String:
 	if _completed_at_age(completed, "Chinese", 4) >= 2: return "Ming"
 	if _completed_at_age(completed, "Chinese", 3) >= 2: return "Yuan"
 	if _completed_at_age(completed, "Chinese", 2) >= 2: return "Song"
-	return ""
+	return "Tang"
 
 
 static func dynasty_training_multiplier(civilization: String, dynasty: String, building_kind: String, unit_kind: String) -> float:

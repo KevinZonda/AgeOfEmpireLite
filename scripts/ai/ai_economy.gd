@@ -18,16 +18,17 @@ func _needed_resource(gathering: Dictionary, worker_count: int) -> String:
 	var bank: Dictionary = game.players[owner_id]
 	var age: int = bank["age"]
 	var age_cost: Dictionary = RtsTechTree.age_cost(age)
-	var targets := {"food": 0.42, "wood": 0.30, "gold": 0.28}
+	var targets := {"food": 0.42, "wood": 0.30, "gold": 0.28, "stone": 0.0}
 	if age < RtsTechTree.MAX_AGE and game.match_statistics.elapsed > 90.0:
-		targets = {"food": 0.40, "wood": 0.22, "gold": 0.38}
+		targets = {"food": 0.40, "wood": 0.22, "gold": 0.38, "stone": 0.0}
 	if int(bank["wood"]) < 180: targets["wood"] += 0.18
 	if age >= 3 and game.map_style != "islands" and (_unit_count("battering_ram") == 0 or not _has_building("monastery")) and int(bank["wood"]) < 300: targets["wood"] += 0.30
 	if int(bank["food"]) < 160: targets["food"] += 0.18
 	if age_cost.has("gold") and int(bank["gold"]) < int(age_cost["gold"]): targets["gold"] += 0.12
+	if age >= 3 and game.civilizations[owner_id] == "French" and game.map_style != "islands" and not _has_building("keep") and int(bank["stone"]) < 400: targets["stone"] = 0.23
 	var best := "food"
 	var best_score := -INF
-	for kind in ["food", "wood", "gold"]:
+	for kind in ["food", "wood", "gold", "stone"]:
 		var score: float = float(targets[kind]) * float(maxi(worker_count, 3)) - float(gathering[kind])
 		if score > best_score:
 			best_score = score
@@ -140,6 +141,16 @@ func _construct(kind: String, _worker: RtsUnit) -> void:
 	var rng: RandomNumberGenerator = controller.rng
 	if not game.can_afford(owner_id, GameData.BUILDINGS[kind]["cost"]): return
 	var base: Vector2 = game.spawn_point_for(owner_id)
+	if kind == "outpost" and game.civilizations[owner_id] == "English" and game.map_style in ["lakes", "highlands"]:
+		var site: Vector2 = game.world_map.sacred_site_positions()[1]
+		for fraction in [0.48, 0.40, 0.32]:
+			var forward: Vector2 = base.lerp(site, fraction)
+			if not game.can_place(kind, forward): continue
+			var builder := _construction_worker(forward)
+			if builder != null:
+				var builders: Array[RtsUnit] = [builder]
+				game.place_building(owner_id, kind, forward, builders)
+				return
 	if kind == "farm":
 		for unit in game.units:
 			if not is_instance_valid(unit) or unit.owner_id != owner_id or unit.kind != "villager" or unit.order == "build": continue
@@ -160,12 +171,25 @@ func _construct(kind: String, _worker: RtsUnit) -> void:
 			game.place_building(owner_id, kind, point, builders)
 			return
 
-func _construct_dock(_worker: RtsUnit) -> void:
-	var lake_center: Vector2 = game._scaled_point(Vector2(1580, 1190))
-	var scale: float = game.world_size.x / 2400.0
-	for radius in [180.0, 220.0, 260.0, 300.0, 340.0, 390.0, 440.0]:
+func _construct_french_keep() -> void:
+	var stable: RtsBuilding = game.find_nearest_owned_building(owner_id, "stable", game.spawn_point_for(owner_id))
+	if stable == null or not stable.is_complete(): return
+	for radius in [125.0, 155.0, 175.0]:
 		for step in 16:
-			var point: Vector2 = lake_center + Vector2.from_angle(TAU * step / 16.0) * float(radius) * scale
+			var point: Vector2 = stable.position + Vector2.from_angle(TAU * float(step) / 16.0) * radius
+			if not game.can_place("keep", point): continue
+			var worker := _construction_worker(point)
+			if worker == null: continue
+			var builders: Array[RtsUnit] = [worker]
+			game.place_building(owner_id, "keep", point, builders)
+			return
+
+func _construct_dock(_worker: RtsUnit) -> void:
+	var base: Vector2 = game.spawn_point_for(owner_id)
+	var scale: float = game.world_size.x / 2400.0
+	for distance in range(180, 1320, 35):
+		for step in 48:
+			var point: Vector2 = base + Vector2.from_angle(TAU * step / 48.0) * float(distance) * scale
 			if game.can_place("dock", point):
 				var worker := _construction_worker(point)
 				if worker == null: continue

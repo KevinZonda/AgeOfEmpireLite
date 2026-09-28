@@ -20,7 +20,7 @@ func _visible_enemy_units() -> Array[RtsUnit]:
 
 func _secure_sacred_site(army: Array[RtsUnit]) -> void:
 	var controller = _controller.get_ref()
-	if controller.site_cooldown > 0.0 or army.size() < controller.attack_threshold() + 3 or game.map_style == "islands": return
+	if controller.site_cooldown > 0.0 or army.size() < controller.attack_threshold() + 3: return
 	var best_site := -1
 	var best_score := INF
 	for index in game.objectives.sacred_sites.size():
@@ -43,7 +43,7 @@ func _secure_sacred_site(army: Array[RtsUnit]) -> void:
 	var candidates := army.duplicate()
 	candidates.sort_custom(func(a: RtsUnit, b: RtsUnit) -> bool: return a.position.distance_squared_to(point) < b.position.distance_squared_to(point))
 	for soldier in candidates:
-		if soldier.stats.get("tags", []).has("siege") or soldier.hp < soldier.max_hp * 0.45: continue
+		if soldier.stats.get("tags", []).has("siege") or soldier.hp < soldier.max_hp * 0.45 or game.navigation.path_between(soldier.position, point, soldier).is_empty(): continue
 		guards.append(soldier)
 		if guards.size() >= 10: break
 	if guards.size() < 4: return

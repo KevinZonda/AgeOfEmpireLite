@@ -587,6 +587,7 @@ func _unit_stats_text(unit: RtsUnit) -> String:
 		lines.append("交战规则：%s" % {"aggressive": "主动追击", "defensive": "短距防御", "passive": "只响应手动攻击"}.get(unit.engagement, unit.engagement))
 	if float(resistance.get("ranged", 0.0)) > 0.0: lines.append("远程减伤 %.0f%%" % (float(resistance["ranged"]) * 100.0))
 	if RtsCivilizationRules.english_network_rate(game, unit) > 1.0: lines.append("城堡网络：攻击速度 +20%")
+	if unit.kind == "scout" and game.civilizations[unit.owner_id] == "Chinese" and game.players[unit.owner_id].get("dynasty", "") == "Tang": lines.append("唐朝斥候：视野 +70")
 	if is_instance_valid(unit.wall_host): lines.append("正在石墙上驻守  ·  远程护甲 +2")
 	var profiles: Dictionary = stats.get("profiles", {})
 	for profile_id in profiles:
