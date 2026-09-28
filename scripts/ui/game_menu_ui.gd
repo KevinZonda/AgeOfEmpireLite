@@ -490,13 +490,13 @@ func _set_lobby_player_color(slot: int, color_index: int) -> void:
 	game.lobby_players[slot]["color"] = color_index
 	_refresh_player_rows()
 
-func _show_tech_tree(civilization: String) -> void:
+func _show_tech_tree(civilization: String, age := 1) -> void:
 	if not GameData.CIVILIZATIONS.has(civilization): return
 	if game.tech_tree_overlay != null: game.tech_tree_overlay.queue_free()
 	game.tech_tree_page = game.TECH_TREE_PAGE.new()
 	game.tech_tree_page.civilization_selected.connect(_show_tech_tree)
 	game.tech_tree_page.close_requested.connect(_close_tech_tree)
-	game.tech_tree_page.build(game.menu_panel.get_parent(), civilization, game._style_button)
+	game.tech_tree_page.build(game.menu_panel.get_parent(), civilization, game._style_button, age)
 	game.tech_tree_overlay = game.tech_tree_page.overlay
 	game.tech_tree_civilization_choice = game.tech_tree_page.civilization_choice
 	game.menu_panel.hide()

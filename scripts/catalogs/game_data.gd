@@ -8,7 +8,7 @@ const RESOURCE_NAMES := ["food", "wood", "gold", "stone"]
 const RESOURCE_LABELS := {"food": "食物", "wood": "木材", "gold": "黄金", "stone": "石料"}
 
 const CIVILIZATIONS := {
-	"English": {"label": "英格兰", "color": Color("3976b8"), "description": "农田 +25% 产出，长弓兵"},
+	"English": {"label": "英格兰", "color": Color("3976b8"), "description": "农田更省木材、采集更多食物；长弓兵"},
 	"French": {"label": "法兰西", "color": Color("b94b4b"), "description": "骑士冲锋伤害，骑兵训练更快"},
 	"Chinese": {"label": "中国", "color": Color("c69a38"), "description": "建造更快，诸葛弩与宫廷卫士，双地标解锁王朝"},
 }

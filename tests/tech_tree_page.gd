@@ -36,6 +36,11 @@ func _run() -> void:
 		var landmark: String = {"English": "议会厅", "French": "骑兵学校", "Chinese": "翰林院"}[civilization]
 		assert(labels.any(func(value: String) -> bool: return value.contains(landmark)), "civilization landmarks should come from the game data")
 		assert(game.tech_tree_civilization_choice.item_count == 3)
+		assert(game.tech_tree_page.age_scroll.horizontal_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED)
+		game.tech_tree_page.age_buttons[3].pressed.emit()
+		await process_frame
+		assert(game.tech_tree_page.selected_age == 4 and game.tech_tree_page.age_pages[3].visible)
+		assert(not game.tech_tree_page.age_pages[0].visible, "age tabs should show only one era")
 		game._close_tech_tree()
 		assert(game.tech_tree_overlay == null and game.menu_panel.visible)
 		assert(game.lobby_players[0]["civilization"] == civilization)
@@ -48,11 +53,13 @@ func _run() -> void:
 	assert(home_button != null, "home screen should have a tech tree entry")
 	home_button.pressed.emit()
 	assert(game.tech_tree_overlay != null)
+	game.tech_tree_page.age_buttons[2].pressed.emit()
 	var chinese_index := GameData.CIVILIZATIONS.keys().find("Chinese")
 	game.tech_tree_civilization_choice.select(chinese_index)
 	game.tech_tree_civilization_choice.item_selected.emit(chinese_index)
 	await process_frame
 	assert(game.tech_tree_civilization_choice.selected == chinese_index)
+	assert(game.tech_tree_page.selected_age == 3, "switching civilization should keep the selected era")
 	var switched_labels: Array[String] = []
 	for child in game.tech_tree_overlay.find_children("*", "Label", true, false): switched_labels.append(child.text)
 	assert(switched_labels.any(func(value: String) -> bool: return value.contains("中国  ·  科技树")))
