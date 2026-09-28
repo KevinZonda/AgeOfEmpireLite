@@ -409,9 +409,13 @@ func _draw() -> void:
 			draw_line(Vector2(x, -22), Vector2(x - 7, 22), Color("d4bd73"), 3)
 	elif kind == "town_center" and construction_ratio >= 0.65:
 		draw_rect(Rect2(-15, -19, 30, 28), Color("e5d3a7"))
-		draw_colored_polygon(PackedVector2Array([Vector2(-26, -19), Vector2(0, -35), Vector2(26, -19)]), Color("513c36"))
+		var roof := PackedVector2Array([Vector2(-26, -19), Vector2(0, -35), Vector2(26, -19)])
+		draw_colored_polygon(roof, Color("513c36"))
+		draw_polyline(roof, Color("1c2829"), 2.5)
 	elif construction_ratio >= 0.65:
-		draw_colored_polygon(PackedVector2Array([Vector2(-size().x * 0.4, -size().y * 0.4), Vector2(0, -size().y * 0.65), Vector2(size().x * 0.4, -size().y * 0.4)]), Color("513c36"))
+		var roof := PackedVector2Array([Vector2(-size().x * 0.4, -size().y * 0.4), Vector2(0, -size().y * 0.65), Vector2(size().x * 0.4, -size().y * 0.4)])
+		draw_colored_polygon(roof, Color("513c36"))
+		draw_polyline(roof, Color("1c2829"), 2.5)
 	var side := icon_size()
 	_draw_building_icon(Vector2(0, -size().y * 0.5 - side * 0.5 - 8.0), side)
 	var font := ThemeDB.fallback_font
@@ -450,6 +454,8 @@ func _draw_isometric() -> void:
 	if height > 0.0:
 		draw_colored_polygon(PackedVector2Array([ne + lift, se + lift, se, ne]), color.darkened(0.5))
 		draw_colored_polygon(PackedVector2Array([sw + lift, se + lift, se, sw]), color.darkened(0.35))
+		draw_polyline(PackedVector2Array([ne + lift, se + lift, se, ne, ne + lift]), Color("1c2829"), 2.0)
+		draw_polyline(PackedVector2Array([sw + lift, se + lift, se, sw, sw + lift]), Color("1c2829"), 2.0)
 		if kind.ends_with("_gate"):
 			var gate_mid := (sw + se) * 0.5
 			draw_line(gate_mid + lift * 0.2, gate_mid + lift * 0.78, Color("202a29"), 7.0)
@@ -472,6 +478,13 @@ func _draw_isometric() -> void:
 		var roof_middle := (nw + ne + se + sw) * 0.25 + lift
 		draw_line(nw + lift, se + lift, roof_color.lightened(0.25), 2.0)
 		draw_circle(roof_middle, 4.0, Color("d8bd80"))
+		if kind in ["town_center", "landmark", "keep"]:
+			var ridge := roof_middle + Vector2(0, -12)
+			draw_line(nw + lift, ridge, Color("25302d"), 3.0)
+			draw_line(ne + lift, ridge, Color("25302d"), 3.0)
+			draw_line(ridge, se + lift, Color("25302d"), 3.0)
+			draw_line(nw + lift, ridge, Color("bf9969"), 1.5)
+			draw_line(ne + lift, ridge, Color("bf9969"), 1.5)
 	if damage_flash_timer > 0.0:
 		draw_polyline(PackedVector2Array([nw + lift, ne + lift, se + lift, sw + lift, nw + lift]), Color("f7d091", damage_flash_timer * 3.4), 3.0)
 	# Labels and status bars are drawn in screen space so they stay legible.

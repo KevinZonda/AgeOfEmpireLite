@@ -135,17 +135,24 @@ func _draw() -> void:
 		"wood": color = Color("397948")
 		"gold": color = Color("e4c359")
 		"stone": color = Color("9b9f9e")
+	var outline := Color("26352d")
 	if appearance == "fish":
-		draw_colored_polygon(PackedVector2Array([Vector2(-16, 0), Vector2(4, -7), Vector2(16, 0), Vector2(4, 7)]), Color("c5d9cf"))
+		var body := PackedVector2Array([Vector2(-16, 0), Vector2(4, -7), Vector2(16, 0), Vector2(4, 7)])
+		draw_colored_polygon(body, Color("c5d9cf"))
+		draw_polyline(body + PackedVector2Array([body[0]]), outline, 2.0)
 		draw_colored_polygon(PackedVector2Array([Vector2(-16, 0), Vector2(-24, -7), Vector2(-24, 7)]), Color("9fc9cc"))
 		draw_circle(Vector2(9, -2), 1.5, Color("253947"))
 	elif appearance == "deer":
 		draw_ellipse_shape()
 	elif appearance == "boar":
-		draw_colored_polygon(PackedVector2Array([Vector2(-20, -9), Vector2(8, -13), Vector2(22, -3), Vector2(18, 12), Vector2(-18, 11)]), Color("684d3a") if wildlife_hp > 0.0 else Color("886b54"))
+		var body := PackedVector2Array([Vector2(-20, -9), Vector2(8, -13), Vector2(22, -3), Vector2(18, 12), Vector2(-18, 11)])
+		draw_colored_polygon(body, Color("684d3a") if wildlife_hp > 0.0 else Color("886b54"))
+		draw_polyline(body + PackedVector2Array([body[0]]), outline, 2.0)
 		draw_circle(Vector2(17, -5), 6, Color("795640"))
+		draw_arc(Vector2(17, -5), 6, 0, TAU, 16, outline, 1.5)
 	elif appearance == "sheep":
 		draw_circle(Vector2.ZERO, 16, Color("efead9") if claimed_by < 0 else game.player_color(claimed_by).lightened(0.35))
+		draw_arc(Vector2.ZERO, 16, 0, TAU, 24, outline, 2.0)
 		draw_circle(Vector2(11, -8), 7, Color("d8ccb2"))
 		draw_circle(Vector2(13, -10), 1.5, Color("252b27"))
 		draw_line(Vector2(-8, 9), Vector2(-8, 19), Color("8d8574"), 2)
@@ -153,20 +160,26 @@ func _draw() -> void:
 	elif kind == "wood":
 		draw_circle(Vector2(0, 8), 9, Color("6d4a31"))
 		draw_circle(Vector2(0, -4), 19, color)
+		draw_arc(Vector2(0, -4), 19, 0, TAU, 28, outline, 2.0)
 		draw_circle(Vector2(-7, -9), 8, color.lightened(0.15))
 	elif kind == "food":
 		draw_circle(Vector2.ZERO, radius, Color("456d31"))
+		draw_arc(Vector2.ZERO, radius, 0, TAU, 28, outline, 2.0)
 		for point in [Vector2(-10, -8), Vector2(8, -11), Vector2(4, 9), Vector2(-11, 8)]:
 			draw_circle(point, 5, Color("d86b65"))
 	else:
 		var points := PackedVector2Array([Vector2(-22, 14), Vector2(-16, -10), Vector2(2, -20), Vector2(22, -8), Vector2(20, 17)])
 		draw_colored_polygon(points, color)
+		draw_polyline(points + PackedVector2Array([points[0]]), outline, 2.0)
 		draw_line(Vector2(-16, -10), Vector2(2, -20), color.lightened(0.25), 2)
 	if isometric: draw_set_transform_matrix(Transform2D.IDENTITY)
 
 func draw_ellipse_shape() -> void:
-	draw_colored_polygon(PackedVector2Array([Vector2(-18, -4), Vector2(12, -8), Vector2(21, 1), Vector2(5, 9), Vector2(-15, 8)]), Color("a8794e"))
+	var body := PackedVector2Array([Vector2(-18, -4), Vector2(12, -8), Vector2(21, 1), Vector2(5, 9), Vector2(-15, 8)])
+	draw_colored_polygon(body, Color("a8794e"))
+	draw_polyline(body + PackedVector2Array([body[0]]), Color("26352d"), 2.0)
 	draw_circle(Vector2(17, -9), 8, Color("b98b59"))
+	draw_arc(Vector2(17, -9), 8, 0, TAU, 16, Color("26352d"), 1.5)
 	draw_circle(Vector2(20, -11), 1.5, Color("24251f"))
 	draw_line(Vector2(-11, 6), Vector2(-13, 19), Color("543f31"), 3)
 	draw_line(Vector2(6, 6), Vector2(10, 19), Color("543f31"), 3)

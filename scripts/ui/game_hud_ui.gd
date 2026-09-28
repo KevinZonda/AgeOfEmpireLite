@@ -102,6 +102,7 @@ const BUILD_PAGES := [
 	{"title": "军事", "kinds": ["barracks", "archery_range", "stable", "siege_workshop", "outpost", "keep", "", "", "palisade_wall", "stone_wall", "palisade_gate", "stone_gate"]},
 ]
 const COMMANDS_PER_PAGE := 12
+const HUD_BOTTOM_HEIGHT := 230.0
 var game: Node2D
 var build_tab_bar: HBoxContainer
 var minimap_anchor: Control
@@ -112,7 +113,10 @@ var minimap_slot: Control
 var multi_selection_scroll: ScrollContainer
 var multi_selection_grid: GridContainer
 var multi_selection_ids: Array[int] = []
-var selection_detail_scroll: ScrollContainer
+var selection_summary: Label
+var selection_details_button: Button
+var selection_details_scroll: ScrollContainer
+var selection_details_expanded := false
 var command_page := 0
 var command_selection_id := 0
 
@@ -133,14 +137,14 @@ func _create_hud() -> void:
 	var top := PanelContainer.new()
 	game.hud_top = top
 	top.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
-	top.offset_bottom = 66
+	top.offset_bottom = 54
 	top.add_theme_stylebox_override("panel", game._hud_panel_style(Color("251e17"), 8))
 	root.add_child(top)
 	var top_row := HBoxContainer.new()
 	top_row.add_theme_constant_override("separation", 5)
 	top.add_child(top_row)
 	game.top_label = Label.new()
-	game.top_label.custom_minimum_size.x = 170
+	game.top_label.custom_minimum_size.x = 230
 	game.top_label.add_theme_font_size_override("font_size", 16)
 	game.top_label.add_theme_color_override("font_color", Color("f4dfaa"))
 	game.top_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -178,7 +182,7 @@ func _create_hud() -> void:
 	game.global_queue_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
 	game.global_queue_panel.offset_left = -390
 	game.global_queue_panel.offset_right = -8
-	game.global_queue_panel.offset_top = 70
+	game.global_queue_panel.offset_top = 58
 	game.global_queue_panel.offset_bottom = 415
 	game.global_queue_panel.add_theme_stylebox_override("panel", game._hud_panel_style(Color("2c241b"), 12))
 	root.add_child(game.global_queue_panel)
@@ -191,7 +195,7 @@ func _create_hud() -> void:
 	var bottom := PanelContainer.new()
 	game.hud_bottom = bottom
 	bottom.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	bottom.offset_top = -244
+	bottom.offset_top = -HUD_BOTTOM_HEIGHT
 	bottom.add_theme_stylebox_override("panel", game._hud_panel_style(Color("241d16"), 7))
 	root.add_child(bottom)
 	var dock := HBoxContainer.new()
@@ -218,7 +222,7 @@ func _create_hud() -> void:
 	build_tab_bar.hide()
 	command_header.add_child(build_tab_bar)
 	var action_scroll := ScrollContainer.new()
-	action_scroll.custom_minimum_size = Vector2(280, 172)
+	action_scroll.custom_minimum_size = Vector2(280, 161)
 	action_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	action_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	action_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -226,7 +230,7 @@ func _create_hud() -> void:
 	game.action_bar = GridContainer.new()
 	game.action_bar.columns = 4
 	game.action_bar.add_theme_constant_override("h_separation", 6)
-	game.action_bar.add_theme_constant_override("v_separation", 5)
+	game.action_bar.add_theme_constant_override("v_separation", 4)
 	action_scroll.add_child(game.action_bar)
 	var selection_panel := PanelContainer.new()
 	selection_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -236,17 +240,34 @@ func _create_hud() -> void:
 	selection_row.add_theme_constant_override("separation", 10)
 	selection_panel.add_child(selection_row)
 	game.selection_portrait = game.SELECTION_PORTRAIT.new()
-	game.selection_portrait.custom_minimum_size = Vector2(102, 142)
+	game.selection_portrait.custom_minimum_size = Vector2(100, 140)
 	selection_row.add_child(game.selection_portrait)
 	var selection_column := VBoxContainer.new()
 	selection_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	selection_column.add_theme_constant_override("separation", 4)
 	selection_row.add_child(selection_column)
+	var selection_header := HBoxContainer.new()
+	selection_header.add_theme_constant_override("separation", 4)
+	selection_column.add_child(selection_header)
 	game.info_label = Label.new()
 	game.info_label.text = "未选择"
+	game.info_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	game.info_label.add_theme_font_size_override("font_size", 19)
 	game.info_label.add_theme_color_override("font_color", Color("f0dfb6"))
-	selection_column.add_child(game.info_label)
+	selection_header.add_child(game.info_label)
+	selection_details_button = Button.new()
+	selection_details_button.text = "详情 ▾"
+	selection_details_button.tooltip_text = "展开完整属性、攻击数据和单位状态"
+	selection_details_button.custom_minimum_size = Vector2(64, 26)
+	game._style_button(selection_details_button)
+	selection_details_button.pressed.connect(_toggle_selection_details)
+	selection_header.add_child(selection_details_button)
+	selection_summary = Label.new()
+	selection_summary.add_theme_font_size_override("font_size", 14)
+	selection_summary.add_theme_color_override("font_color", Color("d3c5a8"))
+	selection_summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	selection_summary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	selection_column.add_child(selection_summary)
 	multi_selection_scroll = ScrollContainer.new()
 	multi_selection_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	multi_selection_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -265,13 +286,14 @@ func _create_hud() -> void:
 	game.detail_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	game.detail_label.custom_minimum_size.x = 420
 	game.detail_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	selection_detail_scroll = ScrollContainer.new()
-	selection_detail_scroll.custom_minimum_size.y = 50
-	selection_detail_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	selection_detail_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	selection_detail_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	selection_column.add_child(selection_detail_scroll)
-	selection_detail_scroll.add_child(game.detail_label)
+	selection_details_scroll = ScrollContainer.new()
+	selection_details_scroll.custom_minimum_size.y = 76
+	selection_details_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	selection_details_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	selection_details_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	selection_column.add_child(selection_details_scroll)
+	selection_details_scroll.add_child(game.detail_label)
+	selection_details_scroll.hide()
 	game.selection_health = ProgressBar.new()
 	game.selection_health.show_percentage = false
 	game.selection_health.custom_minimum_size = Vector2(285, 11)
@@ -374,11 +396,10 @@ func _create_hud() -> void:
 	game._create_settings(root)
 
 func _apply_minimap_size() -> void:
-	var map_width: float = game.minimap_size * (sqrt(2.0) if game.view_mode_25d else 1.0)
-	game.hud_bottom.offset_top = -244.0
-	var panel_size := Vector2(map_width + 14.0, game.minimap_size + 14.0)
-	minimap_anchor.custom_minimum_size = Vector2(panel_size.x, 230.0)
-	minimap_slot.custom_minimum_size = Vector2(map_width, game.minimap_size)
+	var panel_size: Vector2 = Vector2.ONE * (game.minimap_size + 14.0)
+	game.hud_bottom.offset_top = -HUD_BOTTOM_HEIGHT
+	minimap_anchor.custom_minimum_size = Vector2(panel_size.x, HUD_BOTTOM_HEIGHT - 14.0)
+	minimap_slot.custom_minimum_size = Vector2.ONE * game.minimap_size
 	minimap_panel.custom_minimum_size = panel_size
 	minimap_panel.size = panel_size
 	_layout_minimap()
@@ -389,10 +410,8 @@ func _layout_minimap() -> void:
 	if minimap_panel.get_theme_stylebox("panel") != panel_style:
 		minimap_panel.add_theme_stylebox_override("panel", panel_style)
 	minimap_panel.position = Vector2(0, minimap_anchor.size.y - minimap_panel.size.y)
-	# Reserve the diamond's full width so it cannot cover the adjacent panel.
-	# Its top extends above the bottom HUD; its lower tip stays at the edge.
-	var side: float = game.minimap_size * (sqrt(2.0) if game.view_mode_25d else 1.0)
-	game.minimap.size = Vector2.ONE * side
+	# Both projections fit in the same frame; changing view never covers the battlefield.
+	game.minimap.size = Vector2.ONE * game.minimap_size
 	game.minimap.position = minimap_slot.size - game.minimap.size
 	game.minimap.queue_redraw()
 
@@ -410,10 +429,10 @@ func _update_population_hud() -> void:
 	var used: int = game.population_used(0)
 	var capacity: int = game.population_cap(0)
 	var age_names := ["", "黑暗时代", "封建时代", "城堡时代", "帝王时代"]
-	game.top_label.text = "%s\n%s · %s%s" % [GameData.CIVILIZATIONS[game.civilizations[0]]["label"], age_names[clampi(bank["age"], 1, 4)], ["", "I", "II", "III", "IV"][clampi(bank["age"], 1, 4)], dynasty_text]
+	game.top_label.text = "%s · %s %s%s" % [GameData.CIVILIZATIONS[game.civilizations[0]]["label"], age_names[clampi(bank["age"], 1, 4)], ["", "I", "II", "III", "IV"][clampi(bank["age"], 1, 4)], dynasty_text]
 	for kind in ["food", "wood", "gold", "stone"]:
 		game.resource_readouts[kind].text = str(bank[kind])
-	game.population_label.text = "人口\n%d / %d" % [used, capacity]
+	game.population_label.text = "人口 %d/%d" % [used, capacity]
 	game.population_label.tooltip_text = "空余 %d" % maxi(0, capacity - used)
 	var idle_count: int = game.idle_villagers().size()
 	game.idle_villager_button.text = "村民 %d" % idle_count
@@ -425,18 +444,20 @@ func _update_selection_hud() -> void:
 	game.queue_label.text = ""
 	game.queue_controls.hide()
 	game.selection_portrait.show()
-	selection_detail_scroll.show()
 	multi_selection_scroll.hide()
 	if game.selected.is_empty() or not is_instance_valid(game.selected[0]):
 		_clear_multi_selection_icons()
 		game.selection_portrait.show_subject(null)
 		game.info_label.text = "未选择"
 		game.detail_label.text = "左键选择 · 双击同型单位 · 右键下令 · Esc 暂停"
+		_refresh_selection_summary()
 		return
 	var item: Node2D = game.selected[0]
 	if game.selected.size() > 1:
 		game.selection_portrait.hide()
-		selection_detail_scroll.hide()
+		selection_summary.hide()
+		selection_details_scroll.hide()
+		selection_details_button.hide()
 		game.info_label.text = "已选中 %d 个单位 · 点击图标单独选中" % game.selected.size()
 		_refresh_multi_selection_icons()
 		multi_selection_scroll.show()
@@ -450,6 +471,7 @@ func _update_selection_hud() -> void:
 		game.selection_progress.value = item.amount
 		game.selection_progress.show()
 		game.queue_label.text = "剩余 %d / %d" % [item.amount, item.initial_amount]
+		_refresh_selection_summary()
 		return
 	var name: String = GameData.UNITS[item.kind]["label"] if item is RtsUnit else item.display_label()
 	game.info_label.text = "敌方 · %s" % name if game.is_enemy(0, item.owner_id) else name
@@ -475,6 +497,19 @@ func _update_selection_hud() -> void:
 			game.detail_label.text += "   右键设置集结点"
 		_update_building_progress(item)
 		_refresh_queue_controls(item)
+	_refresh_selection_summary()
+
+func _toggle_selection_details() -> void:
+	selection_details_expanded = not selection_details_expanded
+	selection_details_button.text = "收起 ▴" if selection_details_expanded else "详情 ▾"
+	_refresh_selection_summary()
+
+func _refresh_selection_summary() -> void:
+	selection_details_scroll.visible = selection_details_expanded
+	selection_summary.visible = not selection_details_expanded
+	selection_details_button.visible = not game.selected.is_empty()
+	var lines: PackedStringArray = game.detail_label.text.split("\n")
+	selection_summary.text = "\n".join(lines.slice(0, mini(2, lines.size())))
 
 func _clear_multi_selection_icons() -> void:
 	if multi_selection_ids.is_empty(): return
