@@ -718,7 +718,12 @@ func _can_occupy(point: Vector2, radius: float, self_unit: RtsUnit, include_unit
 			for resource in resources_by_cell.get(cell, []):
 				if not is_instance_valid(resource) or resource.is_queued_for_deletion(): continue
 				var distance_limit: float = radius + resource.radius
-				if point.distance_squared_to(resource.position) < distance_limit * distance_limit: return false
+				var distance_to_resource := point.distance_squared_to(resource.position)
+				if distance_to_resource < distance_limit * distance_limit:
+					# A moving boar can overlap a villager before the next path search.
+					# Let an already-overlapping unit move outward from that resource.
+					var current_distance := self_unit.position.distance_squared_to(resource.position) if self_unit != null else INF
+					if current_distance >= distance_limit * distance_limit or distance_to_resource + 0.001 < current_distance: return false
 			if not include_units: continue
 			for other in units_by_cell.get(cell, []):
 				if not is_instance_valid(other) or other.is_queued_for_deletion() or other == self_unit: continue
