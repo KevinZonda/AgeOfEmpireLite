@@ -125,14 +125,18 @@ func _run() -> void:
 	for button in game.command_buttons:
 		if button.icon_kind == "age": age_button = button
 	assert(age_button != null, "villagers should open the age landmark chooser")
+	assert(age_button.text.is_empty() and age_button.tooltip_text.contains("选择地标并进入下一个时代"), "icon-only actions should explain their purpose on hover")
 	age_button.pressed.emit()
 	assert(game.age_choice_overlay != null, "age choices should open in a dedicated window")
-	var age_option_labels: Array[String] = []
-	for button in game.age_choice_overlay.find_children("*", "Button", true, false): age_option_labels.append(button.text)
-	assert(age_option_labels.any(func(value: String) -> bool: return value.contains("议会厅") and value.contains("训练时间减半")))
 	var council_choice: Button
 	for button in game.age_choice_overlay.find_children("*", "Button", true, false):
-		if button.text.contains("议会厅"): council_choice = button
+		for label in button.find_children("*", "Label", true, false):
+			if label.text.contains("议会厅"): council_choice = button
+	assert(council_choice != null)
+	var council_icon: TextureRect
+	for image in council_choice.find_children("*", "TextureRect", true, false): council_icon = image
+	assert(council_icon != null and council_icon.texture != null, "landmark choice should display its icon")
+	assert(council_choice.find_children("*", "Label", true, false).any(func(label: Label) -> bool: return label.text.contains("训练时间减半")))
 	assert(council_choice != null and not council_choice.disabled)
 	council_choice.pressed.emit()
 	assert(game.age_choice_overlay == null and game.build_mode == "landmark" and game.pending_landmark_id == "eng_council_hall")
@@ -198,6 +202,7 @@ func _run() -> void:
 	game.command_buttons[4].pressed.emit()
 	assert(game.build_page == 3 and game.command_buttons[0].icon_kind == "wonder", "special page should expose wonder")
 	assert(game.command_buttons[0].disabled and game.command_buttons[0].availability_reason.contains("时代"), "locked wonder should explain its age requirement")
+	assert(game.command_buttons[0].tooltip_text.contains("当前不可用"), "disabled actions should explain why they cannot be used")
 	game.build_page = 0
 	game._rebuild_actions()
 	game.command_buttons[1].pressed.emit()

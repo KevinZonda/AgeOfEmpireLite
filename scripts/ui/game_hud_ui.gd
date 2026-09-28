@@ -84,6 +84,13 @@ const COMMAND_HELP := {
 	"collect_stockpile": "领取公会大厅累积的资源。",
 	"spy": "暂时侦察敌方村民的位置。",
 	"trade": "让商人恢复与贸易站之间的往返贸易。",
+	"palings": "长弓兵架设拒马，阻挡敌方骑兵冲锋。",
+	"volley": "长弓兵短时间内加快射击。",
+	"pavise": "弩手展开或收起大盾，提高防护。",
+	"helmsman": "战船短时间内提高机动能力。",
+	"convert": "携带圣物的修士招降附近敌军。",
+	"camp": "消耗 25 木材在附近建立预备营地。",
+	"artillery_shot": "让大炮下一次攻击使用强化炮击。",
 }
 const STAT_LABELS := {
 	"hp": "生命", "damage": "攻击", "damage_melee": "近战攻击",
@@ -787,8 +794,8 @@ func _show_age_choice() -> void:
 	panel.set_anchors_preset(Control.PRESET_CENTER)
 	panel.offset_left = -310
 	panel.offset_right = 310
-	panel.offset_top = -225
-	panel.offset_bottom = 225
+	panel.offset_top = -190
+	panel.offset_bottom = 190
 	panel.add_theme_stylebox_override("panel", game._hud_panel_style(Color("30271c"), 18))
 	game.age_choice_overlay.add_child(panel)
 	var column := VBoxContainer.new()
@@ -823,7 +830,8 @@ func _show_age_choice() -> void:
 		button.add_child(card)
 		var icon := TextureRect.new()
 		icon.texture = RtsCommandButton._texture_at("res://assets/ui/command_icons/%s.png" % chosen_id)
-		icon.custom_minimum_size = Vector2(72, 72)
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.custom_minimum_size = Vector2(80, 80)
 		icon.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE

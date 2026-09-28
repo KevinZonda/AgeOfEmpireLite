@@ -153,6 +153,70 @@ func _draw_icon(center: Vector2, color: Color) -> void:
 			draw_colored_polygon(PackedVector2Array([center + Vector2(-14, 1), center + Vector2(14, 1), center + Vector2(9, 10), center + Vector2(-9, 10)]), color)
 			draw_line(center + Vector2(0, 1), center + Vector2(0, -15), color, 2)
 			if icon_kind == "transport_ship": draw_rect(Rect2(center + Vector2(-7, -5), Vector2(14, 6)), color.darkened(0.3))
+		"stop":
+			draw_rect(Rect2(center + Vector2(-9, -9), Vector2(18, 18)), color)
+		"attack_move":
+			draw_line(center + Vector2(-13, 9), center + Vector2(8, -8), color, 3)
+			draw_colored_polygon(PackedVector2Array([center + Vector2(5, -14), center + Vector2(14, -12), center + Vector2(12, -3)]), color)
+			draw_line(center + Vector2(-12, -9), center + Vector2(-5, -2), color, 2)
+		"attack_ground":
+			draw_arc(center + Vector2(0, 3), 9, 0, TAU, 18, color, 2)
+			draw_line(center + Vector2(0, -15), center + Vector2(0, 12), color, 2)
+			draw_line(center + Vector2(-13, 3), center + Vector2(13, 3), color, 2)
+		"formation":
+			for x in [-9, 0, 9]:
+				draw_circle(center + Vector2(x, -7), 3, color)
+				draw_circle(center + Vector2(x, 7), 3, color)
+		"stance":
+			draw_colored_polygon(PackedVector2Array([center + Vector2(0, -13), center + Vector2(11, -7), center + Vector2(8, 7), center + Vector2(0, 13), center + Vector2(-8, 7), center + Vector2(-11, -7)]), color)
+			draw_line(center + Vector2(-5, 0), center + Vector2(5, 0), Color("473725"), 2)
+		"ungarrison":
+			draw_rect(Rect2(center + Vector2(-12, -11), Vector2(17, 22)), color, false, 2)
+			draw_line(center + Vector2(-3, 0), center + Vector2(12, 0), color, 3)
+			draw_colored_polygon(PackedVector2Array([center + Vector2(7, -6), center + Vector2(14, 0), center + Vector2(7, 6)]), color)
+		"town_bell":
+			draw_colored_polygon(PackedVector2Array([center + Vector2(-9, 7), center + Vector2(-6, -5), center + Vector2(0, -11), center + Vector2(6, -5), center + Vector2(9, 7)]), color)
+			draw_line(center + Vector2(-11, 8), center + Vector2(11, 8), color, 3)
+			draw_circle(center + Vector2(0, 11), 2, color)
+		"return_work":
+			draw_line(center + Vector2(7, -10), center + Vector2(-3, 9), color, 4)
+			draw_line(center + Vector2(3, -12), center + Vector2(13, -8), color, 4)
+			draw_line(center + Vector2(-9, -7), center + Vector2(-9, 7), color, 2)
+			draw_colored_polygon(PackedVector2Array([center + Vector2(-13, -2), center + Vector2(-9, -9), center + Vector2(-5, -2)]), color)
+		"field_ram", "field_tower":
+			draw_rect(Rect2(center + Vector2(-10, -5), Vector2(20, 15)), color, false, 2)
+			draw_circle(center + Vector2(-7, 11), 3, color)
+			draw_circle(center + Vector2(7, 11), 3, color)
+			if icon_kind == "field_tower": draw_colored_polygon(PackedVector2Array([center + Vector2(-12, -6), center + Vector2(0, -15), center + Vector2(12, -6)]), color)
+			else: draw_line(center + Vector2(-12, 0), center + Vector2(13, 0), color, 4)
+		"palings", "camp":
+			for x in [-8, 0, 8]:
+				draw_line(center + Vector2(x, 10), center + Vector2(x, -10), color, 3)
+				draw_colored_polygon(PackedVector2Array([center + Vector2(x - 3, -8), center + Vector2(x, -15), center + Vector2(x + 3, -8)]), color)
+		"volley", "artillery_shot":
+			for x in [-8, 0, 8]:
+				draw_line(center + Vector2(x - 3, 9), center + Vector2(x + 4, -9), color, 2)
+				draw_colored_polygon(PackedVector2Array([center + Vector2(x + 2, -7), center + Vector2(x + 7, -15), center + Vector2(x + 7, -5)]), color)
+		"pavise":
+			draw_colored_polygon(PackedVector2Array([center + Vector2(-10, -12), center + Vector2(10, -12), center + Vector2(10, 5), center + Vector2(0, 13), center + Vector2(-10, 5)]), color)
+		"helmsman":
+			draw_arc(center, 10, 0, TAU, 18, color, 2)
+			for x in [-1, 1]: draw_line(center + Vector2(-10 * x, 0), center + Vector2(10 * x, 0), color, 2)
+			draw_circle(center, 3, color)
+		"convert":
+			draw_arc(center, 11, -PI * 0.7, PI * 0.7, 18, color, 2)
+			draw_colored_polygon(PackedVector2Array([center + Vector2(5, -12), center + Vector2(13, -10), center + Vector2(9, -3)]), color)
+			draw_circle(center, 3, color)
+		"food":
+			for x in [-6, 0, 6]:
+				draw_line(center + Vector2(x, 12), center + Vector2(x, -9), color, 2)
+				draw_colored_polygon(PackedVector2Array([center + Vector2(x - 3, -7), center + Vector2(x, -15), center + Vector2(x + 3, -7)]), color)
+		"wood":
+			draw_line(center + Vector2(-11, 10), center + Vector2(8, -9), color, 7)
+			draw_circle(center + Vector2(9, -10), 5, color)
+		"gold", "stone":
+			draw_colored_polygon(PackedVector2Array([center + Vector2(-11, 8), center + Vector2(-7, -5), center + Vector2(1, -12), center + Vector2(12, -4), center + Vector2(11, 8)]), color)
+			if icon_kind == "stone": draw_line(center + Vector2(-7, -4), center + Vector2(10, 3), Color("473725"), 2)
 		"patrol":
 			draw_arc(center, 10, -PI * 0.8, PI * 0.85, 16, color, 2)
 			draw_colored_polygon(PackedVector2Array([center + Vector2(-10, -7), center + Vector2(-14, 0), center + Vector2(-5, -1)]), color)
@@ -167,9 +231,24 @@ func _draw_icon(center: Vector2, color: Color) -> void:
 			draw_line(center + Vector2(12, 0), center + Vector2(-10, 0), color, 3)
 			draw_colored_polygon(PackedVector2Array([center + Vector2(-6, -8), center + Vector2(-15, 0), center + Vector2(-6, 8)]), color)
 		"market_buy", "market_sell":
-			draw_circle(center + Vector2(-4, 3), 7, color)
-			draw_line(center + Vector2(5, 4), center + Vector2(12, 4), color, 2)
-			draw_colored_polygon(PackedVector2Array([center + Vector2(9, 0), center + Vector2(15, 4), center + Vector2(9, 8)]), color)
+			draw_circle(center + Vector2(-5, 4), 6, color)
+			var marker := Color("c6704b") if caption.contains("粮") else Color("7da76a") if caption.contains("木") else Color("b9b7ac")
+			draw_circle(center + Vector2(5, -8), 4, marker)
+			var direction := 1 if icon_kind == "market_buy" else -1
+			draw_line(center + Vector2(-1 * direction, 5), center + Vector2(10 * direction, 5), color, 2)
+			draw_colored_polygon(PackedVector2Array([center + Vector2(6 * direction, 1), center + Vector2(13 * direction, 5), center + Vector2(6 * direction, 9)]), color)
+		"spy":
+			draw_arc(center, 12, PI * 0.15, PI * 0.85, 16, color, 2)
+			draw_circle(center, 5, color)
+		"collect_stockpile":
+			draw_rect(Rect2(center + Vector2(-11, -9), Vector2(22, 17)), color, false, 2)
+			draw_line(center + Vector2(-6, -1), center + Vector2(6, -1), color, 2)
+			draw_colored_polygon(PackedVector2Array([center + Vector2(-5, 8), center + Vector2(0, 15), center + Vector2(5, 8)]), color)
+		"trade":
+			draw_line(center + Vector2(-12, -5), center + Vector2(10, -5), color, 2)
+			draw_colored_polygon(PackedVector2Array([center + Vector2(6, -10), center + Vector2(13, -5), center + Vector2(6, 0)]), color)
+			draw_line(center + Vector2(12, 6), center + Vector2(-10, 6), color, 2)
+			draw_colored_polygon(PackedVector2Array([center + Vector2(-6, 1), center + Vector2(-13, 6), center + Vector2(-6, 11)]), color)
 		"unload":
 			draw_line(center + Vector2(-12, 8), center + Vector2(11, 8), color, 3)
 			draw_line(center + Vector2(0, -12), center + Vector2(0, 4), color, 3)
