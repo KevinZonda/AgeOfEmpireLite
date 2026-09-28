@@ -101,7 +101,7 @@ func _create_hud() -> void:
 	game.command_title.add_theme_color_override("font_color", Color("e8cb85"))
 	command_column.add_child(game.command_title)
 	var action_scroll := ScrollContainer.new()
-	action_scroll.custom_minimum_size = Vector2(350, 155)
+	action_scroll.custom_minimum_size = Vector2(350, 192)
 	action_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	command_column.add_child(action_scroll)
 	game.action_bar = GridContainer.new()

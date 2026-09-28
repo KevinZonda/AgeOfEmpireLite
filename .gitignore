@@ -2,3 +2,5 @@
 .DS_Store
 *.tmp
 /docs/godot/
+assets/ui/command_icons/*.import
+assets/ui/command_icons/*.library.translation

@@ -1,6 +1,8 @@
 class_name RtsCommandButton
 extends Button
 
+static var texture_cache: Dictionary = {}
+
 var icon_kind := ""
 var caption := ""
 var shortcut_label := ""
@@ -8,13 +10,16 @@ var slot_index := -1
 var availability_reason := ""
 var action_cost: Dictionary = {}
 var description := ""
+var icon_texture: Texture2D
+var rank_icon_fallback := false
 
 func configure(kind: String, label_text: String, key_text: String, slot: int = -1) -> void:
 	icon_kind = kind
 	caption = label_text
 	shortcut_label = key_text
 	slot_index = slot
-	custom_minimum_size = Vector2(108, 69)
+	icon_texture = _load_icon(kind)
+	custom_minimum_size = Vector2(108, 90)
 	add_theme_stylebox_override("normal", _tile_style(Color("473725"), Color("8d7549")))
 	add_theme_stylebox_override("hover", _tile_style(Color("634a29"), Color("ebca7c")))
 	add_theme_stylebox_override("pressed", _tile_style(Color("2f281c"), Color("f4d58a")))
@@ -52,26 +57,83 @@ func _refresh_tooltip() -> void:
 
 func _draw() -> void:
 	var color := Color("f1d99b") if not disabled else Color("8b8679")
-	draw_rect(Rect2(5, 9, 34, 34), Color("211d16") if not disabled else Color("272722"))
-	draw_rect(Rect2(5, 9, 34, 34), Color("a68b53") if not disabled else Color("59574d"), false, 1)
-	_draw_icon(Vector2(22, 26), color)
+	var icon_rect := Rect2(Vector2((size.x - 52.0) * 0.5, 4), Vector2(52, 52))
+	if icon_texture != null:
+		draw_texture_rect(icon_texture, icon_rect, false, Color(1, 1, 1, 0.38) if disabled else Color.WHITE)
+	else:
+		draw_rect(icon_rect, Color("211d16") if not disabled else Color("272722"))
+		draw_rect(icon_rect, Color("a68b53") if not disabled else Color("59574d"), false, 1)
+		_draw_icon(icon_rect.get_center(), color)
 	var font := ThemeDB.fallback_font
 	if font == null: return
-	draw_string(font, Vector2(45, 28), caption, HORIZONTAL_ALIGNMENT_LEFT, 60, 11 if caption.length() > 4 else 13, color)
+	if rank_icon_fallback:
+		var rank_badge := Rect2(icon_rect.position + Vector2(0, 36), Vector2(22, 16))
+		draw_rect(rank_badge, Color("211b14"))
+		draw_rect(rank_badge, Color("a68b53"), false, 1)
+		draw_string(font, rank_badge.position + Vector2(2, 12), "III" if icon_kind.ends_with("_3") else "IV", HORIZONTAL_ALIGNMENT_CENTER, 18, 10, color)
+	var lines := _caption_lines(font, size.x - 10.0)
+	for index in lines.size():
+		draw_string(font, Vector2(5, 70 + index * 14), lines[index], HORIZONTAL_ALIGNMENT_CENTER, size.x - 10.0, 12, color)
 	if not shortcut_label.is_empty():
-		draw_rect(Rect2(5, 49, 22, 16), Color("211b14"))
-		draw_rect(Rect2(5, 49, 22, 16), Color("a68b53"), false, 1)
-		draw_string(font, Vector2(10, 61), shortcut_label, HORIZONTAL_ALIGNMENT_LEFT, 16, 11, color)
-	if disabled and not availability_reason.is_empty():
-		draw_string(font, Vector2(33, 60), availability_reason, HORIZONTAL_ALIGNMENT_LEFT, 70, 10, Color("d8a48d"))
+		var badge := Rect2(Vector2(size.x - 25, 5), Vector2(20, 17))
+		draw_rect(badge, Color("211b14"))
+		draw_rect(badge, Color("a68b53"), false, 1)
+		draw_string(font, Vector2(badge.position.x + 2, badge.position.y + 12), shortcut_label, HORIZONTAL_ALIGNMENT_CENTER, 16, 11, color)
+
+func _load_icon(kind: String) -> Texture2D:
+	rank_icon_fallback = false
+	var path := "res://assets/ui/command_icons/%s.png" % kind
+	var texture := _texture_at(path)
+	if texture == null and kind.begins_with("rank_"):
+		var separator := kind.rfind("_")
+		if separator > 5:
+			path = "res://assets/ui/command_icons/%s.png" % kind.substr(5, separator - 5)
+			texture = _texture_at(path)
+			rank_icon_fallback = texture != null
+	return texture
+
+static func _texture_at(path: String) -> Texture2D:
+	if texture_cache.has(path): return texture_cache[path]
+	var texture: Texture2D
+	# The local template_debug binary cannot read textures imported by the
+	# official editor, but it can decode the source PNGs directly.
+	if FileAccess.file_exists(path):
+		var image := Image.new()
+		if image.load_png_from_buffer(FileAccess.get_file_as_bytes(path)) == OK:
+			texture = ImageTexture.create_from_image(image)
+	if texture == null and ResourceLoader.exists(path): texture = load(path) as Texture2D
+	texture_cache[path] = texture
+	return texture
+
+func _caption_lines(font: Font, width: float) -> Array[String]:
+	var lines: Array[String] = []
+	var line := ""
+	for index in caption.length():
+		var next := line + caption.substr(index, 1)
+		if not line.is_empty() and font.get_string_size(next, HORIZONTAL_ALIGNMENT_LEFT, -1, 12).x > width:
+			lines.append(line)
+			line = caption.substr(index, 1)
+		else:
+			line = next
+	if not line.is_empty(): lines.append(line)
+	if lines.size() > 2:
+		lines.resize(2)
+		while font.get_string_size(lines[1] + "…", HORIZONTAL_ALIGNMENT_LEFT, -1, 12).x > width and not lines[1].is_empty():
+			lines[1] = lines[1].substr(0, lines[1].length() - 1)
+		lines[1] += "…"
+	return lines
 
 func _draw_icon(center: Vector2, color: Color) -> void:
 	match icon_kind:
-		"house", "town_center", "barracks", "stable", "outpost", "keep", "siege_workshop", "wonder":
+		"house", "town_center", "barracks", "stable", "outpost", "keep", "siege_workshop":
 			draw_rect(Rect2(center + Vector2(-11, -4), Vector2(22, 17)), color, false, 2)
 			draw_colored_polygon(PackedVector2Array([center + Vector2(-13, -5), center + Vector2(0, -15), center + Vector2(13, -5)]), color)
 			if icon_kind == "barracks": draw_line(center + Vector2(-7, 2), center + Vector2(7, 2), color, 2)
 			if icon_kind == "stable": draw_arc(center + Vector2(0, 6), 5, PI, TAU, 12, color, 2)
+		"wonder":
+			draw_rect(Rect2(center + Vector2(-14, 10), Vector2(28, 3)), color)
+			for x in [-9, 0, 9]: draw_rect(Rect2(center + Vector2(x - 2, -6), Vector2(4, 16)), color)
+			draw_colored_polygon(PackedVector2Array([center + Vector2(-15, -7), center + Vector2(0, -14), center + Vector2(15, -7)]), color)
 		"farm":
 			draw_rect(Rect2(center + Vector2(-12, -11), Vector2(24, 23)), color, false, 2)
 			for x in [-7, 0, 7]: draw_line(center + Vector2(x - 3, -8), center + Vector2(x + 2, 9), color, 2)
