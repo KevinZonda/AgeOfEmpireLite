@@ -9,6 +9,7 @@ const UnitWork = preload("res://scripts/entities/unit_work.gd")
 const UnitCombat = preload("res://scripts/entities/unit_combat.gd")
 const SiegeVisual2D = preload("res://scripts/entities/visuals/siege_visual_2d.gd")
 const SiegeVisual25D = preload("res://scripts/entities/visuals/siege_visual_25d.gd")
+const CharacterVisual = preload("res://scripts/entities/visuals/character_visual.gd")
 
 var game: Node2D
 var owner_id := 0
@@ -954,6 +955,8 @@ func _draw() -> void:
 		if kind == "transport_ship": draw_string(ThemeDB.fallback_font, Vector2(-5, 8), str(passengers.size()), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color.WHITE)
 	elif stats.get("tags", []).has("siege"):
 		SiegeVisual2D.draw(self, kind, r, color, swing)
+	elif CharacterVisual.handles(kind):
+		CharacterVisual.draw_2d(self, kind, color, gait, swing)
 	elif stats.get("tags", []).has("cavalry"):
 		var horse := PackedVector2Array([Vector2(-r + 2, -5), Vector2(r - 5, -8), Vector2(r + 3, -2), Vector2(r - 3, 8), Vector2(-r + 1, 7)])
 		draw_colored_polygon(horse, Color("95734e"))
@@ -1026,6 +1029,8 @@ func _draw_isometric() -> void:
 		if kind == "transport_ship": draw_string(ThemeDB.fallback_font, Vector2(-5, -2), str(passengers.size()), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color.WHITE)
 	elif stats.get("tags", []).has("siege"):
 		SiegeVisual25D.draw(self, kind, radius(), color, swing)
+	elif CharacterVisual.handles(kind):
+		CharacterVisual.draw_25d(self, kind, color, gait, swing)
 	else:
 		var cavalry: bool = stats.get("tags", []).has("cavalry")
 		if cavalry:
