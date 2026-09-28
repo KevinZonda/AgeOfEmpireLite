@@ -53,8 +53,36 @@ func verify(mesh, label: String) -> void:
 	if errors > 0: failures += 1
 	print("POC_%s %s wrong_pixels=%d faces=%d fragments=%d" % ["PASS" if errors == 0 else "FAIL", label, errors, mesh.faces.size(), mesh.ordered_faces.size()])
 
+func verify_battlement_ring(style: String) -> void:
+	var mesh = Visual.new()
+	mesh.dimensions = Vector2(40, 32)
+	mesh.palette = PALETTE
+	mesh.block(0.5, 0.5, 1.0, 1.0, 24.0, style)
+	var sides := [0, 0, 0, 0]
+	var tops: Array[Rect2] = []
+	for face in mesh.faces:
+		var points: PackedVector3Array = face["points"]
+		if not points.size() == 4: continue
+		if not points[0].z == 28.0 or not points[1].z == 28.0 or not points[2].z == 28.0 or not points[3].z == 28.0: continue
+		var bounds := Rect2(Vector2(points[0].x, points[0].y), Vector2.ZERO)
+		for p in points: bounds = bounds.expand(Vector2(p.x, p.y))
+		tops.append(bounds)
+		var center := bounds.get_center()
+		if center.x < -16: sides[0] += 1
+		if center.x > 16: sides[1] += 1
+		if center.y < -12: sides[2] += 1
+		if center.y > 12: sides[3] += 1
+	var complete: bool = sides.all(func(count: int) -> bool: return count >= 3)
+	for i in tops.size():
+		for j in range(i + 1, tops.size()):
+			if tops[i].intersects(tops[j]): complete = false
+	if not complete: failures += 1
+	print("POC_%s %s_four_sided_battlements sides=%s" % ["PASS" if complete else "FAIL", style, sides])
+
 func _initialize() -> void:
 	var started := Time.get_ticks_usec()
+	verify_battlement_ring("flat")
+	verify_battlement_ring("clock")
 	for id in RtsLandmarkCatalog.LANDMARKS:
 		var mesh = Visual.new()
 		mesh.dimensions = RtsLandmarkCatalog.LANDMARK_SIZE
