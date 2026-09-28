@@ -13,6 +13,7 @@ var enemy_pathfinder := AStarGrid2D.new()
 var water_pathfinder := AStarGrid2D.new()
 var owner_pathfinders: Array[AStarGrid2D] = []
 var obstacle_signature := -1
+var obstacle_revision := 0
 var obstacle_check_frame := -1
 var spatial_frame := -1
 var indexed_unit_count := -1
@@ -22,12 +23,48 @@ var max_dynamic_radius := 0.0
 var units_by_cell: Dictionary = {}
 var resources_by_cell: Dictionary = {}
 var buildings_by_cell: Dictionary = {}
+var profiling_enabled := OS.get_environment("RTS_NAV_PROFILE") == "1"
+var profile: Dictionary = {}
+
+func reset_profile() -> void:
+	profile.clear()
+
+func profile_snapshot() -> Dictionary:
+	return profile.duplicate(true)
+
+func _record_profile(operation: StringName, started: int) -> void:
+	var elapsed := Time.get_ticks_usec() - started
+	if not profile.has(operation): profile[operation] = {"calls": 0, "total_us": 0, "max_us": 0}
+	var entry: Dictionary = profile[operation]
+	entry["calls"] += 1
+	entry["total_us"] += elapsed
+	entry["max_us"] = maxi(entry["max_us"], elapsed)
+
+func _point_path(grid: AStarGrid2D, start: Vector2i, end: Vector2i) -> PackedVector2Array:
+	if not profiling_enabled: return grid.get_point_path(start, end)
+	var started := Time.get_ticks_usec()
+	var result := grid.get_point_path(start, end)
+	_record_profile(&"astar", started)
+	return result
+
+func _id_path(grid: AStarGrid2D, start: Vector2i, end: Vector2i) -> Array[Vector2i]:
+	if not profiling_enabled: return grid.get_id_path(start, end)
+	var started := Time.get_ticks_usec()
+	var result := grid.get_id_path(start, end)
+	_record_profile(&"astar", started)
+	return result
 
 func _init(game_ref: Node2D, map_ref: RtsWorldMap) -> void:
 	game = game_ref
 	world_map = map_ref
 
 func refresh() -> void:
+	var started := Time.get_ticks_usec() if profiling_enabled else 0
+	_refresh_grids()
+	if profiling_enabled: _record_profile(&"grid_refresh", started)
+
+func _refresh_grids() -> void:
+	obstacle_revision += 1
 	obstacle_signature = _obstacle_signature()
 	obstacle_check_frame = Engine.get_process_frames()
 	invalidate_spatial_index()
@@ -236,6 +273,13 @@ func nearest_open_cell(point: Vector2, grid: AStarGrid2D = null) -> Vector2i:
 	return origin
 
 func path_between(from: Vector2, to: Vector2, unit: RtsUnit = null, smooth := true) -> PackedVector2Array:
+	if not profiling_enabled: return _path_between(from, to, unit, smooth)
+	var started := Time.get_ticks_usec()
+	var result := _path_between(from, to, unit, smooth)
+	_record_profile(&"path_between", started)
+	return result
+
+func _path_between(from: Vector2, to: Vector2, unit: RtsUnit, smooth: bool) -> PackedVector2Array:
 	_ensure_current()
 	var grid := _grid_for(unit)
 	var start := nearest_open_cell(from, grid)
@@ -243,7 +287,7 @@ func path_between(from: Vector2, to: Vector2, unit: RtsUnit = null, smooth := tr
 	if grid.is_point_solid(start) or grid.is_point_solid(end): return PackedVector2Array()
 	if smooth and _static_segment_clear(from, to, unit.radius() if unit != null else CLEARANCE, unit):
 		return PackedVector2Array([from, to]) if from.distance_squared_to(to) > 1.0 else PackedVector2Array([from])
-	var raw := grid.get_point_path(start, end)
+	var raw := _point_path(grid, start, end)
 	return _simplify_path(raw, from, to, unit) if smooth else raw
 
 func _simplify_path(raw: PackedVector2Array, from: Vector2, to: Vector2, unit: RtsUnit) -> PackedVector2Array:
@@ -282,6 +326,13 @@ func _path_length(path: PackedVector2Array) -> float:
 	return length
 
 func path_to_range(from: Vector2, target: Vector2, reach: float, unit: RtsUnit) -> PackedVector2Array:
+	if not profiling_enabled: return _path_to_range(from, target, reach, unit)
+	var started := Time.get_ticks_usec()
+	var result := _path_to_range(from, target, reach, unit)
+	_record_profile(&"path_to_range", started)
+	return result
+
+func _path_to_range(from: Vector2, target: Vector2, reach: float, unit: RtsUnit) -> PackedVector2Array:
 	_ensure_current()
 	var grid := _grid_for(unit)
 	var start := nearest_open_cell(from, grid)
@@ -301,7 +352,7 @@ func path_to_range(from: Vector2, target: Vector2, reach: float, unit: RtsUnit) 
 		if grid.is_point_solid(end) or not _segment_clear(world_map.cell_center(end), approach, unit.radius(), unit): continue
 		if _static_segment_clear(from, approach, unit.radius(), unit):
 			return PackedVector2Array([from, approach])
-		var candidate := _simplify_path(grid.get_point_path(start, end), from, approach, unit)
+		var candidate := _simplify_path(_point_path(grid, start, end), from, approach, unit)
 		if candidate.is_empty(): continue
 		if candidate[candidate.size() - 1].distance_squared_to(approach) > 1.0: candidate.append(approach)
 		var length := from.distance_to(candidate[0]) + _path_length(candidate)
@@ -330,7 +381,7 @@ func nearest_walkable_point(point: Vector2, radius := CLEARANCE, self_unit: RtsU
 				var candidate := world_map.cell_center(cell)
 				var distance := candidate.distance_squared_to(clamped)
 				if distance >= best_distance or not can_occupy(candidate, radius, self_unit): continue
-				if grid.get_id_path(start, cell).is_empty(): continue
+				if _id_path(grid, start, cell).is_empty(): continue
 				best = candidate
 				best_distance = distance
 		if best != Vector2.INF: return best
@@ -340,7 +391,7 @@ func _valid_destination(point: Vector2, radius: float, self_unit: RtsUnit, start
 	if not can_occupy(point, radius, self_unit): return false
 	if start.x < 0: return true
 	var end := world_map.cell_at(point)
-	if grid.is_point_solid(end) or grid.get_id_path(start, end).is_empty(): return false
+	if grid.is_point_solid(end) or _id_path(grid, start, end).is_empty(): return false
 	return _segment_clear(world_map.cell_center(end), point, radius, self_unit)
 
 func _segment_clear(from: Vector2, to: Vector2, radius: float, self_unit: RtsUnit) -> bool:
@@ -385,6 +436,13 @@ func _motion_clear(unit: RtsUnit, destination: Vector2) -> bool:
 	return true
 
 func can_occupy(point: Vector2, radius: float, self_unit: RtsUnit, include_units := true) -> bool:
+	if not profiling_enabled: return _can_occupy(point, radius, self_unit, include_units)
+	var started := Time.get_ticks_usec()
+	var result := _can_occupy(point, radius, self_unit, include_units)
+	_record_profile(&"can_occupy", started)
+	return result
+
+func _can_occupy(point: Vector2, radius: float, self_unit: RtsUnit, include_units: bool) -> bool:
 	_ensure_spatial_index()
 	if point.x < radius or point.y < radius or point.x > world_map.world_size.x - radius or point.y > world_map.world_size.y - radius: return false
 	var naval: bool = self_unit != null and self_unit.stats.get("tags", []).has("naval")

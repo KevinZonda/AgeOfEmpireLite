@@ -16,7 +16,7 @@ var final_destinations: Dictionary = {}
 var member_route_index: Dictionary = {}
 var active := false
 var last_frame := -1
-var last_obstacle_signature := -1
+var last_obstacle_revision := -1
 var heading := Vector2.RIGHT
 var narrow := false
 var final_approach := false
@@ -98,7 +98,7 @@ func _replan() -> void:
 				best = distance
 				closest = i
 		member_route_index[unit.get_instance_id()] = mini(closest + 1, maxi(0, route.size() - 1))
-	last_obstacle_signature = game.navigation.obstacle_signature
+	last_obstacle_revision = game.navigation.obstacle_revision
 	corridor_cache.clear()
 	heading = (goal - center).normalized()
 	if heading.is_zero_approx(): heading = Vector2.RIGHT
@@ -188,7 +188,7 @@ func _tick() -> void:
 	if not active: activate()
 	if members.is_empty() or route.is_empty(): return
 	game.navigation._ensure_current()
-	if game.navigation.obstacle_signature != last_obstacle_signature: _replan()
+	if game.navigation.obstacle_revision != last_obstacle_revision: _replan()
 	if route.is_empty(): return
 	var center := _center()
 	while route_index < route.size() - 1 and center.distance_to(route[route_index]) < 65.0:

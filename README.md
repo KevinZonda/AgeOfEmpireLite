@@ -4,6 +4,8 @@
 
 模块边界和后续拆分顺序见 [架构说明](scripts/ARCHITECTURE.md)。
 
+寻路的路径复用、失败退避、性能计数与对比结果见 [寻路优化与验证](docs/navigation.md)。
+
 ## 运行
 
 完整的环境准备、引擎补丁构建、开发验证与 macOS 发布要求见 [BUILD.md](BUILD.md)。

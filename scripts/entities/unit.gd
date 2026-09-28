@@ -2,6 +2,9 @@ class_name RtsUnit
 extends Node2D
 
 const AUTO_GATHER_RADIUS := 180.0
+const ROUTE_STALL_SECONDS := 0.9
+const ROUTE_RETRY_BASE := 0.7
+const ROUTE_RETRY_MAX := 4.0
 const UnitWork = preload("res://scripts/entities/unit_work.gd")
 const UnitCombat = preload("res://scripts/entities/unit_combat.gd")
 
@@ -40,6 +43,14 @@ var route := PackedVector2Array()
 var route_index := 0
 var route_goal := Vector2.INF
 var route_retry := 0.0
+var route_failures := 0
+var route_stop_distance := -1.0
+var route_obstacle_revision := -1
+var route_check_pending := false
+var route_blocked := false
+var route_best_distance := INF
+var route_recovery_distance := INF
+var route_stalled_time := 0.0
 var movement_group: RtsMovementGroup
 var group_stuck_time := 0.0
 var avoidance_cooldown := 0.0
@@ -464,6 +475,14 @@ func _reset_route() -> void:
 	route_index = 0
 	route_goal = Vector2.INF
 	route_retry = 0.0
+	route_failures = 0
+	route_stop_distance = -1.0
+	route_obstacle_revision = -1
+	route_check_pending = false
+	route_blocked = false
+	route_best_distance = INF
+	route_recovery_distance = INF
+	route_stalled_time = 0.0
 
 func _process(delta: float) -> void:
 	if not game.started or game.paused or game.game_over or garrisoned_in != null: return
@@ -741,21 +760,65 @@ func _move_toward(point: Vector2, delta: float, stop_distance: float) -> bool:
 		shield_timer = 0.0
 		refresh_stats()
 	route_retry = maxf(0.0, route_retry - delta)
-	if route_goal == Vector2.INF or route_goal.distance_to(point) > RtsWorldMap.CELL_SIZE * 0.5 or route_retry <= 0.0:
+	game.navigation._ensure_current()
+	if route_obstacle_revision != game.navigation.obstacle_revision:
+		route_obstacle_revision = game.navigation.obstacle_revision
+		route_check_pending = true
+		# A newly opened route should wake up an unreachable unit immediately.
+		if route.is_empty(): route_retry = 0.0
+	while route_index < route.size() - 1 and position.distance_to(route[route_index]) < 8.0:
+		route_index += 1
+		route_best_distance = INF
+		route_stalled_time = 0.0
+		route_check_pending = true
+	if route_check_pending and not route.is_empty():
+		# Validate only the next segment. Later segments are checked as we enter
+		# them, so a remote building change does not force another A* search.
+		route_blocked = not game.navigation._static_segment_clear(position, route[route_index], radius(), self)
+		route_check_pending = false
+	var target_changed := route_goal == Vector2.INF or route_goal.distance_to(point) > RtsWorldMap.CELL_SIZE * 0.5 or not is_equal_approx(route_stop_distance, stop_distance)
+	var stagger := float(get_instance_id() % 11) * 0.017
+	if target_changed and route_failures > 0:
+		# Backoff belongs to the failed target, not a new position it moves to.
+		route_retry = minf(route_retry, 0.15 + stagger)
+	var exhausted := not route.is_empty() and route_index == route.size() - 1 and position.distance_to(route[route_index]) < 0.5
+	var stalled := route_stalled_time >= ROUTE_STALL_SECONDS
+	var needs_route := target_changed or route.is_empty() or route_blocked or exhausted or stalled
+	if needs_route and route_retry <= 0.0:
+		if target_changed:
+			route_failures = 0
+		elif stalled or exhausted:
+			route_failures += 1
 		if ["gather", "build", "field_build", "repair", "attack", "garrison", "board_transport", "trade", "deposit_relic", "relic", "supervise", "collect_tax", "board_wall", "assault_wall"].has(order):
 			route = game.navigation.path_to_range(position, point, stop_distance, self)
 		else:
 			route = game.navigation.path_between(position, point, self)
 		route_index = 1 if route.size() > 1 and position.distance_to(route[0]) < 8.0 else 0
 		route_goal = point
-		route_retry = 0.7
+		route_stop_distance = stop_distance
+		route_best_distance = position.distance_to(route[route_index]) if not route.is_empty() else INF
+		route_recovery_distance = route_best_distance
+		route_stalled_time = 0.0
+		route_check_pending = false
+		route_blocked = false
+		if route.is_empty(): route_failures += 1
+		# Spread retries without consuming the match RNG. Successful movement
+		# resets failures; simply finding the same blocked route does not.
+		route_retry = 0.15 + stagger
+		if route_failures > 0:
+			route_retry = minf(ROUTE_RETRY_MAX, ROUTE_RETRY_BASE * pow(2.0, mini(route_failures - 1, 3))) + stagger
 	if route.is_empty(): return false
-	while route_index < route.size() and position.distance_to(route[route_index]) < 8.0:
-		route_index += 1
-	var waypoint: Vector2 = route[route_index] if route_index < route.size() else point
+	var waypoint: Vector2 = route[route_index]
+	var remaining := position.distance_to(waypoint)
+	if remaining < route_best_distance - minf(2.0, maxf(0.1, effective_speed() * 0.2)):
+		route_best_distance = remaining
+		route_stalled_time = 0.0
+		if remaining < route_recovery_distance - radius(): route_failures = 0
+	else:
+		route_stalled_time += delta
 	var speed: float = effective_speed()
 	var step := speed * delta
-	if route_index >= route.size(): step = minf(step, distance - stop_distance)
+	if route_index == route.size() - 1: step = minf(step, maxf(0.0, distance - stop_distance))
 	var old_position := position
 	position = game.navigation.move_step(self, position.move_toward(waypoint, step))
 	game.navigation.unit_moved(self, old_position)
