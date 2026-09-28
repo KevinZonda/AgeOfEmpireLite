@@ -290,16 +290,8 @@ func _create_hud() -> void:
 	map_panel.custom_minimum_size.x = 180
 	map_panel.add_theme_stylebox_override("panel", game._hud_panel_style(Color("30261b"), 7))
 	dock.add_child(map_panel)
-	var map_column := VBoxContainer.new()
-	map_column.add_theme_constant_override("separation", 5)
-	map_panel.add_child(map_column)
-	var map_title := Label.new()
-	map_title.text = "小地图  ·  点击定位"
-	map_title.add_theme_font_size_override("font_size", 15)
-	map_title.add_theme_color_override("font_color", Color("e8cb85"))
-	map_column.add_child(map_title)
 	game.minimap = RtsMinimap.new()
-	map_column.add_child(game.minimap)
+	map_panel.add_child(game.minimap)
 	game.minimap.setup(game)
 
 	game.menu_panel = PanelContainer.new()
