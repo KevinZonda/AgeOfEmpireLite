@@ -35,10 +35,12 @@ func _run() -> void:
 	assert(game.ui_scale_values == [0.75, 1.0])
 	assert(game.ui_scale_choice.selected == 1)
 	assert(game.text_scale_choice.item_count == 4 and game.text_scale_choice.selected == 1)
+	assert(game.minimap_size_choice.item_count == 3 and game.minimap_size_choice.selected == 1)
 	for setting in [
 		[game.window_mode_choice, "显示模式"],
 		[game.resolution_choice, "窗口分辨率"],
 		[game.projection_choice, "视角"],
+		[game.minimap_size_choice, "小地图大小"],
 		[game.ui_scale_choice, "界面缩放"],
 		[game.text_scale_choice, "文字缩放"],
 	]:
@@ -59,13 +61,14 @@ func _run() -> void:
 	game.resolution_choice.select(game.resolution_values.find(Vector2i(1280, 720)))
 	game.ui_scale_choice.select(game.ui_scale_values.find(0.75))
 	game.text_scale_choice.select(game.TEXT_SCALE_OPTIONS.find(1.25))
+	game.minimap_size_choice.select(game.MINIMAP_SIZE_OPTIONS.find(264))
 	game.settings_tabs.current_tab = 1
 	game.edge_scroll_toggle.button_pressed = false
 	game.zoom_gesture_toggle.button_pressed = false
 	game._close_settings()
 	assert(game.edge_scroll_enabled, "return should discard unsaved control changes")
 	assert(game.zoom_gesture_enabled and not game.selected_view_mode_25d, "return should discard unsaved view and gesture changes")
-	assert(game.ui_scale == 1.0 and game.text_scale == 1.0, "return should discard unsaved scale changes")
+	assert(game.ui_scale == 1.0 and game.text_scale == 1.0 and game.minimap_size == 216, "return should discard unsaved scale changes")
 	assert(not game._window_is_fullscreen(), "return should discard unsaved window mode")
 	assert(not game.settings_overlay.visible and game.menu_panel.visible)
 	home_settings.pressed.emit()
@@ -77,6 +80,7 @@ func _run() -> void:
 	game.resolution_choice.select(game.resolution_values.find(Vector2i(1280, 720)))
 	game.ui_scale_choice.select(game.ui_scale_values.find(0.75))
 	game.text_scale_choice.select(game.TEXT_SCALE_OPTIONS.find(1.25))
+	game.minimap_size_choice.select(game.MINIMAP_SIZE_OPTIONS.find(264))
 	game.settings_tabs.current_tab = 1
 	game.edge_scroll_toggle.button_pressed = false
 	game.zoom_gesture_toggle.button_pressed = false
@@ -95,6 +99,7 @@ func _run() -> void:
 	var saved_view: Variant = saved.get_value("display", "view_mode_25d", null) if save_result == OK else null
 	var saved_ui_scale: Variant = saved.get_value("display", "ui_scale", null) if save_result == OK else null
 	var saved_text_scale: Variant = saved.get_value("display", "text_scale", null) if save_result == OK else null
+	var saved_minimap_size: Variant = saved.get_value("display", "minimap_size", null) if save_result == OK else null
 	var saved_fullscreen: Variant = saved.get_value("display", "fullscreen", null) if save_result == OK else null
 	var saved_window_size: Variant = saved.get_value("display", "window_size", null) if save_result == OK else null
 	if had_settings:
@@ -103,7 +108,7 @@ func _run() -> void:
 	else:
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(settings_path))
 	assert(save_result == OK and saved_edge_scroll == false and saved_zoom_gesture == false and saved_view == true)
-	assert(saved_ui_scale == 0.75 and saved_text_scale == 1.25)
+	assert(saved_ui_scale == 0.75 and saved_text_scale == 1.25 and saved_minimap_size == 264)
 	assert(is_equal_approx(game.hud_ui.transform.get_scale().x, 0.75))
 	assert(is_equal_approx(game.ui_root.size.x, game.get_viewport_rect().size.x / 0.75))
 	var top_base_font: int = game.top_label.get_meta("base_ui_font_size")
@@ -140,7 +145,8 @@ func _run() -> void:
 	game.zoom_gesture_enabled = true
 	game._unhandled_input(magnify)
 	assert(game.camera.zoom.x > zoom_before, "enabled magnify gesture should zoom")
-	assert(game.minimap.clip_contents)
+	assert(not game.minimap.clip_contents)
+	assert(game.minimap.size.x > game.minimap.get_parent().size.x, "the 2.5D map should extend beyond its panel")
 	assert(game.hud_bottom.get_global_rect().end.y <= game.get_viewport_rect().size.y)
 	assert(game.minimap.get_global_rect().end.y <= game.get_viewport_rect().size.y)
 	game._set_paused(true)

@@ -5,6 +5,7 @@ const START_CAMERA_POINT := Vector2(630, 820)
 const WINDOW_RESOLUTIONS := [Vector2i(1280, 720), Vector2i(1440, 810), Vector2i(1600, 900), Vector2i(1920, 1080), Vector2i(2560, 1440)]
 const UI_SCALE_OPTIONS := [0.75, 1.0, 1.25, 1.5]
 const TEXT_SCALE_OPTIONS := [0.75, 1.0, 1.25, 1.5]
+const MINIMAP_SIZE_OPTIONS := [160, 216, 264]
 const MIN_UI_VIEWPORT_SIZE := Vector2(1280, 720)
 const SETTINGS_PATH := "user://settings.cfg"
 const LEGACY_DISPLAY_SETTINGS_PATH := "user://display.cfg"
@@ -154,8 +155,10 @@ var hud_ui: HUD_UI
 var ui_root: Control
 var ui_scale := 1.0
 var text_scale := 1.0
+var minimap_size := 216
 var ui_scale_choice: OptionButton
 var text_scale_choice: OptionButton
+var minimap_size_choice: OptionButton
 var ui_scale_values: Array[float] = []
 var ui_scale_update_pending := false
 var menu_panel: PanelContainer
@@ -441,6 +444,7 @@ func _save_settings() -> void:
 	config.set_value("display", "view_mode_25d", selected_view_mode_25d)
 	config.set_value("display", "ui_scale", ui_scale)
 	config.set_value("display", "text_scale", text_scale)
+	config.set_value("display", "minimap_size", minimap_size)
 	config.set_value("controls", "edge_scroll_enabled", edge_scroll_enabled)
 	config.set_value("controls", "zoom_gesture_enabled", zoom_gesture_enabled)
 	config.save(SETTINGS_PATH)
@@ -453,8 +457,10 @@ func _load_settings() -> void:
 	selected_view_mode_25d = bool(config.get_value("display", "view_mode_25d", false))
 	var saved_ui_scale: float = float(config.get_value("display", "ui_scale", 1.0))
 	var saved_text_scale: float = float(config.get_value("display", "text_scale", 1.0))
+	var saved_minimap_size: int = int(config.get_value("display", "minimap_size", 216))
 	ui_scale = saved_ui_scale if UI_SCALE_OPTIONS.has(saved_ui_scale) else 1.0
 	text_scale = saved_text_scale if TEXT_SCALE_OPTIONS.has(saved_text_scale) else 1.0
+	minimap_size = saved_minimap_size if MINIMAP_SIZE_OPTIONS.has(saved_minimap_size) else 216
 	edge_scroll_enabled = bool(config.get_value("controls", "edge_scroll_enabled", true))
 	zoom_gesture_enabled = bool(config.get_value("controls", "zoom_gesture_enabled", true))
 	var resolution: Variant = config.get_value("display", "window_size", Vector2i.ZERO)
@@ -1403,7 +1409,7 @@ func _toggle_view_mode(save_setting := false) -> void:
 	view_mode_25d = not view_mode_25d
 	world_map.isometric_view = view_mode_25d
 	world_map.queue_redraw()
-	minimap.queue_redraw()
+	hud_ui._layout_minimap()
 	var base_zoom := camera.zoom.x
 	camera.rotation = -PI / 4.0 if view_mode_25d else 0.0
 	camera.zoom = Vector2(base_zoom, base_zoom * 0.5 if view_mode_25d else base_zoom)
@@ -1500,11 +1506,13 @@ func _reset_selection_pointer() -> void:
 
 func _selection_point_over_hud(screen_point: Vector2) -> bool:
 	if not Rect2(Vector2.ZERO, get_viewport_rect().size).has_point(screen_point): return true
-	for control in [hud_top, hud_bottom, global_queue_panel, pause_overlay, settings_overlay, tech_tree_overlay, age_choice_overlay]:
+	for control in [hud_top, hud_bottom, minimap, global_queue_panel, pause_overlay, settings_overlay, tech_tree_overlay, age_choice_overlay]:
 		if control == null or not (control is Control) or not control.is_visible_in_tree(): continue
 		var canvas_transform: Transform2D = control.get_global_transform_with_canvas()
 		var screen_rect := Rect2(canvas_transform * Vector2.ZERO, canvas_transform * control.size - canvas_transform * Vector2.ZERO)
-		if screen_rect.has_point(screen_point): return true
+		if screen_rect.has_point(screen_point):
+			if control == minimap and not minimap._inside_map(canvas_transform.affine_inverse() * screen_point): continue
+			return true
 	return false
 
 func _can_begin_native_selection(screen_point: Vector2) -> bool:

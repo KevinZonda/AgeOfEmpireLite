@@ -9,9 +9,8 @@ var cached_size := Vector2i.ZERO
 
 func setup(game_ref: Node2D) -> void:
 	game = game_ref
-	custom_minimum_size = Vector2(164, 164)
-	clip_contents = true
-	mouse_filter = Control.MOUSE_FILTER_STOP
+	clip_contents = false
+	mouse_filter = Control.MOUSE_FILTER_PASS
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	queue_redraw()
 

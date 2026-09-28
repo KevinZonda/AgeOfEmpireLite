@@ -145,7 +145,7 @@ func _run() -> void:
 	game.selected.clear()
 	game.build_page = 0
 	assert(is_equal_approx(game.minimap.size.x, game.minimap.size.y), "the minimap content should be square")
-	var minimap_panel: PanelContainer = game.minimap.get_parent()
+	var minimap_panel: PanelContainer = game.hud_ui.minimap_panel
 	assert(is_equal_approx(minimap_panel.size.x, minimap_panel.size.y), "the minimap panel should keep a 1:1 footprint")
 	var midpoint: Vector2 = game.minimap.map_to_world(game.minimap.size * 0.5)
 	assert(midpoint.distance_to(game.world_size * 0.5) < 1.0)

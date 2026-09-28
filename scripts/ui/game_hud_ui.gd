@@ -104,6 +104,9 @@ const BUILD_PAGES := [
 const COMMANDS_PER_PAGE := 12
 var game: Node2D
 var build_tab_bar: HBoxContainer
+var minimap_panel: PanelContainer
+var minimap_panel_style: StyleBoxFlat
+var minimap_slot: Control
 var command_page := 0
 var command_selection_id := 0
 
@@ -286,14 +289,19 @@ func _create_hud() -> void:
 	game.notice_label.add_theme_color_override("font_color", Color("f0d783"))
 	game.notice_label.add_theme_font_size_override("font_size", 13)
 	selection_column.add_child(game.notice_label)
-	var map_panel := PanelContainer.new()
-	map_panel.custom_minimum_size = Vector2(230, 230)
-	map_panel.size_flags_vertical = Control.SIZE_FILL
-	map_panel.add_theme_stylebox_override("panel", game._hud_panel_style(Color("30261b"), 7))
-	dock.add_child(map_panel)
+	minimap_panel = PanelContainer.new()
+	minimap_panel.size_flags_vertical = Control.SIZE_SHRINK_END
+	minimap_panel_style = game._hud_panel_style(Color("30261b"), 7)
+	minimap_panel.add_theme_stylebox_override("panel", minimap_panel_style)
+	dock.add_child(minimap_panel)
+	minimap_slot = Control.new()
+	minimap_slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	minimap_panel.add_child(minimap_slot)
 	game.minimap = RtsMinimap.new()
-	map_panel.add_child(game.minimap)
+	minimap_slot.add_child(game.minimap)
 	game.minimap.setup(game)
+	minimap_slot.resized.connect(_layout_minimap)
+	_apply_minimap_size()
 
 	game.menu_panel = PanelContainer.new()
 	game.menu_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
@@ -340,6 +348,25 @@ func _create_hud() -> void:
 	game._add_pause_button(pause_box, "返回主界面", func() -> void: game._return_to_menu())
 	game._add_pause_button(pause_box, "退出游戏", func() -> void: game.get_tree().quit())
 	game._create_settings(root)
+
+func _apply_minimap_size() -> void:
+	var panel_side: int = game.minimap_size + 14
+	game.hud_bottom.offset_top = -maxf(244.0, float(panel_side + 14))
+	minimap_panel.custom_minimum_size = Vector2.ONE * panel_side
+	minimap_slot.custom_minimum_size = Vector2.ONE * game.minimap_size
+	_layout_minimap()
+
+func _layout_minimap() -> void:
+	if game.minimap == null or minimap_slot == null: return
+	minimap_panel_style.bg_color = Color.TRANSPARENT if game.view_mode_25d else Color("30261b")
+	minimap_panel_style.border_color = Color.TRANSPARENT if game.view_mode_25d else Color("a7894f")
+	minimap_panel_style.shadow_color = Color.TRANSPARENT if game.view_mode_25d else Color(0.0, 0.0, 0.0, 0.38)
+	# Keep the lower-right tip in the slot while letting the diamond extend
+	# above and left of the bottom HUD. A 2D square stays inside the slot.
+	var side: float = game.minimap_size * (sqrt(2.0) if game.view_mode_25d else 1.0)
+	game.minimap.size = Vector2.ONE * side
+	game.minimap.position = minimap_slot.size - game.minimap.size
+	game.minimap.queue_redraw()
 
 func _update_hud() -> void:
 	if game.top_label == null or game.players.is_empty(): return

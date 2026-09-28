@@ -64,6 +64,13 @@ func _create_settings(parent: Control) -> void:
 	game.projection_choice.custom_minimum_size.y = 42
 	game._style_button(game.projection_choice)
 	_add_settings_option_row(display_tab, "视角", game.projection_choice)
+	game.minimap_size_choice = OptionButton.new()
+	game.minimap_size_choice.tooltip_text = "单独调整小地图尺寸；2.5D 菱形会伸出底部面板。"
+	for index in game.MINIMAP_SIZE_OPTIONS.size():
+		game.minimap_size_choice.add_item(["小", "中", "大"][index])
+	game.minimap_size_choice.custom_minimum_size.y = 42
+	game._style_button(game.minimap_size_choice)
+	_add_settings_option_row(display_tab, "小地图大小", game.minimap_size_choice)
 	game.ui_scale_choice = OptionButton.new()
 	game.ui_scale_choice.tooltip_text = "调整按钮、图标和面板大小；不改变地图与镜头。"
 	game.ui_scale_choice.custom_minimum_size.y = 42
@@ -131,6 +138,8 @@ func _create_settings(parent: Control) -> void:
 		game.selected_view_mode_25d = game.projection_choice.selected == 1
 		game.ui_scale = game.ui_scale_values[game.ui_scale_choice.selected]
 		game.text_scale = game.TEXT_SCALE_OPTIONS[game.text_scale_choice.selected]
+		game.minimap_size = game.MINIMAP_SIZE_OPTIONS[game.minimap_size_choice.selected]
+		game.hud_ui._apply_minimap_size()
 		game._apply_ui_scales()
 		if game.started and game.view_mode_25d != game.selected_view_mode_25d: game._toggle_view_mode()
 		game._save_settings()
@@ -167,6 +176,7 @@ func _show_settings(from_pause := false) -> void:
 	game.edge_scroll_toggle.button_pressed = game.edge_scroll_enabled
 	game.zoom_gesture_toggle.button_pressed = game.zoom_gesture_enabled
 	game.projection_choice.select(1 if game.selected_view_mode_25d else 0)
+	game.minimap_size_choice.select(game.MINIMAP_SIZE_OPTIONS.find(game.minimap_size))
 	game.settings_tabs.current_tab = 0
 	if not from_pause: game.menu_panel.hide()
 	game.settings_overlay.show()
