@@ -98,7 +98,7 @@ func contains(world_point: Vector2) -> bool:
 	return Rect2(position - size() * 0.5, size()).has_point(world_point)
 
 func icon_size() -> float:
-	return 20.0 if kind.ends_with("_wall") or kind.ends_with("_gate") or kind == "scout_camp" else 26.0
+	return 24.0 if kind.ends_with("_wall") or kind.ends_with("_gate") or kind == "scout_camp" else 30.0
 
 func contains_icon_visual(world_point: Vector2, canvas: Transform2D) -> bool:
 	var side := icon_size()
@@ -481,7 +481,7 @@ func _draw_isometric() -> void:
 		var label_width := font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 13).x
 		draw_string(font, Vector2(-label_width * 0.5, size().y * 0.28 + 22.0), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color.WHITE)
 	var bar_width := minf(72.0, size().x * 0.8)
-	var bar_y: float = -height * game.camera.zoom.x - size().y * 0.25 - 16.0
+	var bar_y: float = minf(-height * game.camera.zoom.x - size().y * 0.25 - 16.0, -height * game.camera.zoom.x - side - 8.0)
 	draw_rect(Rect2(-bar_width * 0.5, bar_y, bar_width, 5), Color("422f2d"))
 	draw_rect(Rect2(-bar_width * 0.5, bar_y, bar_width * clampf(hp / max_hp, 0.0, 1.0), 5), Color("7fd47a"))
 	if not is_complete(): draw_arc(Vector2.ZERO, 14, 0, TAU * (1.0 - build_remaining / maxf(build_total, 0.1)), 20, Color.WHITE, 3)
