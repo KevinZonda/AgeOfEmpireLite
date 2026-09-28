@@ -1498,7 +1498,7 @@ func _selection_point_over_hud(screen_point: Vector2) -> bool:
 	if not Rect2(Vector2.ZERO, get_viewport_rect().size).has_point(screen_point): return true
 	for control in [hud_top, hud_bottom, global_queue_panel, pause_overlay, settings_overlay, tech_tree_overlay, age_choice_overlay]:
 		if control == null or not (control is Control) or not control.is_visible_in_tree(): continue
-		var canvas_transform := control.get_global_transform_with_canvas()
+		var canvas_transform: Transform2D = control.get_global_transform_with_canvas()
 		var screen_rect := Rect2(canvas_transform * Vector2.ZERO, canvas_transform * control.size - canvas_transform * Vector2.ZERO)
 		if screen_rect.has_point(screen_point): return true
 	return false
