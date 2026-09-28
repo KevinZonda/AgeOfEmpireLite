@@ -97,6 +97,21 @@ func size() -> Vector2:
 func contains(world_point: Vector2) -> bool:
 	return Rect2(position - size() * 0.5, size()).has_point(world_point)
 
+func icon_size() -> float:
+	return 20.0 if kind.ends_with("_wall") or kind.ends_with("_gate") or kind == "scout_camp" else 26.0
+
+func contains_icon_visual(world_point: Vector2, canvas: Transform2D) -> bool:
+	var side := icon_size()
+	if not game.view_mode_25d:
+		var center := Vector2(0, -size().y * 0.5 - side * 0.5 - 8.0)
+		return Rect2(center - Vector2.ONE * side * 0.5, Vector2.ONE * side).has_point(world_point - position)
+	var construction_ratio := 1.0 - build_remaining / maxf(build_total, 0.1)
+	var height := isometric_height() * (0.25 + 0.75 * construction_ratio)
+	var terrain_lift := RtsIsoProjection.world_delta(canvas, Vector2(0, -foundation_height() * game.camera.zoom.x))
+	var screen_point := canvas.basis_xform(world_point - position - terrain_lift)
+	var center := Vector2(0, -height * game.camera.zoom.x - side * 0.5 + 1.0)
+	return Rect2(center - Vector2.ONE * side * 0.5, Vector2.ONE * side).has_point(screen_point)
+
 func isometric_height() -> float:
 	if kind == "farm": return 0.0
 	if kind.ends_with("_wall") or kind.ends_with("_gate"): return 11.0
@@ -394,12 +409,12 @@ func _draw() -> void:
 		draw_colored_polygon(PackedVector2Array([Vector2(-26, -19), Vector2(0, -35), Vector2(26, -19)]), Color("513c36"))
 	elif construction_ratio >= 0.65:
 		draw_colored_polygon(PackedVector2Array([Vector2(-size().x * 0.4, -size().y * 0.4), Vector2(0, -size().y * 0.65), Vector2(size().x * 0.4, -size().y * 0.4)]), Color("513c36"))
-	var icon_size := 20.0 if kind.ends_with("_wall") or kind.ends_with("_gate") or kind == "scout_camp" else 26.0
-	_draw_building_icon(Vector2(0, -size().y * 0.5 - icon_size * 0.5 - 8.0), icon_size)
+	var side := icon_size()
+	_draw_building_icon(Vector2(0, -size().y * 0.5 - side * 0.5 - 8.0), side)
 	var font := ThemeDB.fallback_font
 	if font != null:
 		draw_string(font, Vector2(-size().x * 0.5, size().y * 0.5 + 15), display_label(), HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color.WHITE)
-	var bar_y := -size().y * 0.5 - icon_size - 18.0
+	var bar_y := -size().y * 0.5 - side - 18.0
 	draw_rect(Rect2(-size().x * 0.5, bar_y, size().x, 5), Color("432e2b"))
 	draw_rect(Rect2(-size().x * 0.5, bar_y, size().x * clampf(hp / max_hp, 0.0, 1.0), 5), Color("7fd47a"))
 	if not is_complete():
@@ -458,8 +473,8 @@ func _draw_isometric() -> void:
 		draw_polyline(PackedVector2Array([nw + lift, ne + lift, se + lift, sw + lift, nw + lift]), Color("f7d091", damage_flash_timer * 3.4), 3.0)
 	# Labels and status bars are drawn in screen space so they stay legible.
 	draw_set_transform_matrix(RtsIsoProjection.upright(canvas, terrain_lift))
-	var icon_size := 20.0 if kind.ends_with("_wall") or kind.ends_with("_gate") or kind == "scout_camp" else 26.0
-	_draw_building_icon(Vector2(0, -height * game.camera.zoom.x - icon_size * 0.5 + 1.0), icon_size)
+	var side := icon_size()
+	_draw_building_icon(Vector2(0, -height * game.camera.zoom.x - side * 0.5 + 1.0), side)
 	var font := ThemeDB.fallback_font
 	if font != null:
 		var label := display_label()
