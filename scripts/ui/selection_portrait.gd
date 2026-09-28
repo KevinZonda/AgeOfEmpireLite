@@ -27,8 +27,30 @@ func _draw() -> void:
 		_draw_empty()
 	elif subject is RtsBuilding:
 		_draw_building()
+	elif subject is RtsResource:
+		_draw_resource()
 	else:
 		_draw_unit()
+
+func _draw_resource() -> void:
+	var resource: RtsResource = subject
+	var center := Vector2(size.x * 0.5, size.y * 0.5)
+	var color := Color("79a64e")
+	match resource.kind:
+		"wood": color = Color("397948")
+		"gold": color = Color("e4c359")
+		"stone": color = Color("9b9f9e")
+	if resource.appearance in ["deer", "boar", "sheep"]:
+		color = {"deer": Color("a8794e"), "boar": Color("684d3a"), "sheep": Color("efead9")}[resource.appearance]
+		draw_colored_polygon(PackedVector2Array([center + Vector2(-31, -9), center + Vector2(-20, -19), center + Vector2(17, -19), center + Vector2(31, -5), center + Vector2(25, 13), center + Vector2(-22, 17)]), color)
+		draw_circle(center + Vector2(24, -14), 12, color.lightened(0.1))
+		for x in [-18.0, 18.0]: draw_line(center + Vector2(x, 10), center + Vector2(x, 35), color.darkened(0.35), 4)
+	elif resource.appearance == "fish":
+		draw_colored_polygon(PackedVector2Array([center + Vector2(-30, 0), center + Vector2(5, -18), center + Vector2(31, 0), center + Vector2(5, 18)]), Color("c5d9cf"))
+	else:
+		draw_circle(center, 28, color)
+		if resource.appearance == "berry":
+			for offset in [Vector2(-12, -9), Vector2(10, -13), Vector2(9, 12), Vector2(-14, 11)]: draw_circle(center + offset, 6, Color("d86b65"))
 
 func _draw_empty() -> void:
 	var center := Vector2(size.x * 0.5, size.y * 0.48)

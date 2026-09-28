@@ -8,14 +8,21 @@ static func select_area(game: Node2D, from: Vector2, to: Vector2, additive: bool
 
 static func select_screen_area(game: Node2D, from: Vector2, to: Vector2, additive: bool) -> void:
 	if not additive: game.selected.clear()
+	elif game.selected.any(func(item: Node2D) -> bool: return item is RtsResource): game.selected.clear()
 	var world_to_screen := game.get_viewport().get_canvas_transform()
 	var screen_area := Rect2(from, to - from).abs()
 	if screen_area.size.length() < 12:
-		var entity: Node2D = game._entity_at(world_to_screen.affine_inverse() * to)
+		var point: Vector2 = world_to_screen.affine_inverse() * to
+		var entity: Node2D = game._entity_at(point)
 		if entity is RtsUnit and game.is_enemy(0, entity.owner_id):
 			game.selected.clear()
 			game.selected.append(entity)
 		elif entity != null and entity.owner_id == 0 and not game.selected.has(entity): game.selected.append(entity)
+		elif entity == null:
+			var resource: RtsResource = game._resource_at(point)
+			if resource != null:
+				game.selected.clear()
+				game.selected.append(resource)
 	else:
 		for unit in game.units:
 			if is_instance_valid(unit) and unit.garrisoned_in == null and unit.owner_id == 0 and screen_area.has_point(world_to_screen * (unit.position + (RtsIsoProjection.ground_lift(game, unit.position) if game.view_mode_25d else Vector2.ZERO))) and not game.selected.has(unit):
@@ -26,7 +33,7 @@ static func select_screen_area(game: Node2D, from: Vector2, to: Vector2, additiv
 	game.queue_redraw()
 
 static func select_same_type_visible(game: Node2D, clicked: RtsUnit, additive: bool) -> void:
-	if not additive: game.selected.clear()
+	if not additive or game.selected.any(func(item: Node2D) -> bool: return item is RtsResource): game.selected.clear()
 	var world_to_screen := game.get_viewport().get_canvas_transform()
 	var visible_area := game.get_viewport_rect()
 	for unit in game.units:
@@ -38,7 +45,7 @@ static func select_same_type_visible(game: Node2D, clicked: RtsUnit, additive: b
 	game.queue_redraw()
 
 static func select_same_buildings_visible(game: Node2D, clicked: RtsBuilding, additive: bool) -> void:
-	if not additive: game.selected.clear()
+	if not additive or game.selected.any(func(item: Node2D) -> bool: return item is RtsResource): game.selected.clear()
 	var world_to_screen := game.get_viewport().get_canvas_transform()
 	var visible_area := game.get_viewport_rect()
 	for building in game.buildings:
@@ -53,17 +60,17 @@ static func handle_control_group(game: Node2D, event: InputEventKey) -> void:
 		var members: Array[Node2D] = []
 		if event.shift_pressed and game.control_groups.has(key):
 			for member in game.control_groups[key]:
-				if is_instance_valid(member) and not member.is_queued_for_deletion() and member.owner_id == 0: members.append(member)
+				if is_instance_valid(member) and not member.is_queued_for_deletion() and not member is RtsResource and member.owner_id == 0: members.append(member)
 		for member in game.selected:
-			if is_instance_valid(member) and member.owner_id == 0 and not members.has(member): members.append(member)
+			if is_instance_valid(member) and not member is RtsResource and member.owner_id == 0 and not members.has(member): members.append(member)
 		game.control_groups[key] = members
 		game.notify_player("编组 %d：%d 个对象" % [key - KEY_0, members.size()])
 		return
 	var recalled: Array[Node2D] = []
 	for member in game.control_groups[key]:
-		if is_instance_valid(member) and not member.is_queued_for_deletion() and member.owner_id == 0 and (not member is RtsUnit or member.garrisoned_in == null): recalled.append(member)
+		if is_instance_valid(member) and not member.is_queued_for_deletion() and not member is RtsResource and member.owner_id == 0 and (not member is RtsUnit or member.garrisoned_in == null): recalled.append(member)
 	game.control_groups[key] = recalled
-	if not event.shift_pressed: game.selected.clear()
+	if not event.shift_pressed or game.selected.any(func(item: Node2D) -> bool: return item is RtsResource): game.selected.clear()
 	for member in recalled:
 		if not game.selected.has(member): game.selected.append(member)
 	var now := Time.get_ticks_msec() / 1000.0

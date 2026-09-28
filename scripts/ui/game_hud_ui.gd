@@ -361,7 +361,15 @@ func _update_selection_hud() -> void:
 		game.detail_label.text = "左键选择 · 双击同型单位 · 右键下令 · Esc 暂停"
 		return
 	var item: Node2D = game.selected[0]
-	game.selection_portrait.show_subject(item, game.player_color(item.owner_id))
+	game.selection_portrait.show_subject(item, Color("b6a877") if item is RtsResource else game.player_color(item.owner_id))
+	if item is RtsResource:
+		game.info_label.text = _resource_label(item)
+		game.detail_label.text = "剩余 %d %s" % [item.amount, GameData.RESOURCE_LABELS.get(item.kind, item.kind)]
+		if item.appearance == "boar" and item.wildlife_hp > 0.0:
+			game.detail_label.text += "  ·  生命 %.0f/90" % item.wildlife_hp
+		if item.appearance == "sheep" and item.claimed_by >= 0:
+			game.detail_label.text += "  ·  %s已认领" % ("我方" if item.claimed_by == 0 else "敌方")
+		return
 	if game.selected.size() > 1:
 		game.info_label.text = "已选中 %d 个单位" % game.selected.size()
 		var counts: Dictionary = {}
@@ -398,6 +406,9 @@ func _update_selection_hud() -> void:
 		_update_building_progress(item)
 		_refresh_queue_controls(item)
 
+func _resource_label(resource: RtsResource) -> String:
+	return {"berry": "浆果", "deer": "鹿", "sheep": "绵羊", "boar": "野猪", "fish": "鱼群"}.get(resource.appearance, {"wood": "树木", "gold": "金矿", "stone": "石矿"}.get(resource.kind, GameData.RESOURCE_LABELS.get(resource.kind, resource.kind)))
+
 func _update_building_progress(building: RtsBuilding) -> void:
 	if not building.is_complete():
 		game.selection_progress.max_value = maxf(0.1, building.build_total)
@@ -426,16 +437,22 @@ func _unit_stats_text(unit: RtsUnit) -> String:
 	for profile_id in profiles:
 		var profile: Dictionary = profiles[profile_id]
 		if float(profile.get("damage", 0.0)) <= 0.0: continue
-		var label_text: String = {"melee": "近战", "ranged": "远程", "siege": "攻城", "charge": "冲锋", "structure": "对建筑", "torch": "火炬"}.get(profile_id, str(profile_id))
+		var label_text: String = {"melee": "近战", "ranged": "远程", "siege": "攻城", "charge": "冲锋", "structure": "对建筑", "torch": "火炬", "hunt_melee": "狩猎近战", "hunt_ranged": "狩猎远程"}.get(profile_id, str(profile_id))
 		var description := "%s %d×%.0f  ·  间隔 %.2f 秒  ·  射程 %.1f 格" % [label_text, int(profile.get("hits", 1)), float(profile["damage"]), float(profile.get("cooldown", 1.0)), float(profile.get("range", 0.0)) / 30.0]
 		for bonus in profile.get("bonuses", []): description += "  ·  %s +%.0f" % [bonus.get("source_label", "加成"), float(bonus.get("amount", 0.0))]
 		lines.append(description)
 	if unit.kind in ["villager", "fishing_boat"]:
+		# Keep work information in the first visible line of the compact details pane.
 		if unit.order == "gather" and is_instance_valid(unit.target):
 			var resource_kind: String = "food" if unit.target is RtsBuilding else unit.target.kind
-			lines.append("正在采集%s  ·  当前效率 %.2f/sec" % [GameData.RESOURCE_LABELS.get(resource_kind, resource_kind), unit.gathering_per_second()])
+			var source_label: String = GameData.RESOURCE_LABELS.get(resource_kind, resource_kind)
+			if unit.target is RtsBuilding:
+				source_label = "农田"
+			elif resource_kind == "food":
+				source_label = {"berry": "浆果", "deer": "鹿肉", "sheep": "羊肉", "boar": "野猪肉", "fish": "鱼群"}.get(unit.target.appearance, source_label)
+			lines.insert(0, "采集%s  ·  工作速度 %.2f/秒" % [source_label, unit.gathering_per_second()])
 		else:
-			lines.append("当前采集效率 0.00/sec")
+			lines.insert(0, "未采集资源  ·  工作速度 0.00/秒")
 	if unit.kind == "trader" and game.civilizations[unit.owner_id] == "French": lines.append("贸易运回：%s" % GameData.RESOURCE_LABELS[unit.trade_resource_kind])
 	return "\n".join(lines)
 
@@ -577,6 +594,9 @@ func _rebuild_actions() -> void:
 	if game.selected.is_empty() or not is_instance_valid(game.selected[0]): return
 	var item: Node2D = game.selected[0]
 	game.action_bar.columns = 4
+	if item is RtsResource:
+		game.command_title.text = "资源 · 信息"
+		return
 	if item.owner_id != 0:
 		game.command_title.text = "敌方单位 · 情报"
 		return

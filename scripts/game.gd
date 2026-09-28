@@ -1574,6 +1574,7 @@ func _cursor_state_at(world_point: Vector2, over_ui := false) -> String:
 	if post != null and not selected.is_empty() and selected[0] is RtsUnit and selected[0].kind == "trader": return "trade"
 	if relic != null and not selected.is_empty() and selected[0] is RtsUnit and selected[0].kind == "monk": return "relic"
 	if entity != null and (entity.owner_id == 0 or entity is RtsUnit and is_enemy(0, entity.owner_id) and not has_unit): return "select"
+	if resource != null: return "select"
 	if has_unit: return "move"
 	if has_producer: return "rally"
 	return "default"
@@ -1844,7 +1845,7 @@ func _update_hud() -> void:
 func _prune_hidden_enemy_selection() -> void:
 	var changed := false
 	for entity in selected.duplicate():
-		if not is_instance_valid(entity) or entity is RtsUnit and is_enemy(0, entity.owner_id) and fog.active and not fog.can_detect_unit(0, entity):
+		if not is_instance_valid(entity) or entity.is_queued_for_deletion() or entity is RtsResource and fog.active and not fog.can_show_resource(0, entity) or entity is RtsUnit and is_enemy(0, entity.owner_id) and fog.active and not fog.can_detect_unit(0, entity):
 			selected.erase(entity)
 			changed = true
 	if changed:
@@ -2005,6 +2006,8 @@ func _draw() -> void:
 				draw_arc(marker, 9, 0, TAU, 24, marker_color, 2)
 				draw_line(marker + Vector2(0, 12), marker + Vector2(0, -14), marker_color, 2)
 				draw_colored_polygon(PackedVector2Array([marker + Vector2(0, -14), marker + Vector2(15, -9), marker + Vector2(0, -4)]), marker_color)
+		elif entity is RtsResource:
+			draw_arc(entity.position + ground_lift, entity.radius + 5.0, 0, TAU, 32, Color("f5e597"), 2)
 	if build_mode != "":
 		var mouse := get_global_mouse_position()
 		var vertical := wall_vertical
