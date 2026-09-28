@@ -89,6 +89,12 @@ func _draw() -> void:
 		if resource.kind == "gold": resource_color = Color("d7bc5d")
 		if resource.kind == "stone": resource_color = Color("a2aaa8")
 		draw_circle(world_to_map(resource.position), 1.5, resource_color)
+	if game.fog.active:
+		for memory in game.fog.remembered_buildings.values():
+			var ghost: RtsBuilding = memory["ghost"]
+			if not ghost.visible: continue
+			var old_color: Color = game.player_color(int(memory["owner_id"])).lerp(Color.GRAY, 0.55)
+			draw_rect(Rect2(world_to_map(memory["position"]) - Vector2(3, 3), Vector2(6, 6)), old_color)
 	for building in game.buildings:
 		if not is_instance_valid(building): continue
 		if building.owner_id != 0 and game.fog.active and not game.fog.can_see(0, building.position): continue

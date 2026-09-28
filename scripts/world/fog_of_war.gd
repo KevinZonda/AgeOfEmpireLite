@@ -16,6 +16,7 @@ var update_timer := 0.0
 var active := false
 var mode := "enabled"
 var spy_timers: Dictionary = {}
+var remembered_buildings: Dictionary = {}
 
 func setup(game_ref: Node2D) -> void:
 	game = game_ref
@@ -26,6 +27,7 @@ func setup(game_ref: Node2D) -> void:
 	relief_mesh.hide()
 
 func reset(new_mode := "enabled") -> void:
+	_clear_building_memory()
 	mode = new_mode
 	spy_timers.clear()
 	grid_size = game.world_map.grid_size
@@ -55,6 +57,7 @@ func reset(new_mode := "enabled") -> void:
 	show()
 
 func clear() -> void:
+	_clear_building_memory()
 	spy_timers.clear()
 	active = false
 	hide()
@@ -144,6 +147,7 @@ func update_visibility() -> void:
 		for index in visible.size():
 			if visible[index] != 0: explored[index] = 1
 		explored_cells[owner_id] = explored
+	_update_building_memory()
 	_update_entity_visibility()
 	_update_mask()
 	game._prune_hidden_enemy_selection()
@@ -183,6 +187,61 @@ func _line_of_sight(from: Vector2i, to: Vector2i) -> bool:
 		if game.world_map.cells[_index(Vector2i(x, y))] == RtsWorldMap.Terrain.MOUNTAIN: return false
 	return true
 
+func _update_building_memory() -> void:
+	var live_ids := {}
+	for building in game.buildings:
+		if not is_instance_valid(building) or building.is_queued_for_deletion() or not game.is_enemy(0, building.owner_id): continue
+		var building_id: int = building.get_instance_id()
+		live_ids[building_id] = true
+		if can_see(0, building.position): _remember_building(building, building_id)
+	for building_id in remembered_buildings.keys():
+		var memory: Dictionary = remembered_buildings[building_id]
+		var ghost: RtsBuilding = memory["ghost"]
+		if can_see(0, memory["position"]):
+			ghost.hide()
+			if not live_ids.has(building_id):
+				ghost.queue_free()
+				remembered_buildings.erase(building_id)
+		else:
+			ghost.show()
+
+func _remember_building(building: RtsBuilding, building_id: int) -> void:
+	var ghost: RtsBuilding
+	if remembered_buildings.has(building_id):
+		ghost = remembered_buildings[building_id]["ghost"]
+	else:
+		ghost = RtsBuilding.new()
+		ghost.name = "RememberedBuilding"
+		ghost.game = game
+		ghost.process_mode = Node.PROCESS_MODE_DISABLED
+		ghost.hide()
+		ghost.modulate = Color(0.62, 0.66, 0.69, 0.85)
+		game.add_child(ghost)
+	ghost.owner_id = building.owner_id
+	ghost.kind = building.kind
+	ghost.landmark_id = building.landmark_id
+	ghost.position = building.position
+	ghost.wall_vertical = building.wall_vertical
+	ghost.stats = building.stats.duplicate(true)
+	ghost.hp = building.hp
+	ghost.max_hp = building.max_hp
+	ghost.build_remaining = building.build_remaining
+	ghost.build_total = building.build_total
+	ghost.building_icon = building.building_icon
+	ghost.production_queue.clear()
+	if not building.production_queue.is_empty(): ghost.production_queue.append({})
+	ghost.z_index = building.z_index
+	remembered_buildings[building_id] = {"ghost": ghost, "position": building.position, "owner_id": building.owner_id}
+	ghost.queue_redraw()
+
+func _clear_building_memory() -> void:
+	for memory in remembered_buildings.values():
+		var ghost: RtsBuilding = memory["ghost"]
+		if is_instance_valid(ghost):
+			ghost.hide()
+			ghost.queue_free()
+	remembered_buildings.clear()
+
 func _update_entity_visibility() -> void:
 	for unit in game.units:
 		if not is_instance_valid(unit) or unit.is_queued_for_deletion(): continue
@@ -221,6 +280,10 @@ func _update_mask() -> void:
 
 func update_projection() -> void:
 	if relief_mesh == null: return
+	for memory in remembered_buildings.values():
+		var ghost: RtsBuilding = memory["ghost"]
+		ghost.z_index = clampi(roundi((ghost.position.x + ghost.position.y) * 0.5), 0, 2800) if game.view_mode_25d else 0
+		ghost.queue_redraw()
 	if not active or not game.view_mode_25d:
 		relief_mesh.hide()
 		queue_redraw()
