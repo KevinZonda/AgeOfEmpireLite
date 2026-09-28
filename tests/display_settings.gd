@@ -160,6 +160,17 @@ func _run() -> void:
 	assert(pause_settings != null)
 	pause_settings.pressed.emit()
 	assert(game.ui_scale_values == [0.75, 1.0, 1.25, 1.5])
+	game.ui_scale = 1.5
+	game._apply_ui_scales()
+	await process_frame
+	var scaled_panel: Control = game.settings_overlay.get_child(0)
+	var scaled_transform: Transform2D = scaled_panel.get_global_transform_with_canvas()
+	var scaled_rect := Rect2(scaled_transform * Vector2.ZERO, scaled_transform * scaled_panel.size - scaled_transform * Vector2.ZERO)
+	assert(scaled_rect.position.x >= 0 and scaled_rect.position.y >= 0)
+	assert(scaled_rect.end.x <= 1920 and scaled_rect.end.y <= 1080)
+	assert(absf(game.top_label.get_theme_font_size("font_size") * 1.5 - top_base_font) < 1.0)
+	game.ui_scale = 1.0
+	game._apply_ui_scales()
 	var escape := InputEventKey.new()
 	escape.keycode = KEY_ESCAPE
 	escape.pressed = true
@@ -171,6 +182,10 @@ func _run() -> void:
 	game._show_menu()
 	game.menu_ui._show_setup_menu()
 	await process_frame
+	var scaled_title: Label
+	for label in game.menu_panel.find_children("*", "Label", true, false):
+		if label.text == "对 局 设 置": scaled_title = label
+	assert(scaled_title != null and scaled_title.get_theme_font_size("font_size") == 45)
 	var menu_rect: Rect2 = game.menu_panel.get_global_rect()
 	assert(menu_rect.position.x >= 0 and menu_rect.position.y >= 0)
 	assert(menu_rect.end.x <= 1280 and menu_rect.end.y <= 720)
