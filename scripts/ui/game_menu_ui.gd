@@ -17,11 +17,11 @@ func _create_settings(parent: Control) -> void:
 	parent.add_child(game.settings_overlay)
 	var panel := PanelContainer.new()
 	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	panel.custom_minimum_size = Vector2(620, 430)
-	panel.offset_left = -310
-	panel.offset_top = -215
-	panel.offset_right = 310
-	panel.offset_bottom = 215
+	panel.custom_minimum_size = Vector2(680, 540)
+	panel.offset_left = -340
+	panel.offset_top = -270
+	panel.offset_right = 340
+	panel.offset_bottom = 270
 	panel.add_theme_stylebox_override("panel", game._hud_panel_style(Color("30271c"), 20))
 	game.settings_overlay.add_child(panel)
 	var box := VBoxContainer.new()
@@ -51,10 +51,12 @@ func _create_settings(parent: Control) -> void:
 	game.window_mode_choice.add_item("全屏")
 	game.window_mode_choice.custom_minimum_size.y = 42
 	game._style_button(game.window_mode_choice)
+	game.window_mode_choice.item_selected.connect(func(_index: int) -> void: _refresh_ui_scale_options())
 	_add_settings_option_row(display_tab, "显示模式", game.window_mode_choice)
 	game.resolution_choice = OptionButton.new()
 	game.resolution_choice.custom_minimum_size.y = 42
 	game._style_button(game.resolution_choice)
+	game.resolution_choice.item_selected.connect(func(_index: int) -> void: _refresh_ui_scale_options())
 	_add_settings_option_row(display_tab, "窗口分辨率", game.resolution_choice)
 	game.projection_choice = OptionButton.new()
 	game.projection_choice.add_item("2D 俯视")
@@ -62,6 +64,15 @@ func _create_settings(parent: Control) -> void:
 	game.projection_choice.custom_minimum_size.y = 42
 	game._style_button(game.projection_choice)
 	_add_settings_option_row(display_tab, "视角", game.projection_choice)
+	game.ui_scale_choice = OptionButton.new()
+	game.ui_scale_choice.custom_minimum_size.y = 42
+	game._style_button(game.ui_scale_choice)
+	_add_settings_option_row(display_tab, "界面缩放", game.ui_scale_choice)
+	game.text_scale_choice = OptionButton.new()
+	for scale in game.TEXT_SCALE_OPTIONS: game.text_scale_choice.add_item("%d%%" % roundi(scale * 100.0))
+	game.text_scale_choice.custom_minimum_size.y = 42
+	game._style_button(game.text_scale_choice)
+	_add_settings_option_row(display_tab, "文字缩放", game.text_scale_choice)
 	_add_menu_label(display_tab, "高于当前屏幕可用尺寸的选项不会显示。", 14)
 	var controls_tab := VBoxContainer.new()
 	controls_tab.name = "操作设置"
@@ -116,6 +127,9 @@ func _create_settings(parent: Control) -> void:
 		game.edge_scroll_enabled = game.edge_scroll_toggle.button_pressed
 		game.zoom_gesture_enabled = game.zoom_gesture_toggle.button_pressed
 		game.selected_view_mode_25d = game.projection_choice.selected == 1
+		game.ui_scale = game.ui_scale_values[game.ui_scale_choice.selected]
+		game.text_scale = game.TEXT_SCALE_OPTIONS[game.text_scale_choice.selected]
+		game._apply_ui_scales()
 		if game.started and game.view_mode_25d != game.selected_view_mode_25d: game._toggle_view_mode()
 		game._save_settings()
 		_close_settings()
@@ -129,7 +143,7 @@ func _add_settings_option_row(parent: VBoxContainer, title: String, choice: Opti
 	parent.add_child(row)
 	var label := Label.new()
 	label.text = title
-	label.custom_minimum_size.x = 110
+	label.custom_minimum_size.x = 140
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.add_theme_font_size_override("font_size", 17)
 	label.add_theme_color_override("font_color", Color("f0ddb1"))
@@ -146,6 +160,8 @@ func _show_settings(from_pause := false) -> void:
 	if not game._window_is_fullscreen(): game.windowed_resolution = game.get_window().size
 	_refresh_resolution_options()
 	game.window_mode_choice.select(1 if game._window_is_fullscreen() else 0)
+	_refresh_ui_scale_options()
+	game.text_scale_choice.select(game.TEXT_SCALE_OPTIONS.find(game.text_scale))
 	game.edge_scroll_toggle.button_pressed = game.edge_scroll_enabled
 	game.zoom_gesture_toggle.button_pressed = game.zoom_gesture_enabled
 	game.projection_choice.select(1 if game.selected_view_mode_25d else 0)
@@ -176,6 +192,26 @@ func _refresh_resolution_options() -> void:
 		game.resolution_values.append(current)
 		game.resolution_choice.add_item("当前窗口：%d × %d" % [current.x, current.y])
 	game.resolution_choice.select(game.resolution_values.find(current))
+
+func _refresh_ui_scale_options() -> void:
+	var wanted_scale: float = game.ui_scale
+	if game.ui_scale_choice.selected >= 0 and game.ui_scale_choice.selected < game.ui_scale_values.size():
+		wanted_scale = game.ui_scale_values[game.ui_scale_choice.selected]
+	var available_size: Vector2
+	if game.window_mode_choice.selected == 1 and DisplayServer.get_name() != "headless":
+		available_size = Vector2(DisplayServer.screen_get_usable_rect(game.get_window().current_screen).size)
+	elif game.resolution_choice.selected >= 0 and game.resolution_choice.selected < game.resolution_values.size():
+		available_size = Vector2(game.resolution_values[game.resolution_choice.selected])
+	else:
+		available_size = game.get_viewport_rect().size
+	game.ui_scale_choice.clear()
+	game.ui_scale_values.clear()
+	for scale in game.UI_SCALE_OPTIONS:
+		if game.MIN_UI_VIEWPORT_SIZE.x * scale > available_size.x or game.MIN_UI_VIEWPORT_SIZE.y * scale > available_size.y: continue
+		game.ui_scale_values.append(scale)
+		game.ui_scale_choice.add_item("%d%%" % roundi(scale * 100.0))
+	var chosen_index: int = game.ui_scale_values.find(wanted_scale)
+	game.ui_scale_choice.select(chosen_index if chosen_index >= 0 else game.ui_scale_values.size() - 1)
 
 func _show_menu() -> void:
 	game.paused = false

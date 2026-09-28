@@ -112,9 +112,11 @@ func _init(game_ref: Node2D) -> void:
 
 func _create_hud() -> void:
 	var root := Control.new()
-	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	root.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
+	root.size = game.get_viewport_rect().size
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(root)
+	game.ui_root = root
 	game.menu_backdrop = game.MENU_BACKDROP.new()
 	game.menu_backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	game.menu_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE

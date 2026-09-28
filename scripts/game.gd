@@ -3,6 +3,9 @@ extends Node2D
 const WORLD_SIZE := Vector2(2400, 2400)
 const START_CAMERA_POINT := Vector2(630, 820)
 const WINDOW_RESOLUTIONS := [Vector2i(1280, 720), Vector2i(1440, 810), Vector2i(1600, 900), Vector2i(1920, 1080), Vector2i(2560, 1440)]
+const UI_SCALE_OPTIONS := [0.75, 1.0, 1.25, 1.5]
+const TEXT_SCALE_OPTIONS := [0.75, 1.0, 1.25, 1.5]
+const MIN_UI_VIEWPORT_SIZE := Vector2(1280, 720)
 const SETTINGS_PATH := "user://settings.cfg"
 const LEGACY_DISPLAY_SETTINGS_PATH := "user://display.cfg"
 const CAMERA_PAN_SPEED := 570.0
@@ -148,6 +151,13 @@ var hotkey_buttons: Dictionary = {}
 var minimap: RtsMinimap
 var menu_ui: MENU_UI
 var hud_ui: HUD_UI
+var ui_root: Control
+var ui_scale := 1.0
+var text_scale := 1.0
+var ui_scale_choice: OptionButton
+var text_scale_choice: OptionButton
+var ui_scale_values: Array[float] = []
+var ui_scale_update_pending := false
 var menu_panel: PanelContainer
 var tech_tree_overlay: ColorRect
 var tech_tree_civilization_choice: OptionButton
@@ -214,11 +224,15 @@ func _ready() -> void:
 	)
 	ai = RtsAiController.new(self)
 	_create_hud()
+	get_viewport().size_changed.connect(_apply_ui_scales)
+	get_tree().node_added.connect(_on_ui_node_added)
+	_apply_ui_scales()
 	_create_cursor()
 	_show_menu()
 	queue_redraw()
 
 func _exit_tree() -> void:
+	if get_tree().node_added.is_connected(_on_ui_node_added): get_tree().node_added.disconnect(_on_ui_node_added)
 	_cancel_selection_drag()
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
@@ -246,6 +260,31 @@ func _create_hud() -> void:
 	hud_ui = HUD_UI.new(self)
 	add_child(hud_ui)
 	hud_ui._create_hud()
+
+func _on_ui_node_added(node: Node) -> void:
+	if ui_root == null or not (node is Control) or not ui_root.is_ancestor_of(node) or ui_scale_update_pending: return
+	ui_scale_update_pending = true
+	call_deferred("_apply_ui_scales")
+
+func _apply_ui_scales() -> void:
+	ui_scale_update_pending = false
+	if ui_root == null or not is_instance_valid(ui_root): return
+	var viewport_size := get_viewport_rect().size
+	var max_scale := minf(viewport_size.x / MIN_UI_VIEWPORT_SIZE.x, viewport_size.y / MIN_UI_VIEWPORT_SIZE.y)
+	var effective_scale := maxf(0.5, minf(ui_scale, max_scale))
+	hud_ui.transform = Transform2D.IDENTITY.scaled(Vector2.ONE * effective_scale)
+	ui_root.size = viewport_size / effective_scale
+	_scale_ui_fonts(ui_root, text_scale / effective_scale)
+
+func _scale_ui_fonts(node: Node, factor: float) -> void:
+	if node is Label or node is BaseButton or node is LineEdit or node is TextEdit or node is RichTextLabel:
+		var control: Control = node
+		var font_key := "normal_font_size" if node is RichTextLabel else "font_size"
+		if not control.has_meta("base_ui_font_size"):
+			control.set_meta("base_ui_font_size", control.get_theme_font_size(font_key))
+		var base_size: int = control.get_meta("base_ui_font_size")
+		control.add_theme_font_size_override(font_key, maxi(1, roundi(base_size * factor)))
+	for child in node.get_children(): _scale_ui_fonts(child, factor)
 
 func _hud_panel_style(color: Color, margin: float) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
@@ -397,6 +436,8 @@ func _save_settings() -> void:
 	config.set_value("display", "window_size", windowed_resolution)
 	config.set_value("display", "fullscreen", _window_is_fullscreen())
 	config.set_value("display", "view_mode_25d", selected_view_mode_25d)
+	config.set_value("display", "ui_scale", ui_scale)
+	config.set_value("display", "text_scale", text_scale)
 	config.set_value("controls", "edge_scroll_enabled", edge_scroll_enabled)
 	config.set_value("controls", "zoom_gesture_enabled", zoom_gesture_enabled)
 	config.save(SETTINGS_PATH)
@@ -407,6 +448,10 @@ func _load_settings() -> void:
 	var config := ConfigFile.new()
 	if config.load(SETTINGS_PATH) != OK and config.load(LEGACY_DISPLAY_SETTINGS_PATH) != OK: return
 	selected_view_mode_25d = bool(config.get_value("display", "view_mode_25d", false))
+	var saved_ui_scale: float = float(config.get_value("display", "ui_scale", 1.0))
+	var saved_text_scale: float = float(config.get_value("display", "text_scale", 1.0))
+	ui_scale = saved_ui_scale if UI_SCALE_OPTIONS.has(saved_ui_scale) else 1.0
+	text_scale = saved_text_scale if TEXT_SCALE_OPTIONS.has(saved_text_scale) else 1.0
 	edge_scroll_enabled = bool(config.get_value("controls", "edge_scroll_enabled", true))
 	zoom_gesture_enabled = bool(config.get_value("controls", "zoom_gesture_enabled", true))
 	var resolution: Variant = config.get_value("display", "window_size", Vector2i.ZERO)
@@ -1452,7 +1497,10 @@ func _reset_selection_pointer() -> void:
 func _selection_point_over_hud(screen_point: Vector2) -> bool:
 	if not Rect2(Vector2.ZERO, get_viewport_rect().size).has_point(screen_point): return true
 	for control in [hud_top, hud_bottom, global_queue_panel, pause_overlay, settings_overlay, tech_tree_overlay, age_choice_overlay]:
-		if control != null and control is Control and control.is_visible_in_tree() and control.get_global_rect().has_point(screen_point): return true
+		if control == null or not (control is Control) or not control.is_visible_in_tree(): continue
+		var canvas_transform := control.get_global_transform_with_canvas()
+		var screen_rect := Rect2(canvas_transform * Vector2.ZERO, canvas_transform * control.size - canvas_transform * Vector2.ZERO)
+		if screen_rect.has_point(screen_point): return true
 	return false
 
 func _can_begin_native_selection(screen_point: Vector2) -> bool:
