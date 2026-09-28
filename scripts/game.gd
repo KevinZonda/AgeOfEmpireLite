@@ -22,6 +22,7 @@ const SELECTION_DRAG_OVERLAY := preload("res://scripts/ui/selection_drag_overlay
 const SELECTION_PORTRAIT := preload("res://scripts/ui/selection_portrait.gd")
 const MENU_BACKDROP := preload("res://scripts/ui/menu_backdrop.gd")
 const TECH_TREE_PAGE := preload("res://scripts/ui/tech_tree_page.gd")
+const UNIT_PREVIEW_PAGE := preload("res://scripts/ui/unit_preview_page.gd")
 const MENU_UI := preload("res://scripts/ui/game_menu_ui.gd")
 const HUD_UI := preload("res://scripts/ui/game_hud_ui.gd")
 const PlayerSelection = preload("res://scripts/player/player_selection.gd")
@@ -165,6 +166,7 @@ var menu_panel: PanelContainer
 var tech_tree_overlay: ColorRect
 var tech_tree_civilization_choice: OptionButton
 var tech_tree_page
+var unit_preview_page
 var age_choice_overlay: ColorRect
 var result_panel: PanelContainer
 var pause_overlay: ColorRect
@@ -1536,7 +1538,8 @@ func _poll_selection_pointer() -> void:
 			_update_selection_drag(screen_point)
 	elif selection_previous_left_down:
 		if dragging and selection_drag_phase in [SelectionDragPhase.CANDIDATE, SelectionDragPhase.ACTIVE]:
-			_complete_selection_drag(screen_point, selection_drag_additive)
+			# The pointer may already be at the next right-click target by this frame.
+			_complete_selection_drag(drag_current_screen, selection_drag_additive)
 		else:
 			selection_drag_phase = SelectionDragPhase.IDLE
 	selection_previous_left_down = left_down
@@ -1654,6 +1657,11 @@ func _input(event: InputEvent) -> void:
 			_close_age_choice()
 			get_viewport().set_input_as_handled()
 		return
+	if unit_preview_page != null:
+		if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
+			menu_ui._close_unit_preview()
+			get_viewport().set_input_as_handled()
+		return
 	if tech_tree_overlay != null:
 		if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
 			_close_tech_tree()
@@ -1676,6 +1684,8 @@ func _input(event: InputEvent) -> void:
 		if _finish_left_drag(event):
 			get_viewport().set_input_as_handled()
 			return
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed and dragging:
+		_cancel_selection_drag(true)
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
 		_set_paused(not paused)
 		get_viewport().set_input_as_handled()
@@ -1697,8 +1707,8 @@ func _finish_left_drag(event: InputEventMouseButton) -> bool:
 		_confirm_wall_line(wall_start, get_global_mouse_position(), event.shift_pressed)
 		return true
 	if dragging:
-		var screen_point := _selection_pointer_screen_position() if _uses_native_selection_pointer() else event.position
-		_complete_selection_drag(screen_point, event.shift_pressed)
+		# Use the release event's position, not the pointer's later position.
+		_complete_selection_drag(event.position, event.shift_pressed)
 		if _uses_native_selection_pointer(): selection_previous_left_down = _selection_native_left_down()
 		return true
 	return false
@@ -1762,7 +1772,7 @@ func _unhandled_input(event: InputEvent) -> void:
 				pending_landmark_id = ""
 				notify_player("已取消建造")
 				return
-			_issue_order(get_global_mouse_position(), event.shift_pressed)
+			_issue_order(get_viewport().get_canvas_transform().affine_inverse() * event.position, event.shift_pressed)
 			return
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_PERIOD:

@@ -26,6 +26,21 @@ func _run() -> void:
 	scout_icon.pressed.emit()
 	assert(game.selected.size() == 1 and game.selected[0] == scout, "clicking a multi-selection icon should select that unit alone")
 	assert(game.info_label.text == "侦察兵" and game.hud_ui.multi_selection_grid.get_child_count() == 0, "unit details should replace the icon grid")
+	var canvas: Transform2D = game.get_viewport().get_canvas_transform()
+	game._begin_selection_candidate(canvas * worker.position)
+	var right_click := InputEventMouseButton.new()
+	right_click.button_index = MOUSE_BUTTON_RIGHT
+	right_click.pressed = true
+	right_click.position = canvas * Vector2(700, 700)
+	game._input(right_click)
+	game._unhandled_input(right_click)
+	var late_left_release := InputEventMouseButton.new()
+	late_left_release.button_index = MOUSE_BUTTON_LEFT
+	late_left_release.position = right_click.position
+	game._input(late_left_release)
+	game._unhandled_input(late_left_release)
+	assert(game.selected.size() == 1 and game.selected[0] == scout, "right click must not let a pending left click clear the selection")
+	assert(scout.order == "move", "right click should use its own event position for the move order")
 	game.camera.force_update_scroll()
 	var double_click := InputEventMouseButton.new()
 	double_click.button_index = MOUSE_BUTTON_LEFT

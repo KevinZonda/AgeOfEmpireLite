@@ -249,7 +249,7 @@ func _menu_panel_size(dimensions: Vector2) -> void:
 		child.queue_free()
 
 func _show_home_menu() -> void:
-	_menu_panel_size(Vector2(600, 500))
+	_menu_panel_size(Vector2(600, 550))
 	var box := VBoxContainer.new()
 	box.alignment = BoxContainer.ALIGNMENT_CENTER
 	box.add_theme_constant_override("separation", 20)
@@ -270,6 +270,12 @@ func _show_home_menu() -> void:
 	game._style_button(start_button, true)
 	start_button.pressed.connect(_show_setup_menu)
 	box.add_child(start_button)
+	var unit_preview_button := Button.new()
+	unit_preview_button.text = "单 位 预 览"
+	unit_preview_button.custom_minimum_size.y = 43
+	game._style_menu_button(unit_preview_button)
+	unit_preview_button.pressed.connect(func() -> void: _show_unit_preview(str(game.lobby_players[0]["civilization"])))
+	box.add_child(unit_preview_button)
 	var tech_tree_button := Button.new()
 	tech_tree_button.text = "查看科技树"
 	tech_tree_button.custom_minimum_size.y = 43
@@ -500,6 +506,19 @@ func _show_tech_tree(civilization: String, age := 1) -> void:
 	game.tech_tree_overlay = game.tech_tree_page.overlay
 	game.tech_tree_civilization_choice = game.tech_tree_page.civilization_choice
 	game.menu_panel.hide()
+
+func _show_unit_preview(civilization: String) -> void:
+	if game.unit_preview_page != null: game.unit_preview_page.queue_free()
+	game.unit_preview_page = game.UNIT_PREVIEW_PAGE.new()
+	game.unit_preview_page.close_requested.connect(_close_unit_preview)
+	game.unit_preview_page.build(game.menu_panel.get_parent(), civilization, game._style_button)
+	game.menu_panel.hide()
+
+func _close_unit_preview() -> void:
+	if game.unit_preview_page != null:
+		game.unit_preview_page.queue_free()
+		game.unit_preview_page = null
+	game.menu_panel.show()
 
 func _close_tech_tree() -> void:
 	if game.tech_tree_overlay != null:
