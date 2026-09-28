@@ -172,6 +172,10 @@ var cursor: GameCursor
 var selection_drag_overlay: Variant
 
 func _ready() -> void:
+	# The headless display starts at 64×64 with stretch disabled; use the
+	# game's minimum supported viewport for simulation and UI tests.
+	if DisplayServer.get_name() == "headless" and get_window().size == Vector2i(64, 64):
+		get_window().size = Vector2i(1280, 720)
 	_load_settings()
 	world_map = RtsWorldMap.new()
 	world_map.z_index = -10

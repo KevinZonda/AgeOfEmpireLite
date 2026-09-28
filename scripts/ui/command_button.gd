@@ -19,7 +19,7 @@ func configure(kind: String, label_text: String, key_text: String, slot: int = -
 	shortcut_label = key_text
 	slot_index = slot
 	icon_texture = _load_icon(kind)
-	custom_minimum_size = Vector2(68, 68)
+	custom_minimum_size = Vector2(54, 54)
 	add_theme_stylebox_override("normal", _tile_style(Color("473725"), Color("8d7549")))
 	add_theme_stylebox_override("hover", _tile_style(Color("634a29"), Color("ebca7c")))
 	add_theme_stylebox_override("pressed", _tile_style(Color("2f281c"), Color("f4d58a")))
@@ -57,7 +57,7 @@ func _refresh_tooltip() -> void:
 
 func _draw() -> void:
 	var color := Color("f1d99b") if not disabled else Color("8b8679")
-	var icon_rect := Rect2((size - Vector2(60, 60)) * 0.5, Vector2(60, 60))
+	var icon_rect := Rect2((size - Vector2(48, 48)) * 0.5, Vector2(48, 48))
 	if icon_texture != null:
 		draw_texture_rect(icon_texture, icon_rect, false, Color(1, 1, 1, 0.38) if disabled else Color.WHITE)
 	else:

@@ -46,25 +46,22 @@ func _create_settings(parent: Control) -> void:
 	display_tab.name = "显示设置"
 	display_tab.add_theme_constant_override("separation", 12)
 	game.settings_tabs.add_child(display_tab)
-	_add_menu_label(display_tab, "显示模式", 17)
 	game.window_mode_choice = OptionButton.new()
 	game.window_mode_choice.add_item("窗口化")
 	game.window_mode_choice.add_item("全屏")
 	game.window_mode_choice.custom_minimum_size.y = 42
 	game._style_button(game.window_mode_choice)
-	display_tab.add_child(game.window_mode_choice)
-	_add_menu_label(display_tab, "窗口分辨率", 17)
+	_add_settings_option_row(display_tab, "显示模式", game.window_mode_choice)
 	game.resolution_choice = OptionButton.new()
 	game.resolution_choice.custom_minimum_size.y = 42
 	game._style_button(game.resolution_choice)
-	display_tab.add_child(game.resolution_choice)
-	_add_menu_label(display_tab, "视角", 17)
+	_add_settings_option_row(display_tab, "窗口分辨率", game.resolution_choice)
 	game.projection_choice = OptionButton.new()
 	game.projection_choice.add_item("2D 俯视")
 	game.projection_choice.add_item("2.5D 斜视")
 	game.projection_choice.custom_minimum_size.y = 42
 	game._style_button(game.projection_choice)
-	display_tab.add_child(game.projection_choice)
+	_add_settings_option_row(display_tab, "视角", game.projection_choice)
 	_add_menu_label(display_tab, "高于当前屏幕可用尺寸的选项不会显示。", 14)
 	var controls_tab := VBoxContainer.new()
 	controls_tab.name = "操作设置"
@@ -125,6 +122,20 @@ func _create_settings(parent: Control) -> void:
 	)
 	buttons.add_child(apply_button)
 	game.settings_overlay.hide()
+
+func _add_settings_option_row(parent: VBoxContainer, title: String, choice: OptionButton) -> void:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 12)
+	parent.add_child(row)
+	var label := Label.new()
+	label.text = title
+	label.custom_minimum_size.x = 110
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", 17)
+	label.add_theme_color_override("font_color", Color("f0ddb1"))
+	row.add_child(label)
+	choice.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(choice)
 
 func _update_settings_tab_buttons(active_tab: int) -> void:
 	for index in game.settings_tab_buttons.size():

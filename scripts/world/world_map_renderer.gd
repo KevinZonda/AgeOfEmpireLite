@@ -1,6 +1,9 @@
 extends RefCounted
 
 # Drawing stays on the map CanvasItem, so existing queue_redraw calls and z order apply.
+const GRASS_DARK := Color("688e5e")
+const GRASS_LIGHT := Color("7d9b64")
+
 static func tile_lift(map: RtsWorldMap, height: float) -> Vector2:
 	return map.lift_per_height * height
 
@@ -23,7 +26,32 @@ static func relief_color(terrain: int, height: float) -> Color:
 	return grass.lerp(Color("a49d79"), clampf(height / 105.0, 0.0, 0.78))
 
 
-static func draw_relief_tile(map: RtsWorldMap, x: int, y: int) -> void:
+static func grass_vertex_colors(map: RtsWorldMap) -> PackedColorArray:
+	var noise := FastNoiseLite.new()
+	noise.seed = map.map_seed
+	noise.frequency = 0.004
+	noise.fractal_type = FastNoiseLite.FRACTAL_FBM
+	noise.fractal_octaves = 3
+	var width := map.grid_size.x + 1
+	var colors := PackedColorArray()
+	colors.resize(width * (map.grid_size.y + 1))
+	for y in map.grid_size.y + 1:
+		for x in width:
+			var point := Vector2(x, y) * RtsWorldMap.CELL_SIZE
+			var reference := map._reference_point(point)
+			var variation := noise.get_noise_2d(reference.x, reference.y)
+			var color := GRASS_DARK.lerp(GRASS_LIGHT, smoothstep(-0.2, 0.45, variation))
+			if map.isometric_view:
+				var height := visual_vertex_height(map, x, y)
+				color = color.lerp(Color("a49d79"), clampf(height / 105.0, 0.0, 0.78))
+				var east_slope := (visual_vertex_height(map, x + 1, y) - visual_vertex_height(map, x - 1, y)) / (2.0 * RtsWorldMap.CELL_SIZE)
+				var south_slope := (visual_vertex_height(map, x, y + 1) - visual_vertex_height(map, x, y - 1)) / (2.0 * RtsWorldMap.CELL_SIZE)
+				color *= clampf(0.98 - east_slope * 0.16 - south_slope * 0.12, 0.72, 1.15)
+			colors[y * width + x] = color
+	return colors
+
+
+static func draw_relief_tile(map: RtsWorldMap, x: int, y: int, grass_colors: PackedColorArray) -> void:
 	var h_nw := visual_vertex_height(map, x, y)
 	var h_ne := visual_vertex_height(map, x + 1, y)
 	var h_se := visual_vertex_height(map, x + 1, y + 1)
@@ -36,6 +64,15 @@ static func draw_relief_tile(map: RtsWorldMap, x: int, y: int) -> void:
 	var terrain: int = map.cells[map._index(Vector2i(clampi(x, 0, map.grid_size.x - 1), clampi(y, 0, map.grid_size.y - 1)))]
 	var average := (h_nw + h_ne + h_se + h_sw) * 0.25
 	var outside := x < 0 or y < 0 or x >= map.grid_size.x or y >= map.grid_size.y
+	if not outside and terrain in [RtsWorldMap.Terrain.GRASS, RtsWorldMap.Terrain.MEADOW]:
+		var stride := map.grid_size.x + 1
+		var c_nw := grass_colors[y * stride + x]
+		var c_ne := grass_colors[y * stride + x + 1]
+		var c_se := grass_colors[(y + 1) * stride + x + 1]
+		var c_sw := grass_colors[(y + 1) * stride + x]
+		map.draw_polygon(PackedVector2Array([nw, ne, se]), PackedColorArray([c_nw, c_ne, c_se]))
+		map.draw_polygon(PackedVector2Array([nw, se, sw]), PackedColorArray([c_nw, c_se, c_sw]))
+		return
 	var color := RtsWorldMap.OUTSIDE_COLOR if outside else relief_color(terrain, average)
 	var east_slope := (h_ne + h_se - h_nw - h_sw) / (2.0 * RtsWorldMap.CELL_SIZE)
 	var south_slope := (h_sw + h_se - h_nw - h_ne) / (2.0 * RtsWorldMap.CELL_SIZE)
@@ -51,6 +88,7 @@ static func draw_relief_tile(map: RtsWorldMap, x: int, y: int) -> void:
 
 
 static func draw_map(map: RtsWorldMap) -> void:
+	var grass_colors := grass_vertex_colors(map)
 	if map.isometric_view:
 		var camera := map.get_viewport().get_camera_2d()
 		map.lift_per_height = RtsIsoProjection.world_delta(map.get_viewport().get_canvas_transform(), Vector2(0, -camera.zoom.x)) if camera != null else Vector2.ZERO
@@ -70,7 +108,14 @@ static func draw_map(map: RtsWorldMap) -> void:
 				RtsWorldMap.Terrain.WATER: color = Color("437e9f")
 				RtsWorldMap.Terrain.MOUNTAIN: color = Color("686f68").lerp(Color("adb0a1"), clampf((map.elevation_at(point + Vector2.ONE * RtsWorldMap.CELL_SIZE * 0.5) - 60.0) / 140.0, 0.0, 1.0))
 				RtsWorldMap.Terrain.ROAD: color = Color("879468")
-			map.draw_rect(Rect2(point, Vector2(RtsWorldMap.CELL_SIZE, RtsWorldMap.CELL_SIZE)), color)
+			if terrain in [RtsWorldMap.Terrain.GRASS, RtsWorldMap.Terrain.MEADOW]:
+				var stride := map.grid_size.x + 1
+				map.draw_polygon(
+					PackedVector2Array([point, point + Vector2(RtsWorldMap.CELL_SIZE, 0), point + Vector2.ONE * RtsWorldMap.CELL_SIZE, point + Vector2(0, RtsWorldMap.CELL_SIZE)]),
+					PackedColorArray([grass_colors[y * stride + x], grass_colors[y * stride + x + 1], grass_colors[(y + 1) * stride + x + 1], grass_colors[(y + 1) * stride + x]])
+				)
+			else:
+				map.draw_rect(Rect2(point, Vector2(RtsWorldMap.CELL_SIZE, RtsWorldMap.CELL_SIZE)), color)
 			if terrain == RtsWorldMap.Terrain.WATER:
 				map.draw_line(point + Vector2(9, 19), point + Vector2(27, 19), Color("8fc3cf", 0.45), 2)
 				map.draw_line(point + Vector2(24, 35), point + Vector2(43, 35), Color("8fc3cf", 0.34), 2)
@@ -92,7 +137,7 @@ static func draw_map(map: RtsWorldMap) -> void:
 	if map.isometric_view:
 		for y in range(-RtsWorldMap.VISUAL_APRON_CELLS, map.grid_size.y + RtsWorldMap.VISUAL_APRON_CELLS):
 			for x in range(-RtsWorldMap.VISUAL_APRON_CELLS, map.grid_size.x + RtsWorldMap.VISUAL_APRON_CELLS):
-				draw_relief_tile(map, x, y)
+				draw_relief_tile(map, x, y, grass_colors)
 		var border := Color("d1bc86", 0.74)
 		for x in map.grid_size.x:
 			map.draw_line(projected_vertex(map, x, 0), projected_vertex(map, x + 1, 0), border, 2.0)

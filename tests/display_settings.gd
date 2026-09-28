@@ -32,13 +32,23 @@ func _run() -> void:
 	assert(game.settings_tabs.current_tab == 0)
 	assert(game.resolution_values.has(Vector2i(1280, 720)))
 	assert(game.resolution_values.has(Vector2i(1600, 900)))
-	assert(game.window_mode_choice.get_parent().name == "显示设置")
+	for setting in [
+		[game.window_mode_choice, "显示模式"],
+		[game.resolution_choice, "窗口分辨率"],
+		[game.projection_choice, "视角"],
+	]:
+		var choice: OptionButton = setting[0]
+		var row: HBoxContainer = choice.get_parent()
+		var label: Label = row.get_child(0)
+		assert(row.get_parent().name == "显示设置")
+		assert(label.text == setting[1])
+		assert(label.get_global_rect().end.x < choice.get_global_rect().position.x)
+		assert(label.get_global_rect().end.y > choice.get_global_rect().position.y)
 	assert(game.window_mode_choice.get_item_text(0) == "窗口化")
 	assert(game.window_mode_choice.get_item_text(1) == "全屏")
 	assert(game.window_mode_choice.selected == 0)
 	assert(game.edge_scroll_toggle.button_pressed)
 	assert(game.zoom_gesture_toggle.button_pressed)
-	assert(game.projection_choice.get_parent().name == "显示设置")
 	game.projection_choice.select(1)
 	game.window_mode_choice.select(1)
 	game.resolution_choice.select(game.resolution_values.find(Vector2i(1280, 720)))

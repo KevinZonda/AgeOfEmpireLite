@@ -486,7 +486,7 @@ func _relief_color(terrain: int, height: float) -> Color:
 	return WorldMapRenderer.relief_color(terrain, height)
 
 func _draw_relief_tile(x: int, y: int) -> void:
-	WorldMapRenderer.draw_relief_tile(self, x, y)
+	WorldMapRenderer.draw_relief_tile(self, x, y, WorldMapRenderer.grass_vertex_colors(self))
 
 func _draw() -> void:
 	WorldMapRenderer.draw_map(self)

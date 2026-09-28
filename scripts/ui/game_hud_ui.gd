@@ -180,14 +180,14 @@ func _create_hud() -> void:
 	var bottom := PanelContainer.new()
 	game.hud_bottom = bottom
 	bottom.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	bottom.offset_top = -280
+	bottom.offset_top = -244
 	bottom.add_theme_stylebox_override("panel", game._hud_panel_style(Color("241d16"), 7))
 	root.add_child(bottom)
 	var dock := HBoxContainer.new()
 	dock.add_theme_constant_override("separation", 9)
 	bottom.add_child(dock)
 	var command_panel := PanelContainer.new()
-	command_panel.custom_minimum_size.x = 368
+	command_panel.custom_minimum_size.x = 300
 	command_panel.add_theme_stylebox_override("panel", game._hud_panel_style(Color("30261b"), 7))
 	dock.add_child(command_panel)
 	var command_column := VBoxContainer.new()
@@ -207,7 +207,7 @@ func _create_hud() -> void:
 	build_tab_bar.hide()
 	command_header.add_child(build_tab_bar)
 	var action_scroll := ScrollContainer.new()
-	action_scroll.custom_minimum_size = Vector2(350, 190)
+	action_scroll.custom_minimum_size = Vector2(280, 172)
 	action_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	action_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	action_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -229,7 +229,7 @@ func _create_hud() -> void:
 	selection_row.add_child(game.selection_portrait)
 	var selection_column := VBoxContainer.new()
 	selection_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	selection_column.add_theme_constant_override("separation", 7)
+	selection_column.add_theme_constant_override("separation", 4)
 	selection_row.add_child(selection_column)
 	game.info_label = Label.new()
 	game.info_label.text = "未选择"
@@ -244,7 +244,7 @@ func _create_hud() -> void:
 	game.detail_label.custom_minimum_size.x = 420
 	game.detail_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var detail_scroll := ScrollContainer.new()
-	detail_scroll.custom_minimum_size.y = 84
+	detail_scroll.custom_minimum_size.y = 50
 	detail_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	detail_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	detail_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -643,7 +643,7 @@ func _rebuild_actions() -> void:
 		game.action_bar.columns = 1
 		var guide := Label.new()
 		guide.text = _resource_guide(item)
-		guide.custom_minimum_size.x = 340
+		guide.custom_minimum_size.x = 270
 		guide.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		guide.add_theme_font_size_override("font_size", 15)
 		guide.add_theme_color_override("font_color", Color("e9dbbd"))
@@ -1007,7 +1007,7 @@ func _add_research_action(kind: String, keycode: int) -> void:
 
 func _add_action_spacer() -> void:
 	var spacer := Control.new()
-	spacer.custom_minimum_size = Vector2(68, 68)
+	spacer.custom_minimum_size = Vector2(54, 54)
 	spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	game.action_bar.add_child(spacer)
 
