@@ -32,10 +32,15 @@ func _run() -> void:
 	assert(game.settings_tabs.current_tab == 0)
 	assert(game.resolution_values.has(Vector2i(1280, 720)))
 	assert(game.resolution_values.has(Vector2i(1600, 900)))
+	assert(game.ui_scale_values == [0.75, 1.0])
+	assert(game.ui_scale_choice.selected == 1)
+	assert(game.text_scale_choice.item_count == 4 and game.text_scale_choice.selected == 1)
 	for setting in [
 		[game.window_mode_choice, "显示模式"],
 		[game.resolution_choice, "窗口分辨率"],
 		[game.projection_choice, "视角"],
+		[game.ui_scale_choice, "界面缩放"],
+		[game.text_scale_choice, "文字缩放"],
 	]:
 		var choice: OptionButton = setting[0]
 		var row: HBoxContainer = choice.get_parent()
@@ -52,12 +57,15 @@ func _run() -> void:
 	game.projection_choice.select(1)
 	game.window_mode_choice.select(1)
 	game.resolution_choice.select(game.resolution_values.find(Vector2i(1280, 720)))
+	game.ui_scale_choice.select(game.ui_scale_values.find(0.75))
+	game.text_scale_choice.select(game.TEXT_SCALE_OPTIONS.find(1.25))
 	game.settings_tabs.current_tab = 1
 	game.edge_scroll_toggle.button_pressed = false
 	game.zoom_gesture_toggle.button_pressed = false
 	game._close_settings()
 	assert(game.edge_scroll_enabled, "return should discard unsaved control changes")
 	assert(game.zoom_gesture_enabled and not game.selected_view_mode_25d, "return should discard unsaved view and gesture changes")
+	assert(game.ui_scale == 1.0 and game.text_scale == 1.0, "return should discard unsaved scale changes")
 	assert(not game._window_is_fullscreen(), "return should discard unsaved window mode")
 	assert(not game.settings_overlay.visible and game.menu_panel.visible)
 	home_settings.pressed.emit()
@@ -67,6 +75,8 @@ func _run() -> void:
 	game.projection_choice.select(1)
 	game.window_mode_choice.select(1)
 	game.resolution_choice.select(game.resolution_values.find(Vector2i(1280, 720)))
+	game.ui_scale_choice.select(game.ui_scale_values.find(0.75))
+	game.text_scale_choice.select(game.TEXT_SCALE_OPTIONS.find(1.25))
 	game.settings_tabs.current_tab = 1
 	game.edge_scroll_toggle.button_pressed = false
 	game.zoom_gesture_toggle.button_pressed = false
@@ -83,6 +93,8 @@ func _run() -> void:
 	var saved_edge_scroll: Variant = saved.get_value("controls", "edge_scroll_enabled", null) if save_result == OK else null
 	var saved_zoom_gesture: Variant = saved.get_value("controls", "zoom_gesture_enabled", null) if save_result == OK else null
 	var saved_view: Variant = saved.get_value("display", "view_mode_25d", null) if save_result == OK else null
+	var saved_ui_scale: Variant = saved.get_value("display", "ui_scale", null) if save_result == OK else null
+	var saved_text_scale: Variant = saved.get_value("display", "text_scale", null) if save_result == OK else null
 	var saved_fullscreen: Variant = saved.get_value("display", "fullscreen", null) if save_result == OK else null
 	var saved_window_size: Variant = saved.get_value("display", "window_size", null) if save_result == OK else null
 	if had_settings:
@@ -91,6 +103,11 @@ func _run() -> void:
 	else:
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(settings_path))
 	assert(save_result == OK and saved_edge_scroll == false and saved_zoom_gesture == false and saved_view == true)
+	assert(saved_ui_scale == 0.75 and saved_text_scale == 1.25)
+	assert(is_equal_approx(game.hud_ui.transform.get_scale().x, 0.75))
+	assert(is_equal_approx(game.ui_root.size.x, game.get_viewport_rect().size.x / 0.75))
+	var top_base_font: int = game.top_label.get_meta("base_ui_font_size")
+	assert(absf(game.top_label.get_theme_font_size("font_size") * 0.75 - top_base_font * 1.25) < 1.0)
 	assert(saved_fullscreen == true and saved_window_size == Vector2i(1280, 720))
 	assert(game._window_is_fullscreen())
 	game._apply_window_mode(false, false)
@@ -99,6 +116,11 @@ func _run() -> void:
 	assert(game.get_window().size == Vector2i(1280, 720))
 	assert(not game.edge_scroll_enabled)
 	assert(not game.zoom_gesture_enabled and game.selected_view_mode_25d)
+	var bottom_transform: Transform2D = game.hud_bottom.get_global_transform_with_canvas()
+	assert(game._selection_point_over_hud(bottom_transform * Vector2(20, 20)))
+	game.ui_scale = 1.0
+	game.text_scale = 1.0
+	game._apply_ui_scales()
 	assert(game._edge_pan_direction(Vector2(2, 360), Vector2(1280, 720)) == Vector2.ZERO)
 	game.edge_scroll_enabled = true
 	assert(game._edge_pan_direction(Vector2(2, 360), Vector2(1280, 720)) == Vector2.LEFT)
