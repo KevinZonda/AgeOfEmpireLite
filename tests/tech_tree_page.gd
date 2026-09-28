@@ -30,6 +30,10 @@ func _run() -> void:
 		assert(labels.any(func(value: String) -> bool: return value.contains(GameData.CIVILIZATIONS[civilization]["label"] + "  ·  科技树")))
 		assert(labels.any(func(value: String) -> bool: return value.contains("I  黑暗时代")))
 		assert(labels.any(func(value: String) -> bool: return value.contains("IV  帝王时代")))
+		assert(not labels.any(func(value: String) -> bool: return value.contains("横向查看建筑")), "the extra reading hint should be removed")
+		for node in game.tech_tree_overlay.find_children("*", "Button", true, false):
+			var button := node as Button
+			assert(not RtsTechTreePage.AGE_LABELS.has(button.text), "the redundant era navigation should be removed")
 		var unique_unit: String = {"English": "长弓兵", "French": "皇家骑士", "Chinese": "诸葛弩"}[civilization]
 		assert(labels.any(func(value: String) -> bool: return value.contains(unique_unit)), "civilization units should come from the game data")
 		if civilization != "Chinese": assert(not labels.any(func(value: String) -> bool: return value.contains("朝廷命官")))
@@ -46,11 +50,11 @@ func _run() -> void:
 		game.tech_tree_page.age_scroll.scroll_vertical = 200
 		assert(is_equal_approx(game.tech_tree_page.matrix_header.position.x, -400.0), "building headings should stay visible while scrolling")
 		assert(is_equal_approx(game.tech_tree_page.age_rail.position.y, -200.0), "era labels should stay visible while scrolling")
-		game.tech_tree_page.age_buttons[3].pressed.emit()
+		game.tech_tree_page.show_age(4)
 		await process_frame
 		assert(game.tech_tree_page.selected_age == 4 and game.tech_tree_page.age_pages[3].visible)
-		assert(game.tech_tree_page.age_scroll.scroll_vertical > 200, "era buttons should jump down the matrix")
-		assert(game.tech_tree_page.age_pages[0].visible, "age tabs should jump within the full matrix")
+		assert(game.tech_tree_page.age_scroll.scroll_vertical > 200, "the matrix should scroll to the requested era")
+		assert(game.tech_tree_page.age_pages[0].visible, "all era rows should remain visible")
 		game._close_tech_tree()
 		assert(game.tech_tree_overlay == null and game.menu_panel.visible)
 		assert(game.lobby_players[0]["civilization"] == civilization)
@@ -63,7 +67,7 @@ func _run() -> void:
 	assert(home_button != null, "home screen should have a tech tree entry")
 	home_button.pressed.emit()
 	assert(game.tech_tree_overlay != null)
-	game.tech_tree_page.age_buttons[2].pressed.emit()
+	game.tech_tree_page.show_age(3)
 	var chinese_index := GameData.CIVILIZATIONS.keys().find("Chinese")
 	game.tech_tree_civilization_choice.select(chinese_index)
 	game.tech_tree_civilization_choice.item_selected.emit(chinese_index)

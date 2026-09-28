@@ -14,7 +14,6 @@ var civilization_choice: OptionButton
 var age_scroll: ScrollContainer
 var age_rail: VBoxContainer
 var matrix_header: HBoxContainer
-var age_buttons: Array[Button] = []
 var age_pages: Array[HBoxContainer] = []
 var building_columns: Array[String] = []
 var selected_age := 1
@@ -55,21 +54,6 @@ func build(parent: Control, civilization: String, style_button: Callable, initia
 	style_button.call(close_button)
 	close_button.pressed.connect(func() -> void: close_requested.emit())
 	header.add_child(close_button)
-	var age_bar := HBoxContainer.new()
-	age_bar.add_theme_constant_override("separation", 7)
-	layout.add_child(age_bar)
-	for age in range(1, 5):
-		var button := Button.new()
-		button.text = AGE_LABELS[age]
-		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		button.custom_minimum_size.y = 42
-		button.focus_mode = Control.FOCUS_NONE
-		var target_age := age
-		button.pressed.connect(func() -> void: show_age(target_age))
-		age_bar.add_child(button)
-		age_buttons.append(button)
-	var hint := _tech_tree_label(layout, "横向查看建筑，纵向查看时代；悬停图标查看费用与前置条件。", 13, Color("c4b492"))
-	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	var header_strip := HBoxContainer.new()
 	header_strip.add_theme_constant_override("separation", 6)
 	layout.add_child(header_strip)
@@ -98,7 +82,7 @@ func build(parent: Control, civilization: String, style_button: Callable, initia
 	age_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	age_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 	matrix_body.add_child(age_scroll)
-	age_scroll.get_v_scroll_bar().value_changed.connect(func(value: float) -> void: age_rail.position.y = -value)
+	age_scroll.get_v_scroll_bar().value_changed.connect(_on_vertical_scroll)
 	age_scroll.get_h_scroll_bar().value_changed.connect(func(value: float) -> void: matrix_header.position.x = -value)
 	var matrix := VBoxContainer.new()
 	matrix.add_theme_constant_override("separation", 6)
@@ -116,13 +100,19 @@ func build(parent: Control, civilization: String, style_button: Callable, initia
 
 func show_age(age: int) -> void:
 	selected_age = clampi(age, 1, 4)
-	for index in age_buttons.size():
-		var button := age_buttons[index]
-		var active := index == selected_age - 1
-		button.add_theme_stylebox_override("normal", _tech_tree_style(Color("76552e") if active else Color("33291e"), Color("e0b86c") if active else Color("705739"), 5))
-		button.add_theme_color_override("font_color", Color("fff0ca") if active else Color("c7b797"))
 	if age_scroll != null and not age_pages.is_empty():
 		age_scroll.call_deferred("set_v_scroll", int(age_pages[selected_age - 1].position.y))
+
+func _on_vertical_scroll(value: float) -> void:
+	age_rail.position.y = -value
+	var scrollbar := age_scroll.get_v_scroll_bar()
+	var max_scroll := scrollbar.max_value - scrollbar.page
+	if max_scroll > 0.0 and value >= max_scroll - 1.0:
+		selected_age = 4
+		return
+	selected_age = 1
+	for index in age_pages.size():
+		if age_pages[index].position.y <= value + 20.0: selected_age = index + 1
 
 func _build_matrix_header(parent: Control) -> void:
 	matrix_header = HBoxContainer.new()
