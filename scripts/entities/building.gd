@@ -442,15 +442,18 @@ func _draw() -> void:
 func _draw_isometric() -> void:
 	var bounds := Rect2(-size() * 0.5, size())
 	var art_kind := _visual_kind()
+	var body_bounds := bounds
+	if art_kind == "monastery":
+		body_bounds = Rect2(Vector2(-size().x * 0.34, -size().y * 0.5), Vector2(size().x * 0.68, size().y))
 	var open_yard := art_kind in ["archery_range", "stable", "market", "dock", "lumber_camp", "mining_camp", "scout_camp"]
 	var palette := _architecture_palette()
 	var color: Color = palette["wall"]
 	var construction_ratio := 1.0 - build_remaining / maxf(build_total, 0.1)
 	if not is_complete(): color = color.darkened(0.32)
-	var nw := bounds.position
-	var ne := Vector2(bounds.end.x, bounds.position.y)
-	var se := bounds.end
-	var sw := Vector2(bounds.position.x, bounds.end.y)
+	var nw := body_bounds.position
+	var ne := Vector2(body_bounds.end.x, body_bounds.position.y)
+	var se := body_bounds.end
+	var sw := Vector2(body_bounds.position.x, body_bounds.end.y)
 	var height := isometric_height() * (0.25 + 0.75 * construction_ratio)
 	var canvas := get_viewport().get_canvas_transform()
 	var lift := RtsIsoProjection.world_delta(canvas, Vector2(0, -height * game.camera.zoom.x))
@@ -893,9 +896,13 @@ func _draw_iso_tower(art_kind: String, nw: Vector2, ne: Vector2, se: Vector2, sw
 		_draw_iso_landmark_crown((a + b + c + d) * 0.25 + rise, palette, canvas)
 
 func _draw_iso_landmark_crown(base: Vector2, palette: Dictionary, canvas: Transform2D) -> void:
-	var top := base + RtsIsoProjection.world_delta(canvas, Vector2(0, -13.0 * game.camera.zoom.x))
+	var mast_height := 28.0 if kind == "wonder" else 13.0
+	var top := base + RtsIsoProjection.world_delta(canvas, Vector2(0, -mast_height * game.camera.zoom.x))
 	draw_line(base, top, palette["timber"], 1.7)
-	if landmark_id == "zh_clocktower":
+	if kind == "wonder":
+		draw_circle(top, 4.0, palette["trim"])
+		draw_line(top + Vector2(-6, 5), top + Vector2(6, 5), palette["trim"], 2.0)
+	elif landmark_id == "zh_clocktower":
 		draw_circle(top, 5.0, palette["trim"])
 		draw_circle(top, 2.2, palette["roof_dark"])
 	elif landmark_id in ["eng_kings_mill", "eng_abbey", "zh_spirit_way"]:
