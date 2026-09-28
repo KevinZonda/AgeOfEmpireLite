@@ -14,6 +14,18 @@ func _run() -> void:
 	var worker: RtsUnit = game.units[0]
 	var scout: RtsUnit = game.spawn_unit(0, "scout", Vector2(800, 700))
 	var distant_worker: RtsUnit = game.spawn_unit(0, "villager", Vector2(2100, 820))
+	game.selected.clear()
+	game.selected.append(worker)
+	game.selected.append(scout)
+	game.selected.append(distant_worker)
+	game._rebuild_actions()
+	game._update_hud()
+	assert(game.hud_ui.multi_selection_grid.get_child_count() == 3, "multi-selection should show one icon per unit")
+	var scout_icon: Button = game.hud_ui.multi_selection_grid.get_child(1)
+	assert(scout_icon.tooltip_text.contains("侦察兵"), "each icon should identify its unit")
+	scout_icon.pressed.emit()
+	assert(game.selected.size() == 1 and game.selected[0] == scout, "clicking a multi-selection icon should select that unit alone")
+	assert(game.info_label.text == "侦察兵" and game.hud_ui.multi_selection_grid.get_child_count() == 0, "unit details should replace the icon grid")
 	game.camera.force_update_scroll()
 	var double_click := InputEventMouseButton.new()
 	double_click.button_index = MOUSE_BUTTON_LEFT

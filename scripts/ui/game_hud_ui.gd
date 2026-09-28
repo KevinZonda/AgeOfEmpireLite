@@ -109,6 +109,10 @@ var minimap_panel: PanelContainer
 var minimap_panel_style_2d: StyleBoxFlat
 var minimap_panel_style_25d: StyleBoxFlat
 var minimap_slot: Control
+var multi_selection_scroll: ScrollContainer
+var multi_selection_grid: GridContainer
+var multi_selection_ids: Array[int] = []
+var selection_detail_scroll: ScrollContainer
 var command_page := 0
 var command_selection_id := 0
 
@@ -243,6 +247,17 @@ func _create_hud() -> void:
 	game.info_label.add_theme_font_size_override("font_size", 19)
 	game.info_label.add_theme_color_override("font_color", Color("f0dfb6"))
 	selection_column.add_child(game.info_label)
+	multi_selection_scroll = ScrollContainer.new()
+	multi_selection_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	multi_selection_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	multi_selection_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	multi_selection_scroll.hide()
+	selection_column.add_child(multi_selection_scroll)
+	multi_selection_grid = GridContainer.new()
+	multi_selection_grid.columns = 6
+	multi_selection_grid.add_theme_constant_override("h_separation", 5)
+	multi_selection_grid.add_theme_constant_override("v_separation", 5)
+	multi_selection_scroll.add_child(multi_selection_grid)
 	game.detail_label = Label.new()
 	game.detail_label.text = "左键选择 · 右键下令"
 	game.detail_label.add_theme_font_size_override("font_size", 14)
@@ -250,13 +265,13 @@ func _create_hud() -> void:
 	game.detail_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	game.detail_label.custom_minimum_size.x = 420
 	game.detail_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var detail_scroll := ScrollContainer.new()
-	detail_scroll.custom_minimum_size.y = 50
-	detail_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	detail_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	detail_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	selection_column.add_child(detail_scroll)
-	detail_scroll.add_child(game.detail_label)
+	selection_detail_scroll = ScrollContainer.new()
+	selection_detail_scroll.custom_minimum_size.y = 50
+	selection_detail_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	selection_detail_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	selection_detail_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	selection_column.add_child(selection_detail_scroll)
+	selection_detail_scroll.add_child(game.detail_label)
 	game.selection_health = ProgressBar.new()
 	game.selection_health.show_percentage = false
 	game.selection_health.custom_minimum_size = Vector2(285, 11)
@@ -409,12 +424,24 @@ func _update_selection_hud() -> void:
 	game.selection_progress.hide()
 	game.queue_label.text = ""
 	game.queue_controls.hide()
+	game.selection_portrait.show()
+	selection_detail_scroll.show()
+	multi_selection_scroll.hide()
 	if game.selected.is_empty() or not is_instance_valid(game.selected[0]):
+		_clear_multi_selection_icons()
 		game.selection_portrait.show_subject(null)
 		game.info_label.text = "未选择"
 		game.detail_label.text = "左键选择 · 双击同型单位 · 右键下令 · Esc 暂停"
 		return
 	var item: Node2D = game.selected[0]
+	if game.selected.size() > 1:
+		game.selection_portrait.hide()
+		selection_detail_scroll.hide()
+		game.info_label.text = "已选中 %d 个单位 · 点击图标单独选中" % game.selected.size()
+		_refresh_multi_selection_icons()
+		multi_selection_scroll.show()
+		return
+	_clear_multi_selection_icons()
 	game.selection_portrait.show_subject(item, Color("b6a877") if item is RtsResource else game.player_color(item.owner_id))
 	if item is RtsResource:
 		game.info_label.text = _resource_label(item)
@@ -423,17 +450,6 @@ func _update_selection_hud() -> void:
 		game.selection_progress.value = item.amount
 		game.selection_progress.show()
 		game.queue_label.text = "剩余 %d / %d" % [item.amount, item.initial_amount]
-		return
-	if game.selected.size() > 1:
-		game.info_label.text = "已选中 %d 个单位" % game.selected.size()
-		var counts: Dictionary = {}
-		for entity in game.selected:
-			if not is_instance_valid(entity): continue
-			var label_text: String = GameData.UNITS[entity.kind]["label"] if entity is RtsUnit else entity.display_label()
-			counts[label_text] = counts.get(label_text, 0) + 1
-		var parts: Array[String] = []
-		for label_text in counts: parts.append("%s ×%d" % [label_text, counts[label_text]])
-		game.detail_label.text = "  ".join(parts)
 		return
 	var name: String = GameData.UNITS[item.kind]["label"] if item is RtsUnit else item.display_label()
 	game.info_label.text = "敌方 · %s" % name if game.is_enemy(0, item.owner_id) else name
@@ -459,6 +475,41 @@ func _update_selection_hud() -> void:
 			game.detail_label.text += "   右键设置集结点"
 		_update_building_progress(item)
 		_refresh_queue_controls(item)
+
+func _clear_multi_selection_icons() -> void:
+	if multi_selection_ids.is_empty(): return
+	multi_selection_ids.clear()
+	for child in multi_selection_grid.get_children():
+		multi_selection_grid.remove_child(child)
+		child.queue_free()
+
+func _refresh_multi_selection_icons() -> void:
+	var ids: Array[int] = []
+	for item in game.selected: ids.append(item.get_instance_id())
+	if ids != multi_selection_ids:
+		_clear_multi_selection_icons()
+		multi_selection_ids = ids
+		for index in game.selected.size():
+			var item: Node2D = game.selected[index]
+			var button := RtsCommandButton.new()
+			button.configure(item.kind, "", "")
+			button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+			button.pressed.connect(_select_from_multi_selection.bind(item))
+			multi_selection_grid.add_child(button)
+	for index in game.selected.size():
+		var item: Node2D = game.selected[index]
+		var label_text: String = GameData.UNITS[item.kind]["label"] if item is RtsUnit else item.display_label()
+		var button: RtsCommandButton = multi_selection_grid.get_child(index)
+		button.tooltip_text = "%s %d · 生命 %.0f/%.0f\n点击单独选中" % [label_text, index + 1, item.hp, item.max_hp]
+
+func _select_from_multi_selection(item: Node2D) -> void:
+	if not is_instance_valid(item) or item.is_queued_for_deletion() or not game.selected.has(item): return
+	game.selected.clear()
+	game.selected.append(item)
+	_rebuild_actions()
+	_update_hud()
+	game.play_feedback("select")
+	game.queue_redraw()
 
 func _resource_label(resource: RtsResource) -> String:
 	return {"berry": "浆果", "deer": "鹿", "sheep": "绵羊", "boar": "野猪", "fish": "鱼群"}.get(resource.appearance, {"wood": "树木", "gold": "金矿", "stone": "石矿"}.get(resource.kind, GameData.RESOURCE_LABELS.get(resource.kind, resource.kind)))
