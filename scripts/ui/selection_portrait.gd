@@ -2,6 +2,10 @@ class_name RtsSelectionPortrait
 extends Control
 
 const CharacterVisual = preload("res://scripts/entities/visuals/character_visual.gd")
+const NavalVisual = preload("res://scripts/entities/visuals/naval_visual.gd")
+const ChineseVisual = preload("res://scripts/entities/visuals/chinese_visual.gd")
+const InfantryVisual = preload("res://scripts/entities/visuals/infantry_visual.gd")
+const SupportVisual = preload("res://scripts/entities/visuals/support_visual.gd")
 
 var subject: Node2D
 var owner_tint := Color("8a9a8e")
@@ -85,14 +89,18 @@ func _draw_unit() -> void:
 	if siege:
 		_draw_siege(unit.kind, center)
 		return
-	if naval:
-		draw_colored_polygon(PackedVector2Array([center + Vector2(-32, 18), center + Vector2(32, 18), center + Vector2(21, 36), center + Vector2(-21, 36)]), Color("8e6640"))
-		draw_line(center + Vector2(0, 17), center + Vector2(0, -40), Color("d3c393"), 3)
-		draw_colored_polygon(PackedVector2Array([center + Vector2(2, -36), center + Vector2(25, -7), center + Vector2(2, -7)]), Color("eee2bc"))
-		return
-	if CharacterVisual.handles(unit.kind):
+	if naval or CharacterVisual.handles(unit.kind) or ChineseVisual.handles(unit.kind) or InfantryVisual.handles(unit.kind) or SupportVisual.handles(unit.kind):
 		draw_set_transform_matrix(Transform2D(Vector2(1.5, 0), Vector2(0, 1.5), center + Vector2(0, 21)))
-		CharacterVisual.draw_25d(self, unit.kind, owner_tint, 0.0, 0.0)
+		if naval:
+			NavalVisual.draw_25d(self, unit.kind, float(unit.stats.get("radius", 18.0)), owner_tint, unit.passengers.size())
+		elif CharacterVisual.handles(unit.kind):
+			CharacterVisual.draw_25d(self, unit.kind, owner_tint, 0.0, 0.0)
+		elif ChineseVisual.handles(unit.kind):
+			ChineseVisual.draw_25d(self, unit.kind, owner_tint, 0.0, 0.0)
+		elif InfantryVisual.handles(unit.kind):
+			InfantryVisual.draw_25d(self, unit.kind, owner_tint, 0.0, 0.0, unit.paling_timer > 0.0)
+		else:
+			SupportVisual.draw_25d(self, unit.kind, owner_tint, 0.0, 0.0, unit.gather_kind, unit.carried_relic != null, unit.is_braced() if unit.kind == "spearman" else false)
 		draw_set_transform_matrix(Transform2D.IDENTITY)
 		return
 	if cavalry:

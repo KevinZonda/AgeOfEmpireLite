@@ -10,6 +10,10 @@ const UnitCombat = preload("res://scripts/entities/unit_combat.gd")
 const SiegeVisual2D = preload("res://scripts/entities/visuals/siege_visual_2d.gd")
 const SiegeVisual25D = preload("res://scripts/entities/visuals/siege_visual_25d.gd")
 const CharacterVisual = preload("res://scripts/entities/visuals/character_visual.gd")
+const NavalVisual = preload("res://scripts/entities/visuals/naval_visual.gd")
+const ChineseVisual = preload("res://scripts/entities/visuals/chinese_visual.gd")
+const InfantryVisual = preload("res://scripts/entities/visuals/infantry_visual.gd")
+const SupportVisual = preload("res://scripts/entities/visuals/support_visual.gd")
 
 var game: Node2D
 var owner_id := 0
@@ -945,18 +949,18 @@ func _draw() -> void:
 	var outline := Color("1b2928")
 	draw_circle(Vector2(2, 5), r + 2.0, Color("172322", 0.53))
 	draw_set_transform_matrix(Transform2D(0.0, Vector2(0, idle_bob - absf(gait) * 0.35 - swing * 1.5)))
-	if stats.get("tags", []).has("naval"):
-		var hull := PackedVector2Array([Vector2(0, -r - 5), Vector2(r - 2, -4), Vector2(r - 4, 9), Vector2(0, r + 3), Vector2(-r + 4, 9), Vector2(-r + 2, -4)])
-		draw_colored_polygon(hull, Color("715239"))
-		draw_polyline(hull + PackedVector2Array([hull[0]]), outline, 2.0)
-		draw_colored_polygon(PackedVector2Array([Vector2(0, -r), Vector2(r - 6, -3), Vector2(r - 8, 6), Vector2(-r + 8, 6), Vector2(-r + 6, -3)]), color.darkened(0.18))
-		draw_line(Vector2(0, -7), Vector2(0, 10), Color("e8d8aa"), 2.0)
-		draw_colored_polygon(PackedVector2Array([Vector2(1, -5), Vector2(10, 2), Vector2(1, 3)]), Color("eee7cf"))
-		if kind == "transport_ship": draw_string(ThemeDB.fallback_font, Vector2(-5, 8), str(passengers.size()), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color.WHITE)
+	if NavalVisual.handles(kind):
+		NavalVisual.draw_2d(self, kind, r, color, passengers.size())
 	elif stats.get("tags", []).has("siege"):
 		SiegeVisual2D.draw(self, kind, r, color, swing)
 	elif CharacterVisual.handles(kind):
 		CharacterVisual.draw_2d(self, kind, color, gait, swing)
+	elif ChineseVisual.handles(kind):
+		ChineseVisual.draw_2d(self, kind, color, gait, swing)
+	elif InfantryVisual.handles(kind):
+		InfantryVisual.draw_2d(self, kind, color, gait, swing, paling_timer > 0.0)
+	elif SupportVisual.handles(kind):
+		SupportVisual.draw_2d(self, kind, color, gait, swing, gather_kind, carried_relic != null, is_braced() if kind == "spearman" else false)
 	elif stats.get("tags", []).has("cavalry"):
 		var horse := PackedVector2Array([Vector2(-r + 2, -5), Vector2(r - 5, -8), Vector2(r + 3, -2), Vector2(r - 3, 8), Vector2(-r + 1, 7)])
 		draw_colored_polygon(horse, Color("95734e"))
@@ -1019,18 +1023,18 @@ func _draw_isometric() -> void:
 	draw_set_transform_matrix(Transform2D(0.0, ground_lift))
 	draw_circle(Vector2.ZERO, radius() + 3.0, Color("1c2928", 0.62))
 	draw_set_transform_matrix(RtsIsoProjection.upright(canvas, ground_lift + RtsIsoProjection.world_delta(canvas, Vector2(0, idle_bob - absf(gait) * 0.35 - swing * 1.5)), game.camera.zoom.x))
-	if stats.get("tags", []).has("naval"):
-		var hull := PackedVector2Array([Vector2(-radius(), -7), Vector2(radius(), -7), Vector2(radius() * 0.65, 3), Vector2(-radius() * 0.65, 3)])
-		draw_colored_polygon(hull, Color("765839"))
-		draw_polyline(hull + PackedVector2Array([hull[0]]), outline, 2.0)
-		draw_colored_polygon(PackedVector2Array([Vector2(-radius() * 0.7, -10), Vector2(radius() * 0.7, -10), Vector2(radius() * 0.45, -6), Vector2(-radius() * 0.45, -6)]), color)
-		draw_line(Vector2(0, -9), Vector2(0, -26), Color("e6d3a5"), 2.0)
-		draw_colored_polygon(PackedVector2Array([Vector2(1, -25), Vector2(11, -15), Vector2(1, -14)]), Color("eee4cc"))
-		if kind == "transport_ship": draw_string(ThemeDB.fallback_font, Vector2(-5, -2), str(passengers.size()), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color.WHITE)
+	if NavalVisual.handles(kind):
+		NavalVisual.draw_25d(self, kind, radius(), color, passengers.size())
 	elif stats.get("tags", []).has("siege"):
 		SiegeVisual25D.draw(self, kind, radius(), color, swing)
 	elif CharacterVisual.handles(kind):
 		CharacterVisual.draw_25d(self, kind, color, gait, swing)
+	elif ChineseVisual.handles(kind):
+		ChineseVisual.draw_25d(self, kind, color, gait, swing)
+	elif InfantryVisual.handles(kind):
+		InfantryVisual.draw_25d(self, kind, color, gait, swing, paling_timer > 0.0)
+	elif SupportVisual.handles(kind):
+		SupportVisual.draw_25d(self, kind, color, gait, swing, gather_kind, carried_relic != null, is_braced() if kind == "spearman" else false)
 	else:
 		var cavalry: bool = stats.get("tags", []).has("cavalry")
 		if cavalry:
