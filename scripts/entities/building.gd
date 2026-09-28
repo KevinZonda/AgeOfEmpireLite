@@ -109,7 +109,7 @@ func contains_icon_visual(world_point: Vector2, canvas: Transform2D) -> bool:
 		var center := Vector2(0, -size().y * 0.5 - side * 0.5 - 8.0)
 		return Rect2(center - Vector2.ONE * side * 0.5, Vector2.ONE * side).has_point(world_point - position)
 	var construction_ratio := 1.0 - build_remaining / maxf(build_total, 0.1)
-	var height := isometric_height() * (0.25 + 0.75 * construction_ratio)
+	var height := isometric_height() * (0.25 + 0.75 * construction_ratio) + (_landmark_extra_height() if construction_ratio >= 0.65 else 0.0)
 	var terrain_lift := RtsIsoProjection.world_delta(canvas, Vector2(0, -foundation_height() * game.camera.zoom.x))
 	var screen_point := canvas.basis_xform(world_point - position - terrain_lift)
 	var center := Vector2(0, -height * game.camera.zoom.x - side * 0.5 - 9.0)
@@ -126,6 +126,12 @@ func isometric_height() -> float:
 	if art_kind in ["mill", "lumber_camp", "mining_camp", "scout_camp", "dock"]: return 17.0
 	if art_kind == "house": return 23.0
 	return 26.0
+
+func _landmark_extra_height() -> float:
+	if kind == "wonder": return 75.0
+	if kind != "landmark": return 0.0
+	if landmark_id in ["eng_white_tower", "fr_guild_hall", "zh_clocktower", "zh_gatehouse"]: return 65.0
+	return 49.0
 
 func _visual_kind() -> String:
 	if kind != "landmark": return kind
@@ -176,6 +182,11 @@ func contains_isometric_visual(world_point: Vector2, canvas: Transform2D) -> boo
 		PackedVector2Array([sw + lift, se + lift, se + terrain_lift, sw + terrain_lift]),
 	]:
 		if Geometry2D.is_point_in_polygon(local_point, polygon): return true
+	if (kind == "landmark" or kind == "wonder") and is_complete():
+		var roof_center := (nw + ne + se + sw) * 0.25 + lift
+		var top := roof_center + RtsIsoProjection.world_delta(canvas, Vector2(0, -_landmark_extra_height() * game.camera.zoom.x))
+		var half_width := (ne - nw).length() * 0.36
+		if local_point.x >= roof_center.x - half_width and local_point.x <= roof_center.x + half_width and local_point.y >= top.y and local_point.y <= roof_center.y + 8.0: return true
 	return false
 
 func is_complete() -> bool:
