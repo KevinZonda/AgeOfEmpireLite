@@ -446,7 +446,7 @@ func _update_selection_hud() -> void:
 		game.detail_label.text = "生命 %.0f/%.0f   %s" % [item.hp, item.max_hp, "建造中" if not item.is_complete() else "已建成"]
 		if item.kind == "monastery": game.detail_label.text += "   圣物 %d（每 4 秒每件 +12 黄金）" % item.relics.size()
 		if not item.garrisoned_units.is_empty(): game.detail_label.text += "   驻军 %d/%d" % [item.garrisoned_units.size(), item.garrison_capacity()]
-		if item.can_set_rally():
+		if item.can_set_rally(0):
 			game.detail_label.text += "   右键设置集结点"
 		_update_building_progress(item)
 		_refresh_queue_controls(item)

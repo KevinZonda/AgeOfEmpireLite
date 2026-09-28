@@ -1626,7 +1626,7 @@ func _cursor_state_at(world_point: Vector2, over_ui := false) -> String:
 		if subject is RtsUnit:
 			has_unit = true
 			if subject.kind == "villager": has_worker = true
-		elif subject is RtsBuilding and subject.can_set_rally():
+		elif subject is RtsBuilding and subject.can_set_rally(0):
 			has_producer = true
 	if entity != null and is_enemy(0, entity.owner_id) and has_unit: return "attack"
 	if resource != null and resource.appearance == "boar" and resource.wildlife_hp > 0.0 and has_unit: return "attack"
@@ -2063,7 +2063,7 @@ func _draw() -> void:
 			draw_arc(entity.position + ground_lift, entity.radius() + 6, 0, TAU, 32, Color("f5e597"), 2)
 		elif entity is RtsBuilding:
 			draw_rect(Rect2(entity.position + ground_lift - entity.size() * 0.5 - Vector2(5, 5), entity.size() + Vector2(10, 10)), Color("f5e597"), false, 2)
-			if entity.owner_id == 0 and entity.can_set_rally():
+			if entity.can_set_rally(0):
 				var marker: Vector2 = entity.rally_point
 				var marker_color := Color("f5e597")
 				draw_line(entity.position, marker, Color(marker_color, 0.65), 2)
