@@ -283,7 +283,8 @@ func _scale_ui_fonts(node: Node, factor: float) -> void:
 		if not control.has_meta("base_ui_font_size"):
 			control.set_meta("base_ui_font_size", control.get_theme_font_size(font_key))
 		var base_size: int = control.get_meta("base_ui_font_size")
-		control.add_theme_font_size_override(font_key, maxi(1, roundi(base_size * factor)))
+		var font_factor := text_scale if control.theme_type_variation == "TooltipLabel" else factor
+		control.add_theme_font_size_override(font_key, maxi(1, roundi(base_size * font_factor)))
 	for child in node.get_children(): _scale_ui_fonts(child, factor)
 
 func _hud_panel_style(color: Color, margin: float) -> StyleBoxFlat:

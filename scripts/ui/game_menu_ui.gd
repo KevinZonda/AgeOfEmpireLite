@@ -293,10 +293,14 @@ func _show_setup_menu() -> void:
 	divider.color = Color("80613a")
 	divider.custom_minimum_size.y = 2
 	box.add_child(divider)
+	var body_scroll := ScrollContainer.new()
+	body_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	body_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	box.add_child(body_scroll)
 	var body := HBoxContainer.new()
-	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	body.add_theme_constant_override("separation", 14)
-	box.add_child(body)
+	body_scroll.add_child(body)
 	var players_column := _menu_section(body, "玩家信息", 665)
 	var heading := HBoxContainer.new()
 	heading.add_theme_constant_override("separation", 6)

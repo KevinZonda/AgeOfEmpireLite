@@ -159,11 +159,26 @@ func _run() -> void:
 		if child is Button and child.text == "设置": pause_settings = child
 	assert(pause_settings != null)
 	pause_settings.pressed.emit()
+	assert(game.ui_scale_values == [0.75, 1.0, 1.25, 1.5])
 	var escape := InputEventKey.new()
 	escape.keycode = KEY_ESCAPE
 	escape.pressed = true
 	game._input(escape)
 	assert(game.paused and game.pause_overlay.visible and not game.settings_overlay.visible)
+	game._apply_window_resolution(Vector2i(1280, 720), false)
+	game.text_scale = 1.5
+	game._apply_ui_scales()
+	game._show_menu()
+	game.menu_ui._show_setup_menu()
+	await process_frame
+	var menu_rect: Rect2 = game.menu_panel.get_global_rect()
+	assert(menu_rect.position.x >= 0 and menu_rect.position.y >= 0)
+	assert(menu_rect.end.x <= 1280 and menu_rect.end.y <= 720)
+	game._show_settings()
+	await process_frame
+	var settings_rect: Rect2 = game.settings_overlay.get_child(0).get_global_rect()
+	assert(settings_rect.position.x >= 0 and settings_rect.position.y >= 0)
+	assert(settings_rect.end.x <= 1280 and settings_rect.end.y <= 720)
 	game.free()
 	print("DISPLAY_SETTINGS_OK")
 	quit()
