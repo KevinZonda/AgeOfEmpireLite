@@ -1,0 +1,27 @@
+diff --git a/platform/macos/os_macos.h b/platform/macos/os_macos.h
+--- a/platform/macos/os_macos.h
++++ b/platform/macos/os_macos.h
+@@ -203,6 +203,7 @@ public:
+ 
+ class OS_MacOS_Headless : public OS_MacOS {
+ public:
++	virtual void add_frame_delay(bool p_can_draw, bool p_wake_for_events) override;
+ 	virtual void run() override;
+ 
+ 	OS_MacOS_Headless(const char *p_execpath, int p_argc, char **p_argv);
+diff --git a/platform/macos/os_macos.mm b/platform/macos/os_macos.mm
+--- a/platform/macos/os_macos.mm
++++ b/platform/macos/os_macos.mm
+@@ -1224,6 +1224,12 @@ OS_MacOS_NSApp::OS_MacOS_NSApp(const char *p_execpath, int p_argc, char **p_argv
+ 
+ // MARK: - OS_MacOS_Headless
+ 
++void OS_MacOS_Headless::add_frame_delay(bool p_can_draw, bool p_wake_for_events) {
++	// The headless loop polls CFRunLoop without waiting. AppKit frame timers
++	// therefore do not throttle it; use the blocking delay and skip Magnet queries.
++	OS_Unix::add_frame_delay(p_can_draw, p_wake_for_events);
++}
++
+ void OS_MacOS_Headless::run() {
+ 	CFRunLoopGetCurrent();
+ 

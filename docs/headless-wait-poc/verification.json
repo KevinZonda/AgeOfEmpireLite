@@ -1,0 +1,32 @@
+{
+  "headless_game_tests": [
+    {
+      "test": "smoke",
+      "passed": true,
+      "exit_code": 0,
+      "timeout": false,
+      "seconds": 3.657
+    },
+    {
+      "test": "selection",
+      "passed": true,
+      "exit_code": 0,
+      "timeout": false,
+      "seconds": 2.084
+    }
+  ],
+  "gui_game_test": {
+    "test": "gui_smoke",
+    "passed": true,
+    "exit_code": 0,
+    "seconds": 3.265,
+    "output": "Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org\nOpenGL API 4.1 Metal - 88.1 - Compatibility - Using Device: Apple - Apple M2\n\nSMOKE_OK\n"
+  },
+  "patch_application": [
+    "headless",
+    "gui+headless",
+    "headless+gui",
+    "gui_poc+headless"
+  ],
+  "build": "passed; repeated make build-macos is up to date"
+}

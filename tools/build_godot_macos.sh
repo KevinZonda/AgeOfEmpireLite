@@ -1,10 +1,12 @@
 #!/bin/bash
-# Reproducible local runtime for the macOS input fix. Does not replace installed Godot.
+# Reproducible local runtime for macOS input and headless waits.
+# Does not replace installed Godot.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 GODOT_COMMIT=ed1daf0bf001b61586d9930840f2f1394092c079
 SOURCE_DIR="$PWD/docs/godot"
 FIX_PATCH="$PWD/patches/godot-4.7.2-macos-frame-wait.patch"
+HEADLESS_PATCH="$PWD/patches/godot-4.7.2-macos-headless-wait.patch"
 POC_PATCH="$PWD/docs/input-poc/godot-frame-wait.patch"
 if [[ "$(uname -s)" != Darwin ]]; then
   printf 'This runtime build targets macOS.\n' >&2
@@ -24,6 +26,10 @@ if ! git -C "$SOURCE_DIR" apply --reverse --check "$FIX_PATCH" 2>/dev/null; then
   fi
   git -C "$SOURCE_DIR" apply --check "$FIX_PATCH"
   git -C "$SOURCE_DIR" apply "$FIX_PATCH"
+fi
+if ! git -C "$SOURCE_DIR" apply --reverse --check "$HEADLESS_PATCH" 2>/dev/null; then
+  git -C "$SOURCE_DIR" apply --check "$HEADLESS_PATCH"
+  git -C "$SOURCE_DIR" apply "$HEADLESS_PATCH"
 fi
 if [[ -z "${SCONS_BIN:-}" ]]; then
   if command -v scons >/dev/null; then

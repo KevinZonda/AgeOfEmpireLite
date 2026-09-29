@@ -2,13 +2,13 @@
 
 ## macOS 为什么需要自定义 Godot
 
-本项目在 macOS 上使用打过补丁的 Godot 运行时，修复 Magnet 开启时鼠标／触控板按下后，拖框起始阶段延迟的问题。
+本项目在 macOS 上使用打过补丁的 Godot 运行时，修复 Magnet 开启时的拖框起步延迟，以及 headless 任务空转、反复查询 Launch Services 导致的高 CPU 占用。
 
 修复位于 Godot 的 macOS 主循环：系统或辅助功能（AX）事件提前唤醒 RunLoop 时，如果下一帧的等待计时器仍在运行，就继续处理事件，等到帧期限再执行 `Main::iteration()`，避免额外渲染及 VSync 等待拖慢输入事件处理。
 
 因此构建流程是：**给 Godot 源码应用补丁 → 编译 Godot 运行时 → 使用该运行时加载游戏项目**。修改游戏 GDScript 或场景后，通常只需重新运行游戏，不需要重新编译引擎。
 
-补丁需要配合 `project.godot` 的 macOS 帧率上限使用：
+有窗口的输入延迟补丁需要配合 `project.godot` 的 macOS 帧率上限使用：
 
 ```ini
 [application]
@@ -16,6 +16,8 @@ run/max_fps.macos=120
 ```
 
 请保留这项配置。当前验证的是补丁与限帧共同生效的方案，单独设置 120 FPS 未能解决问题。测量结果、根因分析和独立诊断工具见 [输入延迟 POC](docs/input-poc/README.md)。
+
+独立的 headless 补丁让 `OS_MacOS_Headless` 使用阻塞式帧等待，跳过 Magnet 查询及 AppKit 定时器。它同时适用于 `--headless` 和 `--display-driver headless`，保留 60/120 FPS 上限及未设上限时的默认休眠，不依赖上述 120 FPS 配置。修复前后的空项目对照见 [headless 等待 PoC](docs/headless-wait-poc/README.md)。
 
 ## 环境与固定版本
 
@@ -31,6 +33,7 @@ run/max_fps.macos=120
 | 固定提交 | `ed1daf0bf001b61586d9930840f2f1394092c079` |
 | 源码目录 | `docs/godot/` |
 | 引擎补丁 | [godot-4.7.2-macos-frame-wait.patch](patches/godot-4.7.2-macos-frame-wait.patch) |
+| headless 补丁 | [godot-4.7.2-macos-headless-wait.patch](patches/godot-4.7.2-macos-headless-wait.patch) |
 | 构建脚本 | [build_godot_macos.sh](tools/build_godot_macos.sh) |
 | 构建目标 | `template_debug`，当前机器架构（`uname -m`） |
 | 输出文件 | `docs/godot/bin/godot.macos.template_debug.<架构>` |
@@ -55,7 +58,7 @@ run/max_fps.macos=120
    make build-macos
    ```
 
-   脚本会获取固定版本的源码、校验提交、应用补丁并编译。已应用补丁时可重复执行；源码版本不符时会停止，避免将补丁应用到未经验证的版本。
+   脚本会获取固定版本的源码、校验提交、应用两份补丁并编译。已应用补丁时可重复执行；源码版本不符时会停止，避免将补丁应用到未经验证的版本。
 
 3. 启动游戏：
 
@@ -87,6 +90,14 @@ make run RUN_ARGS='--headless --script res://tests/selection.gd'
 
 成功时分别输出 `SMOKE_OK` 和 `SELECTION_OK`。无窗口测试验证游戏逻辑；实际输入延迟仍需在有窗口、Magnet 开启的情况下，用鼠标或物理按压触控板验证拖框响应。
 
+验证 headless 帧等待（各子进程带超时，使用临时空项目）：
+
+```sh
+python3 tools/headless_wait_poc/run.py --candidate "docs/godot/bin/godot.macos.template_debug.$(uname -m)"
+```
+
+此补丁不会让 headless 开始渲染。需要 `RenderingServer.frame_post_draw` 或 GPU 截图的任务应使用有窗口的渲染模式，并由外部进程设置超时。`/Applications/Godot_mono.app` 保持官方原版，直接从它启动 headless 任务仍可能触发旧问题。
+
 其他平台默认使用 PATH 中的 `godot`。也可以显式指定引擎：
 
 ```sh
@@ -97,7 +108,7 @@ make run GODOT=/你的/Godot/路径
 
 ## macOS 发布与导出
 
-**发布包中的 Godot 运行时也必须包含同一补丁**，并保留项目的 macOS 120 FPS 上限。仅在开发机器上使用修复版运行时，不会让官方导出模板自动获得修复。
+**发布包中的 Godot 运行时也必须包含这两份补丁**，并保留项目的 macOS 120 FPS 上限。仅在开发机器上使用修复版运行时，不会让官方导出模板自动获得修复。
 
 目前 `make build-macos` 只构建用于本地运行和测试的 `template_debug` 二进制，仓库尚未提供完整的 macOS 发布包构建流程。正式发布还需要：
 

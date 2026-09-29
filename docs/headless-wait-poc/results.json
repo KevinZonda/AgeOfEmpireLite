@@ -1,0 +1,167 @@
+{
+  "timestamp": "2026-09-29T10:16:14.823552+08:00",
+  "macos": "14.8.7",
+  "magnet_running": true,
+  "runs": [
+    {
+      "passed": false,
+      "exit_code": 0,
+      "timed_out": false,
+      "probe": {
+        "display": "headless",
+        "draw_signals": 0,
+        "elapsed_seconds": 3.000027,
+        "iterations": 47224,
+        "iterations_per_second": 15741.1916626084,
+        "max_fps": 120
+      },
+      "launchservicesd_cpu_percent": 55.94,
+      "process_wall_seconds": 3.146,
+      "output": "Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org\n\nHEADLESS_WAIT_RESULT {\"display\":\"headless\",\"draw_signals\":0,\"elapsed_seconds\":3.000027,\"iterations\":47224,\"iterations_per_second\":15741.1916626084,\"max_fps\":120}\n",
+      "label": "baseline",
+      "case": "headless_120",
+      "engine": "/Users/kevin/Desktop/AgeOfEmpireLite/docs/headless-wait-poc/captures/godot-before.arm64",
+      "idle_launchservicesd_cpu_percent": 0.99
+    },
+    {
+      "passed": false,
+      "exit_code": 0,
+      "timed_out": false,
+      "probe": {
+        "display": "headless",
+        "draw_signals": 0,
+        "elapsed_seconds": 3.000008,
+        "iterations": 51379,
+        "iterations_per_second": 17126.2876632329,
+        "max_fps": 60
+      },
+      "launchservicesd_cpu_percent": 63.61,
+      "process_wall_seconds": 3.065,
+      "output": "Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org\n\nHEADLESS_WAIT_RESULT {\"display\":\"headless\",\"draw_signals\":0,\"elapsed_seconds\":3.000008,\"iterations\":51379,\"iterations_per_second\":17126.2876632329,\"max_fps\":60}\n",
+      "label": "baseline",
+      "case": "headless_60",
+      "engine": "/Users/kevin/Desktop/AgeOfEmpireLite/docs/headless-wait-poc/captures/godot-before.arm64",
+      "idle_launchservicesd_cpu_percent": 0.99
+    },
+    {
+      "passed": false,
+      "exit_code": 0,
+      "timed_out": false,
+      "probe": {
+        "display": "headless",
+        "draw_signals": 0,
+        "elapsed_seconds": 3.000013,
+        "iterations": 53003,
+        "iterations_per_second": 17667.5901071095,
+        "max_fps": 0
+      },
+      "launchservicesd_cpu_percent": 64.05,
+      "process_wall_seconds": 3.123,
+      "output": "Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org\n\nHEADLESS_WAIT_RESULT {\"display\":\"headless\",\"draw_signals\":0,\"elapsed_seconds\":3.000013,\"iterations\":53003,\"iterations_per_second\":17667.5901071095,\"max_fps\":0}\n",
+      "label": "baseline",
+      "case": "headless_default",
+      "engine": "/Users/kevin/Desktop/AgeOfEmpireLite/docs/headless-wait-poc/captures/godot-before.arm64",
+      "idle_launchservicesd_cpu_percent": 0.99
+    },
+    {
+      "passed": false,
+      "exit_code": 0,
+      "timed_out": false,
+      "probe": {
+        "display": "headless",
+        "draw_signals": 0,
+        "elapsed_seconds": 3.000028,
+        "iterations": 48479,
+        "iterations_per_second": 16159.5158445188,
+        "max_fps": 120
+      },
+      "launchservicesd_cpu_percent": 58.93,
+      "process_wall_seconds": 3.156,
+      "output": "Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org\n\nHEADLESS_WAIT_RESULT {\"display\":\"headless\",\"draw_signals\":0,\"elapsed_seconds\":3.000028,\"iterations\":48479,\"iterations_per_second\":16159.5158445188,\"max_fps\":120}\n",
+      "label": "baseline",
+      "case": "display_driver_120",
+      "engine": "/Users/kevin/Desktop/AgeOfEmpireLite/docs/headless-wait-poc/captures/godot-before.arm64",
+      "idle_launchservicesd_cpu_percent": 0.99
+    },
+    {
+      "passed": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "probe": {
+        "display": "headless",
+        "draw_signals": 0,
+        "elapsed_seconds": 3.001926,
+        "iterations": 363,
+        "iterations_per_second": 120.922367839847,
+        "max_fps": 120
+      },
+      "launchservicesd_cpu_percent": 0.0,
+      "process_wall_seconds": 3.12,
+      "output": "Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org\n\nHEADLESS_WAIT_RESULT {\"display\":\"headless\",\"draw_signals\":0,\"elapsed_seconds\":3.001926,\"iterations\":363,\"iterations_per_second\":120.922367839847,\"max_fps\":120}\n",
+      "label": "candidate",
+      "case": "headless_120",
+      "engine": "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "idle_launchservicesd_cpu_percent": 0.99
+    },
+    {
+      "passed": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "probe": {
+        "display": "headless",
+        "draw_signals": 0,
+        "elapsed_seconds": 3.00405,
+        "iterations": 183,
+        "iterations_per_second": 60.9177610226195,
+        "max_fps": 60
+      },
+      "launchservicesd_cpu_percent": 0.31,
+      "process_wall_seconds": 3.218,
+      "output": "Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org\n\nHEADLESS_WAIT_RESULT {\"display\":\"headless\",\"draw_signals\":0,\"elapsed_seconds\":3.00405,\"iterations\":183,\"iterations_per_second\":60.9177610226195,\"max_fps\":60}\n",
+      "label": "candidate",
+      "case": "headless_60",
+      "engine": "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "idle_launchservicesd_cpu_percent": 0.99
+    },
+    {
+      "passed": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "probe": {
+        "display": "headless",
+        "draw_signals": 0,
+        "elapsed_seconds": 3.003176,
+        "iterations": 438,
+        "iterations_per_second": 145.845598126783,
+        "max_fps": 0
+      },
+      "launchservicesd_cpu_percent": 0.32,
+      "process_wall_seconds": 3.119,
+      "output": "Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org\n\nHEADLESS_WAIT_RESULT {\"display\":\"headless\",\"draw_signals\":0,\"elapsed_seconds\":3.003176,\"iterations\":438,\"iterations_per_second\":145.845598126783,\"max_fps\":0}\n",
+      "label": "candidate",
+      "case": "headless_default",
+      "engine": "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "idle_launchservicesd_cpu_percent": 0.99
+    },
+    {
+      "passed": true,
+      "exit_code": 0,
+      "timed_out": false,
+      "probe": {
+        "display": "headless",
+        "draw_signals": 0,
+        "elapsed_seconds": 3.008588,
+        "iterations": 361,
+        "iterations_per_second": 119.989842411124,
+        "max_fps": 120
+      },
+      "launchservicesd_cpu_percent": 0.32,
+      "process_wall_seconds": 3.171,
+      "output": "Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org\n\nHEADLESS_WAIT_RESULT {\"display\":\"headless\",\"draw_signals\":0,\"elapsed_seconds\":3.008588,\"iterations\":361,\"iterations_per_second\":119.989842411124,\"max_fps\":120}\n",
+      "label": "candidate",
+      "case": "display_driver_120",
+      "engine": "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "idle_launchservicesd_cpu_percent": 0.99
+    }
+  ]
+}

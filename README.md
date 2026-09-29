@@ -10,7 +10,7 @@
 
 完整的环境准备、引擎补丁构建、开发验证与 macOS 发布要求见 [BUILD.md](BUILD.md)。
 
-macOS 使用本地修复版 Godot，解决 Magnet 开启时按下、拖框延迟的问题。首次在项目目录编译（需要 Xcode 命令行工具和 Python 3），随后正常启动：
+macOS 使用本地修复版 Godot，解决 Magnet 开启时的按下、拖框延迟，以及 headless 任务使 `launchservicesd` CPU 占用升高的问题。首次在项目目录编译（需要 Xcode 命令行工具和 Python 3），随后正常启动：
 
 ```sh
 make build-macos
@@ -20,6 +20,8 @@ make run
 本机修复引擎已构建，直接 `make run` 即可。其他平台默认使用 PATH 中的 `godot`；也可执行 `make run GODOT=/你的/Godot/路径` 指定引擎。
 
 补丁位于 `patches/godot-4.7.2-macos-frame-wait.patch`，构建产物位于 `docs/godot/bin/`。macOS 的 120 FPS 上限配合该引擎补丁生效，单独限帧无法修复。Godot 编辑器仍可编辑 `project.godot`；直接使用未打补丁的官方引擎运行时，Magnet 干扰仍可能出现。测量、根因和复现方法见 [输入延迟 POC](docs/input-poc/README.md)。
+
+构建还会应用 `patches/godot-4.7.2-macos-headless-wait.patch`，让无窗口任务正常等待下一帧并跳过 Magnet 查询。下方测试命令统一通过 `make run` 使用本地运行时；空项目复现和回归检查见 [headless 等待 PoC](docs/headless-wait-poc/README.md)。
 
 ## 操作
 
@@ -81,41 +83,41 @@ make run
 首次克隆后先用 Godot 打开项目，或执行 `Godot --headless --editor --path . --quit` 注册 GDScript 全局类，再运行下列独立脚本。
 
 ```sh
-/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/smoke.gd
-/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/selection.gd
-/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/isometric_view.gd
-/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/tech_tree_page.gd
-/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/chinese.gd
-/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/extended_systems.gd
-/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/map_generator.gd
-/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/fog_of_war.gd
-/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/navigation.gd
-/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/group_multiplayer.gd
-/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/group_chokepoint.gd
-/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/group_mass_chokepoint.gd
-/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/combat_rules.gd
-/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/balance_system.gd
-/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/landmark_catalog.gd
-/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/landmark_roles.gd
-/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/siege_rules.gd
-/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/objectives.gd
-/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/strategic_expansion.gd
-/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/ai_long_match.gd
-/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/ai_tactics.gd
-/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/balance_multiseed.gd
-RTS_BALANCE_MATRIX=1 RTS_BALANCE_SECONDS=180 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/balance_multiseed.gd
-/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/aoe4_requested_systems.gd
-/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/battle_experience.gd
-RTS_BENCH_UNITS=200 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/performance_400.gd
-/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/performance_400.gd
-/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/performance_combat.gd
-/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/map_fairness.gd
-/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/map_strategy.gd
-/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/island_ai_strategy.gd
-/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/civ_map_ai.gd
-/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path . --script res://tests/economy_siege_controls.gd
-RTS_BENCH_PROJECTION=2d /Applications/Godot_mono.app/Contents/MacOS/Godot --path . --script res://tests/performance_visible.gd --windowed --resolution 1280x720
-RTS_BENCH_PROJECTION=2.5d /Applications/Godot_mono.app/Contents/MacOS/Godot --path . --script res://tests/performance_visible.gd --windowed --resolution 1280x720
+make run RUN_ARGS='--headless --script res://tests/smoke.gd'
+make run RUN_ARGS='--headless --script res://tests/selection.gd'
+make run RUN_ARGS='--headless --script res://tests/isometric_view.gd'
+make run RUN_ARGS='--headless --script res://tests/tech_tree_page.gd'
+make run RUN_ARGS='--headless --script res://tests/chinese.gd'
+make run RUN_ARGS='--headless --script res://tests/extended_systems.gd'
+make run RUN_ARGS='--headless --script res://tests/map_generator.gd'
+make run RUN_ARGS='--headless --script res://tests/fog_of_war.gd'
+make run RUN_ARGS='--headless --script res://tests/navigation.gd'
+make run RUN_ARGS='--headless --script res://tests/group_multiplayer.gd'
+make run RUN_ARGS='--headless --script res://tests/group_chokepoint.gd'
+make run RUN_ARGS='--headless --script res://tests/group_mass_chokepoint.gd'
+make run RUN_ARGS='--headless --script res://tests/combat_rules.gd'
+make run RUN_ARGS='--headless --script res://tests/balance_system.gd'
+make run RUN_ARGS='--headless --script res://tests/landmark_catalog.gd'
+make run RUN_ARGS='--headless --script res://tests/landmark_roles.gd'
+make run RUN_ARGS='--headless --script res://tests/siege_rules.gd'
+make run RUN_ARGS='--headless --script res://tests/objectives.gd'
+make run RUN_ARGS='--headless --script res://tests/strategic_expansion.gd'
+make run RUN_ARGS='--headless --script res://tests/ai_long_match.gd'
+make run RUN_ARGS='--headless --script res://tests/ai_tactics.gd'
+make run RUN_ARGS='--headless --script res://tests/balance_multiseed.gd'
+RTS_BALANCE_MATRIX=1 RTS_BALANCE_SECONDS=180 make run RUN_ARGS='--headless --script res://tests/balance_multiseed.gd'
+make run RUN_ARGS='--headless --script res://tests/aoe4_requested_systems.gd'
+make run RUN_ARGS='--headless --script res://tests/battle_experience.gd'
+RTS_BENCH_UNITS=200 make run RUN_ARGS='--headless --script res://tests/performance_400.gd'
+make run RUN_ARGS='--headless --script res://tests/performance_400.gd'
+make run RUN_ARGS='--headless --script res://tests/performance_combat.gd'
+make run RUN_ARGS='--headless --script res://tests/map_fairness.gd'
+make run RUN_ARGS='--headless --script res://tests/map_strategy.gd'
+make run RUN_ARGS='--headless --script res://tests/island_ai_strategy.gd'
+make run RUN_ARGS='--headless --script res://tests/civ_map_ai.gd'
+make run RUN_ARGS='--headless --script res://tests/economy_siege_controls.gd'
+RTS_BENCH_PROJECTION=2d make run RUN_ARGS='--script res://tests/performance_visible.gd --windowed --resolution 1280x720'
+RTS_BENCH_PROJECTION=2.5d make run RUN_ARGS='--script res://tests/performance_visible.gd --windowed --resolution 1280x720'
 ```
 
 `RTS_BALANCE_MATRIX=1` 覆盖三个文明两两对战及出生边互换、四种地图和三档难度，共 24 局。`RTS_BALANCE_SEEDS` 可指定逗号分隔的地图种子，`RTS_BALANCE_SECONDS` 设置每局模拟时长，`RTS_BALANCE_TRACE=1` 每 60 秒输出经济与建筑追踪。脚本会推进迷雾和导航更新，并汇总胜负、时代、军队、攻城、圣地及地图出生点公平性。
