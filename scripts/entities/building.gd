@@ -1003,18 +1003,6 @@ func _draw_iso_university(nw: Vector2, ne: Vector2, sw: Vector2, lift: Vector2, 
 	_draw_iso_military_block(nw, ne, sw, floor_lift, canvas, college, 0.07, 0.07, 0.86, 0.3, 27.0, "gable_u")
 	_draw_iso_military_block(nw, ne, sw, floor_lift, canvas, college, 0.07, 0.32, 0.23, 0.51, 26.0, "gable_v")
 	_draw_iso_military_block(nw, ne, sw, floor_lift, canvas, college, 0.7, 0.32, 0.23, 0.51, 26.0, "gable_v")
-	var window_up := RtsIsoProjection.world_delta(canvas, Vector2(0, -26.0 * game.camera.zoom.x))
-	for u in [0.3, 0.7, 0.93]:
-		var wall_start := _military_point(nw, ne, sw, u, 0.36) + floor_lift
-		var wall_end := _military_point(nw, ne, sw, u, 0.8) + floor_lift
-		draw_line(wall_start + window_up * 0.47, wall_end + window_up * 0.47, college["trim"], 1.5)
-		for v in [0.46, 0.65]:
-			var foot := _military_point(nw, ne, sw, u, v) + floor_lift
-			var bottom := foot + window_up * 0.48
-			var top := foot + window_up * 0.77
-			draw_line(bottom, top, college["trim"], 5.2)
-			draw_line(bottom + window_up * 0.04, top - window_up * 0.04, Color("303b40"), 3.0)
-			draw_line((bottom + top) * 0.5 + Vector2(-2, 0), (bottom + top) * 0.5 + Vector2(2, 0), college["trim"], 1.0)
 	_draw_iso_university_tower(nw, ne, sw, floor_lift, canvas, college)
 
 func _draw_iso_university_tower(nw: Vector2, ne: Vector2, sw: Vector2, floor_lift: Vector2, canvas: Transform2D, palette: Dictionary) -> void:
