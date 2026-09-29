@@ -1,0 +1,335 @@
+{
+  "buildings": 6,
+  "deer": 8,
+  "failures": 0,
+  "high_priority": true,
+  "requests": 80,
+  "runs": [
+    {
+      "batch_ms": 29.288,
+      "matches_serial": true,
+      "mode": "arithmetic_control",
+      "pass": 1,
+      "snapshot_ms": 0.009,
+      "worker_ids": [
+        1
+      ],
+      "workers": 0
+    },
+    {
+      "batch_ms": 29.492,
+      "matches_serial": true,
+      "mode": "arithmetic_control",
+      "pass": 1,
+      "snapshot_ms": 0.017,
+      "worker_ids": [
+        5
+      ],
+      "workers": 1
+    },
+    {
+      "batch_ms": 15.644,
+      "matches_serial": true,
+      "mode": "arithmetic_control",
+      "pass": 1,
+      "snapshot_ms": 0.023,
+      "worker_ids": [
+        6,
+        8
+      ],
+      "workers": 2
+    },
+    {
+      "batch_ms": 10.51,
+      "matches_serial": true,
+      "mode": "arithmetic_control",
+      "pass": 1,
+      "snapshot_ms": 0.02,
+      "worker_ids": [
+        12,
+        10,
+        14,
+        16
+      ],
+      "workers": 4
+    },
+    {
+      "batch_ms": 11.347,
+      "matches_serial": true,
+      "mode": "arithmetic_control",
+      "pass": 2,
+      "snapshot_ms": 0.026,
+      "worker_ids": [
+        6,
+        18,
+        5,
+        8
+      ],
+      "workers": 4
+    },
+    {
+      "batch_ms": 16.323,
+      "matches_serial": true,
+      "mode": "arithmetic_control",
+      "pass": 2,
+      "snapshot_ms": 0.028,
+      "worker_ids": [
+        10,
+        12
+      ],
+      "workers": 2
+    },
+    {
+      "batch_ms": 29.572,
+      "matches_serial": true,
+      "mode": "arithmetic_control",
+      "pass": 2,
+      "snapshot_ms": 0.017,
+      "worker_ids": [
+        14
+      ],
+      "workers": 1
+    },
+    {
+      "batch_ms": 67.291,
+      "matches_serial": true,
+      "mode": "arithmetic_control",
+      "pass": 2,
+      "snapshot_ms": 0.013,
+      "worker_ids": [
+        1
+      ],
+      "workers": 0
+    },
+    {
+      "async": true,
+      "batch_ms": 18.603,
+      "main_loop_ticks": 5,
+      "main_submit_ms": 0.01,
+      "matches_serial": true,
+      "max_main_tick_gap_ms": 9.245,
+      "mode": "arithmetic_control",
+      "workers": 4
+    },
+    {
+      "batch_ms": 182.062,
+      "matches_serial": true,
+      "mode": "grid",
+      "pass": 1,
+      "snapshot_ms": 1.723,
+      "worker_ids": [
+        1
+      ],
+      "workers": 0
+    },
+    {
+      "batch_ms": 179.689,
+      "matches_serial": true,
+      "mode": "grid",
+      "pass": 1,
+      "snapshot_ms": 12.422,
+      "worker_ids": [
+        8
+      ],
+      "workers": 1
+    },
+    {
+      "batch_ms": 131.008,
+      "matches_serial": true,
+      "mode": "grid",
+      "pass": 1,
+      "snapshot_ms": 12.326,
+      "worker_ids": [
+        10,
+        12
+      ],
+      "workers": 2
+    },
+    {
+      "batch_ms": 168.324,
+      "matches_serial": true,
+      "mode": "grid",
+      "pass": 1,
+      "snapshot_ms": 15.807,
+      "worker_ids": [
+        14,
+        16,
+        18,
+        5
+      ],
+      "workers": 4
+    },
+    {
+      "batch_ms": 169.518,
+      "matches_serial": true,
+      "mode": "grid",
+      "pass": 2,
+      "snapshot_ms": 13.639,
+      "worker_ids": [
+        6,
+        8,
+        12,
+        10
+      ],
+      "workers": 4
+    },
+    {
+      "batch_ms": 130.073,
+      "matches_serial": true,
+      "mode": "grid",
+      "pass": 2,
+      "snapshot_ms": 11.447,
+      "worker_ids": [
+        14,
+        16
+      ],
+      "workers": 2
+    },
+    {
+      "batch_ms": 179.229,
+      "matches_serial": true,
+      "mode": "grid",
+      "pass": 2,
+      "snapshot_ms": 10.272,
+      "worker_ids": [
+        18
+      ],
+      "workers": 1
+    },
+    {
+      "batch_ms": 174.439,
+      "matches_serial": true,
+      "mode": "grid",
+      "pass": 2,
+      "snapshot_ms": 8.064,
+      "worker_ids": [
+        1
+      ],
+      "workers": 0
+    },
+    {
+      "async": true,
+      "batch_ms": 184.284,
+      "main_loop_ticks": 24,
+      "main_submit_ms": 0.008,
+      "matches_serial": true,
+      "max_main_tick_gap_ms": 10.398,
+      "mode": "grid",
+      "workers": 4
+    },
+    {
+      "batch_ms": 322.645,
+      "matches_serial": true,
+      "mode": "recovery",
+      "pass": 1,
+      "snapshot_ms": 19.36,
+      "successful_routes": 79,
+      "worker_ids": [
+        1
+      ],
+      "workers": 0
+    },
+    {
+      "batch_ms": 319.588,
+      "matches_serial": true,
+      "mode": "recovery",
+      "pass": 1,
+      "snapshot_ms": 1.314,
+      "successful_routes": 79,
+      "worker_ids": [
+        12
+      ],
+      "workers": 1
+    },
+    {
+      "batch_ms": 241.629,
+      "matches_serial": true,
+      "mode": "recovery",
+      "pass": 1,
+      "snapshot_ms": 2.667,
+      "successful_routes": 79,
+      "worker_ids": [
+        14,
+        16
+      ],
+      "workers": 2
+    },
+    {
+      "batch_ms": 301.694,
+      "matches_serial": true,
+      "mode": "recovery",
+      "pass": 1,
+      "snapshot_ms": 5.116,
+      "successful_routes": 79,
+      "worker_ids": [
+        6,
+        5,
+        8,
+        18
+      ],
+      "workers": 4
+    },
+    {
+      "batch_ms": 296.272,
+      "matches_serial": true,
+      "mode": "recovery",
+      "pass": 2,
+      "snapshot_ms": 5.019,
+      "successful_routes": 79,
+      "worker_ids": [
+        10,
+        12,
+        14,
+        16
+      ],
+      "workers": 4
+    },
+    {
+      "batch_ms": 238.93,
+      "matches_serial": true,
+      "mode": "recovery",
+      "pass": 2,
+      "snapshot_ms": 2.579,
+      "successful_routes": 79,
+      "worker_ids": [
+        18,
+        5
+      ],
+      "workers": 2
+    },
+    {
+      "batch_ms": 322.431,
+      "matches_serial": true,
+      "mode": "recovery",
+      "pass": 2,
+      "snapshot_ms": 1.275,
+      "successful_routes": 79,
+      "worker_ids": [
+        6
+      ],
+      "workers": 1
+    },
+    {
+      "batch_ms": 325.625,
+      "matches_serial": true,
+      "mode": "recovery",
+      "pass": 2,
+      "snapshot_ms": 1.433,
+      "successful_routes": 79,
+      "worker_ids": [
+        1
+      ],
+      "workers": 0
+    },
+    {
+      "async": true,
+      "batch_ms": 325.267,
+      "main_loop_ticks": 41,
+      "main_submit_ms": 0.011,
+      "matches_serial": true,
+      "max_main_tick_gap_ms": 9.947,
+      "mode": "recovery",
+      "workers": 4
+    }
+  ]
+}
