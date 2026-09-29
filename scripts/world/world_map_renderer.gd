@@ -141,6 +141,9 @@ static func _relief_mesh(map: RtsWorldMap, grass_colors: PackedColorArray) -> Ar
 			var sw := projected_vertex(map, x, y + 1)
 			var terrain: int = map.cells[map._index(Vector2i(clampi(x, 0, map.grid_size.x - 1), clampi(y, 0, map.grid_size.y - 1)))]
 			var outside := x < 0 or y < 0 or x >= map.grid_size.x or y >= map.grid_size.y
+			if outside:
+				builder.quad(nw, ne, se, sw, RtsWorldMap.OUTSIDE_COLOR, RtsWorldMap.OUTSIDE_COLOR, RtsWorldMap.OUTSIDE_COLOR, RtsWorldMap.OUTSIDE_COLOR)
+				continue
 			if not outside and terrain in [RtsWorldMap.Terrain.GRASS, RtsWorldMap.Terrain.MEADOW]:
 				var stride := map.grid_size.x + 1
 				var c_nw := grass_colors[y * stride + x]
@@ -224,6 +227,9 @@ static func draw_relief_tile(map: RtsWorldMap, x: int, y: int, grass_colors: Pac
 	var terrain: int = map.cells[map._index(Vector2i(clampi(x, 0, map.grid_size.x - 1), clampi(y, 0, map.grid_size.y - 1)))]
 	var average := (h_nw + h_ne + h_se + h_sw) * 0.25
 	var outside := x < 0 or y < 0 or x >= map.grid_size.x or y >= map.grid_size.y
+	if outside:
+		map.draw_colored_polygon(PackedVector2Array([nw, ne, se, sw]), RtsWorldMap.OUTSIDE_COLOR)
+		return
 	if not outside and terrain in [RtsWorldMap.Terrain.GRASS, RtsWorldMap.Terrain.MEADOW]:
 		var stride := map.grid_size.x + 1
 		var c_nw := grass_colors[y * stride + x]
@@ -249,10 +255,10 @@ static func draw_relief_tile(map: RtsWorldMap, x: int, y: int, grass_colors: Pac
 
 static func draw_map(map: RtsWorldMap) -> void:
 	var grass_colors := grass_vertex_colors(map)
+	map.draw_rect(Rect2(-map.world_size * 2.0, map.world_size * 5.0), RtsWorldMap.OUTSIDE_COLOR)
 	if map.isometric_view:
 		var camera := map.get_viewport().get_camera_2d()
 		map.lift_per_height = RtsIsoProjection.world_delta(map.get_viewport().get_canvas_transform(), Vector2(0, -camera.zoom.x)) if camera != null else Vector2.ZERO
-		map.draw_rect(Rect2(-map.world_size * 2.0, map.world_size * 5.0), RtsFogOfWar.UNEXPLORED_COLOR)
 		map.apron_mesh = _apron_mesh(map)
 		map.draw_mesh(map.apron_mesh, _white_texture())
 	map.ground_mesh = _ground_mesh(map, grass_colors)

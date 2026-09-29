@@ -329,15 +329,15 @@ func update_projection() -> void:
 	var vertices := PackedVector3Array()
 	var uvs := PackedVector2Array()
 	var indices := PackedInt32Array()
-	var apron := RtsWorldMap.VISUAL_APRON_CELLS
-	var width := grid_size.x + apron * 2 + 1
-	for y in range(-apron, grid_size.y + apron + 1):
-		for x in range(-apron, grid_size.x + apron + 1):
+	# Fog stops at the playable boundary; the black exterior never shares vision.
+	var width := grid_size.x + 1
+	for y in grid_size.y + 1:
+		for x in grid_size.x + 1:
 			var point := Vector2(x, y) * RtsWorldMap.CELL_SIZE + lift * terrain_map._visual_vertex_height(x, y)
 			vertices.append(Vector3(point.x, point.y, 0.0))
-			uvs.append(Vector2(clampf(float(x) / grid_size.x, 0.0, 1.0), clampf(float(y) / grid_size.y, 0.0, 1.0)))
-	for y in grid_size.y + apron * 2:
-		for x in grid_size.x + apron * 2:
+			uvs.append(Vector2(float(x) / grid_size.x, float(y) / grid_size.y))
+	for y in grid_size.y:
+		for x in grid_size.x:
 			var nw := y * width + x
 			var ne := nw + 1
 			var sw := nw + width

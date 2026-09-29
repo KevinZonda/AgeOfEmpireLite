@@ -5,7 +5,7 @@ const WorldMapRenderer = preload("res://scripts/world/world_map_renderer.gd")
 
 const CELL_SIZE := 50
 const VISUAL_APRON_CELLS := 12
-const OUTSIDE_COLOR := Color("202c2e")
+const OUTSIDE_COLOR := Color.BLACK
 enum Terrain {GRASS, MEADOW, WATER, MOUNTAIN, ROAD}
 
 var world_size := Vector2.ZERO
