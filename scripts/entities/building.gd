@@ -3,6 +3,8 @@ extends Node2D
 const RtsUiTypography = preload("res://scripts/ui/typography.gd")
 
 const LandmarkVisual = preload("res://scripts/entities/visuals/landmark_visual.gd")
+const EconomyBuildingVisual = preload("res://scripts/entities/visuals/economy_building_visual.gd")
+const IndustryBuildingVisual = preload("res://scripts/entities/visuals/industry_building_visual.gd")
 const FARM_SOW_WORK := 2.2
 const FARM_HARVEST_WORK := 4.4
 var landmark_geometry
@@ -117,7 +119,7 @@ func contains_icon_visual(world_point: Vector2, canvas: Transform2D) -> bool:
 		var center := Vector2(0, -size().y * 0.5 - side * 0.5 - 8.0)
 		return Rect2(center - Vector2.ONE * side * 0.5, Vector2.ONE * side).has_point(world_point - position)
 	var construction_ratio := 1.0 - build_remaining / maxf(build_total, 0.1)
-	var height := isometric_height() * (0.25 + 0.75 * construction_ratio) + (_landmark_extra_height() if construction_ratio >= 0.65 else 0.0)
+	var height := isometric_height() * (0.25 + 0.75 * construction_ratio) + (visual_feature_height() + _landmark_extra_height() if construction_ratio >= 0.65 else 0.0)
 	var terrain_lift := RtsIsoProjection.world_delta(canvas, Vector2(0, -foundation_height() * game.camera.zoom.x))
 	var screen_point := canvas.basis_xform(world_point - position - terrain_lift)
 	var center := Vector2(0, -height * game.camera.zoom.x - side * 0.5 - 9.0)
@@ -131,9 +133,20 @@ func isometric_height() -> float:
 	if art_kind == "wonder": return 58.0
 	if art_kind in ["town_center", "keep", "palace"]: return 42.0
 	if art_kind in ["monastery", "university"]: return 34.0
-	if art_kind in ["mill", "lumber_camp", "mining_camp", "scout_camp", "dock"]: return 17.0
+	if art_kind == "mill": return 35.0
+	if art_kind in ["lumber_camp", "mining_camp", "scout_camp", "dock"]: return 17.0
 	if art_kind == "house": return 23.0
 	return 26.0
+
+func visual_feature_height() -> float:
+	match kind:
+		"town_center": return 22.0
+		"lumber_camp": return 10.0
+		"mining_camp": return 17.0
+		"mill": return 12.0
+		"blacksmith": return 18.0
+		"siege_workshop": return 15.0
+	return 0.0
 
 func _landmark_extra_height() -> float:
 	if kind not in ["landmark", "wonder"]: return 0.0
@@ -489,7 +502,7 @@ func _draw_isometric() -> void:
 	var body_bounds := bounds
 	if art_kind == "monastery" and kind != "landmark":
 		body_bounds = Rect2(Vector2(-size().x * 0.34, -size().y * 0.5), Vector2(size().x * 0.68, size().y))
-	var open_yard := kind != "landmark" and art_kind in ["barracks", "archery_range", "stable", "market", "dock", "lumber_camp", "mining_camp", "scout_camp"]
+	var open_yard := kind != "landmark" and art_kind in ["town_center", "barracks", "archery_range", "stable", "market", "dock", "lumber_camp", "mining_camp", "mill", "scout_camp", "blacksmith", "siege_workshop"]
 	var palette := _architecture_palette()
 	var color: Color = palette["wall"]
 	var construction_ratio := 1.0 - build_remaining / maxf(build_total, 0.1)
@@ -536,7 +549,7 @@ func _draw_isometric() -> void:
 	# Labels and status bars are drawn in screen space so they stay legible.
 	draw_set_transform_matrix(RtsIsoProjection.upright(canvas, terrain_lift))
 	var side := icon_size()
-	var icon_height := height + (_landmark_extra_height() if construction_ratio >= 0.65 else 0.0)
+	var icon_height := height + (visual_feature_height() + _landmark_extra_height() if construction_ratio >= 0.65 else 0.0)
 	_draw_building_icon(Vector2(0, -icon_height * game.camera.zoom.x - side * 0.5 - 9.0), side)
 	var font := ThemeDB.fallback_font
 	if font != null and game.get("show_building_names") != false:
@@ -559,10 +572,20 @@ func _architecture_palette() -> Dictionary:
 		"Chinese":
 			return {"wall": Color("d8c8a3"), "timber": Color("924d3b"), "roof": Color("53645d"), "roof_dark": Color("344740"), "trim": Color("e2ba75")}
 		_:
-			return {"wall": Color("cbbd99"), "timber": Color("674c39"), "roof": Color("75564a"), "roof_dark": Color("503b37"), "trim": Color("e3d0a0")}
+			var palette := {"wall": Color("cbbd99"), "timber": Color("674c39"), "roof": Color("75564a"), "roof_dark": Color("503b37"), "trim": Color("e3d0a0")}
+			if kind in ["town_center", "lumber_camp", "mining_camp", "mill", "blacksmith", "siege_workshop"]:
+				palette["roof"] = Color("59636a")
+				palette["roof_dark"] = Color("3b454b")
+			return palette
 
 func _draw_topdown_architecture(bounds: Rect2, palette: Dictionary) -> void:
 	var art_kind := _visual_kind()
+	if kind not in ["landmark", "wonder"] and art_kind in ["town_center", "mill", "lumber_camp"]:
+		EconomyBuildingVisual.draw_topdown(self, art_kind, bounds, palette, game.player_color(owner_id), game.civilizations[owner_id])
+		return
+	if kind not in ["landmark", "wonder"] and art_kind in ["mining_camp", "blacksmith", "siege_workshop"]:
+		IndustryBuildingVisual.draw_topdown(self, art_kind, bounds, palette, game.player_color(owner_id), game.civilizations[owner_id])
+		return
 	var roof_bounds := bounds.grow(-6.0)
 	var roof: Color = palette["roof"]
 	var dark: Color = palette["roof_dark"]
@@ -600,7 +623,7 @@ func _draw_topdown_architecture(bounds: Rect2, palette: Dictionary) -> void:
 	if art_kind in ["barracks", "archery_range", "stable"]:
 		_draw_topdown_military_structure(art_kind, roof_bounds, palette)
 		return
-	if art_kind in ["market", "dock", "lumber_camp", "mining_camp", "scout_camp"]:
+	if art_kind in ["market", "dock", "scout_camp"]:
 		_draw_topdown_open_structure(art_kind, roof_bounds, palette)
 		return
 	var top_left := roof_bounds.position
@@ -626,16 +649,8 @@ func _draw_topdown_architecture(bounds: Rect2, palette: Dictionary) -> void:
 			draw_rect(tower, trim, false, 1.3)
 			if art_kind in ["wonder", "palace"]:
 				draw_rect(tower.grow(4), trim, false, 2.0)
-		"house", "blacksmith", "siege_workshop":
-			var chimney_size := Vector2(10, 12) if art_kind == "blacksmith" else Vector2(7, 8)
-			draw_rect(Rect2(roof_bounds.position + Vector2(9, 8), chimney_size), palette["timber"])
-		"barracks":
-			for offset in [-6.0, 0.0, 6.0]:
-				draw_line(Vector2(offset, roof_bounds.end.y - 11), Vector2(offset + 5, roof_bounds.end.y - 3), trim, 1.4)
-		"mill":
-			draw_circle(Vector2.ZERO, 5.0, trim)
-			for direction in [Vector2.UP, Vector2.DOWN, Vector2.LEFT, Vector2.RIGHT]:
-				draw_line(Vector2.ZERO, direction * 15.0, palette["timber"], 2.5)
+		"house", "siege_workshop":
+			draw_rect(Rect2(roof_bounds.position + Vector2(9, 8), Vector2(7, 8)), palette["timber"])
 	if art_kind == "siege_workshop":
 		draw_rect(Rect2(roof_bounds.position.x + 7, roof_bounds.end.y - 17, roof_bounds.size.x - 14, 11), dark)
 	elif art_kind == "monastery":
@@ -655,28 +670,11 @@ func _draw_topdown_open_structure(art_kind: String, roof_bounds: Rect2, palette:
 				var x := lerpf(roof_bounds.position.x, roof_bounds.end.x, portion)
 				draw_colored_polygon(PackedVector2Array([Vector2(x - 9, roof_bounds.position.y + 5), Vector2(x, roof_bounds.position.y - 4), Vector2(x + 9, roof_bounds.position.y + 5)]), game.player_color(owner_id))
 				draw_line(Vector2(x - 8, roof_bounds.position.y + 6), Vector2(x + 8, roof_bounds.position.y + 6), trim, 2.0)
-		"stable":
-			draw_rect(Rect2(roof_bounds.position, Vector2(roof_bounds.size.x, roof_bounds.size.y * 0.45)), palette["roof"])
-			for portion in [0.1, 0.4, 0.7, 0.9]:
-				var x := lerpf(roof_bounds.position.x, roof_bounds.end.x, portion)
-				draw_line(Vector2(x, roof_bounds.get_center().y), Vector2(x, roof_bounds.end.y), timber, 2.0)
-		"archery_range":
-			for portion in [0.22, 0.5, 0.78]:
-				var x := lerpf(roof_bounds.position.x, roof_bounds.end.x, portion)
-				draw_line(Vector2(x, roof_bounds.position.y + 6), Vector2(x, roof_bounds.end.y - 3), trim, 1.3)
-				draw_circle(Vector2(x, roof_bounds.position.y + 7), 4.0, game.player_color(owner_id))
 		"dock":
 			for portion in [0.1, 0.4, 0.7, 0.9]:
 				var x := lerpf(roof_bounds.position.x, roof_bounds.end.x, portion)
 				draw_circle(Vector2(x, roof_bounds.position.y), 2.8, timber)
 				draw_circle(Vector2(x, roof_bounds.end.y), 2.8, timber)
-		"lumber_camp":
-			for portion in [0.25, 0.5, 0.75]:
-				var y := lerpf(roof_bounds.get_center().y, roof_bounds.end.y, portion)
-				draw_line(Vector2(roof_bounds.position.x + 7, y), Vector2(roof_bounds.end.x - 7, y), Color("765035"), 4.0)
-		"mining_camp":
-			for point in [Vector2(-10, 7), Vector2(3, 9), Vector2(12, 2)]:
-				draw_circle(point, 5.0, Color("77766f"))
 		"scout_camp":
 			var center := roof_bounds.get_center()
 			draw_colored_polygon(PackedVector2Array([center + Vector2(-13, 7), center + Vector2(0, -12), center + Vector2(13, 7)]), Color("a98458"))
@@ -795,6 +793,12 @@ func _draw_topdown_landmark(bounds: Rect2, palette: Dictionary) -> void:
 				for y in [box.position.y + 4, box.end.y - 4]: draw_rect(Rect2(x - 2, y - 2, 4, 4), trim)
 
 func _draw_iso_architecture(art_kind: String, nw: Vector2, ne: Vector2, se: Vector2, sw: Vector2, lift: Vector2, palette: Dictionary, canvas: Transform2D) -> void:
+	if kind not in ["landmark", "wonder"] and art_kind in ["town_center", "mill", "lumber_camp"]:
+		EconomyBuildingVisual.draw_iso(self, art_kind, nw, ne, se, sw, lift, palette, game.player_color(owner_id), game.civilizations[owner_id], canvas, game.camera.zoom.x)
+		return
+	if kind not in ["landmark", "wonder"] and art_kind in ["mining_camp", "blacksmith", "siege_workshop"]:
+		IndustryBuildingVisual.draw_iso(self, art_kind, nw, ne, se, sw, lift, palette, game.player_color(owner_id), game.civilizations[owner_id], canvas, game.camera.zoom.x)
+		return
 	if art_kind == "farm":
 		_draw_iso_farm(nw, ne, se, sw, lift)
 		return
@@ -804,7 +808,7 @@ func _draw_iso_architecture(art_kind: String, nw: Vector2, ne: Vector2, se: Vect
 	if kind != "landmark" and art_kind in ["barracks", "archery_range", "stable"]:
 		_draw_iso_military_structure(art_kind, nw, ne, sw, lift, palette, canvas)
 		return
-	if kind != "landmark" and art_kind in ["market", "dock", "lumber_camp", "mining_camp", "scout_camp"]:
+	if kind != "landmark" and art_kind in ["market", "dock", "scout_camp"]:
 		_draw_iso_open_structure(art_kind, nw, ne, se, sw, lift, palette, canvas)
 		return
 	var timber: Color = palette["timber"]
@@ -884,33 +888,6 @@ func _draw_iso_open_structure(art_kind: String, nw: Vector2, ne: Vector2, se: Ve
 		for portion in [0.18, 0.5, 0.82]:
 			var crate := sw.lerp(se, portion) + floor_lift
 			draw_circle(crate, 3.0, Color("d1ad69"))
-	elif art_kind == "stable":
-		var rail_left := sw.lerp(se, 0.08) + floor_lift
-		var rail_right := sw.lerp(se, 0.92) + floor_lift
-		draw_line(rail_left + lift * 0.23, rail_right + lift * 0.23, timber, 3.0)
-		for portion in [0.08, 0.38, 0.68, 0.92]:
-			var rail_post := sw.lerp(se, portion) + floor_lift
-			draw_line(rail_post, rail_post + lift * 0.38, timber, 2.2)
-		draw_line(sw.lerp(se, 0.24) + floor_lift, sw.lerp(se, 0.76) + floor_lift, Color("704f34"), 5.0)
-	elif art_kind == "archery_range":
-		for portion in [0.22, 0.5, 0.78]:
-			var lane_front := sw.lerp(se, portion) + floor_lift
-			var lane_back := front_left.lerp(front_right, portion) + floor_lift
-			draw_line(lane_front, lane_back, Color("d6bd83"), 1.4)
-			var board := back_left.lerp(back_right, portion) + eave * 0.64
-			draw_circle(board, 5.0, trim)
-			draw_circle(board, 3.0, game.player_color(owner_id))
-	elif art_kind == "lumber_camp":
-		for portion in [0.28, 0.43, 0.58]:
-			var log_point := sw.lerp(se, portion) + floor_lift
-			draw_line(log_point, log_point + (ne - nw) * 0.1, Color("815635"), 5.0)
-	elif art_kind == "mining_camp":
-		for portion in [0.25, 0.48, 0.72]:
-			var ore_point := sw.lerp(se, portion) + floor_lift
-			draw_circle(ore_point, 4.4, Color("817d72"))
-			draw_circle(ore_point + Vector2(-2, -2), 2.0, Color("bbb4a0"))
-	if kind == "landmark":
-		_draw_iso_landmark_crown((back_left + back_right) * 0.5 + eave, palette, canvas)
 
 func _military_point(nw: Vector2, ne: Vector2, sw: Vector2, u: float, v: float) -> Vector2:
 	return nw + (ne - nw) * u + (sw - nw) * v
@@ -1059,28 +1036,12 @@ func _draw_iso_roof(art_kind: String, nw: Vector2, ne: Vector2, se: Vector2, sw:
 			draw_line(start, finish, masonry, 3.2)
 		_draw_iso_battlements([nw + lift, ne + lift, se + lift, sw + lift], lift * 0.13, masonry, 4.5)
 		return
-	if art_kind == "blacksmith":
-		var soot: Color = palette["roof_dark"]
-		draw_colored_polygon(PackedVector2Array([nw + lift, ne + lift, se + lift, sw + lift]), soot)
-		draw_polyline(PackedVector2Array([nw + lift, ne + lift, se + lift, sw + lift, nw + lift]), palette["timber"], 3.0)
-		for portion in [0.2, 0.5, 0.8]:
-			draw_line(nw.lerp(sw, portion) + lift, ne.lerp(se, portion) + lift, Color("99795c"), 1.4)
-		return
-	if art_kind == "mill":
-		var eave := lift
-		var apex := center + lift + RtsIsoProjection.world_delta(canvas, Vector2(0, -20.0 * game.camera.zoom.x))
-		var mill_roof: Color = palette["roof"]
-		draw_colored_polygon(PackedVector2Array([nw + eave, ne + eave, apex]), mill_roof.lightened(0.1))
-		draw_colored_polygon(PackedVector2Array([ne + eave, se + eave, apex]), palette["roof"])
-		draw_colored_polygon(PackedVector2Array([se + eave, sw + eave, apex]), palette["roof_dark"])
-		draw_line(sw + eave, se + eave, palette["trim"], 2.0)
-		return
 	var overhang := 1.1 if game.civilizations[owner_id] == "Chinese" else 1.06
 	var a := center + (nw - center) * overhang + lift
 	var b := center + (ne - center) * overhang + lift
 	var c := center + (se - center) * overhang + lift
 	var d := center + (sw - center) * overhang + lift
-	var roof_height := 23.0 if art_kind in ["monastery", "wonder"] else 15.0 if art_kind in ["town_center", "palace", "university", "barracks"] else 9.0
+	var roof_height := 23.0 if art_kind == "monastery" else 15.0 if art_kind == "university" else 9.0
 	var rise := RtsIsoProjection.world_delta(canvas, Vector2(0, -roof_height * game.camera.zoom.x))
 	var ridge_back := (a + b) * 0.5 + rise
 	var ridge_front := (d + c) * 0.5 + rise
@@ -1093,17 +1054,6 @@ func _draw_iso_roof(art_kind: String, nw: Vector2, ne: Vector2, se: Vector2, sw:
 		c += upturn
 		d += upturn
 	draw_colored_polygon(PackedVector2Array([a, b, c, d]), dark)
-	if art_kind == "barracks":
-		var ridge_left := (a + d) * 0.5 + rise
-		var ridge_right := (b + c) * 0.5 + rise
-		draw_colored_polygon(PackedVector2Array([a, d, ridge_left]), palette["wall"])
-		draw_colored_polygon(PackedVector2Array([b, c, ridge_right]), palette["wall"].darkened(0.15))
-		draw_colored_polygon(PackedVector2Array([a, b, ridge_right, ridge_left]), roof.lightened(0.09))
-		draw_colored_polygon(PackedVector2Array([ridge_left, ridge_right, c, d]), roof)
-		draw_line(ridge_left, ridge_right, palette["trim"], 2.5)
-		draw_polyline(PackedVector2Array([a, ridge_left, d]), dark, 2.0)
-		draw_polyline(PackedVector2Array([b, ridge_right, c]), dark, 2.0)
-		return
 	draw_colored_polygon(PackedVector2Array([a, b, ridge_back]), palette["wall"].darkened(0.1))
 	draw_colored_polygon(PackedVector2Array([d, c, ridge_front]), palette["wall"])
 	draw_colored_polygon(PackedVector2Array([a, ridge_back, ridge_front, d]), roof.lightened(0.09))
@@ -1119,52 +1069,21 @@ func _draw_iso_roof(art_kind: String, nw: Vector2, ne: Vector2, se: Vector2, sw:
 			draw_circle(corner, 1.8, palette["trim"])
 
 func _draw_iso_building_feature(art_kind: String, nw: Vector2, ne: Vector2, se: Vector2, sw: Vector2, lift: Vector2, palette: Dictionary, canvas: Transform2D) -> void:
-	var front := (sw + se) * 0.5
 	var roof_middle := (nw + ne + se + sw) * 0.25 + lift
 	var timber: Color = palette["timber"]
 	var trim: Color = palette["trim"]
 	match art_kind:
-		"town_center", "keep", "palace", "wonder", "university", "monastery":
+		"keep", "university", "monastery":
 			_draw_iso_tower(art_kind, nw, ne, se, sw, lift, palette, canvas)
-		"house", "blacksmith", "siege_workshop":
+		"house":
 			var chimney := roof_middle + (nw - roof_middle) * 0.28
-			var chimney_height := 24.0 if art_kind == "blacksmith" else 14.0 if art_kind == "siege_workshop" else 10.0
-			var chimney_top := chimney + RtsIsoProjection.world_delta(canvas, Vector2(0, -chimney_height * game.camera.zoom.x))
+			var chimney_top := chimney + RtsIsoProjection.world_delta(canvas, Vector2(0, -10.0 * game.camera.zoom.x))
 			draw_line(chimney, chimney_top, timber, 7.0)
 			draw_line(chimney_top + Vector2(-4, 0), chimney_top + Vector2(4, 0), trim, 3.0)
-	if art_kind == "barracks":
-		for portion in [0.18, 0.27, 0.36]:
-			var spear := sw.lerp(se, portion)
-			draw_line(spear + lift * 0.15, spear + lift * 0.8, timber.darkened(0.35), 1.4)
-			draw_circle(spear + lift * 0.85, 1.8, trim)
-		var banner_base := (nw + ne) * 0.5 + lift
-		_draw_iso_landmark_crown(banner_base, palette, canvas)
-	elif art_kind == "mill":
-		var hub := roof_middle + RtsIsoProjection.world_delta(canvas, Vector2(0, -14.0 * game.camera.zoom.x))
-		draw_line(roof_middle, hub, timber, 5.0)
-		draw_circle(hub, 4.3, trim)
-		for direction in [Vector2(0, -24), Vector2(0, 24), Vector2(-24, 0), Vector2(24, 0)]:
-			var blade := RtsIsoProjection.world_delta(canvas, direction * game.camera.zoom.x)
-			draw_line(hub, hub + blade, timber, 3.0)
-	elif art_kind == "blacksmith":
-		var forge := front + lift * 0.36
-		draw_circle(forge, 5.5, Color("5c3828"))
-		draw_circle(forge, 3.0, Color("d97c3f"))
-		draw_line(sw.lerp(se, 0.72), sw.lerp(se, 0.86) + lift * 0.28, timber, 3.0)
-	elif art_kind == "siege_workshop":
-		var bay_left := sw.lerp(se, 0.26)
-		var bay_right := sw.lerp(se, 0.74)
-		draw_colored_polygon(PackedVector2Array([bay_left + lift * 0.86, bay_right + lift * 0.86, bay_right, bay_left]), Color("3a3028"))
-		draw_line(bay_left + lift * 0.86, bay_right + lift * 0.86, trim, 2.4)
-		var beam_top := ne + lift + RtsIsoProjection.world_delta(canvas, Vector2(0, -11.0 * game.camera.zoom.x))
-		draw_line(ne + lift, beam_top, timber, 3.0)
-		draw_line(beam_top, beam_top + (se - sw) * 0.23, timber, 2.2)
-	elif art_kind == "outpost":
+	if art_kind == "outpost":
 		var mast := roof_middle + RtsIsoProjection.world_delta(canvas, Vector2(0, -16.0 * game.camera.zoom.x))
 		draw_line(roof_middle, mast, timber, 2.0)
 		draw_colored_polygon(PackedVector2Array([mast, mast + Vector2(9, 3), mast + Vector2(0, 6)]), game.player_color(owner_id))
-	if kind == "landmark" and not art_kind in ["barracks", "town_center", "keep", "palace", "wonder", "university", "monastery"]:
-		_draw_iso_landmark_crown(roof_middle, palette, canvas)
 
 func _draw_iso_tower(art_kind: String, nw: Vector2, ne: Vector2, se: Vector2, sw: Vector2, lift: Vector2, palette: Dictionary, canvas: Transform2D) -> void:
 	var center := (nw + ne + se + sw) * 0.25 + lift
