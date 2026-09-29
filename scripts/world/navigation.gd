@@ -896,8 +896,9 @@ func _rasterize_unit_circle(grid: AStarGrid2D, center: Vector2, radius: float, c
 	for y in range(region.position.y, region.end.y):
 		var dy := grid.get_point_position(Vector2i(0, y)).y - center.y
 		var span_squared := limit - dy * dy
-		if span_squared < 0.0: continue
-		var span := sqrt(span_squared)
+		# Keep the nearest column even for a marginally negative span: Vector2
+		# distance rounding can still include an overlap-escape tangent.
+		var span := sqrt(maxf(0.0, span_squared))
 		var first := maxi(region.position.x, floori((center.x - span - grid.offset.x) / grid.cell_size.x))
 		var last := mini(region.end.x - 1, ceili((center.x + span - grid.offset.x) / grid.cell_size.x))
 		while first <= last:
