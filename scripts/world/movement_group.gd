@@ -25,6 +25,9 @@ var formation_width := 5
 var corridor_cache: Dictionary = {}
 var member_segments: Dictionary = {}
 var requested_goal: Vector2
+var member_goals: Dictionary = {}
+var independent_members: Dictionary = {}
+var slot_reachability: Dictionary = {}
 
 func _init(game_ref: Node2D, squad: Array[RtsUnit], world_goal: Vector2, chosen_formation := "balanced", chosen_width := 5) -> void:
 	game = game_ref
@@ -83,7 +86,7 @@ func _replan() -> void:
 	if members.is_empty(): return
 	var leader := members[0]
 	for member in members:
-		if game.navigation.can_occupy(member.position, member.radius(), member, false):
+		if game.navigation.can_occupy(member.position, member.radius(), member, false, false):
 			leader = member
 			break
 	goal = game.navigation.nearest_walkable_point(requested_goal, leader.radius(), leader, false, false)
@@ -91,6 +94,20 @@ func _replan() -> void:
 	if route.is_empty() and game.navigation.can_occupy(leader.position, leader.radius(), leader, false):
 		goal = game.navigation.nearest_walkable_point(goal, leader.radius(), leader, true, false)
 		route = game.navigation.path_between(leader.position, goal, leader, false)
+	slot_reachability.clear()
+	member_goals.clear()
+	independent_members.clear()
+	for member in members:
+		var id := member.get_instance_id()
+		member_goals[id] = goal
+		# Nearby bodies that fit the leader's verified route only need a
+		# clear attachment to it, not another search across the entire map.
+		var shares_route: bool = not route.is_empty() and member.owner_id == leader.owner_id and member.stats.get("tags", []).has("naval") == leader.stats.get("tags", []).has("naval") and member.radius() <= leader.radius() and game.navigation._static_segment_clear(member.position, leader.position, member.radius(), member, false)
+		if not shares_route and game.navigation.can_occupy(member.position, member.radius(), member, false, false) and game.navigation.path_between(member.position, goal, member).is_empty():
+			# Spatially close members may be across an impassable wall. They
+			# retain their own reachable interpretation of the player's click.
+			member_goals[id] = game.navigation.nearest_walkable_point(requested_goal, member.radius(), member, true, false)
+			independent_members[id] = true
 	route_index = 1 if route.size() > 1 else 0
 	member_route_index.clear()
 	for unit in members:
@@ -112,8 +129,8 @@ func _replan() -> void:
 		for unit in members:
 			if unit.movement_group != self: continue
 			var id := unit.get_instance_id()
-			if previous_goal.distance_squared_to(goal) > 1.0 or not game.navigation.can_occupy(final_destinations[id], unit.radius(), unit, false):
-				final_destinations[id] = game.navigation.nearest_walkable_point(goal + slots[id], unit.radius(), unit, true)
+			if previous_goal.distance_squared_to(goal) > 1.0 or game.navigation.path_between(unit.position, final_destinations[id], unit).is_empty():
+				final_destinations[id] = _free_slot(unit, member_goals[id] + slots[id])
 			unit.destination = final_destinations[id]
 
 func _role_rank(unit: RtsUnit) -> int:
@@ -154,7 +171,7 @@ func _assign_slots(center: Vector2) -> void:
 	final_destinations.clear()
 	for unit in ordered:
 		var id: int = unit.get_instance_id()
-		final_destinations[id] = _free_slot(unit, goal + slots[id])
+		final_destinations[id] = _free_slot(unit, member_goals[id] + slots[id])
 	_match_slots(ordered)
 	if game.navigation.profiling_enabled: game.navigation._record_profile(&"group_slots", started)
 
@@ -175,6 +192,13 @@ func _match_slots(ordered: Array) -> void:
 	for unit in ordered:
 		points.append(final_destinations[unit.get_instance_id()])
 		offsets.append(slots[unit.get_instance_id()])
+	var compatible: Array[Array] = []
+	for unit in ordered:
+		var source_valid: bool = game.navigation.can_occupy(unit.position, unit.radius(), unit, false, false)
+		var row: Array[bool] = []
+		for j in count:
+			row.append(is_equal_approx(unit.radius(), ordered[j].radius()) and (not source_valid or _slot_reachable(unit, points[j])))
+		compatible.append(row)
 	for i in range(1, count + 1):
 		occupants[0] = i
 		var column := 0
@@ -191,6 +215,7 @@ func _match_slots(ordered: Array) -> void:
 			for j in range(1, count + 1):
 				if used[j]: continue
 				var cost: float = ordered[row - 1].position.distance_to(points[j - 1])
+				if not compatible[row - 1][j - 1]: cost += 1.0e12
 				if _role_rank(ordered[row - 1]) != _role_rank(ordered[j - 1]): cost += 10000.0
 				cost -= potentials[row] + slot_potentials[j]
 				if cost < minimum[j]:
@@ -216,7 +241,12 @@ func _match_slots(ordered: Array) -> void:
 		slots[id] = offsets[j - 1]
 
 func _free_slot(unit: RtsUnit, desired: Vector2) -> Vector2:
+	# A new foundation may cover a member. Its dedicated overlap recovery
+	# runs before group movement; there is no legal starting path yet.
+	var source_valid: bool = game.navigation.can_occupy(unit.position, unit.radius(), unit, false, false)
 	var candidate: Vector2 = game.navigation.nearest_walkable_point(desired, unit.radius(), unit, false, false)
+	if source_valid and not _slot_reachable(unit, candidate):
+		candidate = member_goals[unit.get_instance_id()]
 	for ring in range(25):
 		for i in (1 if ring == 0 else 16):
 			var point := candidate + Vector2.from_angle(TAU * i / 16.0) * ring * 12.0
@@ -226,8 +256,21 @@ func _free_slot(unit: RtsUnit, desired: Vector2) -> Vector2:
 				if point.distance_to(final_destinations[other.get_instance_id()]) < unit.radius() + other.radius() + 8.0:
 					free = false
 					break
-			if free and game.navigation.can_occupy(point, unit.radius(), unit, false): return point
+			if free and game.navigation.can_occupy(point, unit.radius(), unit, false, false) and (not source_valid or _slot_reachable(unit, point)): return point
 	return candidate
+
+func _slot_reachable(unit: RtsUnit, point: Vector2) -> bool:
+	# _replan already proved the member can reach this anchor with its body.
+	# Reuse that route certificate for nearby slots instead of running A* for
+	# every cell of the assignment matrix (up to 144 searches per platoon).
+	var anchor: Vector2 = member_goals.get(unit.get_instance_id(), goal)
+	var key := [unit.owner_id, unit.radius(), unit.stats.get("tags", []).has("naval"), anchor, point]
+	if slot_reachability.has(key): return slot_reachability[key]
+	# If the coarse route cannot certify an offset, _free_slot tries another
+	# nearby point. Only the actual player goal needs the full fine fallback.
+	var reachable: bool = game.navigation._static_segment_clear(anchor, point, unit.radius(), unit, false) or not game.navigation._path_between(anchor, point, unit, true, false).is_empty()
+	slot_reachability[key] = reachable
+	return reachable
 
 func _center(active_only := true) -> Vector2:
 	var sum := Vector2.ZERO

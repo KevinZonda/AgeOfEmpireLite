@@ -18,6 +18,12 @@ static func process_attack_ground(unit, delta: float) -> void:
 	unit.revealed_timer = 2.0
 	unit._start_visual_action("attack", 0.28)
 
+static func valid_attack_target(unit, candidate) -> bool:
+	if not is_instance_valid(candidate) or candidate.is_queued_for_deletion(): return false
+	if candidate is RtsResource: return candidate.appearance == "boar" and candidate.wildlife_hp > 0.0
+	if not (candidate is RtsUnit or candidate is RtsBuilding): return false
+	return candidate.hp > 0.0 and unit.game.is_enemy(unit.owner_id, candidate.owner_id) and (not candidate is RtsUnit or candidate.garrisoned_in == null)
+
 static func process_attack_order(unit, delta: float) -> void:
 	if unit.target is RtsResource and unit.target.appearance == "boar" and unit.target.wildlife_hp <= 0.0:
 		unit._advance_command()
@@ -69,7 +75,18 @@ static func process_attack_order(unit, delta: float) -> void:
 			return
 		var away: Vector2 = (unit.position - unit.target.position).normalized()
 		if away.is_zero_approx(): away = Vector2.RIGHT
-		unit._move_toward(unit.target.position + away * (min_reach + 10.0), delta, 6.0)
+		# Reuse an escape while it remains outside minimum range. If the
+		# straight retreat is obstructed, search the other firing positions.
+		var retreat: Vector2 = unit.route_goal
+		if retreat == Vector2.INF or retreat.distance_to(unit.target.position) <= min_reach + 6.0 or retreat.distance_to(unit.target.position) > reach or not unit.game.navigation.can_occupy(retreat, unit.radius(), unit, false, false):
+			retreat = Vector2.INF
+			for angle in [0.0, PI / 4.0, -PI / 4.0, PI / 2.0, -PI / 2.0, PI * 0.75, -PI * 0.75, PI]:
+				var candidate: Vector2 = unit.target.position + away.rotated(angle) * (min_reach + 10.0)
+				if not unit.game.navigation.can_occupy(candidate, unit.radius(), unit, false, false): continue
+				if unit.game.navigation.path_between(unit.position, candidate, unit).is_empty(): continue
+				retreat = candidate
+				break
+		if retreat != Vector2.INF: unit._move_toward(retreat, delta, 6.0)
 		return
 	if is_instance_valid(unit.wall_host):
 		if unit.position.distance_to(unit.target.position) > reach:

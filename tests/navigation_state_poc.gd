@@ -96,6 +96,18 @@ func _test_busy_farm_queue() -> void:
 			else:
 				check(unit.order == "gather" and unit.command_queue.size() == 1, "farm_queue_control_occupied%s_extra%s" % [occupied, extra_farm], "order=%s queue=%d" % [unit.order, unit.command_queue.size()])
 
+	# Failed queued commands are drained iteratively, even for long task lists.
+	reset()
+	var farm := structure("farm", Vector2(900, 600))
+	var farmer := worker(farm.position + Vector2(0, -40))
+	farmer.issue_command("gather", Vector2.INF, farm)
+	var unit := worker(Vector2(650, 600))
+	unit.issue_command("move", Vector2(750, 600))
+	for i in 2048: unit.issue_command("gather", Vector2.INF, farm, true)
+	unit.issue_command("move", Vector2(650, 450), null, true)
+	tick([unit], 200)
+	check(unit.order == "idle" and unit.command_queue.is_empty() and unit.position.distance_to(Vector2(650, 450)) < 7, "busy_farm_long_queue_drains_iteratively")
+
 func _test_unload_spacing() -> void:
 	for carrier_kind in ["town_center", "battering_ram", "transport_ship"]:
 		for passenger_kind in ["villager", "knight"]:
@@ -183,8 +195,9 @@ func _test_blocked_landing() -> void:
 		var unit := actor("spearman", Vector2(750, 525))
 		check(boat.garrison_unit(unit), "landing_variant%d_setup" % variant)
 		if blocked:
-			# Probe two shore building positions against the chosen land center.
-			structure("farm", Vector2(775 if variant == 1 else 750, 525))
+			# Both farms stay on land and outside the boat body.
+			structure("farm", Vector2(725 if variant == 1 else 750, 525))
+		check(game.navigation.can_occupy(boat.position, boat.radius(), boat, false, false), "landing_variant%d_boat_start_valid" % variant)
 		var pair: Dictionary = game.find_landing_pair(boat, Vector2(775, 525))
 		check(not pair.is_empty(), "landing_variant%d_pair_exists" % variant)
 		if not pair.is_empty():

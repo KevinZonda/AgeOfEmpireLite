@@ -317,6 +317,7 @@ func ungarrison_all(resume_previous_work := false) -> void:
 		if not is_instance_valid(unit): continue
 		unit.garrisoned_in = null
 		unit.position = game.navigation.nearest_walkable_point(position + Vector2((index % 3 - 1) * 24, size().y * 0.5 + 30 + (index / 3) * 22), unit.radius(), unit)
+		game.navigation.invalidate_spatial_index()
 		unit.show()
 		unit.order_stop()
 		if resume_previous_work: unit.resume_work()

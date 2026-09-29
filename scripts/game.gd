@@ -1057,36 +1057,28 @@ func exchange_resource(owner_id: int, resource_kind: String, buy: bool) -> bool:
 
 func find_landing_pair(boat: RtsUnit, requested: Vector2) -> Dictionary:
 	navigation._ensure_current()
-	var grid: AStarGrid2D = navigation.water_pathfinder
-	var start := navigation.nearest_open_cell(boat.position, grid)
-	if grid.is_point_solid(start): return {}
-	var reachable := {start: true}
-	var frontier: Array[Vector2i] = [start]
-	var cursor_index := 0
-	while cursor_index < frontier.size():
-		var cell: Vector2i = frontier[cursor_index]
-		cursor_index += 1
-		for offset: Vector2i in [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]:
-			var neighbor := cell + offset
-			if neighbor.x < 0 or neighbor.y < 0 or neighbor.x >= world_map.grid_size.x or neighbor.y >= world_map.grid_size.y or grid.is_point_solid(neighbor) or reachable.has(neighbor): continue
-			reachable[neighbor] = true
-			frontier.append(neighbor)
-	var best := INF
-	var result := {}
+	var candidates: Array[Dictionary] = []
 	for y in world_map.grid_size.y:
 		for x in world_map.grid_size.x:
 			var land := world_map.cell_center(Vector2i(x, y))
 			if not world_map.is_walkable(land) or land.distance_to(requested) > 750.0: continue
+			var free := true
+			for passenger in boat.passengers:
+				if is_instance_valid(passenger) and not navigation.can_occupy(land, passenger.radius(), passenger, false, false):
+					free = false
+					break
+			if not free: continue
 			for offset in [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]:
-				var water_cell: Vector2i = Vector2i(x, y) + offset
-				if water_cell.x < 0 or water_cell.y < 0 or water_cell.x >= world_map.grid_size.x or water_cell.y >= world_map.grid_size.y: continue
-				var water := world_map.cell_center(water_cell)
-				if not reachable.has(water_cell): continue
-				var score := land.distance_to(requested) + water.distance_to(boat.position) * 0.12
-				if score >= best: continue
-				best = score
-				result = {"land": land, "water": water}
-	return result
+				var cell: Vector2i = Vector2i(x, y) + offset
+				if cell.x < 0 or cell.y < 0 or cell.x >= world_map.grid_size.x or cell.y >= world_map.grid_size.y: continue
+				var water := world_map.cell_center(cell)
+				if not navigation.can_occupy(water, boat.radius(), boat, false, false): continue
+				candidates.append({"land": land, "water": water, "score": land.distance_to(requested) + water.distance_to(boat.position) * 0.12})
+	candidates.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a["score"] < b["score"])
+	for candidate in candidates:
+		if not navigation.path_between(boat.position, candidate["water"], boat).is_empty():
+			return {"land": candidate["land"], "water": candidate["water"]}
+	return {}
 
 func can_afford(owner_id: int, cost: Dictionary) -> bool:
 	return MATCH_ECONOMY.can_afford(self, owner_id, cost)

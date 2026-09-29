@@ -28,6 +28,10 @@ static func resume_work(unit) -> void:
 		unit.issue_command(previous["type"], Vector2.INF, previous["target"])
 
 static func continue_gather(unit) -> void:
+	# A completed resource must not postpone an explicit queued command.
+	if not unit.command_queue.is_empty():
+		unit._advance_command()
+		return
 	var next_resource: RtsResource
 	if unit.gather_kind != "":
 		next_resource = unit.game.find_nearest_resource(unit.gather_location, unit.gather_kind, unit.AUTO_GATHER_RADIUS, unit.owner_id, unit.kind == "fishing_boat", unit)

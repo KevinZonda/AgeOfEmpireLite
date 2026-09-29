@@ -5,7 +5,6 @@ extends RefCounted
 const CLEARANCE := 16.0
 const SPATIAL_CELL_SIZE := 64.0
 const SMOOTH_LOOKAHEAD := 8
-const RESOURCE_REPLAN_DISTANCE := 8.0
 const MAX_FINE_GRIDS := 4
 
 var game: Node2D
@@ -134,7 +133,7 @@ func _obstacle_signature() -> int:
 			signature = hash([signature, building.get_instance_id(), building.position, building.size(), building.owner_id, building.kind, building.is_complete()])
 	for resource in game.resources:
 		if is_instance_valid(resource) and not resource.is_queued_for_deletion():
-			signature = hash([signature, resource.get_instance_id(), resource.position.snapped(Vector2.ONE * RESOURCE_REPLAN_DISTANCE), resource.radius])
+			signature = hash([signature, resource.get_instance_id(), resource.position, resource.radius])
 	return signature
 
 func _ensure_current() -> void:
@@ -230,10 +229,7 @@ func unit_moved(unit: RtsUnit, previous_position: Vector2) -> void:
 	_move_in_index(units_by_cell, unit, previous_position)
 
 func resource_moved(resource: RtsResource, previous_position: Vector2) -> void:
-	# Corner visibility is exact geometry, including motion below the coarse
-	# obstacle refresh threshold. Do not reuse edges through a shifted resource.
-	if previous_position != resource.position: corner_graphs.clear()
-	if previous_position.snapped(Vector2.ONE * RESOURCE_REPLAN_DISTANCE) != resource.position.snapped(Vector2.ONE * RESOURCE_REPLAN_DISTANCE): invalidate_obstacles()
+	if previous_position != resource.position: invalidate_obstacles()
 	if spatial_frame != Engine.get_process_frames(): return
 	_move_in_index(resources_by_cell, resource, previous_position)
 
@@ -445,7 +441,7 @@ func _fine_static_path(from: Vector2, to: Vector2, unit: RtsUnit) -> PackedVecto
 			var path := _search_fine_grid(from, to, unit, local)
 			if not path.is_empty(): return path
 	var path := _search_fine_grid(from, to, unit, _fine_grid_for(unit))
-	return path if not path.is_empty() else _building_corner_path(from, to, unit)
+	return path if not path.is_empty() else _obstacle_corner_path(from, to, unit)
 
 func _search_fine_grid(from: Vector2, to: Vector2, unit: RtsUnit, grid: AStarGrid2D) -> PackedVector2Array:
 	var starts := _fine_visible_cells(from, grid, unit)
@@ -476,9 +472,10 @@ func _local_fine_grid_for(from: Vector2, to: Vector2, unit: RtsUnit, key: Vector
 	local_fine_grids.append({"key": key, "bounds": bounds, "grid": grid})
 	return grid
 
-func _building_corner_path(from: Vector2, to: Vector2, unit: RtsUnit) -> PackedVector2Array:
+func _obstacle_corner_path(from: Vector2, to: Vector2, unit: RtsUnit) -> PackedVector2Array:
 	# Even a fine lattice can miss a legal 1px-wide band between expanded
-	# building footprints. Their actual corners provide grid-independent portals.
+	# footprints or terrain and a resource. Boundary corners provide portals
+	# independent of the lattice; every connecting edge still uses a full sweep.
 	var key := Vector3(unit.owner_id, unit.radius(), 1.0 if unit.stats.get("tags", []).has("naval") else 0.0)
 	if not corner_graphs.has(key):
 		var corners := PackedVector2Array()
@@ -488,6 +485,14 @@ func _building_corner_path(from: Vector2, to: Vector2, unit: RtsUnit) -> PackedV
 			var bounds := Rect2(obstacle.position - obstacle.size() * 0.5, obstacle.size()).grow(unit.radius() + 0.05)
 			for point in [bounds.position, bounds.end, Vector2(bounds.position.x, bounds.end.y), Vector2(bounds.end.x, bounds.position.y)]:
 				if not corners.has(point) and can_occupy(point, unit.radius(), unit, false, false): corners.append(point)
+		var naval: bool = unit.stats.get("tags", []).has("naval")
+		for y in world_map.grid_size.y:
+			for x in world_map.grid_size.x:
+				var terrain: int = world_map.cells[y * world_map.grid_size.x + x]
+				if (terrain == RtsWorldMap.Terrain.WATER) == naval and terrain != RtsWorldMap.Terrain.MOUNTAIN: continue
+				var bounds := Rect2(Vector2(x, y) * RtsWorldMap.CELL_SIZE, Vector2.ONE * RtsWorldMap.CELL_SIZE).grow(unit.radius() + 0.05)
+				for point in [bounds.position, bounds.end, Vector2(bounds.position.x, bounds.end.y), Vector2(bounds.end.x, bounds.position.y)]:
+					if not corners.has(point) and can_occupy(point, unit.radius(), unit, false, false): corners.append(point)
 		corner_graphs[key] = {"points": corners, "edges": {}}
 	var graph: Dictionary = corner_graphs[key]
 	var points := PackedVector2Array([from, to])
@@ -645,7 +650,7 @@ func _simplify_path(raw: PackedVector2Array, from: Vector2, to: Vector2, unit: R
 		anchor = furthest
 	return result
 
-func _static_segment_clear(from: Vector2, to: Vector2, radius: float, unit: RtsUnit, allow_resource_escape := true) -> bool:
+func _static_segment_clear(from: Vector2, to: Vector2, radius: float, unit: RtsUnit, allow_resource_escape := true, boarding := false) -> bool:
 	# Point samples alone can jump over the very short chord where a segment
 	# grazes a circle or a building corner, especially inside narrow passages.
 	var center := (from + to) * 0.5
@@ -667,13 +672,30 @@ func _static_segment_clear(from: Vector2, to: Vector2, radius: float, unit: RtsU
 		if distance >= limit * limit: continue
 		var current := unit.position.distance_squared_to(obstacle.position) if unit != null else INF
 		if not allow_resource_escape or current >= limit * limit or distance + 0.001 < current: return false
-	# Buildings and resources were already tested against the entire segment.
-	# Only terrain needs sampling; repeating entity queries at every sample
-	# multiplies the cost of path attachment, validation and smoothing.
 	var naval: bool = unit != null and unit.stats.get("tags", []).has("naval")
-	for i in range(samples + 1):
-		if not _terrain_can_occupy(from.lerp(to, float(i) / samples), radius, naval): return false
+	return _terrain_segment_clear(from, to, radius, naval, boarding)
+
+func _terrain_segment_clear(from: Vector2, to: Vector2, radius: float, naval: bool, boarding := false) -> bool:
+	var bounds := Rect2(Vector2.ONE * radius, world_map.world_size - Vector2.ONE * radius * 2)
+	if from != from.clamp(bounds.position, bounds.end) or to != to.clamp(bounds.position, bounds.end): return false
+	var region := Rect2(from, Vector2.ZERO).expand(to).grow(radius)
+	var first := world_map.cell_at(region.position)
+	var last := world_map.cell_at(region.end)
+	for y in range(first.y, last.y + 1):
+		for x in range(first.x, last.x + 1):
+			var terrain: int = world_map.cells[y * world_map.grid_size.x + x]
+			if terrain != RtsWorldMap.Terrain.MOUNTAIN and (boarding or (terrain == RtsWorldMap.Terrain.WATER) == naval): continue
+			var tile := Rect2(Vector2(x, y) * RtsWorldMap.CELL_SIZE, Vector2.ONE * RtsWorldMap.CELL_SIZE)
+			# A rounded rectangle is two strips plus four corner circles.
+			if _segment_hits_rect(from, to, Rect2(tile.position - Vector2(radius, 0), tile.size + Vector2(radius * 2, 0)).grow(-0.00001)): return false
+			if _segment_hits_rect(from, to, Rect2(tile.position - Vector2(0, radius), tile.size + Vector2(0, radius * 2)).grow(-0.00001)): return false
+			for corner in [tile.position, tile.end, Vector2(tile.position.x, tile.end.y), Vector2(tile.end.x, tile.position.y)]:
+				if corner.distance_squared_to(Geometry2D.get_closest_point_to_segment(corner, from, to)) < radius * radius - 0.0001: return false
 	return true
+
+func boarding_clear(from: Vector2, carrier_position: Vector2, unit: RtsUnit) -> bool:
+	# Boarding crosses a shoreline, but never walls, mountains or resources.
+	return _static_segment_clear(from, carrier_position, unit.radius(), unit, false, true)
 
 func _segment_hits_rect(from: Vector2, to: Vector2, bounds: Rect2) -> bool:
 	var delta := to - from
@@ -704,7 +726,8 @@ func path_to_range(from: Vector2, target: Vector2, reach: float, unit: RtsUnit) 
 
 func _path_to_range(from: Vector2, target: Vector2, reach: float, unit: RtsUnit) -> PackedVector2Array:
 	_ensure_current()
-	if from.distance_to(target) <= reach + 0.5: return PackedVector2Array([from])
+	var boarding := unit.order == "board_transport"
+	if from.distance_to(target) <= reach + 0.5 and (not boarding or boarding_clear(from, target, unit)): return PackedVector2Array([from])
 	var direction := (from - target).normalized()
 	if direction.is_zero_approx(): direction = Vector2.RIGHT
 	var approaches: Array[Vector2] = []
@@ -739,6 +762,7 @@ func _path_to_range(from: Vector2, target: Vector2, reach: float, unit: RtsUnit)
 	# nearest arc must not trigger a full fine-grid build when another side
 	# of the same building is directly accessible.
 	for approach in approaches:
+		if boarding and not boarding_clear(approach, target, unit): continue
 		if not can_occupy(approach, unit.radius(), unit): continue
 		if _static_segment_clear(from, approach, unit.radius(), unit):
 			return PackedVector2Array([from, approach])
@@ -751,6 +775,7 @@ func _path_to_range(from: Vector2, target: Vector2, reach: float, unit: RtsUnit)
 		for x in range(first.x, last.x + 1):
 			var cell := Vector2i(x, y)
 			var point := world_map.cell_center(cell)
+			if boarding and not boarding_clear(point, target, unit): continue
 			if not grid.is_point_solid(cell) and point.distance_to(target) <= reach and can_occupy(point, unit.radius(), unit): candidates.append(point)
 	candidates.sort_custom(func(a: Vector2, b: Vector2) -> bool: return from.distance_squared_to(a) < from.distance_squared_to(b))
 	for allow_fine in [false, true]:
@@ -807,14 +832,15 @@ func _nearest_walkable_point(point: Vector2, radius: float, self_unit: RtsUnit, 
 			return a.y < b.y if a.y != b.y else a.x < b.x
 		)
 		for candidate in candidates:
-			if not can_occupy(candidate, radius, self_unit, include_units): continue
+			if not can_occupy(candidate, radius, self_unit, include_units, false): continue
 			if self_unit != null and _path_between(self_unit.position, candidate, self_unit, true).is_empty(): continue
 			return candidate
 	if grid == null: grid = _grid_for(self_unit)
 	return world_map.cell_center(nearest_open_cell(clamped, grid))
 
+# Final destinations cannot use movement-only overlap escape allowances.
 func _valid_destination(point: Vector2, radius: float, self_unit: RtsUnit, start: Vector2i, grid: AStarGrid2D, include_units := true) -> bool:
-	if not can_occupy(point, radius, self_unit, include_units): return false
+	if not can_occupy(point, radius, self_unit, include_units, false): return false
 	if start.x < 0: return true
 	if self_unit != null:
 		return not _path_between(self_unit.position, point, self_unit, true).is_empty()
@@ -822,15 +848,27 @@ func _valid_destination(point: Vector2, radius: float, self_unit: RtsUnit, start
 	return not grid.is_point_solid(end) and not _id_path(grid, start, end).is_empty()
 
 func _segment_clear(from: Vector2, to: Vector2, radius: float, self_unit: RtsUnit) -> bool:
-	var samples := maxi(1, ceili(from.distance_to(to) / maxf(1.0, radius * 0.5)))
-	for i in range(samples + 1):
-		if not can_occupy(from.lerp(to, float(i) / samples), radius, self_unit): return false
+	if not _static_segment_clear(from, to, radius, self_unit): return false
+	var center := (from + to) * 0.5
+	for other in nearby_units(center, from.distance_to(to) * 0.5 + radius + max_dynamic_radius):
+		if other == self_unit: continue
+		var limit := radius + other.radius()
+		var closest := Geometry2D.get_closest_point_to_segment(other.position, from, to)
+		var distance := closest.distance_squared_to(other.position)
+		if distance >= limit * limit: continue
+		# An existing overlap may only shrink along the entire displacement.
+		var current := from.distance_squared_to(other.position)
+		if current >= limit * limit or distance + 0.001 < current or to.distance_squared_to(other.position) <= current: return false
 	return true
 
 func has_fixed_unit_blocker(unit: RtsUnit, target: Vector2) -> bool:
 	for other in nearby_units(unit.position, 160.0):
 		if other == unit: continue
-		if not game.is_enemy(unit.owner_id, other.owner_id) and other.stance != "hold" and other.order in ["idle", "move", "attack_move"]: continue
+		# Ordinary moving allies can clear the lane themselves. Recover around
+		# idle or stalled allies, without rebuilding local grids for traffic
+		# that is still making progress through a chokepoint.
+		if not game.is_enemy(unit.owner_id, other.owner_id) and other.stance != "hold" and other.order in ["move", "attack_move"]:
+			if other.route_failures < 2 and other.route_stalled_time < RtsUnit.ROUTE_STALL_SECONDS and (other.movement_group == null or other.group_stuck_time < 0.9): continue
 		var closest := Geometry2D.get_closest_point_to_segment(other.position, unit.position, target)
 		if closest.distance_to(other.position) < unit.radius() + other.radius() + 4.0: return true
 	return false
@@ -916,6 +954,35 @@ func _local_unit_path(unit: RtsUnit, target: Vector2, step: float, half: int) ->
 		return result
 	return PackedVector2Array()
 
+func request_passage(unit: RtsUnit, target: Vector2) -> bool:
+	# Recovery requests consider the whole blocked segment. A tiny sidestep
+	# can select alternating sides forever in a packed formation at a wall.
+	for other in nearby_units(unit.position, 160.0):
+		if other == unit or other.order != "idle" or other.stance == "hold" or game.is_enemy(unit.owner_id, other.owner_id): continue
+		var limit := unit.radius() + other.radius() + 4.0
+		if other.position.distance_to(Geometry2D.get_closest_point_to_segment(other.position, unit.position, target)) >= limit: continue
+		var choices: Array[Vector2] = []
+		for ring in range(1, 7):
+			for i in 16:
+				var point := other.position + Vector2.from_angle(TAU * i / 16.0) * ring * other.radius()
+				if point.distance_to(Geometry2D.get_closest_point_to_segment(point, unit.position, target)) < limit: continue
+				if not can_occupy(point, other.radius(), other, true, false): continue
+				if _static_segment_clear(other.position, point, other.radius(), other): choices.append(point)
+			if not choices.is_empty(): break
+		if choices.is_empty(): continue
+		choices.sort_custom(func(a: Vector2, b: Vector2) -> bool: return a.distance_squared_to(unit.position) > b.distance_squared_to(unit.position))
+		for choice in choices:
+			var step := other.position.move_toward(choice, other.radius() * 0.6)
+			if not _motion_clear(other, step):
+				if not _yield_allies(other, step, [unit.get_instance_id()]) or not _motion_clear(other, step): continue
+			var previous := other.position
+			other.position = step
+			unit_moved(other, previous)
+			other._update_facing(previous)
+			other._refresh_slope_visual(previous)
+			return true
+	return false
+
 func _yield_allies(unit: RtsUnit, destination: Vector2, yielding: Array[int] = []) -> bool:
 	if yielding.size() >= 3 or yielding.has(unit.get_instance_id()): return false
 	yielding = yielding.duplicate()
@@ -989,25 +1056,16 @@ func _move_step(unit: RtsUnit, desired_position: Vector2) -> Vector2:
 	return unit.position
 
 func _motion_clear(unit: RtsUnit, destination: Vector2) -> bool:
-	var distance := unit.position.distance_to(destination)
-	# A sub-radius step cannot jump across a unit or a blocked terrain cell.
-	# Checking its endpoint once avoids repeated neighborhood scans for every
-	# member of a moving army on ordinary rendered frames.
-	if distance <= unit.radius() * 0.6: return can_occupy(destination, unit.radius(), unit)
-	var samples := maxi(1, ceili(distance / maxf(1.0, unit.radius() * 0.6)))
-	for i in range(1, samples + 1):
-		var fraction := float(i) / samples
-		if not can_occupy(unit.position.lerp(destination, fraction), unit.radius(), unit): return false
-	return true
+	return _segment_clear(unit.position, destination, unit.radius(), unit)
 
-func can_occupy(point: Vector2, radius: float, self_unit: RtsUnit, include_units := true, allow_resource_escape := true) -> bool:
-	if not profiling_enabled: return _can_occupy(point, radius, self_unit, include_units, Vector2.INF, allow_resource_escape)
+func can_occupy(point: Vector2, radius: float, self_unit: RtsUnit, include_units := true, allow_overlap_escape := true) -> bool:
+	if not profiling_enabled: return _can_occupy(point, radius, self_unit, include_units, Vector2.INF, allow_overlap_escape)
 	var started := Time.get_ticks_usec()
-	var result := _can_occupy(point, radius, self_unit, include_units, Vector2.INF, allow_resource_escape)
+	var result := _can_occupy(point, radius, self_unit, include_units, Vector2.INF, allow_overlap_escape)
 	_record_profile(&"can_occupy", started)
 	return result
 
-func _can_occupy(point: Vector2, radius: float, self_unit: RtsUnit, include_units: bool, escape_from := Vector2.INF, allow_resource_escape := true) -> bool:
+func _can_occupy(point: Vector2, radius: float, self_unit: RtsUnit, include_units: bool, escape_from := Vector2.INF, allow_overlap_escape := true) -> bool:
 	var naval: bool = self_unit != null and self_unit.stats.get("tags", []).has("naval")
 	if not _terrain_can_occupy(point, radius, naval): return false
 	_ensure_spatial_index()
@@ -1031,7 +1089,7 @@ func _can_occupy(point: Vector2, radius: float, self_unit: RtsUnit, include_unit
 				var distance_limit: float = radius + resource.radius
 				var distance_to_resource := point.distance_squared_to(resource.position)
 				if distance_to_resource < distance_limit * distance_limit:
-					if not allow_resource_escape: return false
+					if not allow_overlap_escape: return false
 					# A moving boar can overlap a villager before the next path search.
 					# Let an already-overlapping unit move outward from that resource.
 					var current_distance := self_unit.position.distance_squared_to(resource.position) if self_unit != null else INF
@@ -1041,7 +1099,7 @@ func _can_occupy(point: Vector2, radius: float, self_unit: RtsUnit, include_unit
 				if not is_instance_valid(other) or other.is_queued_for_deletion() or other == self_unit: continue
 				var personal_space: float = radius + other.radius()
 				if point.distance_squared_to(other.position) < personal_space * personal_space:
-					if self_unit == null or point.distance_squared_to(other.position) <= self_unit.position.distance_squared_to(other.position): return false
+					if not allow_overlap_escape or self_unit == null or point.distance_squared_to(other.position) <= self_unit.position.distance_squared_to(other.position): return false
 	return true
 
 func _terrain_can_occupy(point: Vector2, radius: float, naval: bool) -> bool:

@@ -211,7 +211,7 @@ func order_patrol(world_point: Vector2) -> void:
 
 func garrison_unit(unit: RtsUnit) -> bool:
 	if kind not in ["transport_ship", "battering_ram", "siege_tower"] or field_build_remaining > 0.0 or not is_instance_valid(unit) or unit.owner_id != owner_id or passengers.size() >= (10 if kind == "siege_tower" else 8) or unit.stats.get("tags", []).has("naval") or unit.stats.get("tags", []).has("siege") or unit.garrisoned_in != null: return false
-	if unit.position.distance_to(position) > 100.0: return false
+	if unit.position.distance_to(position) > 100.0 or not game.navigation.boarding_clear(unit.position, position, unit): return false
 	passengers.append(unit)
 	unit.garrisoned_in = self
 	unit.order = "idle"
@@ -234,6 +234,7 @@ func ungarrison_all() -> void:
 		if not is_instance_valid(passenger): continue
 		passenger.garrisoned_in = null
 		passenger.position = game.navigation.nearest_walkable_point(shore + Vector2((index % 3 - 1) * 23, (index / 3) * 23), passenger.radius(), passenger)
+		game.navigation.invalidate_spatial_index()
 		passenger.show()
 		passenger.order_stop()
 	passengers.clear()
@@ -307,7 +308,7 @@ func _start_command(command: Dictionary) -> bool:
 			if not ["villager", "fishing_boat"].has(kind) or not is_instance_valid(command["target"]) or command["target"].is_queued_for_deletion(): return false
 			if kind == "fishing_boat" and (not command["target"] is RtsResource or command["target"].appearance != "fish"): return false
 			if kind == "villager" and command["target"] is RtsResource and command["target"].appearance == "fish": return false
-			order_gather(command["target"])
+			return _try_order_gather(command["target"])
 		"trade":
 			if kind != "trader" or not command["target"] is RtsTradePost: return false
 			if not is_instance_valid(trade_home) or trade_home.is_queued_for_deletion(): trade_home = game.find_nearest_owned_building(owner_id, "market", position)
@@ -447,11 +448,18 @@ func activate_ability(ability_id: String) -> bool:
 
 func order_gather(resource: Node2D) -> void:
 	if not ["villager", "fishing_boat"].has(kind): return
+	if not _try_order_gather(resource): _advance_command()
+
+func _try_order_gather(resource: Node2D) -> bool:
+	if not is_instance_valid(resource) or resource.is_queued_for_deletion(): return false
+	if not ["villager", "fishing_boat"].has(kind): return false
 	if resource is RtsBuilding and resource.kind == "farm" and game.farm_worker(resource, self) != null:
 		resource = game.find_nearest_free_farm(owner_id, position, 190.0, self)
 		if resource == null:
-			order_stop()
-			return
+			order = "idle"
+			target = null
+			_reset_route()
+			return false
 	order = "gather"
 	target = resource
 	resume_destination = Vector2.INF
@@ -459,6 +467,7 @@ func order_gather(resource: Node2D) -> void:
 	gather_kind = resource.kind if resource is RtsResource else ""
 	gather_location = resource.position
 	_reset_route()
+	return true
 
 func remember_work() -> void:
 	UnitWork.remember_work(self)
@@ -640,6 +649,7 @@ func _process(delta: float) -> void:
 		elif target is RtsResource and (target.is_queued_for_deletion() or target.amount <= 0):
 			_continue_gather()
 		if order != "gather": return
+	if order == "attack" and not UnitCombat.valid_attack_target(self, target): target = null
 	if not is_instance_valid(target):
 		if resume_destination != Vector2.INF:
 			var resume_point := resume_destination
@@ -773,7 +783,7 @@ func _move_toward(point: Vector2, delta: float, stop_distance: float) -> bool:
 		yield_timer = maxf(0.0, yield_timer - delta)
 		return false
 	var distance := position.distance_to(point)
-	if distance <= stop_distance + 0.5: return true
+	if distance <= stop_distance + 0.5 and (order != "board_transport" or game.navigation.boarding_clear(position, point, self)): return true
 	if paling_timer > 0.0: paling_timer = 0.0
 	if shield_timer > 0.0:
 		shield_timer = 0.0
@@ -810,7 +820,7 @@ func _move_toward(point: Vector2, delta: float, stop_distance: float) -> bool:
 			point = game.navigation.nearest_walkable_point(point, radius(), self, true)
 			destination = point
 			distance = position.distance_to(point)
-			if distance <= stop_distance + 0.5: return true
+			if distance <= stop_distance + 0.5 and (order != "board_transport" or game.navigation.boarding_clear(position, point, self)): return true
 		if target_changed:
 			route_failures = 0
 		elif stalled or exhausted:
@@ -821,7 +831,9 @@ func _move_toward(point: Vector2, delta: float, stop_distance: float) -> bool:
 			route = game.navigation.path_between(position, point, self)
 		if stalled and not route.is_empty() and game.navigation.has_fixed_unit_blocker(self, route[mini(1, route.size() - 1)]):
 			var escape: PackedVector2Array = game.navigation.path_around_units(self, route[mini(1, route.size() - 1)])
+			if escape.is_empty() and route_failures >= 3 and route.size() > 2: escape = game.navigation.path_around_units(self, point)
 			if not escape.is_empty(): route = escape
+			elif route_failures >= 3: game.navigation.request_passage(self, route[mini(1, route.size() - 1)])
 		route_index = 1 if route.size() > 1 and position.distance_to(route[0]) < 8.0 else 0
 		route_goal = point
 		route_stop_distance = stop_distance
@@ -847,7 +859,7 @@ func _move_toward(point: Vector2, delta: float, stop_distance: float) -> bool:
 		route_stalled_time += delta
 	var speed: float = effective_speed()
 	var step := speed * delta
-	if route_index == route.size() - 1: step = minf(step, maxf(0.0, distance - stop_distance))
+	if route_index == route.size() - 1: step = minf(step, remaining)
 	var old_position := position
 	position = game.navigation.move_step(self, position.move_toward(waypoint, step))
 	game.navigation.unit_moved(self, old_position)
@@ -855,12 +867,17 @@ func _move_toward(point: Vector2, delta: float, stop_distance: float) -> bool:
 	if charging: charge_distance += old_position.distance_to(position)
 	position = position.clamp(Vector2.ONE * radius(), game.world_size - Vector2.ONE * radius())
 	_refresh_slope_visual(old_position)
-	return position.distance_to(point) <= stop_distance + 0.5
+	return position.distance_to(point) <= stop_distance + 0.5 and (order != "board_transport" or game.navigation.boarding_clear(position, point, self))
 
 func _move_with_group(delta: float) -> void:
 	yield_request_cooldown = maxf(0.0, yield_request_cooldown - delta)
 	if yield_timer > 0.0:
 		yield_timer = maxf(0.0, yield_timer - delta)
+		return
+	if movement_group.independent_members.has(get_instance_id()):
+		movement_group = null
+		_reset_route()
+		_move_toward(destination, delta, 6.0)
 		return
 	var point := movement_group.target_for(self)
 	avoidance_cooldown = maxf(0.0, avoidance_cooldown - delta)
