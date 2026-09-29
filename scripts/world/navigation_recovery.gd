@@ -186,8 +186,7 @@ func _terrain_segment_clear(from: Vector2, to: Vector2) -> bool:
 	var first := cell_at(region.position)
 	var last := cell_at(region.end)
 	for y in range(first.y, last.y + 1):
-		var columns := segment_row_columns(from, to, radius, y, grid_size.x)
-		for x in range(columns.x, columns.y + 1):
+		for x in range(first.x, last.x + 1):
 			var terrain: int = cells[y * grid_size.x + x]
 			if _terrain_passable(terrain, naval): continue
 			var tile := Rect2(Vector2(x, y) * CELL_SIZE, Vector2.ONE * CELL_SIZE)
@@ -305,20 +304,3 @@ static func _terrain_passable(terrain: int, naval: bool, boarding := false) -> b
 
 func cell_at(point: Vector2) -> Vector2i:
 	return Vector2i(clampi(floori(point.x / CELL_SIZE), 0, grid_size.x - 1), clampi(floori(point.y / CELL_SIZE), 0, grid_size.y - 1))
-
-# Only columns intersecting this tile row's expanded segment band can matter.
-# Scanning a diagonal segment's whole bounding rectangle visits O(area) tiles;
-# this conservative band visits O(length * radius) and keeps the exact rounded
-# tile/segment predicate below. Epsilon may add a column, never remove contact.
-static func segment_row_columns(from: Vector2, to: Vector2, radius: float, row: int, width: int) -> Vector2i:
-	var delta := to - from
-	var low := 0.0
-	var high := 1.0
-	if not is_zero_approx(delta.y):
-		var first := (row * CELL_SIZE - radius - from.y) / delta.y
-		var last := ((row + 1) * CELL_SIZE + radius - from.y) / delta.y
-		low = clampf(minf(first, last), 0.0, 1.0)
-		high = clampf(maxf(first, last), 0.0, 1.0)
-	var start_x := from.x + low * delta.x
-	var end_x := from.x + high * delta.x
-	return Vector2i(clampi(floori((minf(start_x, end_x) - radius - 0.0001) / CELL_SIZE), 0, width - 1), clampi(floori((maxf(start_x, end_x) + radius + 0.0001) / CELL_SIZE), 0, width - 1))

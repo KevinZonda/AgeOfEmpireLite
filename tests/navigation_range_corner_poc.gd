@@ -30,6 +30,17 @@ func _run() -> void:
 	nav.refresh()
 	var path := nav._obstacle_corner_path(mover.position, Vector2(600, 300), mover)
 	check(not path.is_empty() and safe_route(game, mover, path), "opening_wall_invalidates_negative_attachments")
+	# This is the real siege's expensive failure: strict corner sweeps cannot
+	# leave an existing resource overlap, regardless of how many goals we try.
+	resource(game, mover.position + Vector2(8, 0), 22)
+	nav.refresh()
+	check(nav._obstacle_corner_path(mover.position, Vector2(600, 300), mover).is_empty(), "strict_corner_fallback_rejects_overlapped_origin")
+	check(nav.corner_graphs.is_empty(), "invalid_endpoint_does_not_build_world_corner_graph")
+	# Normal routing must still escape the overlap outward.
+	path = nav.path_between(mover.position, mover.position - Vector2(100, 0), mover)
+	# The corral's west wall blocks that endpoint; a direct short escape stays
+	# inside the open pocket and must retain the existing escape predicate.
+	check(nav._static_segment_clear(mover.position, mover.position - Vector2(15, 0), mover.radius(), mover), "ordinary_resource_overlap_escape_is_preserved")
 	game.free()
 	print("NAVIGATION_RANGE_CORNER_POC checks=%d failures=%d" % [checks, failures])
 	quit(1 if failures else 0)

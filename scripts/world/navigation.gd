@@ -474,6 +474,10 @@ func _local_fine_grid_for(from: Vector2, to: Vector2, unit: RtsUnit, key: Vector
 	return grid
 
 func _obstacle_corner_path(from: Vector2, to: Vector2, unit: RtsUnit) -> PackedVector2Array:
+	# Corner edges use STRICT static sweeps. If an endpoint already overlaps
+	# a resource/building, no such edge can leave/enter it. Ordinary coarse and
+	# fine routing still handle legal overlap escape before this fallback.
+	if not _static_segment_clear(from, from, unit.radius(), unit, false) or not _static_segment_clear(to, to, unit.radius(), unit, false): return PackedVector2Array()
 	# Even a fine lattice can miss a legal 1px-wide band between expanded
 	# footprints or terrain and a resource. Boundary corners provide portals
 	# independent of the lattice; every connecting edge still uses a full sweep.
@@ -682,7 +686,14 @@ func _compute_static_segment_clear(from: Vector2, to: Vector2, radius: float, un
 	var center := (from + to) * 0.5
 	var extent := from.distance_to(to) * 0.5
 	var samples := maxi(1, ceili(from.distance_to(to) / maxf(6.0, minf(12.0, radius * 0.75))))
-	for obstacle in nearby_buildings(center, extent + radius):
+	_ensure_spatial_index()
+	# A spatial hash is efficient for local movement, but a long segment can
+	# visit thousands of empty buckets to find a handful of buildings. Choose
+	# the smaller broad phase; the exact segment predicates remain unchanged.
+	var building_span := ceili((extent + radius) * 2.0 / SPATIAL_CELL_SIZE) + 1
+	var building_candidates: Array[RtsBuilding] = game.buildings if building_span * building_span > game.buildings.size() * 4 else nearby_buildings(center, extent + radius)
+	for obstacle in building_candidates:
+		if not is_instance_valid(obstacle) or obstacle.is_queued_for_deletion(): continue
 		if unit != null and _gate_passable(obstacle, unit.owner_id): continue
 		var bounds := Rect2(obstacle.position - obstacle.size() * 0.5, obstacle.size()).grow(radius)
 		if _segment_hits_rect(from, to, bounds.grow(-0.0001)): return false
@@ -691,7 +702,10 @@ func _compute_static_segment_clear(from: Vector2, to: Vector2, radius: float, un
 		if _segment_hits_rect(from, to, bounds):
 			for i in range(samples + 1):
 				if bounds.has_point(from.lerp(to, float(i) / samples)): return false
-	for obstacle in nearby_resources(center, extent + radius + max_dynamic_radius):
+	var resource_span := ceili((extent + radius + max_dynamic_radius) * 2.0 / SPATIAL_CELL_SIZE) + 1
+	var resource_candidates: Array[RtsResource] = game.resources if resource_span * resource_span > game.resources.size() * 4 else nearby_resources(center, extent + radius + max_dynamic_radius)
+	for obstacle in resource_candidates:
+		if not is_instance_valid(obstacle) or obstacle.is_queued_for_deletion(): continue
 		var limit := radius + obstacle.radius
 		var closest := Geometry2D.get_closest_point_to_segment(obstacle.position, from, to)
 		var distance := closest.distance_squared_to(obstacle.position)
@@ -708,8 +722,7 @@ func _terrain_segment_clear(from: Vector2, to: Vector2, radius: float, naval: bo
 	var first := world_map.cell_at(region.position)
 	var last := world_map.cell_at(region.end)
 	for y in range(first.y, last.y + 1):
-		var columns := RecoveryKernel.segment_row_columns(from, to, radius, y, world_map.grid_size.x)
-		for x in range(columns.x, columns.y + 1):
+		for x in range(first.x, last.x + 1):
 			var terrain: int = world_map.cells[y * world_map.grid_size.x + x]
 			if _terrain_passable(terrain, naval, boarding): continue
 			var tile := Rect2(Vector2(x, y) * RtsWorldMap.CELL_SIZE, Vector2.ONE * RtsWorldMap.CELL_SIZE)
