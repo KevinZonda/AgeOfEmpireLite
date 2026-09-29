@@ -146,6 +146,8 @@ func visual_feature_height() -> float:
 		"mill": return 12.0
 		"blacksmith": return 18.0
 		"siege_workshop": return 15.0
+		"market": return 10.0
+		"university": return 18.0
 	return 0.0
 
 func _landmark_extra_height() -> float:
@@ -502,7 +504,7 @@ func _draw_isometric() -> void:
 	var body_bounds := bounds
 	if art_kind == "monastery" and kind != "landmark":
 		body_bounds = Rect2(Vector2(-size().x * 0.34, -size().y * 0.5), Vector2(size().x * 0.68, size().y))
-	var open_yard := kind != "landmark" and art_kind in ["town_center", "barracks", "archery_range", "stable", "market", "dock", "lumber_camp", "mining_camp", "mill", "scout_camp", "blacksmith", "siege_workshop"]
+	var open_yard := kind != "landmark" and art_kind in ["town_center", "barracks", "archery_range", "stable", "market", "university", "dock", "lumber_camp", "mining_camp", "mill", "scout_camp", "blacksmith", "siege_workshop"]
 	var palette := _architecture_palette()
 	var color: Color = palette["wall"]
 	var construction_ratio := 1.0 - build_remaining / maxf(build_total, 0.1)
@@ -623,6 +625,9 @@ func _draw_topdown_architecture(bounds: Rect2, palette: Dictionary) -> void:
 	if art_kind in ["barracks", "archery_range", "stable"]:
 		_draw_topdown_military_structure(art_kind, roof_bounds, palette)
 		return
+	if kind != "landmark" and art_kind == "university":
+		_draw_topdown_university(roof_bounds, palette)
+		return
 	if art_kind in ["market", "dock", "scout_camp"]:
 		_draw_topdown_open_structure(art_kind, roof_bounds, palette)
 		return
@@ -658,6 +663,9 @@ func _draw_topdown_architecture(bounds: Rect2, palette: Dictionary) -> void:
 		draw_line(Vector2(-9, 0), Vector2(9, 0), trim, 3.0)
 
 func _draw_topdown_open_structure(art_kind: String, roof_bounds: Rect2, palette: Dictionary) -> void:
+	if art_kind == "market":
+		_draw_topdown_market(roof_bounds, palette)
+		return
 	var timber: Color = palette["timber"]
 	var trim: Color = palette["trim"]
 	draw_rect(roof_bounds, Color("ab9b74") if art_kind != "dock" else Color("a77c50"))
@@ -665,11 +673,6 @@ func _draw_topdown_open_structure(art_kind: String, roof_bounds: Rect2, palette:
 		var y := lerpf(roof_bounds.position.y, roof_bounds.end.y, portion)
 		draw_line(Vector2(roof_bounds.position.x, y), Vector2(roof_bounds.end.x, y), Color(timber, 0.35), 1.0)
 	match art_kind:
-		"market":
-			for portion in [0.15, 0.5, 0.85]:
-				var x := lerpf(roof_bounds.position.x, roof_bounds.end.x, portion)
-				draw_colored_polygon(PackedVector2Array([Vector2(x - 9, roof_bounds.position.y + 5), Vector2(x, roof_bounds.position.y - 4), Vector2(x + 9, roof_bounds.position.y + 5)]), game.player_color(owner_id))
-				draw_line(Vector2(x - 8, roof_bounds.position.y + 6), Vector2(x + 8, roof_bounds.position.y + 6), trim, 2.0)
 		"dock":
 			for portion in [0.1, 0.4, 0.7, 0.9]:
 				var x := lerpf(roof_bounds.position.x, roof_bounds.end.x, portion)
@@ -679,6 +682,59 @@ func _draw_topdown_open_structure(art_kind: String, roof_bounds: Rect2, palette:
 			var center := roof_bounds.get_center()
 			draw_colored_polygon(PackedVector2Array([center + Vector2(-13, 7), center + Vector2(0, -12), center + Vector2(13, 7)]), Color("a98458"))
 			draw_circle(center + Vector2(0, 14), 3.0, Color("d88a47"))
+
+func _draw_topdown_market(bounds: Rect2, palette: Dictionary) -> void:
+	draw_rect(bounds, Color("a99b77"))
+	var hall := _military_rect(bounds, 0.06, 0.08, 0.55, 0.34)
+	var hall_palette := palette.duplicate()
+	if game.civilizations[owner_id] == "English":
+		hall_palette["roof"] = Color("59656a")
+		hall_palette["roof_dark"] = Color("404b51")
+	_draw_topdown_military_roof(hall, hall_palette)
+	for box in [_military_rect(bounds, 0.06, 0.58, 0.35, 0.22), _military_rect(bounds, 0.66, 0.53, 0.28, 0.27)]:
+		draw_rect(box, palette["trim"])
+		for stripe in [0.2, 0.55, 0.9]:
+			var x := lerpf(box.position.x, box.end.x, stripe)
+			draw_line(Vector2(x, box.position.y), Vector2(x, box.end.y), game.player_color(owner_id), box.size.x * 0.16)
+		draw_rect(box, palette["timber"], false, 1.5)
+	var cross := bounds.position + bounds.size * Vector2(0.87, 0.37)
+	draw_rect(Rect2(cross - Vector2(5, 4), Vector2(10, 8)), palette["wall"].darkened(0.18))
+	draw_rect(Rect2(cross - Vector2(2, 7), Vector2(4, 7)), palette["trim"])
+	for spot in [Vector2(0.83, 0.86), Vector2(0.2, 0.88)]:
+		draw_circle(bounds.position + bounds.size * spot, 2.8, Color("9b6b3d"))
+
+func _university_palette(palette: Dictionary) -> Dictionary:
+	var college := palette.duplicate()
+	if game.civilizations[owner_id] == "English":
+		college["wall"] = Color("b8ae96")
+		college["timber"] = Color("6b5849")
+		college["roof"] = Color("586168")
+		college["roof_dark"] = Color("414a51")
+		college["trim"] = Color("d8c9ab")
+	return college
+
+func _draw_topdown_university(bounds: Rect2, palette: Dictionary) -> void:
+	var college := _university_palette(palette)
+	draw_rect(bounds, Color("9b9b83"))
+	var court := _military_rect(bounds, 0.3, 0.37, 0.4, 0.52)
+	draw_rect(court, Color("b6ad96"))
+	for box in [
+		_military_rect(bounds, 0.07, 0.07, 0.86, 0.3),
+		_military_rect(bounds, 0.07, 0.34, 0.23, 0.5),
+		_military_rect(bounds, 0.7, 0.34, 0.23, 0.5),
+	]:
+		draw_rect(box.grow(2), college["wall"])
+		_draw_topdown_military_roof(box, college)
+	var tower := _military_rect(bounds, 0.41, 0.18, 0.18, 0.22)
+	draw_rect(tower, college["wall"].darkened(0.28))
+	draw_rect(tower.grow(-2), college["roof_dark"])
+	draw_rect(tower, palette["trim"], false, 1.5)
+	var monument := bounds.position + bounds.size * Vector2(0.5, 0.68)
+	draw_rect(Rect2(monument - Vector2(4, 3), Vector2(8, 6)), palette["wall"])
+	draw_circle(monument, 2.0, palette["trim"])
+	for u in [0.34, 0.66]:
+		var y := bounds.position.y + bounds.size.y * 0.8
+		draw_line(Vector2(bounds.position.x + bounds.size.x * u, y), Vector2(bounds.position.x + bounds.size.x * u, bounds.end.y - 2), Color("687957"), 3.0)
 
 func _military_rect(bounds: Rect2, u: float, v: float, width: float, depth: float) -> Rect2:
 	return Rect2(bounds.position + bounds.size * Vector2(u, v), bounds.size * Vector2(width, depth))
@@ -807,6 +863,9 @@ func _draw_iso_architecture(art_kind: String, nw: Vector2, ne: Vector2, se: Vect
 	if kind != "landmark" and art_kind in ["barracks", "archery_range", "stable"]:
 		_draw_iso_military_structure(art_kind, nw, ne, sw, lift, palette, canvas)
 		return
+	if kind != "landmark" and art_kind == "university":
+		_draw_iso_university(nw, ne, sw, lift, palette, canvas)
+		return
 	if kind != "landmark" and art_kind in ["market", "dock", "scout_camp"]:
 		_draw_iso_open_structure(art_kind, nw, ne, se, sw, lift, palette, canvas)
 		return
@@ -839,6 +898,9 @@ func _draw_iso_architecture(art_kind: String, nw: Vector2, ne: Vector2, se: Vect
 	_draw_iso_building_feature(art_kind, nw, ne, se, sw, lift, palette, canvas)
 
 func _draw_iso_open_structure(art_kind: String, nw: Vector2, ne: Vector2, se: Vector2, sw: Vector2, lift: Vector2, palette: Dictionary, canvas: Transform2D) -> void:
+	if art_kind == "market":
+		_draw_iso_market(nw, ne, sw, lift, palette, canvas)
+		return
 	var floor_lift := lift * 0.18
 	var timber: Color = palette["timber"]
 	var trim: Color = palette["trim"]
@@ -864,29 +926,135 @@ func _draw_iso_open_structure(art_kind: String, nw: Vector2, ne: Vector2, se: Ve
 		draw_line(peak, base_right, timber, 1.4)
 		draw_circle(sw.lerp(se, 0.22) + floor_lift, 3.2, Color("dd9251"))
 		return
-	var back_left := nw.lerp(sw, 0.08)
-	var back_right := ne.lerp(se, 0.08)
-	var front_left := nw.lerp(sw, 0.54)
-	var front_right := ne.lerp(se, 0.54)
-	var eave := lift + RtsIsoProjection.world_delta(canvas, Vector2(0, -3.0 * game.camera.zoom.x))
-	var ridge_rise := RtsIsoProjection.world_delta(canvas, Vector2(0, -6.0 * game.camera.zoom.x))
-	var ridge_back := (back_left + back_right) * 0.5 + eave + ridge_rise
-	var ridge_front := (front_left + front_right) * 0.5 + eave + ridge_rise
-	for post in [back_left, back_right, front_left, front_right]:
-		draw_line(post + floor_lift, post + eave, timber, 3.0)
-	var roof: Color = palette["roof"]
-	if art_kind == "market": roof = game.player_color(owner_id).darkened(0.1)
-	draw_colored_polygon(PackedVector2Array([back_left + eave, ridge_back, ridge_front, front_left + eave]), roof.lightened(0.12))
-	draw_colored_polygon(PackedVector2Array([ridge_back, back_right + eave, front_right + eave, ridge_front]), roof)
-	draw_line(ridge_back, ridge_front, trim, 2.0)
-	draw_line(front_left + eave, front_right + eave, trim, 2.4)
-	if art_kind == "market":
-		for portion in [0.16, 0.33, 0.5, 0.67, 0.84]:
-			var stripe := (front_left + eave).lerp(front_right + eave, portion)
-			draw_line(stripe, stripe - lift * 0.2, trim, 2.2)
-		for portion in [0.18, 0.5, 0.82]:
-			var crate := sw.lerp(se, portion) + floor_lift
-			draw_circle(crate, 3.0, Color("d1ad69"))
+
+func _draw_iso_market(nw: Vector2, ne: Vector2, sw: Vector2, lift: Vector2, palette: Dictionary, canvas: Transform2D) -> void:
+	var floor_lift := lift * 0.18
+	var up := RtsIsoProjection.world_delta(canvas, Vector2(0, -23.0 * game.camera.zoom.x))
+	var rise := RtsIsoProjection.world_delta(canvas, Vector2(0, -7.0 * game.camera.zoom.x))
+	var timber: Color = palette["timber"]
+	var wall: Color = palette["wall"]
+	var deck_a := _military_point(nw, ne, sw, 0.03, 0.03) + floor_lift
+	var deck_b := _military_point(nw, ne, sw, 0.97, 0.03) + floor_lift
+	var deck_c := _military_point(nw, ne, sw, 0.97, 0.97) + floor_lift
+	var deck_d := _military_point(nw, ne, sw, 0.03, 0.97) + floor_lift
+	draw_colored_polygon(PackedVector2Array([deck_a, deck_b, deck_c, deck_d]), Color("a99b7c"))
+	var a := _military_point(nw, ne, sw, 0.06, 0.07) + floor_lift
+	var b := _military_point(nw, ne, sw, 0.59, 0.07) + floor_lift
+	var c := _military_point(nw, ne, sw, 0.59, 0.42) + floor_lift
+	var d := _military_point(nw, ne, sw, 0.06, 0.42) + floor_lift
+	draw_colored_polygon(PackedVector2Array([b + up, c + up, c, b]), wall.darkened(0.19))
+	draw_colored_polygon(PackedVector2Array([d + up, c + up, c, d]), wall.lightened(0.04))
+	var ridge_left := (a + d) * 0.5 + up + rise
+	var ridge_right := (b + c) * 0.5 + up + rise
+	var hall_roof: Color = Color("59656a") if game.civilizations[owner_id] == "English" else palette["roof"]
+	draw_colored_polygon(PackedVector2Array([a + up, b + up, ridge_right, ridge_left]), hall_roof.darkened(0.2))
+	draw_colored_polygon(PackedVector2Array([ridge_left, ridge_right, c + up, d + up]), hall_roof)
+	draw_line(ridge_left, ridge_right, palette["trim"], 1.8)
+	for u in [0.13, 0.32, 0.51]:
+		var foot := _military_point(nw, ne, sw, u, 0.42) + floor_lift
+		draw_line(foot, foot + up * 0.88, timber, 2.2)
+		var window := foot + up * 0.58
+		draw_line(window, window + up * 0.18, Color("343d3b"), 3.2)
+		draw_line(window + up * 0.2, window + up * 0.23, palette["trim"], 3.6)
+	draw_line(d + up * 0.47, c + up * 0.47, timber, 2.0)
+	draw_line(d + up * 0.08, c + up * 0.08, timber, 2.2)
+	for spot in [Vector2(0.86, 0.83), Vector2(0.24, 0.91)]:
+		var goods := _military_point(nw, ne, sw, spot.x, spot.y) + floor_lift
+		draw_circle(goods, 3.8, Color("7a5437"))
+		draw_circle(goods + Vector2(0, -1), 2.5, Color("c69f64"))
+	_draw_iso_market_stall(nw, ne, sw, floor_lift, canvas, palette, 0.07, 0.62, 0.36, 0.24)
+	_draw_iso_market_stall(nw, ne, sw, floor_lift, canvas, palette, 0.69, 0.52, 0.25, 0.25)
+	var cross := _military_point(nw, ne, sw, 0.87, 0.37) + floor_lift
+	var cross_u := (ne - nw) * 0.075
+	var cross_v := (sw - nw) * 0.075
+	draw_colored_polygon(PackedVector2Array([cross - cross_u - cross_v, cross + cross_u - cross_v, cross + cross_u + cross_v, cross - cross_u + cross_v]), wall.darkened(0.2))
+	var cross_top := cross + RtsIsoProjection.world_delta(canvas, Vector2(0, -19.0 * game.camera.zoom.x))
+	draw_line(cross, cross_top, wall.lightened(0.1), 4.0)
+	draw_circle(cross_top, 2.4, palette["trim"])
+
+func _draw_iso_market_stall(nw: Vector2, ne: Vector2, sw: Vector2, floor_lift: Vector2, canvas: Transform2D, palette: Dictionary, u: float, v: float, width: float, depth: float) -> void:
+	var a := _military_point(nw, ne, sw, u, v) + floor_lift
+	var b := _military_point(nw, ne, sw, u + width, v) + floor_lift
+	var c := _military_point(nw, ne, sw, u + width, v + depth) + floor_lift
+	var d := _military_point(nw, ne, sw, u, v + depth) + floor_lift
+	var high := RtsIsoProjection.world_delta(canvas, Vector2(0, -14.0 * game.camera.zoom.x))
+	var low := high * 0.76
+	for corner in [a, b]:
+		draw_line(corner, corner + high, palette["timber"], 2.0)
+	for stripe in 5:
+		var left := float(stripe) / 5.0
+		var right := float(stripe + 1) / 5.0
+		draw_colored_polygon(PackedVector2Array([a.lerp(b, left) + high, a.lerp(b, right) + high, d.lerp(c, right) + low, d.lerp(c, left) + low]), game.player_color(owner_id) if stripe % 2 == 0 else palette["trim"])
+	draw_line(d + low, c + low, palette["timber"], 1.4)
+	for corner in [d, c]:
+		draw_line(corner, corner + low, palette["timber"], 2.0)
+
+func _draw_iso_university(nw: Vector2, ne: Vector2, sw: Vector2, lift: Vector2, palette: Dictionary, canvas: Transform2D) -> void:
+	var floor_lift := lift * 0.18
+	var college := _university_palette(palette)
+	var deck_a := _military_point(nw, ne, sw, 0.04, 0.04) + floor_lift
+	var deck_b := _military_point(nw, ne, sw, 0.96, 0.04) + floor_lift
+	var deck_c := _military_point(nw, ne, sw, 0.96, 0.95) + floor_lift
+	var deck_d := _military_point(nw, ne, sw, 0.04, 0.95) + floor_lift
+	draw_colored_polygon(PackedVector2Array([deck_a, deck_b, deck_c, deck_d]), Color("a49b85"))
+	var court_a := _military_point(nw, ne, sw, 0.3, 0.37) + floor_lift
+	var court_b := _military_point(nw, ne, sw, 0.7, 0.37) + floor_lift
+	var court_c := _military_point(nw, ne, sw, 0.7, 0.91) + floor_lift
+	var court_d := _military_point(nw, ne, sw, 0.3, 0.91) + floor_lift
+	draw_colored_polygon(PackedVector2Array([court_a, court_b, court_c, court_d]), Color("b9ae94"))
+	_draw_iso_military_block(nw, ne, sw, floor_lift, canvas, college, 0.07, 0.07, 0.86, 0.3, 27.0, "gable_u")
+	_draw_iso_military_block(nw, ne, sw, floor_lift, canvas, college, 0.07, 0.32, 0.23, 0.51, 26.0, "gable_v")
+	_draw_iso_military_block(nw, ne, sw, floor_lift, canvas, college, 0.7, 0.32, 0.23, 0.51, 26.0, "gable_v")
+	var window_up := RtsIsoProjection.world_delta(canvas, Vector2(0, -26.0 * game.camera.zoom.x))
+	for u in [0.3, 0.7, 0.93]:
+		var wall_start := _military_point(nw, ne, sw, u, 0.36) + floor_lift
+		var wall_end := _military_point(nw, ne, sw, u, 0.8) + floor_lift
+		draw_line(wall_start + window_up * 0.47, wall_end + window_up * 0.47, college["trim"], 1.5)
+		for v in [0.46, 0.65]:
+			var foot := _military_point(nw, ne, sw, u, v) + floor_lift
+			var bottom := foot + window_up * 0.48
+			var top := foot + window_up * 0.77
+			draw_line(bottom, top, college["trim"], 5.2)
+			draw_line(bottom + window_up * 0.04, top - window_up * 0.04, Color("303b40"), 3.0)
+			draw_line((bottom + top) * 0.5 + Vector2(-2, 0), (bottom + top) * 0.5 + Vector2(2, 0), college["trim"], 1.0)
+	for v in [0.33, 0.82]:
+		var pier := _military_point(nw, ne, sw, 0.93, v) + floor_lift
+		draw_line(pier, pier + window_up * 0.92, college["trim"], 1.4)
+	for u in [0.17, 0.83]:
+		var front := _military_point(nw, ne, sw, u, 0.83) + floor_lift
+		var gable := front + window_up + RtsIsoProjection.world_delta(canvas, Vector2(0, -8.0 * game.camera.zoom.x))
+		draw_colored_polygon(PackedVector2Array([front + window_up - (ne - nw) * 0.08, gable, front + window_up + (ne - nw) * 0.08]), college["wall"].lightened(0.09))
+		draw_line(front + window_up - (ne - nw) * 0.08, gable, college["trim"], 1.4)
+		draw_line(gable, front + window_up + (ne - nw) * 0.08, college["trim"], 1.4)
+	_draw_iso_university_tower(nw, ne, sw, floor_lift, canvas, college)
+	var monument := _military_point(nw, ne, sw, 0.5, 0.68) + floor_lift
+	var monument_top := monument + RtsIsoProjection.world_delta(canvas, Vector2(0, -13.0 * game.camera.zoom.x))
+	draw_circle(monument, 5.2, college["wall"].darkened(0.28))
+	draw_line(monument, monument_top, college["trim"], 3.2)
+	draw_circle(monument_top, 2.3, college["trim"])
+	for u in [0.34, 0.66]:
+		var hedge_start := _military_point(nw, ne, sw, u, 0.78) + floor_lift
+		var hedge_end := _military_point(nw, ne, sw, u, 0.92) + floor_lift
+		draw_line(hedge_start, hedge_end, Color("627355"), 3.2)
+
+func _draw_iso_university_tower(nw: Vector2, ne: Vector2, sw: Vector2, floor_lift: Vector2, canvas: Transform2D, palette: Dictionary) -> void:
+	var a := _military_point(nw, ne, sw, 0.41, 0.16) + floor_lift
+	var b := _military_point(nw, ne, sw, 0.59, 0.16) + floor_lift
+	var c := _military_point(nw, ne, sw, 0.59, 0.38) + floor_lift
+	var d := _military_point(nw, ne, sw, 0.41, 0.38) + floor_lift
+	var up := RtsIsoProjection.world_delta(canvas, Vector2(0, -44.0 * game.camera.zoom.x))
+	var rise := RtsIsoProjection.world_delta(canvas, Vector2(0, -7.0 * game.camera.zoom.x))
+	draw_colored_polygon(PackedVector2Array([b + up, c + up, c, b]), palette["wall"].darkened(0.18))
+	draw_colored_polygon(PackedVector2Array([d + up, c + up, c, d]), palette["wall"])
+	var peak := (a + b + c + d) * 0.25 + up + rise
+	draw_colored_polygon(PackedVector2Array([a + up, b + up, peak, d + up]), palette["roof_dark"])
+	draw_colored_polygon(PackedVector2Array([b + up, c + up, peak]), palette["roof"])
+	draw_colored_polygon(PackedVector2Array([d + up, c + up, peak]), palette["roof"])
+	var doorway := (d + c) * 0.5
+	draw_line(doorway, doorway + up * 0.46, Color("303333"), 5.0)
+	draw_circle(doorway + up * 0.46, 2.5, Color("303333"))
+	draw_line(d + up * 0.75, c + up * 0.75, palette["trim"], 1.6)
+	draw_line(doorway + up * 0.65, doorway + up * 0.87, Color("37403e"), 2.7)
 
 func _military_point(nw: Vector2, ne: Vector2, sw: Vector2, u: float, v: float) -> Vector2:
 	return nw + (ne - nw) * u + (sw - nw) * v

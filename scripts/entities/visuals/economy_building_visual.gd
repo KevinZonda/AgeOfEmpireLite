@@ -25,6 +25,16 @@ static func _up(canvas: Transform2D, zoom: float, pixels: float) -> Vector2:
 	return RtsIsoProjection.world_delta(canvas, Vector2(0.0, -pixels * zoom))
 
 
+static func _upright_disc(c: CanvasItem, center: Vector2, radius: float, color: Color, canvas: Transform2D, zoom: float) -> void:
+	var horizontal := RtsIsoProjection.world_delta(canvas, Vector2(radius * zoom, 0.0))
+	var vertical := RtsIsoProjection.world_delta(canvas, Vector2(0.0, radius * zoom))
+	var outline := PackedVector2Array()
+	for step in 20:
+		var angle := TAU * float(step) / 20.0
+		outline.append(center + horizontal * cos(angle) + vertical * sin(angle))
+	c.draw_colored_polygon(outline, color)
+
+
 static func _box(c: CanvasItem, nw: Vector2, ne: Vector2, sw: Vector2, base: Vector2, up: Vector2, u: float, v: float, width: float, depth: float, wall: Color, trim: Color) -> Array[Vector2]:
 	var a := _pt(nw, ne, sw, u, v) + base
 	var b := _pt(nw, ne, sw, u + width, v) + base
@@ -291,10 +301,11 @@ static func _lumber_iso(c: CanvasItem, nw: Vector2, ne: Vector2, sw: Vector2, li
 		var finish := _pt(nw, ne, sw, float(log[3]), float(log[0])) + floor + _up(canvas, zoom, float(log[1]))
 		c.draw_line(start, finish, Color("4e3526"), 9.0)
 		c.draw_line(start + _up(canvas, zoom, 1.8), finish + _up(canvas, zoom, 1.8), Color("98643d"), 5.8)
-		c.draw_circle(finish, 5.1, Color("5c3b28"))
-		c.draw_circle(finish, 3.9, Color("dfb77d"))
-		c.draw_arc(finish, 2.5, 0.0, TAU, 16, Color("9f7148"), 1.0)
-		c.draw_circle(finish, 0.8, Color("765034"))
+		_upright_disc(c, finish, 3.0, Color("5c3b28"), canvas, zoom)
+		_upright_disc(c, finish, 2.4, Color("dfb77d"), canvas, zoom)
+		_upright_disc(c, finish, 1.65, Color("9f7148"), canvas, zoom)
+		_upright_disc(c, finish, 1.25, Color("dfb77d"), canvas, zoom)
+		_upright_disc(c, finish, 0.42, Color("765034"), canvas, zoom)
 	# A chopping block and axe identify the work area at a glance.
 	var stump := _pt(nw, ne, sw, 0.82, 0.32) + floor
 	var stump_top := stump + _up(canvas, zoom, 6.0)

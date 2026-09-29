@@ -14,6 +14,8 @@
 
 四座建筑的单张放大截图：[城镇中心](town_center-corrected-25d.png) · [采矿场](mining_camp-corrected-25d.png) · [磨坊](mill-corrected-25d.png) · [攻城器械厂](siege_workshop-corrected-25d.png)。
 
+市场和大学参考了 AoE4 的[英格兰市场](https://ageofempires.fandom.com/wiki/Market_(Age_of_Empires_IV))与[英格兰大学](https://ageofempires.fandom.com/wiki/University_(Age_of_Empires_IV))：市场以木构主楼、条纹摊棚、货物和中央石柱组成；大学改成围合前院的多翼建筑，增加中央门楼、窗列与庭院石像。
+
 造型参考是《帝国时代 IV》原版建筑图：
 
 | 建筑 | 借鉴的轮廓 | 参考 |
