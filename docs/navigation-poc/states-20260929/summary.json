@@ -1,0 +1,233 @@
+{
+  "tested_commit": "5529315f8672af529be3ca76585de313040dfa85",
+  "engine_sha256": "c4869197edb5c6365fa70c03a65dc89be78038a8b92ca1b150f3890f903f0aad",
+  "test_sha256": "60c060c68d1f6027c2872f76d516bf6cf960638004c2f06e0f7fa8312f934ca2",
+  "semantic_expectation_check": "depleted_gather_follows_explicit_queue_neighbortrue",
+  "runs": [
+    {
+      "run": "run-1",
+      "checks": 226,
+      "failures": 43,
+      "implementation_failures": 42,
+      "families": {
+        "auto_gather": {
+          "checks": 20,
+          "failures": 0
+        },
+        "depleted_gather": {
+          "checks": 2,
+          "failures": 1
+        },
+        "farm_queue": {
+          "checks": 3,
+          "failures": 0
+        },
+        "busy_farm": {
+          "checks": 1,
+          "failures": 1
+        },
+        "unload": {
+          "checks": 108,
+          "failures": 11
+        },
+        "boarding": {
+          "checks": 16,
+          "failures": 2
+        },
+        "retreat": {
+          "checks": 12,
+          "failures": 3
+        },
+        "landing_variant": {
+          "checks": 12,
+          "failures": 1
+        },
+        "landing_route": {
+          "checks": 15,
+          "failures": 2
+        },
+        "spawn": {
+          "checks": 9,
+          "failures": 9
+        },
+        "production": {
+          "checks": 4,
+          "failures": 2
+        },
+        "target": {
+          "checks": 24,
+          "failures": 11
+        }
+      },
+      "failed_checks": [
+        "depleted_gather_follows_explicit_queue_neighbortrue",
+        "busy_farm_preserves_followup_move",
+        "unload_town_center_knight_2_serialfalse_no_overlap",
+        "unload_town_center_knight_4_serialfalse_no_overlap",
+        "unload_town_center_knight_8_serialfalse_no_overlap",
+        "unload_battering_ram_knight_4_serialfalse_no_overlap",
+        "unload_battering_ram_knight_8_serialfalse_no_overlap",
+        "unload_battering_ram_knight_4_serialtrue_no_overlap",
+        "unload_battering_ram_knight_8_serialtrue_no_overlap",
+        "unload_transport_ship_villager_4_serialfalse_no_overlap",
+        "unload_transport_ship_villager_8_serialfalse_no_overlap",
+        "unload_transport_ship_knight_4_serialfalse_no_overlap",
+        "unload_transport_ship_knight_8_serialfalse_no_overlap",
+        "boarding_battering_ram_sealedtrue_respects_barrier",
+        "boarding_siege_tower_sealedtrue_respects_barrier",
+        "retreat_mangonel_obstructedtrue_can_fire",
+        "retreat_trebuchet_obstructedtrue_can_fire",
+        "retreat_bombard_obstructedtrue_can_fire",
+        "landing_variant2_land_is_free",
+        "landing_route_spacing80_water_reachable",
+        "landing_route_spacing80_unloads",
+        "spawn_villager_2_no_overlap",
+        "spawn_villager_4_no_overlap",
+        "spawn_villager_8_no_overlap",
+        "spawn_knight_2_no_overlap",
+        "spawn_knight_4_no_overlap",
+        "spawn_knight_8_no_overlap",
+        "spawn_battering_ram_2_no_overlap",
+        "spawn_battering_ram_4_no_overlap",
+        "spawn_battering_ram_8_no_overlap",
+        "production_spearman_no_overlap",
+        "production_knight_no_overlap",
+        "target_spearman_garrisoned_queue_resumes",
+        "target_spearman_embarked_not_attacked_after_transition",
+        "target_spearman_embarked_queue_resumes",
+        "target_spearman_converted_not_attacked_after_transition",
+        "target_spearman_converted_queue_resumes",
+        "target_archer_garrisoned_not_attacked_after_transition",
+        "target_archer_garrisoned_queue_resumes",
+        "target_archer_embarked_not_attacked_after_transition",
+        "target_archer_embarked_queue_resumes",
+        "target_archer_converted_not_attacked_after_transition",
+        "target_archer_converted_queue_resumes"
+      ],
+      "script_errors": [],
+      "warnings": [
+        "WARNING: 8 ObjectDB instances were leaked at exit (run with `--verbose` for details)."
+      ]
+    },
+    {
+      "run": "run-2",
+      "checks": 226,
+      "failures": 43,
+      "implementation_failures": 42,
+      "families": {
+        "auto_gather": {
+          "checks": 20,
+          "failures": 0
+        },
+        "depleted_gather": {
+          "checks": 2,
+          "failures": 1
+        },
+        "farm_queue": {
+          "checks": 3,
+          "failures": 0
+        },
+        "busy_farm": {
+          "checks": 1,
+          "failures": 1
+        },
+        "unload": {
+          "checks": 108,
+          "failures": 11
+        },
+        "boarding": {
+          "checks": 16,
+          "failures": 2
+        },
+        "retreat": {
+          "checks": 12,
+          "failures": 3
+        },
+        "landing_variant": {
+          "checks": 12,
+          "failures": 1
+        },
+        "landing_route": {
+          "checks": 15,
+          "failures": 2
+        },
+        "spawn": {
+          "checks": 9,
+          "failures": 9
+        },
+        "production": {
+          "checks": 4,
+          "failures": 2
+        },
+        "target": {
+          "checks": 24,
+          "failures": 11
+        }
+      },
+      "failed_checks": [
+        "depleted_gather_follows_explicit_queue_neighbortrue",
+        "busy_farm_preserves_followup_move",
+        "unload_town_center_knight_2_serialfalse_no_overlap",
+        "unload_town_center_knight_4_serialfalse_no_overlap",
+        "unload_town_center_knight_8_serialfalse_no_overlap",
+        "unload_battering_ram_knight_4_serialfalse_no_overlap",
+        "unload_battering_ram_knight_8_serialfalse_no_overlap",
+        "unload_battering_ram_knight_4_serialtrue_no_overlap",
+        "unload_battering_ram_knight_8_serialtrue_no_overlap",
+        "unload_transport_ship_villager_4_serialfalse_no_overlap",
+        "unload_transport_ship_villager_8_serialfalse_no_overlap",
+        "unload_transport_ship_knight_4_serialfalse_no_overlap",
+        "unload_transport_ship_knight_8_serialfalse_no_overlap",
+        "boarding_battering_ram_sealedtrue_respects_barrier",
+        "boarding_siege_tower_sealedtrue_respects_barrier",
+        "retreat_mangonel_obstructedtrue_can_fire",
+        "retreat_trebuchet_obstructedtrue_can_fire",
+        "retreat_bombard_obstructedtrue_can_fire",
+        "landing_variant2_land_is_free",
+        "landing_route_spacing80_water_reachable",
+        "landing_route_spacing80_unloads",
+        "spawn_villager_2_no_overlap",
+        "spawn_villager_4_no_overlap",
+        "spawn_villager_8_no_overlap",
+        "spawn_knight_2_no_overlap",
+        "spawn_knight_4_no_overlap",
+        "spawn_knight_8_no_overlap",
+        "spawn_battering_ram_2_no_overlap",
+        "spawn_battering_ram_4_no_overlap",
+        "spawn_battering_ram_8_no_overlap",
+        "production_spearman_no_overlap",
+        "production_knight_no_overlap",
+        "target_spearman_garrisoned_queue_resumes",
+        "target_spearman_embarked_not_attacked_after_transition",
+        "target_spearman_embarked_queue_resumes",
+        "target_spearman_converted_not_attacked_after_transition",
+        "target_spearman_converted_queue_resumes",
+        "target_archer_garrisoned_not_attacked_after_transition",
+        "target_archer_garrisoned_queue_resumes",
+        "target_archer_embarked_not_attacked_after_transition",
+        "target_archer_embarked_queue_resumes",
+        "target_archer_converted_not_attacked_after_transition",
+        "target_archer_converted_queue_resumes"
+      ],
+      "script_errors": [],
+      "warnings": [
+        "WARNING: 8 ObjectDB instances were leaked at exit (run with `--verbose` for details)."
+      ]
+    }
+  ],
+  "production_sha256": {
+    "scripts/game.gd": "f7e6ecad9d078eb4f24917d68abb22c678b9c95fb5e806d0234710c7186aa040",
+    "scripts/entities/unit.gd": "e41caa46b40b49e58660cbdfb2f165a7919c8fa0be592bc40ff1e6b6466fff6f",
+    "scripts/entities/unit_work.gd": "514f8a636631fb461bda837ad5e59d9cd2ee7268289066c247e13a457ffe9192",
+    "scripts/entities/unit_combat.gd": "7e25b53f3f23e036fe8ec5df4ee864f55eb2c22c5c627032f55cd1d67bb3e1f2",
+    "scripts/entities/building.gd": "6a3f5f8c43f25a9718d9e67ce46f4b05c2ca99e0f0bf6974ab16fcfe7b2955f4",
+    "scripts/world/navigation.gd": "04292f486f0b0b7eb5781dc3512cce6d85483792884ae5ccc723ac8f0ba1e4dc"
+  },
+  "identical_failed_checks": true,
+  "existing_regressions": {
+    "passed": 5,
+    "total": 5,
+    "seconds": 32.467,
+    "results": "docs/navigation-poc/states-20260929/existing/results.json"
+  }
+}

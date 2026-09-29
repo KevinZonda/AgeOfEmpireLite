@@ -1,0 +1,42 @@
+[
+  {
+    "test": "navigation_tasks_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 26.639,
+    "log": "docs/navigation-poc/states-20260929/existing/navigation_tasks_poc.log"
+  },
+  {
+    "test": "economy_siege_controls",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 1.512,
+    "log": "docs/navigation-poc/states-20260929/existing/economy_siege_controls.log"
+  },
+  {
+    "test": "extended_systems",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 3.632,
+    "log": "docs/navigation-poc/states-20260929/existing/extended_systems.log"
+  },
+  {
+    "test": "combat_rules",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.346,
+    "log": "docs/navigation-poc/states-20260929/existing/combat_rules.log"
+  },
+  {
+    "test": "siege_rules",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.338,
+    "log": "docs/navigation-poc/states-20260929/existing/siege_rules.log"
+  }
+]

@@ -1,0 +1,10 @@
+[
+  {
+    "test": "navigation_state_poc",
+    "passed": false,
+    "exit_code": 1,
+    "timeout": false,
+    "seconds": 6.692,
+    "log": "docs/navigation-poc/states-20260929/run-1/navigation_state_poc.log"
+  }
+]
