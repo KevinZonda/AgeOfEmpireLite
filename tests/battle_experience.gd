@@ -68,6 +68,13 @@ func _run() -> void:
 	game._show_match_report(true, "测试")
 	assert(game.result_panel.find_children("*", "RtsStatisticsChart", true, false).size() == 1)
 	assert(game.result_panel.find_children("*", "RtsBattleReplayMap", true, false).size() == 1)
+	game.text_scale = 1.5
+	game._apply_ui_scales()
+	var report_tabs := game.result_panel.find_children("*", "TabContainer", true, false)[0] as TabContainer
+	var report_chart := game.result_panel.find_children("*", "RtsStatisticsChart", true, false)[0] as RtsStatisticsChart
+	assert(report_tabs.get_theme_font_size("font_size") == 24, "report tab names should follow text scale")
+	assert(is_equal_approx(report_chart.text_scale, 1.5), "report chart labels should follow text scale")
+	assert(is_equal_approx(game.cursor.text_scale, 1.5), "cursor labels should follow text scale")
 	game._return_to_menu()
 	await process_frame
 	assert(game.result_panel.get_child_count() == 0, "report playback should be released on exit")

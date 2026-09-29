@@ -5,6 +5,7 @@ const START_CAMERA_POINT := Vector2(630, 820)
 const WINDOW_RESOLUTIONS := [Vector2i(1280, 720), Vector2i(1440, 810), Vector2i(1600, 900), Vector2i(1920, 1080), Vector2i(2560, 1440)]
 const UI_SCALE_OPTIONS := [0.75, 1.0, 1.25, 1.5]
 const TEXT_SCALE_OPTIONS := [0.75, 1.0, 1.25, 1.5]
+static var base_tooltip_font_size := -1
 const MINIMAP_SIZE_OPTIONS := [160, 216, 264]
 const MIN_UI_VIEWPORT_SIZE := Vector2(1280, 720)
 const SETTINGS_PATH := "user://settings.cfg"
@@ -192,6 +193,8 @@ var selection_drag_overlay: Variant
 
 func _ready() -> void:
 	_load_ui_font()
+	if base_tooltip_font_size < 0:
+		base_tooltip_font_size = ThemeDB.get_default_theme().get_font_size("font_size", "TooltipLabel")
 	# The headless display starts at 64×64 with stretch disabled; use the
 	# game's minimum supported viewport for simulation and UI tests.
 	if DisplayServer.get_name() == "headless" and get_window().size == Vector2i(64, 64):
@@ -276,6 +279,7 @@ func _create_cursor() -> void:
 	selection_drag_overlay = SELECTION_DRAG_OVERLAY.new()
 	layer.add_child(selection_drag_overlay)
 	cursor = GameCursor.new()
+	cursor.text_scale = text_scale
 	layer.add_child(cursor)
 	cursor.hide()
 
@@ -287,7 +291,7 @@ func _create_hud() -> void:
 	hud_ui._create_hud()
 
 func _on_ui_node_added(node: Node) -> void:
-	if ui_root == null or not (node is Control) or not ui_root.is_ancestor_of(node) or ui_scale_update_pending: return
+	if ui_root == null or not (node is Control or node is PopupMenu) or not ui_root.is_ancestor_of(node) or ui_scale_update_pending: return
 	ui_scale_update_pending = true
 	call_deferred("_apply_ui_scales")
 
@@ -300,9 +304,23 @@ func _apply_ui_scales() -> void:
 	hud_ui.transform = Transform2D.IDENTITY.scaled(Vector2.ONE * effective_scale)
 	ui_root.size = viewport_size / effective_scale
 	_scale_ui_fonts(ui_root, text_scale / effective_scale)
+	var tooltip_size := maxi(1, roundi(base_tooltip_font_size * text_scale))
+	var default_theme := ThemeDB.get_default_theme()
+	if default_theme.get_font_size("font_size", "TooltipLabel") != tooltip_size:
+		default_theme.set_font_size("font_size", "TooltipLabel", tooltip_size)
+	if cursor != null:
+		cursor.text_scale = text_scale
+		cursor.queue_redraw()
 
 func _scale_ui_fonts(node: Node, factor: float) -> void:
-	if node is Label or node is BaseButton or node is LineEdit or node is TextEdit or node is RichTextLabel:
+	if node is PopupMenu:
+		var popup: PopupMenu = node
+		if not popup.has_meta("base_ui_font_size"):
+			popup.set_meta("base_ui_font_size", popup.get_theme_font_size("font_size"))
+		var popup_size := maxi(1, roundi(int(popup.get_meta("base_ui_font_size")) * text_scale))
+		if popup.get_theme_font_size("font_size") != popup_size:
+			popup.add_theme_font_size_override("font_size", popup_size)
+	elif node is Label or node is BaseButton or node is LineEdit or node is TextEdit or node is RichTextLabel or node is TabContainer:
 		var control: Control = node
 		var font_key := "normal_font_size" if node is RichTextLabel else "font_size"
 		if not control.has_meta("base_ui_font_size"):
@@ -312,7 +330,13 @@ func _scale_ui_fonts(node: Node, factor: float) -> void:
 		var scaled_size := maxi(1, roundi(base_size * font_factor))
 		if control.get_theme_font_size(font_key) != scaled_size:
 			control.add_theme_font_size_override(font_key, scaled_size)
-	for child in node.get_children(): _scale_ui_fonts(child, factor)
+	if node is RtsStatisticsChart:
+		var chart: RtsStatisticsChart = node
+		if not is_equal_approx(chart.text_scale, text_scale):
+			chart.text_scale = text_scale
+			chart.queue_redraw()
+	var child_factor := text_scale if node is PopupMenu else factor
+	for child in node.get_children(true): _scale_ui_fonts(child, child_factor)
 
 func _hud_panel_style(color: Color, margin: float) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()

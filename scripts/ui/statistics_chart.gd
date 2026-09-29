@@ -4,6 +4,7 @@ extends Control
 var statistics: RtsMatchStatistics
 var metric := "stock"
 var player_colors: Array[Color] = []
+var text_scale := 1.0
 
 func _ready() -> void:
 	custom_minimum_size = Vector2(690, 260)
@@ -14,7 +15,8 @@ func show_metric(chosen: String) -> void:
 	queue_redraw()
 
 func _draw() -> void:
-	var bounds := Rect2(Vector2(46, 10), size - Vector2(60, 40))
+	var margin_scale := maxf(1.0, text_scale)
+	var bounds := Rect2(Vector2(46 * margin_scale, 10), size - Vector2(60 * margin_scale, 40 * margin_scale))
 	draw_rect(bounds, Color("192b2a"), true)
 	if statistics == null or statistics.samples.is_empty(): return
 	var max_value := 1.0
@@ -41,4 +43,4 @@ func _draw() -> void:
 
 func _draw_label(at: Vector2, value: String) -> void:
 	var font := ThemeDB.fallback_font
-	if font != null: draw_string(font, at, value, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("d8e4d8"))
+	if font != null: draw_string(font, at, value, HORIZONTAL_ALIGNMENT_LEFT, -1, maxi(1, roundi(12.0 * text_scale)), Color("d8e4d8"))

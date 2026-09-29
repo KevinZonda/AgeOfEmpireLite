@@ -22,6 +22,21 @@ func _run() -> void:
 		view_button.pressed.emit()
 		await process_frame
 		assert(game.tech_tree_overlay != null and game.tech_tree_overlay.visible)
+		if civilization == "English":
+			game.text_scale = 1.5
+			game._apply_ui_scales()
+			var tree_title: Label
+			for node in game.tech_tree_overlay.find_children("*", "Label", true, false):
+				if (node as Label).text.contains("英格兰  ·  科技树"):
+					tree_title = node
+					break
+			assert(tree_title != null and tree_title.get_theme_font_size("font_size") == 39, "tech tree labels should follow text scale")
+			assert(game.tech_tree_civilization_choice.get_popup().get_theme_font_size("font_size") == 24, "tech tree dropdown items should follow text scale")
+			assert(ThemeDB.get_default_theme().get_font_size("font_size", "TooltipLabel") == 24, "tech tree tooltips should follow text scale")
+			game.text_scale = 1.0
+			game._apply_ui_scales()
+			assert(tree_title.get_theme_font_size("font_size") == 26)
+			assert(game.tech_tree_civilization_choice.get_popup().get_theme_font_size("font_size") == 16)
 		assert(game.tech_tree_overlay.get_child(0).get_global_rect().end.x <= game.get_viewport_rect().size.x)
 		assert(game.tech_tree_overlay.get_child(0).get_global_rect().end.y <= game.get_viewport_rect().size.y)
 		assert(not game.menu_panel.visible)

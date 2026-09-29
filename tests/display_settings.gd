@@ -186,6 +186,11 @@ func _run() -> void:
 	assert(scaled_rect.position.is_equal_approx(Vector2.ZERO))
 	assert(scaled_rect.size.is_equal_approx(Vector2(1920, 1080)), "paused settings should fill the view with UI scaling")
 	assert(absf(game.top_label.get_theme_font_size("font_size") * 1.5 - top_base_font) < 1.0)
+	game.text_scale = 1.25
+	game._apply_ui_scales()
+	assert(game.window_mode_choice.get_popup().get_theme_font_size("font_size") == 20, "dropdown text scale should be independent of UI scale")
+	game.text_scale = 1.0
+	game._apply_ui_scales()
 	game.ui_scale = 1.0
 	game._apply_ui_scales()
 	var escape := InputEventKey.new()
