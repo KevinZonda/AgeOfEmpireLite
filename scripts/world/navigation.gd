@@ -708,7 +708,8 @@ func _terrain_segment_clear(from: Vector2, to: Vector2, radius: float, naval: bo
 	var first := world_map.cell_at(region.position)
 	var last := world_map.cell_at(region.end)
 	for y in range(first.y, last.y + 1):
-		for x in range(first.x, last.x + 1):
+		var columns := RecoveryKernel.segment_row_columns(from, to, radius, y, world_map.grid_size.x)
+		for x in range(columns.x, columns.y + 1):
 			var terrain: int = world_map.cells[y * world_map.grid_size.x + x]
 			if _terrain_passable(terrain, naval, boarding): continue
 			var tile := Rect2(Vector2(x, y) * RtsWorldMap.CELL_SIZE, Vector2.ONE * RtsWorldMap.CELL_SIZE)
