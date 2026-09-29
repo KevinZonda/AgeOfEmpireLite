@@ -500,16 +500,17 @@ func _update_selection_hud() -> void:
 	if game.selected.size() == 1 and is_instance_valid(game.selected[0]): subject = game.selected[0]
 	game.selection_health.visible = subject != null and not subject is RtsResource
 	var has_progress := subject is RtsResource
+	var selected_building: RtsBuilding = subject if subject is RtsBuilding else null
+	var has_production_actions := selected_building != null and selected_building.owner_id == 0 and _has_production_actions(selected_building)
 	if subject is RtsUnit:
 		var unit: RtsUnit = subject
 		has_progress = unit.field_build_remaining > 0.0
 	elif subject is RtsBuilding:
 		var building: RtsBuilding = subject
-		has_progress = not building.is_complete() or building.kind == "farm" or not building.production_queue.is_empty()
+		has_progress = not building.is_complete() or building.kind == "farm" or has_production_actions or not building.production_queue.is_empty()
 	game.selection_progress.visible = has_progress
 	game.queue_label.text = ""
-	var selected_building: RtsBuilding = subject if subject is RtsBuilding else null
-	queue_scroll.visible = selected_building != null and selected_building.owner_id == 0 and not selected_building.production_queue.is_empty()
+	queue_scroll.visible = selected_building != null and selected_building.owner_id == 0 and (has_production_actions or not selected_building.production_queue.is_empty())
 	game.selection_portrait.show()
 	multi_selection_scroll.hide()
 	if game.selected.is_empty() or not is_instance_valid(game.selected[0]):
@@ -619,6 +620,7 @@ func _resource_label(resource: RtsResource) -> String:
 
 func _resource_status(resource: RtsResource) -> String:
 	if resource.appearance == "boar" and resource.wildlife_hp > 0.0: return "野猪存活 · 生命 %.0f/90" % resource.wildlife_hp
+	if resource.appearance == "deer" and resource.wildlife_hp > 0.0: return "鹿存活 · 生命 %.0f/12" % resource.wildlife_hp
 	if resource.appearance == "sheep":
 		if resource.claimed_by < 0: return "尚未认领"
 		return "我方已认领" if resource.claimed_by == 0 else "敌方已认领"
@@ -629,7 +631,7 @@ func _resource_guide(resource: RtsResource) -> String:
 		"boar": return "先选中可攻击的单位，右键攻击野猪。击杀后选中村民，右键采集。"
 		"sheep": return "选中村民，右键点击羊群采集；侦察兵可认领羊群并带回城镇中心。"
 		"fish": return "选中渔船，右键点击鱼群捕鱼。"
-		"deer": return "选中村民，右键点击鹿群狩猎；鹿会躲避靠近的军队。"
+		"deer": return "选中村民，右键点击鹿群；村民会先猎杀鹿，再采集鹿肉。"
 	return "选中村民，右键点击%s采集%s。" % [_resource_label(resource), GameData.RESOURCE_LABELS.get(resource.kind, resource.kind)]
 
 func _update_building_progress(building: RtsBuilding) -> void:
@@ -651,6 +653,15 @@ func _update_building_progress(building: RtsBuilding) -> void:
 		game.selection_progress.max_value = job["time"]
 		game.selection_progress.value = job["time"] - job["remaining"]
 		game.selection_progress.show()
+	elif _has_production_actions(building):
+		game.selection_progress.max_value = 1.0
+		game.selection_progress.value = 0.0
+		game.selection_progress.show()
+
+func _has_production_actions(building: RtsBuilding) -> bool:
+	if building.owner_id != 0: return false
+	var producer := building.producer_kind()
+	return not RtsTechTree.all_train_units(game.civilizations[0], producer).is_empty() or not RtsTechTree.all_researches(game.civilizations[0], producer).is_empty()
 
 func _unit_stats_text(unit: RtsUnit) -> String:
 	var stats: Dictionary = unit.stats
@@ -697,7 +708,7 @@ func _job_label(job: Dictionary) -> String:
 	return "未知任务"
 
 func _refresh_queue_controls(building: RtsBuilding) -> void:
-	if building.owner_id != 0 or building.production_queue.is_empty(): return
+	if building.owner_id != 0 or not _has_production_actions(building) and building.production_queue.is_empty(): return
 	var jobs: Array[String] = [str(building.get_instance_id())]
 	for index in building.production_queue.size():
 		var job: Dictionary = building.production_queue[index]
@@ -708,6 +719,12 @@ func _refresh_queue_controls(building: RtsBuilding) -> void:
 	for child in game.queue_controls.get_children():
 		game.queue_controls.remove_child(child)
 		child.queue_free()
+	if building.production_queue.is_empty():
+		var empty := Label.new()
+		empty.text = "生产队列空"
+		empty.add_theme_font_size_override("font_size", RtsUiTypography.CAPTION)
+		empty.add_theme_color_override("font_color", Color("a99b7e"))
+		game.queue_controls.add_child(empty)
 	for index in building.production_queue.size():
 		game.queue_controls.add_child(_queue_job_button(building, index, building.production_queue[index]))
 	queue_scroll.scroll_horizontal = previous_scroll

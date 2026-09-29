@@ -23,7 +23,7 @@ func setup(resource_kind: String, quantity: int, visual_kind := "") -> void:
 	amount = quantity
 	initial_amount = quantity
 	appearance = visual_kind
-	wildlife_hp = 90.0 if appearance == "boar" else 1.0
+	wildlife_hp = 90.0 if appearance == "boar" else 12.0 if appearance == "deer" else 1.0
 	home_position = position
 	wander_time = position.x * 0.013 + position.y * 0.019
 	queue_redraw()
@@ -36,7 +36,7 @@ func _process(delta: float) -> void:
 	if appearance == "boar":
 		_process_boar(delta)
 		return
-	if appearance != "deer": return
+	if appearance != "deer" or wildlife_hp <= 0.0: return
 	wander_time += delta
 	var desired := home_position + Vector2(sin(wander_time * 0.75) * 14.0, cos(wander_time * 0.52) * 10.0)
 	wildlife_scan -= delta
@@ -81,7 +81,7 @@ func _process_boar(delta: float) -> void:
 		queue_redraw()
 
 func take_damage(damage: float) -> void:
-	if appearance != "boar" or wildlife_hp <= 0.0: return
+	if appearance not in ["boar", "deer"] or wildlife_hp <= 0.0: return
 	wildlife_hp = maxf(0.0, wildlife_hp - damage)
 	queue_redraw()
 
@@ -114,7 +114,7 @@ func _process_sheep(delta: float) -> void:
 		queue_redraw()
 
 func harvest(quantity: int) -> int:
-	if appearance == "boar" and wildlife_hp > 0.0: return 0
+	if appearance in ["boar", "deer"] and wildlife_hp > 0.0: return 0
 	var taken: int = mini(quantity, amount)
 	amount -= taken
 	if amount <= 0:
@@ -145,7 +145,13 @@ func _draw() -> void:
 		draw_colored_polygon(PackedVector2Array([Vector2(-16, 0), Vector2(-24, -7), Vector2(-24, 7)]), Color("9fc9cc"))
 		draw_circle(Vector2(9, -2), 1.5, Color("253947"))
 	elif appearance == "deer":
-		draw_ellipse_shape()
+		if wildlife_hp > 0.0:
+			draw_ellipse_shape()
+		else:
+			var carcass := PackedVector2Array([Vector2(-20, 2), Vector2(-14, -5), Vector2(13, -5), Vector2(21, 2), Vector2(14, 9), Vector2(-14, 9)])
+			draw_colored_polygon(carcass, Color("886448"))
+			draw_polyline(carcass + PackedVector2Array([carcass[0]]), outline, 2.0)
+			draw_line(Vector2(14, -1), Vector2(24, -8), Color("674b37"), 2.0)
 	elif appearance == "boar":
 		var body := PackedVector2Array([Vector2(-20, -9), Vector2(8, -13), Vector2(22, -3), Vector2(18, 12), Vector2(-18, 11)])
 		draw_colored_polygon(body, Color("684d3a") if wildlife_hp > 0.0 else Color("886b54"))

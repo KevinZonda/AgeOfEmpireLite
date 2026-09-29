@@ -82,6 +82,13 @@ static func process_trade_order(unit, delta: float) -> void:
 static func process_gather_order(unit, delta: float) -> void:
 	var gathering_distance: float = unit.target.radius + unit.radius() + 2.0 if unit.target is RtsResource else unit.target.size().x * 0.5 + unit.radius() + 2.0
 	if not unit._move_toward(unit.target.position, delta, gathering_distance): return
+	if unit.target is RtsResource and unit.target.appearance == "deer" and unit.target.wildlife_hp > 0.0:
+		if unit.attack_timer > 0.0: return
+		var hunt_profile: Dictionary = unit.stats.get("profiles", {}).get("hunt_melee", {})
+		unit.target.take_damage(float(hunt_profile.get("damage", unit.stats.get("damage", 1.0))))
+		unit.attack_timer = float(hunt_profile.get("cooldown", unit.stats.get("cooldown", 1.0)))
+		unit._start_visual_action("attack", 0.30)
+		return
 	if unit.target is RtsBuilding and unit.target.kind == "farm":
 		if not unit.target.is_complete(): return
 		if unit.game.civilizations[unit.owner_id] == "English" and unit.game.players[unit.owner_id]["researched"].has("enclosures"):
