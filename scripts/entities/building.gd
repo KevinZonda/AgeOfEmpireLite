@@ -1015,25 +1015,7 @@ func _draw_iso_university(nw: Vector2, ne: Vector2, sw: Vector2, lift: Vector2, 
 			draw_line(bottom, top, college["trim"], 5.2)
 			draw_line(bottom + window_up * 0.04, top - window_up * 0.04, Color("303b40"), 3.0)
 			draw_line((bottom + top) * 0.5 + Vector2(-2, 0), (bottom + top) * 0.5 + Vector2(2, 0), college["trim"], 1.0)
-	for v in [0.33, 0.82]:
-		var pier := _military_point(nw, ne, sw, 0.93, v) + floor_lift
-		draw_line(pier, pier + window_up * 0.92, college["trim"], 1.4)
-	for u in [0.17, 0.83]:
-		var front := _military_point(nw, ne, sw, u, 0.83) + floor_lift
-		var gable := front + window_up + RtsIsoProjection.world_delta(canvas, Vector2(0, -8.0 * game.camera.zoom.x))
-		draw_colored_polygon(PackedVector2Array([front + window_up - (ne - nw) * 0.08, gable, front + window_up + (ne - nw) * 0.08]), college["wall"].lightened(0.09))
-		draw_line(front + window_up - (ne - nw) * 0.08, gable, college["trim"], 1.4)
-		draw_line(gable, front + window_up + (ne - nw) * 0.08, college["trim"], 1.4)
 	_draw_iso_university_tower(nw, ne, sw, floor_lift, canvas, college)
-	var monument := _military_point(nw, ne, sw, 0.5, 0.68) + floor_lift
-	var monument_top := monument + RtsIsoProjection.world_delta(canvas, Vector2(0, -13.0 * game.camera.zoom.x))
-	draw_circle(monument, 5.2, college["wall"].darkened(0.28))
-	draw_line(monument, monument_top, college["trim"], 3.2)
-	draw_circle(monument_top, 2.3, college["trim"])
-	for u in [0.34, 0.66]:
-		var hedge_start := _military_point(nw, ne, sw, u, 0.78) + floor_lift
-		var hedge_end := _military_point(nw, ne, sw, u, 0.92) + floor_lift
-		draw_line(hedge_start, hedge_end, Color("627355"), 3.2)
 
 func _draw_iso_university_tower(nw: Vector2, ne: Vector2, sw: Vector2, floor_lift: Vector2, canvas: Transform2D, palette: Dictionary) -> void:
 	var a := _military_point(nw, ne, sw, 0.41, 0.16) + floor_lift
