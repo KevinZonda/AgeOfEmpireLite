@@ -15,6 +15,8 @@ func _run() -> void:
 	await process_frame
 	var page = game.unit_preview_page
 	assert(page != null and page.visible and not game.menu_panel.visible)
+	var page_title: Label = page.find_children("*", "Label", true, false).filter(func(node: Node) -> bool: return (node as Label).text == "单 位 预 览")[0] as Label
+	assert(page_title.get_theme_font_size("font_size") == 28, "preview should use the shared page title size")
 	var preview_panel: Control = page.get_child(0)
 	assert(preview_panel.get_global_rect().end.x <= game.get_viewport_rect().size.x)
 	assert(preview_panel.get_global_rect().end.y <= game.get_viewport_rect().size.y)
@@ -46,6 +48,14 @@ func _run() -> void:
 	page.selected_kind = "bombard"
 	page.age = 4
 	page._refresh_selection()
+	game.text_scale = 1.5
+	game._apply_ui_scales()
+	await process_frame
+	for node in page.find_children("*", "Label", true, false):
+		var label := node as Label
+		assert(label.get_theme_font_size("font_size") >= 21, "preview labels should use at least the shared caption size")
+		if label.get_parent() == page.stats_box:
+			assert(label.get_combined_minimum_size().x <= label.size.x + 1.0, "preview stat text should wrap inside its column")
 	var preview_font: Font = page.stats_box.get_child(0).get_theme_font("font")
 	for character in "远程护甲减伤攻城":
 		assert(preview_font.has_char(character.unicode_at(0)), "the UI font should contain every preview stat glyph")

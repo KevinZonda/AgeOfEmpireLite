@@ -1,4 +1,5 @@
 extends Node2D
+const RtsUiTypography = preload("res://scripts/ui/typography.gd")
 
 const WORLD_SIZE := Vector2(2400, 2400)
 const START_CAMERA_POINT := Vector2(630, 820)
@@ -157,6 +158,7 @@ var hud_ui: HUD_UI
 var ui_root: Control
 var ui_scale := 1.0
 var text_scale := 1.0
+var applied_world_text_scale := -1.0
 var minimap_size := 216
 var show_building_icons := true
 var show_building_names := true
@@ -314,6 +316,11 @@ func _apply_ui_scales() -> void:
 	if cursor != null:
 		cursor.text_scale = text_scale
 		cursor.queue_redraw()
+	if not is_equal_approx(applied_world_text_scale, text_scale):
+		applied_world_text_scale = text_scale
+		_redraw_projected_entities()
+		if objectives != null: objectives.queue_redraw()
+		queue_redraw()
 
 func _scale_ui_fonts(node: Node, factor: float) -> void:
 	if node is PopupMenu:
@@ -373,7 +380,7 @@ func _add_resource_readout(parent: HBoxContainer, kind: String) -> void:
 	row.add_child(icon)
 	var value := Label.new()
 	value.text = "0"
-	value.add_theme_font_size_override("font_size", 17)
+	value.add_theme_font_size_override("font_size", RtsUiTypography.BODY)
 	value.add_theme_color_override("font_color", Color("f4e6c4"))
 	value.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	row.add_child(value)
@@ -946,9 +953,9 @@ func _finish_game(won: bool, reason := "landmarks") -> void:
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 18)
 	result_panel.add_child(box)
-	_add_menu_label(box, "胜利！" if won else "战败", 30)
+	_add_menu_label(box, "胜利！" if won else "战败", RtsUiTypography.PAGE_TITLE)
 	var result_reason: String = {"landmarks": "城镇中心与地标全部摧毁", "sacred": "控制全部圣地", "wonder": "奇观守护成功"}.get(reason, reason)
-	_add_menu_label(box, result_reason, 17)
+	_add_menu_label(box, result_reason, RtsUiTypography.BODY)
 	var button := Button.new()
 	button.text = "返回文明选择"
 	button.pressed.connect(func() -> void: _return_to_menu())
@@ -969,7 +976,7 @@ func _show_match_report(won: bool, result_reason: String) -> void:
 	var layout := VBoxContainer.new()
 	layout.add_theme_constant_override("separation", 8)
 	result_panel.add_child(layout)
-	_add_menu_label(layout, ("胜利" if won else "战败") + " · " + result_reason, 24)
+	_add_menu_label(layout, ("胜利" if won else "战败") + " · " + result_reason, RtsUiTypography.PAGE_TITLE)
 	var legend := HBoxContainer.new()
 	layout.add_child(legend)
 	var colors: Array[Color] = []
@@ -2209,7 +2216,7 @@ func _draw() -> void:
 				var text_color := Color("e8ce76") if effect["resource"] == "gold" else Color("a7da80") if effect["resource"] == "food" else Color("d3ac77")
 				var lift := RtsIsoProjection.world_delta(get_viewport().get_canvas_transform(), Vector2(0, -20.0 - progress * 26.0))
 				draw_set_transform_matrix(RtsIsoProjection.upright(get_viewport().get_canvas_transform(), effect_point + lift))
-				draw_string(ThemeDB.fallback_font, Vector2(-9, 0), "+%d" % effect["amount"], HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(text_color, alpha))
+				draw_string(ThemeDB.fallback_font, Vector2(-9, 0), "+%d" % effect["amount"], HORIZONTAL_ALIGNMENT_LEFT, -1, maxi(1, roundi(RtsUiTypography.CAPTION * text_scale)), Color(text_color, alpha))
 				draw_set_transform_matrix(Transform2D.IDENTITY)
 			"death", "collapse":
 				var radius := (10.0 if effect["kind"] == "death" else 25.0) * (0.8 + progress * 0.6)

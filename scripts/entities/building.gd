@@ -1,5 +1,6 @@
 class_name RtsBuilding
 extends Node2D
+const RtsUiTypography = preload("res://scripts/ui/typography.gd")
 
 const LandmarkVisual = preload("res://scripts/entities/visuals/landmark_visual.gd")
 var landmark_geometry
@@ -465,7 +466,8 @@ func _draw() -> void:
 	_draw_building_icon(Vector2(0, -size().y * 0.5 - side * 0.5 - 8.0), side)
 	var font := ThemeDB.fallback_font
 	if font != null and game.get("show_building_names") != false:
-		draw_string(font, Vector2(-size().x * 0.5, size().y * 0.5 + 15), display_label(), HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color.WHITE)
+		var font_size: int = RtsUiTypography.world_caption_size(game)
+		draw_string(font, Vector2(-size().x * 0.5, size().y * 0.5 + font_size + 2), display_label(), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color.WHITE)
 	var bar_y := -size().y * 0.5 - side - 18.0
 	draw_rect(Rect2(-size().x * 0.5, bar_y, size().x, 5), Color("432e2b"))
 	draw_rect(Rect2(-size().x * 0.5, bar_y, size().x * clampf(hp / max_hp, 0.0, 1.0), 5), Color("7fd47a"))
@@ -532,8 +534,9 @@ func _draw_isometric() -> void:
 	var font := ThemeDB.fallback_font
 	if font != null and game.get("show_building_names") != false:
 		var label := display_label()
-		var label_width := font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 13).x
-		draw_string(font, Vector2(-label_width * 0.5, canvas.basis_xform(se).y + 18.0), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color.WHITE)
+		var font_size: int = RtsUiTypography.world_caption_size(game)
+		var label_width := font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+		draw_string(font, Vector2(-label_width * 0.5, canvas.basis_xform(se).y + font_size + 5.0), label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color.WHITE)
 	var bar_width := minf(72.0, size().x * 0.8)
 	var bar_y: float = minf(-icon_height * game.camera.zoom.x - size().y * 0.25 - 16.0, -icon_height * game.camera.zoom.x - side - 20.0)
 	draw_rect(Rect2(-bar_width * 0.5, bar_y, bar_width, 5), Color("422f2d"))

@@ -1,5 +1,6 @@
 class_name RtsStatisticsChart
 extends Control
+const RtsUiTypography = preload("res://scripts/ui/typography.gd")
 
 var statistics: RtsMatchStatistics
 var metric := "stock"
@@ -43,4 +44,4 @@ func _draw() -> void:
 
 func _draw_label(at: Vector2, value: String) -> void:
 	var font := ThemeDB.fallback_font
-	if font != null: draw_string(font, at, value, HORIZONTAL_ALIGNMENT_LEFT, -1, maxi(1, roundi(12.0 * text_scale)), Color("d8e4d8"))
+	if font != null: draw_string(font, at, value, HORIZONTAL_ALIGNMENT_LEFT, -1, maxi(1, roundi(RtsUiTypography.CAPTION * text_scale)), Color("d8e4d8"))

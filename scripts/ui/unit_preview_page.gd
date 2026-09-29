@@ -1,5 +1,6 @@
 class_name RtsUnitPreviewPage
 extends ColorRect
+const RtsUiTypography = preload("res://scripts/ui/typography.gd")
 
 signal close_requested
 
@@ -125,9 +126,9 @@ func _build_header(parent: VBoxContainer) -> void:
 	var header := HBoxContainer.new()
 	header.add_theme_constant_override("separation", 10)
 	parent.add_child(header)
-	var title := _label(header, "单 位 预 览", 26, Color("f4dfae"))
+	var title := _label(header, "单 位 预 览", RtsUiTypography.PAGE_TITLE, Color("f4dfae"))
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_label(header, "文明", 15, Color("e4d6b9"))
+	_label(header, "文明", RtsUiTypography.BODY, Color("e4d6b9"))
 	civilization_choice = OptionButton.new()
 	civilization_choice.custom_minimum_size = Vector2(135, 38)
 	var civilization_ids := GameData.CIVILIZATIONS.keys()
@@ -143,7 +144,7 @@ func _build_header(parent: VBoxContainer) -> void:
 		_refresh_selection()
 	)
 	header.add_child(civilization_choice)
-	_label(header, "时代", 15, Color("e4d6b9"))
+	_label(header, "时代", RtsUiTypography.BODY, Color("e4d6b9"))
 	age_choice = OptionButton.new()
 	age_choice.custom_minimum_size = Vector2(150, 38)
 	for era in range(1, 5): age_choice.add_item(AGE_LABELS[era])
@@ -172,7 +173,7 @@ func _build_list(parent: HBoxContainer) -> void:
 	var content := VBoxContainer.new()
 	content.add_theme_constant_override("separation", 7)
 	panel.add_child(content)
-	_label(content, "单位列表", 19, Color("e4bd79"))
+	_label(content, "单位列表", RtsUiTypography.SECTION_TITLE, Color("e4bd79"))
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -193,7 +194,7 @@ func _build_model(parent: HBoxContainer) -> void:
 	panel.add_child(content)
 	var heading := HBoxContainer.new()
 	content.add_child(heading)
-	var title := _label(heading, "游戏内造型", 19, Color("e4bd79"))
+	var title := _label(heading, "游戏内造型", RtsUiTypography.SECTION_TITLE, Color("e4bd79"))
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	preview_mode_choice = OptionButton.new()
 	preview_mode_choice.custom_minimum_size = Vector2(118, 34)
@@ -235,7 +236,7 @@ func _build_model(parent: HBoxContainer) -> void:
 	preview_context.add_child(preview_unit)
 	preview_unit.set_process(false)
 	preview_unit.scale = Vector2.ONE * 4.0
-	_label(content, "显示该单位在战场上的实际外形", 13, Color("c4b492"))
+	_label(content, "显示该单位在战场上的实际外形", RtsUiTypography.CAPTION, Color("c4b492"))
 
 func _build_details(parent: HBoxContainer) -> void:
 	var panel := PanelContainer.new()
@@ -246,7 +247,7 @@ func _build_details(parent: HBoxContainer) -> void:
 	var content := VBoxContainer.new()
 	content.add_theme_constant_override("separation", 6)
 	panel.add_child(content)
-	_label(content, "介绍与数值", 19, Color("e4bd79"))
+	_label(content, "介绍与数值", RtsUiTypography.SECTION_TITLE, Color("e4bd79"))
 	var stats_scroll := ScrollContainer.new()
 	stats_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	stats_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -259,7 +260,7 @@ func _build_details(parent: HBoxContainer) -> void:
 	divider.color = Color("6f5634")
 	divider.custom_minimum_size.y = 1
 	content.add_child(divider)
-	_label(content, "加成选项", 16, Color("e4bd79"))
+	_label(content, "加成选项", RtsUiTypography.SECTION_TITLE, Color("e4bd79"))
 	var bonus_scroll := ScrollContainer.new()
 	bonus_scroll.custom_minimum_size.y = 178
 	bonus_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -321,42 +322,42 @@ func _refresh_stats() -> void:
 	if selected_kind.is_empty(): return
 	var stats := _resolved_stats()
 	var base := RtsUnitCatalog.unit_definition(civilization, selected_kind, [], age, [], dynasty)
-	var name_label := _label(stats_box, str(stats.get("label", selected_kind)), 24, Color("f4dfae"))
+	var name_label := _label(stats_box, str(stats.get("label", selected_kind)), RtsUiTypography.FEATURE_TITLE, Color("f4dfae"))
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	var intro := _label(stats_box, UNIT_INTRO.get(selected_kind, ""), 15, Color("e4d6b9"))
+	var intro := _label(stats_box, UNIT_INTRO.get(selected_kind, ""), RtsUiTypography.BODY, Color("e4d6b9"))
 	intro.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	var producer := RtsTechTree.producer_for_unit(selected_kind)
 	var status := RtsTechTree.unit_status(civilization, age, producer, selected_kind, _research_ids(), dynasty)
 	var availability := "本时代可训练" if status.get("available", false) else str(status.get("reason", "当前不可训练"))
-	_label(stats_box, availability, 14, Color("9dd6a2") if status.get("available", false) else Color("dfaa83"))
+	_label(stats_box, availability, RtsUiTypography.CAPTION, Color("9dd6a2") if status.get("available", false) else Color("dfaa83"))
 	var rank_age := int(stats.get("rank_age", 0))
-	if rank_age > 0: _label(stats_box, "兵种等级：%s" % AGE_LABELS[rank_age], 14, Color("d8bc7e"))
+	if rank_age > 0: _label(stats_box, "兵种等级：%s" % AGE_LABELS[rank_age], RtsUiTypography.CAPTION, Color("d8bc7e"))
 	var cost: Dictionary = stats.get("cost", {})
-	_label(stats_box, "费用：%s   ·   人口：%d" % [GameData.cost_text(cost), int(stats.get("population_cost", 1))], 14, Color("e2d3b0"))
-	_label(stats_box, "训练：%.1f 秒   ·   速度：%.2f 格/秒%s" % [float(stats.get("time", 0.0)), float(stats.get("speed", 0.0)) / 80.0, _delta(float(stats.get("speed", 0.0)) / 80.0, float(base.get("speed", 0.0)) / 80.0, 2)], 14, Color("e2d3b0"))
-	_label(stats_box, "生命：%.0f%s" % [float(stats.get("hp", 0.0)), _delta(float(stats.get("hp", 0.0)), float(base.get("hp", 0.0)), 0)], 15, Color("f0ddb1"))
+	_label(stats_box, "费用：%s   ·   人口：%d" % [GameData.cost_text(cost), int(stats.get("population_cost", 1))], RtsUiTypography.BODY, Color("e2d3b0"))
+	_label(stats_box, "训练：%.1f 秒   ·   速度：%.2f 格/秒%s" % [float(stats.get("time", 0.0)), float(stats.get("speed", 0.0)) / 80.0, _delta(float(stats.get("speed", 0.0)) / 80.0, float(base.get("speed", 0.0)) / 80.0, 2)], RtsUiTypography.BODY, Color("e2d3b0"))
+	_label(stats_box, "生命：%.0f%s" % [float(stats.get("hp", 0.0)), _delta(float(stats.get("hp", 0.0)), float(base.get("hp", 0.0)), 0)], RtsUiTypography.BODY, Color("f0ddb1"))
 	var armor: Dictionary = stats.get("armor", {})
 	var base_armor: Dictionary = base.get("armor", {})
-	_label(stats_box, "近战护甲：%.0f%s   ·   远程护甲：%.0f%s" % [float(armor.get("melee", 0.0)), _delta(float(armor.get("melee", 0.0)), float(base_armor.get("melee", 0.0)), 0), float(armor.get("ranged", 0.0)), _delta(float(armor.get("ranged", 0.0)), float(base_armor.get("ranged", 0.0)), 0)], 14, Color("e2d3b0"))
+	_label(stats_box, "近战护甲：%.0f%s   ·   远程护甲：%.0f%s" % [float(armor.get("melee", 0.0)), _delta(float(armor.get("melee", 0.0)), float(base_armor.get("melee", 0.0)), 0), float(armor.get("ranged", 0.0)), _delta(float(armor.get("ranged", 0.0)), float(base_armor.get("ranged", 0.0)), 0)], RtsUiTypography.BODY, Color("e2d3b0"))
 	var resistance: Dictionary = stats.get("resistance", {})
-	if float(resistance.get("ranged", 0.0)) > 0.0: _label(stats_box, "远程减伤：%.0f%%" % [float(resistance["ranged"]) * 100.0], 14, Color("e2d3b0"))
+	if float(resistance.get("ranged", 0.0)) > 0.0: _label(stats_box, "远程减伤：%.0f%%" % [float(resistance["ranged"]) * 100.0], RtsUiTypography.BODY, Color("e2d3b0"))
 	var profiles: Dictionary = stats.get("profiles", {})
 	var has_attack := false
 	for profile_id in profiles:
 		if float(profiles[profile_id].get("damage", 0.0)) > 0.0: has_attack = true
 	if has_attack:
-		_label(stats_box, "攻击方式", 16, Color("e4bd79"))
+		_label(stats_box, "攻击方式", RtsUiTypography.SUBSECTION_TITLE, Color("e4bd79"))
 		for profile_id in profiles:
 			var profile: Dictionary = profiles[profile_id]
 			if float(profile.get("damage", 0.0)) <= 0.0: continue
 			var line := "%s：%d × %.0f  ·  间隔 %.2f 秒  ·  射程 %.1f 格" % [PROFILE_LABELS.get(profile_id, profile_id), int(profile.get("hits", 1)), float(profile.get("damage", 0.0)), float(profile.get("cooldown", 0.0)), float(profile.get("range", 0.0)) / 30.0]
-			var attack_label := _label(stats_box, line, 13, Color("e2d3b0"))
+			var attack_label := _label(stats_box, line, RtsUiTypography.BODY, Color("e2d3b0"))
 			attack_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			for bonus in profile.get("bonuses", []):
-				var bonus_label := _label(stats_box, "   %s +%.0f" % [bonus.get("source_label", "额外伤害"), float(bonus.get("amount", 0.0))], 12, Color("b9d4f0"))
+				var bonus_label := _label(stats_box, "   %s +%.0f" % [bonus.get("source_label", "额外伤害"), float(bonus.get("amount", 0.0))], RtsUiTypography.CAPTION, Color("b9d4f0"))
 				bonus_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	else:
-		_label(stats_box, "无直接攻击", 13, Color("c4b492"))
+		_label(stats_box, "无直接攻击", RtsUiTypography.CAPTION, Color("c4b492"))
 
 func _refresh_bonuses() -> void:
 	_clear(bonus_box)
@@ -384,14 +385,14 @@ func _refresh_bonuses() -> void:
 		)
 	var technologies := _available_technologies()
 	if technologies.is_empty():
-		_label(bonus_box, "当前时代没有适用的单位科技。", 13, Color("c4b492"))
+		_label(bonus_box, "当前时代没有适用的单位科技。", RtsUiTypography.CAPTION, Color("c4b492"))
 		return
 	for tech_id in technologies:
 		var technology: Dictionary = RtsTechTree.get_technology(tech_id)
 		var toggle := CheckButton.new()
 		toggle.text = "%s  ·  %s" % [technology.get("label", tech_id), AGE_LABELS[int(technology.get("age", 1))].split(" ")[0]]
 		toggle.button_pressed = bool(selected_research.get(tech_id, false))
-		toggle.add_theme_font_size_override("font_size", 13)
+		toggle.add_theme_font_size_override("font_size", RtsUiTypography.CAPTION)
 		toggle.add_theme_color_override("font_color", Color("e2d3b0"))
 		var chosen_id: String = tech_id
 		toggle.toggled.connect(func(pressed: bool) -> void:
@@ -406,7 +407,7 @@ func _refresh_bonuses() -> void:
 func _add_option_row(title: String, labels: Array, ids: Array, selected: String, on_change: Callable) -> void:
 	var row := HBoxContainer.new()
 	bonus_box.add_child(row)
-	var caption := _label(row, title, 13, Color("c4b492"))
+	var caption := _label(row, title, RtsUiTypography.CAPTION, Color("c4b492"))
 	caption.custom_minimum_size.x = 75
 	var option := OptionButton.new()
 	option.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -469,6 +470,8 @@ func _delta(value: float, base: float, precision: int) -> String:
 func _label(parent: Node, value: String, font_size: int, font_color: Color) -> Label:
 	var label := Label.new()
 	label.text = value
+	if parent == stats_box or parent == bonus_box:
+		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	label.add_theme_font_size_override("font_size", font_size)
 	label.add_theme_color_override("font_color", font_color)
 	parent.add_child(label)

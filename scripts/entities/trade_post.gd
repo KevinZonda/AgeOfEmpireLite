@@ -1,5 +1,6 @@
 class_name RtsTradePost
 extends Node2D
+const RtsUiTypography = preload("res://scripts/ui/typography.gd")
 
 var game: Node2D
 
@@ -18,5 +19,8 @@ func _draw() -> void:
 	if game != null and game.view_mode_25d:
 		draw_set_transform_matrix(RtsIsoProjection.upright(get_viewport().get_canvas_transform(), RtsIsoProjection.ground_lift(game, position)))
 	var font := ThemeDB.fallback_font
-	if font != null: draw_string(font, Vector2(-28, 37), "贸易站", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color.WHITE)
+	if font != null:
+		var font_size: int = RtsUiTypography.world_caption_size(game)
+		var label_width := font.get_string_size("贸易站", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+		draw_string(font, Vector2(-label_width * 0.5, 24 + font_size), "贸易站", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color.WHITE)
 	if game != null and game.view_mode_25d: draw_set_transform_matrix(Transform2D.IDENTITY)

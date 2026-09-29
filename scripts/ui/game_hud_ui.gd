@@ -1,5 +1,6 @@
 class_name RtsGameHudUi
 extends CanvasLayer
+const RtsUiTypography = preload("res://scripts/ui/typography.gd")
 
 # Owns the HUD tree and renders command state from the game root.
 const BUILD_HELP := {
@@ -127,6 +128,8 @@ func _create_hud() -> void:
 	var root := Control.new()
 	root.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
 	root.size = game.get_viewport_rect().size
+	# Rasterize glyphs at the final UI scale instead of enlarging their bitmaps.
+	root.oversampling_with_scale = CanvasItem.OVERSAMPLING_WITH_SCALE_ENABLED
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(root)
 	game.ui_root = root
@@ -145,7 +148,7 @@ func _create_hud() -> void:
 	top.add_child(top_row)
 	game.top_label = Label.new()
 	game.top_label.custom_minimum_size.x = 230
-	game.top_label.add_theme_font_size_override("font_size", 16)
+	game.top_label.add_theme_font_size_override("font_size", RtsUiTypography.BODY)
 	game.top_label.add_theme_color_override("font_color", Color("f4dfaa"))
 	game.top_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	top_row.add_child(game.top_label)
@@ -154,7 +157,7 @@ func _create_hud() -> void:
 	game.population_label = Label.new()
 	game.population_label.custom_minimum_size.x = 102
 	game.population_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	game.population_label.add_theme_font_size_override("font_size", 15)
+	game.population_label.add_theme_font_size_override("font_size", RtsUiTypography.BODY)
 	game.population_label.add_theme_color_override("font_color", Color("eee2c7"))
 	top_row.add_child(game.population_label)
 	var top_tools := HBoxContainer.new()
@@ -214,7 +217,7 @@ func _create_hud() -> void:
 	game.command_title = Label.new()
 	game.command_title.text = "命令"
 	game.command_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	game.command_title.add_theme_font_size_override("font_size", 17)
+	game.command_title.add_theme_font_size_override("font_size", RtsUiTypography.SUBSECTION_TITLE)
 	game.command_title.add_theme_color_override("font_color", Color("e8cb85"))
 	command_header.add_child(game.command_title)
 	build_tab_bar = HBoxContainer.new()
@@ -252,7 +255,7 @@ func _create_hud() -> void:
 	game.info_label = Label.new()
 	game.info_label.text = "未选择"
 	game.info_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	game.info_label.add_theme_font_size_override("font_size", 19)
+	game.info_label.add_theme_font_size_override("font_size", RtsUiTypography.SECTION_TITLE)
 	game.info_label.add_theme_color_override("font_color", Color("f0dfb6"))
 	selection_header.add_child(game.info_label)
 	selection_details_button = Button.new()
@@ -263,7 +266,7 @@ func _create_hud() -> void:
 	selection_details_button.pressed.connect(_toggle_selection_details)
 	selection_header.add_child(selection_details_button)
 	selection_summary = Label.new()
-	selection_summary.add_theme_font_size_override("font_size", 14)
+	selection_summary.add_theme_font_size_override("font_size", RtsUiTypography.CAPTION)
 	selection_summary.add_theme_color_override("font_color", Color("d3c5a8"))
 	selection_summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	selection_summary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -281,7 +284,7 @@ func _create_hud() -> void:
 	multi_selection_scroll.add_child(multi_selection_grid)
 	game.detail_label = Label.new()
 	game.detail_label.text = "左键选择 · 右键下令"
-	game.detail_label.add_theme_font_size_override("font_size", 14)
+	game.detail_label.add_theme_font_size_override("font_size", RtsUiTypography.CAPTION)
 	game.detail_label.add_theme_color_override("font_color", Color("d3c5a8"))
 	game.detail_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	game.detail_label.custom_minimum_size.x = 420
@@ -309,7 +312,7 @@ func _create_hud() -> void:
 	game.selection_progress.hide()
 	selection_column.add_child(game.selection_progress)
 	game.queue_label = Label.new()
-	game.queue_label.add_theme_font_size_override("font_size", 13)
+	game.queue_label.add_theme_font_size_override("font_size", RtsUiTypography.CAPTION)
 	game.queue_label.add_theme_color_override("font_color", Color("e5d1a1"))
 	selection_column.add_child(game.queue_label)
 	game.queue_controls = HBoxContainer.new()
@@ -326,7 +329,7 @@ func _create_hud() -> void:
 	game.queue_controls.add_child(game.cancel_queue_button)
 	game.notice_label = Label.new()
 	game.notice_label.add_theme_color_override("font_color", Color("f0d783"))
-	game.notice_label.add_theme_font_size_override("font_size", 13)
+	game.notice_label.add_theme_font_size_override("font_size", RtsUiTypography.CAPTION)
 	selection_column.add_child(game.notice_label)
 	minimap_anchor = Control.new()
 	minimap_anchor.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -386,8 +389,8 @@ func _create_hud() -> void:
 	var pause_box := VBoxContainer.new()
 	pause_box.add_theme_constant_override("separation", 12)
 	pause_panel.add_child(pause_box)
-	game._add_menu_label(pause_box, "游戏已暂停", 27)
-	game._add_menu_label(pause_box, "按 Esc 继续游戏", 16)
+	game._add_menu_label(pause_box, "游戏已暂停", RtsUiTypography.PAGE_TITLE)
+	game._add_menu_label(pause_box, "按 Esc 继续游戏", RtsUiTypography.BODY)
 	game._add_pause_button(pause_box, "继续游戏", func() -> void: game._set_paused(false))
 	game._add_pause_button(pause_box, "设置", func() -> void: game._show_settings(true))
 	game._add_pause_button(pause_box, "重新开始", func() -> void: game.start_game(game.selected_civ, -1, game.selected_opponent_civ))
@@ -767,7 +770,7 @@ func _rebuild_actions() -> void:
 		guide.text = _resource_guide(item)
 		guide.custom_minimum_size.x = 270
 		guide.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		guide.add_theme_font_size_override("font_size", 15)
+		guide.add_theme_font_size_override("font_size", RtsUiTypography.BODY)
 		guide.add_theme_color_override("font_color", Color("e9dbbd"))
 		game.action_bar.add_child(guide)
 		return
@@ -1040,7 +1043,7 @@ func _show_age_choice() -> void:
 	panel.add_child(column)
 	var heading := Label.new()
 	heading.text = "选择进入 %s 时代的地标" % ["", "I", "II", "III", "IV"][target_age]
-	heading.add_theme_font_size_override("font_size", 23)
+	heading.add_theme_font_size_override("font_size", RtsUiTypography.SECTION_TITLE)
 	heading.add_theme_color_override("font_color", Color("f3d59c"))
 	column.add_child(heading)
 	var summary := Label.new()
@@ -1077,7 +1080,7 @@ func _show_age_choice() -> void:
 		name_label.text = choice["label"]
 		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		name_label.add_theme_font_size_override("font_size", 17)
+		name_label.add_theme_font_size_override("font_size", RtsUiTypography.BODY)
 		card.add_child(name_label)
 		var effect_label := Label.new()
 		effect_label.text = choice["description"]

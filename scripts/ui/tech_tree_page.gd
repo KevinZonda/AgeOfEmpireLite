@@ -1,5 +1,6 @@
 extends RefCounted
 class_name RtsTechTreePage
+const RtsUiTypography = preload("res://scripts/ui/typography.gd")
 
 signal civilization_selected(civilization: String, age: int)
 signal close_requested
@@ -37,9 +38,9 @@ func build(parent: Control, civilization: String, style_button: Callable, initia
 	panel.add_child(layout)
 	var header := HBoxContainer.new()
 	layout.add_child(header)
-	var title := _tech_tree_label(header, "%s  ·  科技树" % GameData.CIVILIZATIONS[civilization]["label"], 26, Color("f4dfae"))
+	var title := _tech_tree_label(header, "%s  ·  科技树" % GameData.CIVILIZATIONS[civilization]["label"], RtsUiTypography.PAGE_TITLE, Color("f4dfae"))
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_tech_tree_label(header, "切换国家", 15, Color("e4d6b9"))
+	_tech_tree_label(header, "切换国家", RtsUiTypography.BODY, Color("e4d6b9"))
 	civilization_choice = OptionButton.new()
 	civilization_choice.custom_minimum_size = Vector2(135, 38)
 	var civilization_ids := GameData.CIVILIZATIONS.keys()
@@ -58,7 +59,7 @@ func build(parent: Control, civilization: String, style_button: Callable, initia
 	header_strip.add_theme_constant_override("separation", 6)
 	layout.add_child(header_strip)
 	var corner := _matrix_cell(header_strip, AGE_COLUMN_WIDTH, Color("3c3020"), Color("a7854c"))
-	_tech_tree_label(corner, "时代 ↓   建筑 →", 17, Color("f3d59c"))
+	_tech_tree_label(corner, "时代 ↓   建筑 →", RtsUiTypography.SUBSECTION_TITLE, Color("f3d59c"))
 	var header_view := Control.new()
 	header_view.clip_contents = true
 	header_view.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -66,6 +67,7 @@ func build(parent: Control, civilization: String, style_button: Callable, initia
 	building_columns.assign(["town_center"] + RtsTechTree.BUILD_MENU)
 	_build_matrix_header(header_view)
 	header_view.custom_minimum_size.y = matrix_header.get_combined_minimum_size().y
+	matrix_header.minimum_size_changed.connect(func() -> void: header_view.custom_minimum_size.y = matrix_header.get_combined_minimum_size().y)
 	var matrix_body := HBoxContainer.new()
 	matrix_body.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	matrix_body.add_theme_constant_override("separation", 6)
@@ -126,15 +128,15 @@ func _build_matrix_header(parent: Control) -> void:
 		title.add_theme_constant_override("separation", 7)
 		cell.add_child(title)
 		_add_icon(title, building_kind, 34)
-		var name_label := _tech_tree_label(title, str(GameData.BUILDINGS[building_kind]["label"]), 16, Color("edc781"))
+		var name_label := _tech_tree_label(title, str(GameData.BUILDINGS[building_kind]["label"]), RtsUiTypography.BODY, Color("edc781"))
 		name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		_tech_tree_label(cell, "%s时代可建造" % AGE_LABELS[int(RtsTechTree.BUILDING_AGE[building_kind])].split("  ")[0], 11, Color("bca77e"))
+		_tech_tree_label(cell, "%s时代可建造" % AGE_LABELS[int(RtsTechTree.BUILDING_AGE[building_kind])].split("  ")[0], RtsUiTypography.CAPTION, Color("bca77e"))
 
 func _build_tech_tree_age(parent: HBoxContainer, rail: VBoxContainer, civilization: String, age: int) -> void:
 	var age_cell := _matrix_cell(rail, AGE_COLUMN_WIDTH, Color("352b20"), Color("9f7b43"))
-	_tech_tree_label(age_cell, AGE_LABELS[age], 20, Color("f3d59c"))
+	_tech_tree_label(age_cell, AGE_LABELS[age], RtsUiTypography.SECTION_TITLE, Color("f3d59c"))
 	if age > 1: _build_landmarks(age_cell, civilization, age)
-	else: _tech_tree_label(age_cell, "起始时代", 13, Color("c4b492"))
+	else: _tech_tree_label(age_cell, "起始时代", RtsUiTypography.CAPTION, Color("c4b492"))
 	for building_kind in building_columns:
 		_build_building_cell(parent, civilization, building_kind, age)
 
@@ -144,8 +146,8 @@ func _align_age_rail() -> void:
 		(age_rail.get_child(index) as Control).custom_minimum_size.y = age_pages[index].size.y
 
 func _build_landmarks(parent: VBoxContainer, civilization: String, age: int) -> void:
-	_tech_tree_label(parent, "升级：%s" % GameData.cost_text(RtsTechTree.age_cost(age - 1)), 12, Color("d4c8ae"))
-	_tech_tree_label(parent, "时代地标（二选一）", 13, Color("edc781"))
+	_tech_tree_label(parent, "升级：%s" % GameData.cost_text(RtsTechTree.age_cost(age - 1)), RtsUiTypography.CAPTION, Color("d4c8ae"))
+	_tech_tree_label(parent, "时代地标（二选一）", RtsUiTypography.CAPTION, Color("edc781"))
 	for landmark_id in RtsLandmarkCatalog.LANDMARKS:
 		var landmark: Dictionary = RtsLandmarkCatalog.LANDMARKS[landmark_id]
 		if landmark["civilization"] != civilization or int(landmark["age"]) != age: continue
@@ -160,16 +162,16 @@ func _build_building_cell(parent: HBoxContainer, civilization: String, building_
 	cell.set_meta("building_kind", building_kind)
 	cell.set_meta("age", age)
 	if building_age > age:
-		_tech_tree_label(cell, "需要%s" % AGE_LABELS[building_age], 12, Color("8d806c"))
+		_tech_tree_label(cell, "需要%s" % AGE_LABELS[building_age], RtsUiTypography.CAPTION, Color("8d806c"))
 		return
 	if new_building:
 		var actual_cost := RtsCivilizationRules.building_cost(civilization, building_kind)
 		var cost_text := GameData.cost_text(actual_cost) if not actual_cost.is_empty() else "初始建筑"
-		var new_label := _tech_tree_label(cell, "◆ 开放建造 · %s" % cost_text, 12, Color("edc781"))
+		var new_label := _tech_tree_label(cell, "◆ 开放建造 · %s" % cost_text, RtsUiTypography.CAPTION, Color("edc781"))
 		new_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	var unlocks := _unlocks_for(civilization, building_kind, age)
 	if unlocks.is_empty():
-		if not new_building: _tech_tree_label(cell, "—", 13, Color("8d806c"))
+		if not new_building: _tech_tree_label(cell, "—", RtsUiTypography.CAPTION, Color("8d806c"))
 		return
 	for item in unlocks:
 		var detail := str(item["category"])
@@ -226,9 +228,9 @@ func _unlock_tile(parent: Node, icon_kind: String, title: String, detail: String
 	text_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	text_box.add_theme_constant_override("separation", 1)
 	row.add_child(text_box)
-	var name_label := _tech_tree_label(text_box, title, 14, accent)
+	var name_label := _tech_tree_label(text_box, title, RtsUiTypography.BODY, accent)
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	var detail_label := _tech_tree_label(text_box, detail, 11, Color("c5b89e"))
+	var detail_label := _tech_tree_label(text_box, detail, RtsUiTypography.CAPTION, Color("c5b89e"))
 	detail_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
 func _add_icon(parent: Node, icon_kind: String, side: float) -> void:

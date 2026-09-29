@@ -14,6 +14,8 @@ func _run() -> void:
 	assert(home_settings != null)
 	home_settings.pressed.emit()
 	assert(game.settings_overlay.visible and not game.menu_panel.visible)
+	var settings_title: Label = game.settings_overlay.find_children("*", "Label", true, false).filter(func(node: Node) -> bool: return (node as Label).text == "设置")[0] as Label
+	assert(settings_title.get_theme_font_size("font_size") == 28, "settings should use the shared page title size")
 	assert(game.settings_overlay.get_child(0).get_global_rect() == Rect2(Vector2.ZERO, game.get_viewport_rect().size), "settings should fill the game view")
 	assert(game.settings_tabs.get_tab_count() == 2)
 	assert(game.settings_tabs.get_tab_title(0) == "显示设置")
@@ -224,7 +226,7 @@ func _run() -> void:
 	var scaled_title: Label
 	for label in game.menu_panel.find_children("*", "Label", true, false):
 		if label.text == "对 局 设 置": scaled_title = label
-	assert(scaled_title != null and scaled_title.get_theme_font_size("font_size") == 45)
+	assert(scaled_title != null and scaled_title.get_theme_font_size("font_size") == 42)
 	var menu_rect: Rect2 = game.menu_panel.get_global_rect()
 	assert(menu_rect.position.is_equal_approx(Vector2.ZERO))
 	assert(menu_rect.size.is_equal_approx(Vector2(1280, 720)), "match setup should fill the game view")

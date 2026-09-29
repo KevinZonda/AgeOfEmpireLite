@@ -1,5 +1,6 @@
 class_name RtsGameMenuUi
 extends RefCounted
+const RtsUiTypography = preload("res://scripts/ui/typography.gd")
 
 # Owns settings and lobby presentation; match state stays in the game root.
 signal match_requested(settings: Dictionary)
@@ -26,7 +27,7 @@ func _create_settings(parent: Control) -> void:
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 16)
 	panel.add_child(box)
-	_add_menu_label(box, "设置", 27)
+	_add_menu_label(box, "设置", RtsUiTypography.PAGE_TITLE)
 	var settings_layout := HBoxContainer.new()
 	settings_layout.add_theme_constant_override("separation", 12)
 	settings_layout.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -103,7 +104,7 @@ func _create_settings(parent: Control) -> void:
 	game.text_scale_choice.custom_minimum_size.y = 42
 	game._style_button(game.text_scale_choice)
 	_add_settings_option_row(display_tab, "文字缩放", game.text_scale_choice)
-	_add_menu_label(display_tab, "高于当前屏幕可用尺寸的选项不会显示。", 14)
+	_add_menu_label(display_tab, "高于当前屏幕可用尺寸的选项不会显示。", RtsUiTypography.CAPTION)
 	var controls_tab := VBoxContainer.new()
 	controls_tab.name = "操作设置"
 	controls_tab.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -133,7 +134,7 @@ func _create_settings(parent: Control) -> void:
 		game.settings_tab_buttons.append(tab_button)
 	game.settings_tabs.tab_changed.connect(_update_settings_tab_buttons)
 	_update_settings_tab_buttons(game.settings_tabs.current_tab)
-	_add_menu_label(box, "保存后立即生效，下次启动仍会保留。", 14)
+	_add_menu_label(box, "保存后立即生效，下次启动仍会保留。", RtsUiTypography.CAPTION)
 	var buttons := HBoxContainer.new()
 	buttons.add_theme_constant_override("separation", 12)
 	box.add_child(buttons)
@@ -185,7 +186,7 @@ func _add_settings_option_row(parent: VBoxContainer, title: String, choice: Opti
 	label.text = title
 	label.custom_minimum_size.x = SETTINGS_LABEL_WIDTH
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", 17)
+	label.add_theme_font_size_override("font_size", RtsUiTypography.BODY)
 	label.add_theme_color_override("font_color", Color("f0ddb1"))
 	row.add_child(label)
 	choice.custom_minimum_size.x = SETTINGS_FIELD_WIDTH
@@ -312,15 +313,15 @@ func _show_home_menu() -> void:
 	box.alignment = BoxContainer.ALIGNMENT_CENTER
 	box.add_theme_constant_override("separation", 20)
 	game.menu_panel.add_child(box)
-	var title := _menu_ink_label(box, "帝 国 时 代", 42)
+	var title := _menu_ink_label(box, "帝 国 时 代", RtsUiTypography.HERO)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	var subtitle := _menu_ink_label(box, "AGE OF EMPIRE LITE", 18)
+	var subtitle := _menu_ink_label(box, "AGE OF EMPIRE LITE", RtsUiTypography.SUBSECTION_TITLE)
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	var rule := ColorRect.new()
 	rule.color = Color("88663d")
 	rule.custom_minimum_size.y = 2
 	box.add_child(rule)
-	var description := _menu_ink_label(box, "建立帝国，探索战场，争夺胜利。", 17)
+	var description := _menu_ink_label(box, "建立帝国，探索战场，争夺胜利。", RtsUiTypography.BODY)
 	description.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	var start_button := Button.new()
 	start_button.text = "开 始 游 戏"
@@ -361,9 +362,9 @@ func _show_setup_menu() -> void:
 	game.menu_panel.add_child(box)
 	var header := HBoxContainer.new()
 	box.add_child(header)
-	var title := _menu_ink_label(header, "对 局 设 置", 30)
+	var title := _menu_ink_label(header, "对 局 设 置", RtsUiTypography.PAGE_TITLE)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var subtitle := _menu_ink_label(header, "SKIRMISH SETUP", 13)
+	var subtitle := _menu_ink_label(header, "SKIRMISH SETUP", RtsUiTypography.CAPTION)
 	subtitle.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 	var divider := ColorRect.new()
 	divider.color = Color("80613a")
@@ -384,27 +385,27 @@ func _show_setup_menu() -> void:
 	var heading := HBoxContainer.new()
 	heading.add_theme_constant_override("separation", 6)
 	players_column.add_child(heading)
-	var player_heading := _menu_ink_label(heading, "玩家", 14)
+	var player_heading := _menu_ink_label(heading, "玩家", RtsUiTypography.CAPTION)
 	player_heading.custom_minimum_size.x = 80
 	player_heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	player_heading.size_flags_stretch_ratio = 1.2
-	var difficulty_heading := _menu_ink_label(heading, "AI 强度", 14)
+	var difficulty_heading := _menu_ink_label(heading, "AI 强度", RtsUiTypography.CAPTION)
 	difficulty_heading.custom_minimum_size.x = 100
 	difficulty_heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var nation_heading := _menu_ink_label(heading, "国家", 14)
+	var nation_heading := _menu_ink_label(heading, "国家", RtsUiTypography.CAPTION)
 	nation_heading.custom_minimum_size.x = 115
 	nation_heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	nation_heading.size_flags_stretch_ratio = 1.2
-	var team_heading := _menu_ink_label(heading, "队伍", 14)
+	var team_heading := _menu_ink_label(heading, "队伍", RtsUiTypography.CAPTION)
 	team_heading.custom_minimum_size.x = 58
 	team_heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	team_heading.size_flags_stretch_ratio = 0.7
-	var color_heading := _menu_ink_label(heading, "颜色", 14)
+	var color_heading := _menu_ink_label(heading, "颜色", RtsUiTypography.CAPTION)
 	color_heading.custom_minimum_size.x = 58
 	color_heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	color_heading.size_flags_stretch_ratio = 0.7
-	_menu_ink_label(heading, "科技树", 14).custom_minimum_size.x = 72
-	_menu_ink_label(heading, "", 14).custom_minimum_size.x = 32
+	_menu_ink_label(heading, "科技树", RtsUiTypography.CAPTION).custom_minimum_size.x = 72
+	_menu_ink_label(heading, "", RtsUiTypography.CAPTION).custom_minimum_size.x = 32
 	game.player_list = VBoxContainer.new()
 	game.player_list.add_theme_constant_override("separation", 7)
 	players_column.add_child(game.player_list)
@@ -419,35 +420,35 @@ func _show_setup_menu() -> void:
 		_refresh_player_rows()
 	)
 	players_column.add_child(game.add_player_button)
-	var player_hint := _menu_ink_label(players_column, "同队共享视野与胜利；至少需要两个队伍。", 13)
+	var player_hint := _menu_ink_label(players_column, "同队共享视野与胜利；至少需要两个队伍。", RtsUiTypography.CAPTION)
 	player_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	var settings_column := _menu_section(body, "对局设置", 0)
-	_menu_ink_label(settings_column, "地图选择", 14)
+	_menu_ink_label(settings_column, "地图选择", RtsUiTypography.CAPTION)
 	game.map_style_choice = OptionButton.new()
 	for option in ["平衡", "大湖", "高地", "群岛"]: game.map_style_choice.add_item(option)
 	game.map_style_choice.selected = ["balanced", "lakes", "highlands", "islands"].find(game.selected_map_style)
 	game._style_menu_button(game.map_style_choice)
 	settings_column.add_child(game.map_style_choice)
-	_menu_ink_label(settings_column, "地图大小", 14)
+	_menu_ink_label(settings_column, "地图大小", RtsUiTypography.CAPTION)
 	game.map_size_choice = OptionButton.new()
 	game.map_size_choice.add_item("标准地图")
 	game.map_size_choice.add_item("大型地图")
 	game.map_size_choice.selected = 1 if game.selected_map_size.x > game.WORLD_SIZE.x else 0
 	game._style_menu_button(game.map_size_choice)
 	settings_column.add_child(game.map_size_choice)
-	_menu_ink_label(settings_column, "初始资源", 14)
+	_menu_ink_label(settings_column, "初始资源", RtsUiTypography.CAPTION)
 	game.initial_resources_choice = OptionButton.new()
 	for option in ["较少", "标准", "丰富"]: game.initial_resources_choice.add_item(option)
 	game.initial_resources_choice.selected = game.selected_initial_resources
 	game._style_menu_button(game.initial_resources_choice)
 	settings_column.add_child(game.initial_resources_choice)
-	_menu_ink_label(settings_column, "战争迷雾", 14)
+	_menu_ink_label(settings_column, "战争迷雾", RtsUiTypography.CAPTION)
 	game.fog_mode_choice = OptionButton.new()
 	for option in ["开启", "完整关闭", "显示地形"]: game.fog_mode_choice.add_item(option)
 	game.fog_mode_choice.selected = ["enabled", "disabled", "terrain"].find(game.selected_fog_mode)
 	game._style_menu_button(game.fog_mode_choice)
 	settings_column.add_child(game.fog_mode_choice)
-	_menu_ink_label(settings_column, "地图种子", 14)
+	_menu_ink_label(settings_column, "地图种子", RtsUiTypography.CAPTION)
 	game.map_seed_input = LineEdit.new()
 	game.map_seed_input.placeholder_text = "留空则随机生成"
 	game.map_seed_input.add_theme_stylebox_override("normal", game._button_style(Color("eadbb4"), Color("9b784b")))
@@ -466,7 +467,7 @@ func _show_setup_menu() -> void:
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	footer.add_child(spacer)
-	game.setup_warning_label = _menu_ink_label(footer, "", 13)
+	game.setup_warning_label = _menu_ink_label(footer, "", RtsUiTypography.CAPTION)
 	game.setup_warning_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	game.setup_start_button = Button.new()
 	game.setup_start_button.text = "开 始 对 局"
@@ -488,7 +489,7 @@ func _refresh_player_rows() -> void:
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 6)
 		game.player_list.add_child(row)
-		var player_name := _menu_ink_label(row, "玩家 %d%s" % [slot + 1, " (你)" if slot == 0 else ""], 15)
+		var player_name := _menu_ink_label(row, "玩家 %d%s" % [slot + 1, " (你)" if slot == 0 else ""], RtsUiTypography.BODY)
 		player_name.custom_minimum_size.x = 80
 		player_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		player_name.size_flags_stretch_ratio = 1.2
@@ -634,7 +635,7 @@ func _menu_section(parent: HBoxContainer, heading: String, width: float) -> VBox
 	var column := VBoxContainer.new()
 	column.add_theme_constant_override("separation", 7)
 	panel.add_child(column)
-	_menu_ink_label(column, heading, 20)
+	_menu_ink_label(column, heading, RtsUiTypography.SECTION_TITLE)
 	return column
 
 func _begin_menu_match() -> void:

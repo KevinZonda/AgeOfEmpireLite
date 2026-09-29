@@ -25,17 +25,24 @@ func _run() -> void:
 		if civilization == "English":
 			game.text_scale = 1.5
 			game._apply_ui_scales()
+			await process_frame
+			await process_frame
+			for node in game.tech_tree_overlay.find_children("*", "Label", true, false):
+				var label := node as Label
+				assert(label.get_combined_minimum_size().x <= label.size.x + 1.0 and label.get_combined_minimum_size().y <= label.size.y + 1.0, "tech tree text should fit at 150%: " + label.text)
 			var tree_title: Label
 			for node in game.tech_tree_overlay.find_children("*", "Label", true, false):
 				if (node as Label).text.contains("英格兰  ·  科技树"):
 					tree_title = node
 					break
-			assert(tree_title != null and tree_title.get_theme_font_size("font_size") == 39, "tech tree labels should follow text scale")
+			assert(tree_title != null and tree_title.get_theme_font_size("font_size") == 42, "tech tree labels should follow text scale")
+			var unlock_details: Array = game.tech_tree_overlay.find_children("*", "Label", true, false).filter(func(node: Node) -> bool: return (node as Label).text.contains("训练兵种"))
+			assert(not unlock_details.is_empty() and (unlock_details[0] as Label).get_theme_font_size("font_size") == 21, "tech tree details should use readable caption size")
 			assert(game.tech_tree_civilization_choice.get_popup().get_theme_font_size("font_size") == 24, "tech tree dropdown items should follow text scale")
 			assert(ThemeDB.get_default_theme().get_font_size("font_size", "TooltipLabel") == 24, "tech tree tooltips should follow text scale")
 			game.text_scale = 1.0
 			game._apply_ui_scales()
-			assert(tree_title.get_theme_font_size("font_size") == 26)
+			assert(tree_title.get_theme_font_size("font_size") == 28)
 			assert(game.tech_tree_civilization_choice.get_popup().get_theme_font_size("font_size") == 16)
 		assert(game.tech_tree_overlay.get_child(0).get_global_rect().end.x <= game.get_viewport_rect().size.x)
 		assert(game.tech_tree_overlay.get_child(0).get_global_rect().end.y <= game.get_viewport_rect().size.y)

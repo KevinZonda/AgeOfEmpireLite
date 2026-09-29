@@ -72,6 +72,8 @@ func _run() -> void:
 	game._apply_ui_scales()
 	var report_tabs := game.result_panel.find_children("*", "TabContainer", true, false)[0] as TabContainer
 	var report_chart := game.result_panel.find_children("*", "RtsStatisticsChart", true, false)[0] as RtsStatisticsChart
+	var report_title: Label = game.result_panel.find_children("*", "Label", true, false).filter(func(node: Node) -> bool: return (node as Label).text.contains("胜利 · 测试"))[0] as Label
+	assert(report_title.get_theme_font_size("font_size") == 42, "report should use the shared page title size")
 	assert(report_tabs.get_theme_font_size("font_size") == 24, "report tab names should follow text scale")
 	assert(is_equal_approx(report_chart.text_scale, 1.5), "report chart labels should follow text scale")
 	assert(is_equal_approx(game.cursor.text_scale, 1.5), "cursor labels should follow text scale")
