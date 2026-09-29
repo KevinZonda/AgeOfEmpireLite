@@ -1979,14 +1979,8 @@ func _prune_hidden_enemy_selection() -> void:
 		_update_selection_hud()
 		queue_redraw()
 
-func _update_population_hud() -> void:
-	hud_ui._update_population_hud()
-
 func _update_selection_hud() -> void:
 	hud_ui._update_selection_hud()
-
-func _update_building_progress(building: RtsBuilding) -> void:
-	hud_ui._update_building_progress(building)
 
 func idle_villagers() -> Array[RtsUnit]:
 	var result: Array[RtsUnit] = []
@@ -2028,15 +2022,6 @@ func _select_next_idle_villager() -> void:
 	_update_hud()
 	queue_redraw()
 
-func _unit_stats_text(unit: RtsUnit) -> String:
-	return hud_ui._unit_stats_text(unit)
-
-func _job_label(job: Dictionary) -> String:
-	return hud_ui._job_label(job)
-
-func _refresh_queue_controls(building: RtsBuilding) -> void:
-	hud_ui._refresh_queue_controls(building)
-
 func _toggle_global_queue() -> void:
 	hud_ui._toggle_global_queue()
 
@@ -2046,20 +2031,8 @@ func _refresh_global_queue_panel() -> void:
 func _refresh_action_buttons() -> void:
 	hud_ui._refresh_action_buttons()
 
-func _has_wonder(owner_id: int) -> bool:
-	return hud_ui._has_wonder(owner_id)
-
 func _rebuild_actions() -> void:
 	hud_ui._rebuild_actions()
-
-func _build_unit_actions(item: RtsUnit) -> void:
-	hud_ui._build_unit_actions(item)
-
-func _selected_has_ability(ability: Dictionary) -> bool:
-	return hud_ui._selected_has_ability(ability)
-
-func _build_building_actions(item: RtsBuilding) -> void:
-	hud_ui._build_building_actions(item)
 
 func _activate_selected_ability(ability_id: String) -> void:
 	for selection in selected:
@@ -2083,12 +2056,6 @@ func _set_selected_trade_resource(resource_kind: String) -> void:
 	notify_player("商人将运回%s" % GameData.RESOURCE_LABELS[resource_kind])
 	_update_hud()
 
-func _add_build_action(kind: String, keycode: int) -> void:
-	hud_ui._add_build_action(kind, keycode)
-
-func _add_landmark_action(choice: Dictionary, keycode: int) -> void:
-	hud_ui._add_landmark_action(choice, keycode)
-
 func _show_age_choice() -> void:
 	hud_ui._show_age_choice()
 
@@ -2101,12 +2068,6 @@ func _select_landmark_for_placement(choice_id: String) -> void:
 	build_mode = "landmark"
 	pending_landmark_id = choice_id
 	notify_player("%s：%s。点击地图放置" % [choice["label"], choice["description"]])
-
-func _add_train_action(kind: String, keycode: int) -> void:
-	hud_ui._add_train_action(kind, keycode)
-
-func _add_research_action(kind: String, keycode: int) -> void:
-	hud_ui._add_research_action(kind, keycode)
 
 func _add_action_spacer() -> void:
 	hud_ui._add_action_spacer()

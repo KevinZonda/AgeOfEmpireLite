@@ -52,15 +52,6 @@ static func defense_stats(building_kind: String, garrison_count: int = 0) -> Dic
 		"tags": ["building", "structure", "fortification"],
 	}
 
-static func defense_range(building_kind: String) -> float:
-	return float(defense_stats(building_kind).get("range", 0.0))
-
-static func defense_cooldown(building_kind: String) -> float:
-	return float(defense_stats(building_kind).get("cooldown", 0.0))
-
-static func defense_projectile_speed(building_kind: String) -> float:
-	return float(defense_stats(building_kind).get("projectile_speed", 0.0))
-
 static func can_attack_target(attacker_definition: Dictionary, _defender_definition: Dictionary, distance: float) -> bool:
 	return distance >= float(attacker_definition.get("min_range", 0.0)) and distance <= float(attacker_definition.get("range", 0.0))
 

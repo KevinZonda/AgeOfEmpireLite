@@ -577,20 +577,8 @@ func _generate_fish() -> void:
 				resource_specs.append({"kind": "food", "appearance": "fish", "position": point, "amount": 420})
 				placed += 1
 
-func _tile_lift(height: float) -> Vector2:
-	return WorldMapRenderer.tile_lift(self, height)
-
 func _visual_vertex_height(x: int, y: int) -> float:
 	return WorldMapRenderer.visual_vertex_height(self, x, y)
-
-func projected_vertex(x: int, y: int) -> Vector2:
-	return WorldMapRenderer.projected_vertex(self, x, y)
-
-func _relief_color(terrain: int, height: float) -> Color:
-	return WorldMapRenderer.relief_color(terrain, height)
-
-func _draw_relief_tile(x: int, y: int) -> void:
-	WorldMapRenderer.draw_relief_tile(self, x, y, WorldMapRenderer.grass_vertex_colors(self))
 
 func _draw() -> void:
 	WorldMapRenderer.draw_map(self)

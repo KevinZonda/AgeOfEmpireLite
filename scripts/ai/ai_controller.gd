@@ -351,9 +351,6 @@ func _needed_resource(gathering: Dictionary, worker_count: int) -> String:
 func _expand_production(workers: Array[RtsUnit], army_size: int, age: int) -> void:
 	_economy._expand_production(workers, army_size, age)
 
-func _visible_enemy_units() -> Array[RtsUnit]:
-	return _tactics._visible_enemy_units()
-
 func _secure_sacred_site(army: Array[RtsUnit]) -> void:
 	_tactics._secure_sacred_site(army)
 
@@ -413,9 +410,6 @@ func _sacred_site_for(monk: RtsUnit) -> int:
 
 func _resume_construction(workers: Array[RtsUnit]) -> void:
 	_economy._resume_construction(workers)
-
-func _construction_worker(point: Vector2) -> RtsUnit:
-	return _economy._construction_worker(point)
 
 func _construct(kind: String, _worker: RtsUnit) -> void:
 	_economy._construct(kind, _worker)

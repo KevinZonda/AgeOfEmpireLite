@@ -21,9 +21,7 @@ var farm_stage := "sowing"
 var farm_stage_progress := 0.0
 var farm_food_buffer := 0.0
 var training_queue: Array[String] = []
-var training_remaining := 0.0
 var research_queue: Array[String] = []
-var research_remaining := 0.0
 # A building works on one job at a time. The two typed queues above remain useful
 # for population accounting and the existing selection UI.
 var production_queue: Array[Dictionary] = []
@@ -291,15 +289,8 @@ func drain_queue() -> Array[Dictionary]:
 
 func _begin_next_job() -> void:
 	production_remaining = 0.0
-	training_remaining = 0.0
-	research_remaining = 0.0
 	if production_queue.is_empty(): return
 	production_remaining = production_queue[0]["time"]
-	_sync_remaining()
-
-func _sync_remaining() -> void:
-	training_remaining = production_remaining if not production_queue.is_empty() and production_queue[0]["type"] == "train" else 0.0
-	research_remaining = production_remaining if not production_queue.is_empty() and production_queue[0]["type"] == "research" else 0.0
 
 func _training_time(unit_kind: String) -> float:
 	var producer := producer_kind()
@@ -424,7 +415,6 @@ func _process(delta: float) -> void:
 			work_rate = 1.5
 			break
 	production_remaining = maxf(0.0, production_remaining - delta * work_rate)
-	_sync_remaining()
 	if production_remaining > 0.0: return
 	var job: Dictionary = production_queue.pop_front()
 	if job["type"] == "train":
