@@ -307,8 +307,13 @@ func _visible_cells(point: Vector2, grid: AStarGrid2D, radius: float, unit: RtsU
 
 func _safe_point_path(grid: AStarGrid2D, start: Vector2i, end: Vector2i, unit: RtsUnit) -> PackedVector2Array:
 	if start.x < 0 or end.x < 0: return PackedVector2Array()
-	var components := _components_for(grid)
-	if components[start.y * grid.region.size.x + start.x] != components[end.y * grid.region.size.x + end.x]: return PackedVector2Array()
+	# A short reachable query must not first flood the entire fine world grid.
+	# Reuse connectivity if a previous failed query needed it; otherwise try
+	# native A* first and build the rejection cache only on actual failure.
+	var key := grid.get_instance_id()
+	if grid_components.has(key):
+		var components: PackedInt32Array = grid_components[key]
+		if components[start.y * grid.region.size.x + start.x] != components[end.y * grid.region.size.x + end.x]: return PackedVector2Array()
 	var radius := unit.radius() if unit != null else CLEARANCE
 	# Two clear cell centers can still have a resource between them. Repair
 	# that edge conservatively for this search, restoring the shared grid after.
@@ -316,7 +321,10 @@ func _safe_point_path(grid: AStarGrid2D, start: Vector2i, end: Vector2i, unit: R
 	var result := PackedVector2Array()
 	for attempt in 32:
 		var raw := _point_path(grid, start, end)
-		if raw.is_empty(): break
+		if raw.is_empty():
+			# Temporary edge-repair blocks must never enter a shared cache.
+			if blocked.is_empty(): _components_for(grid)
+			break
 		var invalid := -1
 		for i in range(1, raw.size()):
 			if not _static_segment_clear(raw[i - 1], raw[i], radius, unit):
