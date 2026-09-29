@@ -9,9 +9,9 @@ class MeasuredNavigation extends RtsNavigation:
 		coarse_requests[to] = coarse_requests.get(to, 0) + 1
 		return super._path_between(from, to, unit, smooth, allow_fine)
 
-	func _fine_static_path(from: Vector2, to: Vector2, unit: RtsUnit) -> PackedVector2Array:
+	func _fine_static_path(from: Vector2, to: Vector2, unit: RtsUnit, corner_fallback := true) -> PackedVector2Array:
 		refinements += 1
-		return super._fine_static_path(from, to, unit)
+		return super._fine_static_path(from, to, unit, corner_fallback)
 
 func _run() -> void:
 	_test_direct_destination_work()

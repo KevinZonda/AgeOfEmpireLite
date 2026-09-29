@@ -7,6 +7,7 @@ const SPATIAL_CELL_SIZE := 64.0
 const SMOOTH_LOOKAHEAD := 8
 const MAX_FINE_GRIDS := 4
 const MAX_CORNER_ATTACHMENTS := 64
+const MAX_RANGE_CORNER_ATTEMPTS := 4
 const MAX_RANGE_SEGMENTS := 8192
 const RecoveryKernel = preload("res://scripts/world/navigation_recovery.gd")
 const BackgroundJobs = preload("res://scripts/world/navigation_jobs.gd")
@@ -139,8 +140,14 @@ func _obstacle_signature(ignore_resource_positions := false) -> int:
 			signature = hash([signature, building.get_instance_id(), building.position, building.size(), building.owner_id, building.kind, building.is_complete()])
 	for resource in game.resources:
 		if is_instance_valid(resource) and not resource.is_queued_for_deletion():
-			signature = hash([signature, resource.get_instance_id(), Vector2.ZERO if ignore_resource_positions else resource.position, resource.radius])
+			# Living wildlife wanders every frame; animals are dynamic obstacles
+			# tracked by the spatial index, not cached geometry.
+			var mobile := _is_mobile_wildlife(resource)
+			signature = hash([signature, resource.get_instance_id(), Vector2.ZERO if ignore_resource_positions or mobile else resource.position, resource.radius])
 	return signature
+
+func _is_mobile_wildlife(resource: RtsResource) -> bool:
+	return resource.appearance in ["deer", "boar", "sheep"] and resource.wildlife_hp > 0.0
 
 func _ensure_current() -> void:
 	var frame := Engine.get_process_frames()
@@ -236,7 +243,14 @@ func unit_moved(unit: RtsUnit, previous_position: Vector2) -> void:
 	_move_in_index(units_by_cell, unit, previous_position)
 
 func resource_moved(resource: RtsResource, previous_position: Vector2) -> void:
-	if previous_position != resource.position: invalidate_obstacles(false)
+	if previous_position == resource.position: return
+	if _is_mobile_wildlife(resource):
+		# Wildlife move constantly; rebuilding world geometry for every step
+		# stalled frames whenever a stuck order retried. Collision queries read
+		# live positions through the spatial index, so a bucket move suffices.
+		if spatial_frame == Engine.get_process_frames(): _move_in_index(resources_by_cell, resource, previous_position)
+		return
+	invalidate_obstacles(false)
 
 func _move_in_index(index: Dictionary, entity: Node2D, previous_position: Vector2) -> void:
 	var old_cell := _spatial_cell(previous_position)
@@ -431,18 +445,36 @@ func _path_between(from: Vector2, to: Vector2, unit: RtsUnit, smooth: bool, allo
 		if to.distance_squared_to(raw[raw.size() - 1]) > 1.0: raw.append(to)
 	return raw
 
-func _fine_static_path(from: Vector2, to: Vector2, unit: RtsUnit) -> PackedVector2Array:
+func _fine_static_path(from: Vector2, to: Vector2, unit: RtsUnit, corner_fallback := true) -> PackedVector2Array:
 	# Reachability cannot depend on the request's bounding box: the only
 	# opening may lie far beyond it. Share a world-wide fallback by body type
 	# and obstacle revision instead of rebuilding a local grid for every worker.
 	var key := _grid_key(unit)
-	if not fine_grids.has(key):
+	if fine_grids.has(key):
+		var world: AStarGrid2D = fine_grids[key]
+		if _fine_components_disconnect(from, to, unit, world):
+			# A previous failure already flooded the world grid: skip hopeless
+			# local builds and A* retries, keep only the exact corner fallback.
+			return _obstacle_corner_path(from, to, unit) if corner_fallback else PackedVector2Array()
+	else:
 		var local := _local_fine_grid_for(from, to, unit, key)
 		if local != null:
 			var path := _search_fine_grid(from, to, unit, local)
 			if not path.is_empty(): return path
 	var path := _search_fine_grid(from, to, unit, _fine_grid_for(unit))
-	return path if not path.is_empty() else _obstacle_corner_path(from, to, unit)
+	return path if not path.is_empty() or not corner_fallback else _obstacle_corner_path(from, to, unit)
+
+func _fine_components_disconnect(from: Vector2, to: Vector2, unit: RtsUnit, grid: AStarGrid2D) -> bool:
+	var key := grid.get_instance_id()
+	if not grid_components.has(key): return false
+	var components: PackedInt32Array = grid_components[key]
+	var width := grid.region.size.x
+	var from_labels := {}
+	for cell in _fine_visible_cells(from, grid, unit): from_labels[components[cell.y * width + cell.x]] = true
+	if from_labels.is_empty(): return false
+	for cell in _fine_visible_cells(to, grid, unit):
+		if from_labels.has(components[cell.y * width + cell.x]): return false
+	return true
 
 func _search_fine_grid(from: Vector2, to: Vector2, unit: RtsUnit, grid: AStarGrid2D) -> PackedVector2Array:
 	var starts := _fine_visible_cells(from, grid, unit)
@@ -825,9 +857,15 @@ func _search_path_to_range(from: Vector2, target: Vector2, reach: float, unit: R
 	for refine in [false, true]:
 		var best := PackedVector2Array()
 		var best_length := INF
+		var corner_attempts := 0
 		for point in candidates:
 			if from.distance_to(point) >= best_length: break
-			var candidate := _fine_static_path(from, point, unit) if refine else _path_between(from, point, unit, true, false)
+			# The exact corner fallback costs a visibility search per candidate.
+			# Reserve it for the nearest few; a distant corner route around
+			# geometry the fine grid calls disconnected is never the best pick.
+			var allow_corner: bool = not refine or corner_attempts < MAX_RANGE_CORNER_ATTEMPTS
+			var candidate := _fine_static_path(from, point, unit, allow_corner) if refine else _path_between(from, point, unit, true, false)
+			if refine: corner_attempts += 1
 			if candidate.is_empty(): continue
 			var length := from.distance_to(candidate[0]) + _path_length(candidate)
 			if length < best_length:
