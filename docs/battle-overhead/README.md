@@ -20,11 +20,18 @@
 
 新增断言验证移动资源依旧阻挡碰撞、结构更新即时唤醒、临时拥堵消失后可抵达目标。重新验证了失败退避、目标切换、施工、复杂地形和密集编队。
 
+## PoC 3：没有有效出口仍然遍历整个连通区域
+
+`navigation_battle_goal_poc.gd` 只有两名相接的单位，落点正好被前一名占据。原恢复逻辑在 flood fill 后才筛掉被占用或无法带来进展的出口，10 次请求遍历 **800,890 格、耗时 669.9 ms**。现在先枚举网格边界和落点周围半径三格的候选，提前应用原有占位和进展条件；没有候选就直接返回。修复后 **不再 flood fill，10 次耗时 26.4 ms**。
+
+用原先全网格谓词逐格对比新候选集合，覆盖普通目标和落在局部网格外的目标。较远目标仍能绕过阻挡者，宽包围圈、窄缝、施工和密集编队回归保持通过。此项与 PoC 1 互补：先排除没有出口的搜索，再仅遍历起点可达区域。
+
 ## 复现
 
 ```sh
 make run RUN_ARGS='--headless --script res://tests/navigation_battle_recovery_poc.gd'
 make run RUN_ARGS='--headless --script res://tests/navigation_battle_retry_poc.gd'
+make run RUN_ARGS='--headless --script res://tests/navigation_battle_goal_poc.gd'
 python3 tools/check_navigation.py
 RTS_BATTLE_SIEGE=1 RTS_BATTLE_MAP=generated RTS_NAV_PROFILE=1 make run RUN_ARGS='--script res://tests/performance_battle_poc.gd --windowed --resolution 1280x720'
 ```
@@ -32,3 +39,11 @@ RTS_BATTLE_SIEGE=1 RTS_BATTLE_MAP=generated RTS_NAV_PROFILE=1 make run RUN_ARGS=
 集成基准固定随机种子 4242，默认 40 名进攻者、300 个 1/30 秒模拟步、2.5D，围攻中央城镇中心。提高目标生命值以持续观察拥堵；更新单位、建筑、弹道、资源、迷雾和 UI，禁用 AI。环境变量 `RTS_BATTLE_SIDE` / `RTS_BENCH_STEPS` 调整规模与时长，`RTS_BENCH_PROJECTION=2d` 切换投影，去掉 `RTS_BATTLE_SIEGE=1` 改为两军接战，去掉 `RTS_BATTLE_MAP=generated` 使用平地隔离场景。
 
 输出分别记录单位模拟、其他 CPU 更新与真实窗口帧间隔。headless 帧间隔不是渲染 FPS；开启 profiling 的数据只用于热点定位，最终窗口比较应关闭 profiling 并串行运行。
+
+串行 A/B 窗口测试（两个项目目录都需放入同一份 `performance_battle_poc.gd`，共用同一引擎）：
+
+```sh
+python3 tools/benchmark_battle.py --baseline /path/to/before --candidate . --rounds 3
+```
+
+脚本交替运行前后版本，固定为 2.5D、生成地图、开启迷雾、关闭 profiling；每轮记录 40 / 80 名士兵围攻的真实帧间隔和伤害量。基线与候选应使用相同的非性能相关代码。本次采用独立目录固定代码，避免共享工作区的其他 UI 编辑影响测量。

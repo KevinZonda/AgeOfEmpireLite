@@ -914,22 +914,41 @@ func _local_reachable_cells(grid: AStarGrid2D, start: Vector2i) -> Array[Vector2
 			if not grid.is_point_solid(next): cells.append(next)
 	return cells
 
+func _local_exit_candidates(grid: AStarGrid2D, origin: Vector2, target: Vector2) -> Dictionary:
+	var result := {}
+	var size := grid.region.size
+	var local_target := Vector2i(((target - grid.offset) / grid.cell_size).round()).clamp(Vector2i.ZERO, size - Vector2i.ONE)
+	var limit := origin.distance_to(target) - 4.0
+	for y in range(maxi(0, local_target.y - 3), mini(size.y, local_target.y + 4)):
+		for x in range(maxi(0, local_target.x - 3), mini(size.x, local_target.x + 4)):
+			var cell := Vector2i(x, y)
+			if cell.distance_squared_to(local_target) <= 9: _add_local_exit(result, grid, cell, target, limit)
+	for x in size.x:
+		_add_local_exit(result, grid, Vector2i(x, 0), target, limit)
+		_add_local_exit(result, grid, Vector2i(x, size.y - 1), target, limit)
+	for y in range(1, size.y - 1):
+		_add_local_exit(result, grid, Vector2i(0, y), target, limit)
+		_add_local_exit(result, grid, Vector2i(size.x - 1, y), target, limit)
+	return result
+
+func _add_local_exit(exits: Dictionary, grid: AStarGrid2D, cell: Vector2i, target: Vector2, limit: float) -> void:
+	if not grid.is_point_solid(cell) and grid.get_point_position(cell).distance_to(target) < limit:
+		exits[cell] = true
+
 func _local_unit_path(unit: RtsUnit, target: Vector2, step: float, half: int) -> PackedVector2Array:
 	var grid := _local_unit_grid(unit, step, half)
 	var start := Vector2i(half, half)
 	grid.set_point_solid(start, false)
-	var reachable := _local_reachable_cells(grid, start)
-	var local_target := Vector2i(((target - grid.offset) / step).round()).clamp(Vector2i.ZERO, grid.region.size - Vector2i.ONE)
+	# Only the perimeter and the 3-cell disk around the target can be exits.
+	# Reject occupied/non-improving exits BEFORE flooding tens of thousands of
+	# cells. At contact with a parked unit there is often no useful exit at all.
+	var exits := _local_exit_candidates(grid, unit.position, target)
+	if exits.is_empty(): return PackedVector2Array()
 	var candidates: Array[Vector2i] = []
-	for cell in reachable:
-		if cell == local_target or cell.x == 0 or cell.y == 0 or cell.x == grid.region.size.x - 1 or cell.y == grid.region.size.y - 1 or cell.distance_squared_to(local_target) <= 9:
-			candidates.append(cell)
+	for cell in _local_reachable_cells(grid, start):
+		if exits.has(cell): candidates.append(cell)
 	candidates.sort_custom(func(a: Vector2i, b: Vector2i) -> bool: return grid.get_point_position(a).distance_squared_to(target) < grid.get_point_position(b).distance_squared_to(target))
 	for cell in candidates:
-		if grid.is_point_solid(cell): continue
-		# Reject geometrically useless exits before A*. In crowded work sites
-		# hundreds of boundary candidates can be farther from the waypoint.
-		if grid.get_point_position(cell).distance_to(target) >= unit.position.distance_to(target) - 4.0: continue
 		var raw := _point_path(grid, start, cell)
 		if raw.size() < 2: continue
 		var result := PackedVector2Array([unit.position])
