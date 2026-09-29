@@ -734,7 +734,6 @@ func _draw_topdown_military_structure(art_kind: String, bounds: Rect2, palette: 
 		"stable":
 			_draw_topdown_military_roof(_military_rect(bounds, 0.06, 0.06, 0.88, 0.3), palette)
 			_draw_topdown_military_roof(_military_rect(bounds, 0.06, 0.32, 0.24, 0.38), palette, false)
-			_draw_topdown_military_roof(_military_rect(bounds, 0.7, 0.72, 0.22, 0.18), palette)
 			var paddock := _military_rect(bounds, 0.34, 0.43, 0.55, 0.43)
 			draw_rect(paddock, timber, false, 2.0)
 			for u in [0.46, 0.74]:
@@ -1022,7 +1021,6 @@ func _draw_iso_military_structure(art_kind: String, nw: Vector2, ne: Vector2, sw
 			draw_line(fence_left, fence_right, timber, 2.8)
 			var fence_back := _military_point(nw, ne, sw, 0.92, 0.41) + floor_lift + lift * 0.24
 			draw_line(fence_right, fence_back, timber, 2.8)
-			_draw_iso_military_block(nw, ne, sw, floor_lift, canvas, palette, 0.72, 0.72, 0.2, 0.19, 12, "gable_u")
 
 func _draw_iso_roof(art_kind: String, nw: Vector2, ne: Vector2, se: Vector2, sw: Vector2, lift: Vector2, palette: Dictionary, canvas: Transform2D) -> void:
 	var center := (nw + ne + se + sw) * 0.25

@@ -176,12 +176,15 @@ static func _mining_iso(c: CanvasItem, nw: Vector2, ne: Vector2, sw: Vector2, li
 	var ridge := _up(canvas, zoom, 8.0)
 	var portal_left := _point(nw, ne, sw, 0.25, 0.55)
 	var portal_right := _point(nw, ne, sw, 0.57, 0.55)
+	_quad(c, b + eave, e + eave, e + floor_lift, b + floor_lift, palette["wall"].darkened(0.2))
+	_quad(c, d + eave, e + eave, e + floor_lift, d + floor_lift, palette["wall"])
 	_quad(c, portal_left + eave * 0.78, portal_right + eave * 0.78, portal_right + floor_lift, portal_left + floor_lift, Color("343b34"))
 	c.draw_line(portal_left + floor_lift, portal_left + eave * 0.83, timber, 3.4)
 	c.draw_line(portal_right + floor_lift, portal_right + eave * 0.83, timber, 3.4)
 	for post in [a, b, d, e]: c.draw_line(post + floor_lift, post + eave, timber, 3.1)
 	var back_peak := (a + b) * 0.5 + eave + ridge
 	var front_peak := (d + e) * 0.5 + eave + ridge
+	c.draw_colored_polygon(PackedVector2Array([d + eave, front_peak, e + eave]), palette["wall"].darkened(0.1))
 	_quad(c, a + eave, back_peak, front_peak, d + eave, roof.lightened(0.08))
 	_quad(c, back_peak, b + eave, e + eave, front_peak, roof)
 	c.draw_line(back_peak, front_peak, trim, 2.0)
@@ -256,8 +259,9 @@ static func _iso_hall(c: CanvasItem, nw: Vector2, ne: Vector2, sw: Vector2, lift
 static func _blacksmith_iso(c: CanvasItem, nw: Vector2, ne: Vector2, sw: Vector2, lift: Vector2, palette: Dictionary, accent: Color, civ: String, canvas: Transform2D, zoom: float) -> void:
 	var timber: Color = palette["timber"]
 	var trim: Color = palette["trim"]
-	var wall: Color = palette["wall"]
 	_iso_deck(c, nw, ne, sw, lift * 0.15, Color("8e8268"), timber)
+	# The roof covers the lower flue, leaving a short brick shaft above it.
+	_blacksmith_chimney_iso(c, nw, ne, sw, lift, canvas, zoom)
 	_iso_hall(c, nw, ne, sw, lift, palette, accent, canvas, zoom, 0.05, 0.04, 0.70, 0.69, 0.93, 14.0, 0.34)
 	# Side forge shed on exposed posts, lower than the steep main roof.
 	var shed_a := _point(nw, ne, sw, 0.70, 0.22)
@@ -269,13 +273,6 @@ static func _blacksmith_iso(c: CanvasItem, nw: Vector2, ne: Vector2, sw: Vector2
 	for post in [shed_b, shed_e]: c.draw_line(post + lift * 0.15, post + shed_low, timber, 3.0)
 	_quad(c, shed_a + shed_high, shed_b + shed_low, shed_e + shed_low, shed_d + shed_high, palette["roof_dark"])
 	c.draw_line(shed_d + shed_high, shed_e + shed_low, trim, 2.3)
-	# Masonry flue rises behind the front gable.
-	var chimney_base := _point(nw, ne, sw, 0.17, 0.42) + lift * 0.93
-	var chimney_top := chimney_base + _up(canvas, zoom, 18.0)
-	c.draw_line(chimney_base, chimney_top, wall.darkened(0.48), 11.0)
-	c.draw_line(chimney_base, chimney_top, Color("715b4e"), 7.0)
-	c.draw_line(chimney_top - (ne - nw) * 0.055, chimney_top + (ne - nw) * 0.055, trim, 3.6)
-	c.draw_circle(chimney_top, 2.1, Color("262b29"))
 	# The front work area breaks the solid-house silhouette.
 	var forge := _point(nw, ne, sw, 0.26, 0.91) + lift * 0.17
 	c.draw_line(forge, forge + lift * 0.42, Color("39362e"), 10.5)
@@ -285,6 +282,26 @@ static func _blacksmith_iso(c: CanvasItem, nw: Vector2, ne: Vector2, sw: Vector2
 	c.draw_line(anvil, anvil + lift * 0.26, Color("414949"), 6.3)
 	c.draw_line(anvil + lift * 0.26 - (ne - nw) * 0.07, anvil + lift * 0.26 + (ne - nw) * 0.08, Color("676f6c"), 5.0)
 	if civ == "Chinese": c.draw_line(shed_a + shed_high, shed_d + shed_high, trim, 2.4)
+
+static func _blacksmith_chimney_iso(c: CanvasItem, nw: Vector2, ne: Vector2, sw: Vector2, lift: Vector2, canvas: Transform2D, zoom: float) -> void:
+	var base := lift * 0.93
+	var a := _point(nw, ne, sw, 0.10, 0.39) + base
+	var b := _point(nw, ne, sw, 0.19, 0.39) + base
+	var d := _point(nw, ne, sw, 0.10, 0.48) + base
+	var e := _point(nw, ne, sw, 0.19, 0.48) + base
+	var top := _up(canvas, zoom, 17.0)
+	var brick := Color("9b8b79")
+	_quad(c, b + top, e + top, e, b, brick.darkened(0.24))
+	_quad(c, d + top, e + top, e, d, brick)
+	for level in [0.28, 0.54, 0.8]:
+		c.draw_line(d + top * level, e + top * level, Color("665f55", 0.7), 0.8)
+	c.draw_colored_polygon(PackedVector2Array([a + top, b + top, e + top, d + top]), Color("d1bca0"))
+	var center := (a + b + d + e) * 0.25 + top
+	c.draw_colored_polygon(PackedVector2Array([
+		center.lerp(a + top, 0.58), center.lerp(b + top, 0.58),
+		center.lerp(e + top, 0.58), center.lerp(d + top, 0.58),
+	]), Color("30302d"))
+	c.draw_line(d + top, e + top, Color("e0c9a6"), 1.5)
 
 static func _siege_iso(c: CanvasItem, nw: Vector2, ne: Vector2, sw: Vector2, lift: Vector2, palette: Dictionary, accent: Color, civ: String, canvas: Transform2D, zoom: float) -> void:
 	var timber: Color = palette["timber"]

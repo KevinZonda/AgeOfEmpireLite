@@ -263,7 +263,6 @@ static func _mill_2d(c: CanvasItem, bounds: Rect2, palette: Dictionary, accent: 
 static func _lumber_iso(c: CanvasItem, nw: Vector2, ne: Vector2, sw: Vector2, lift: Vector2, palette: Dictionary, accent: Color, canvas: Transform2D, zoom: float) -> void:
 	var floor := lift * 0.18
 	var timber: Color = palette["timber"]
-	var trim: Color = palette["trim"]
 	var floor_poly := PackedVector2Array([
 		_pt(nw, ne, sw, 0.07, 0.08) + floor,
 		_pt(nw, ne, sw, 0.93, 0.08) + floor,
@@ -273,38 +272,38 @@ static func _lumber_iso(c: CanvasItem, nw: Vector2, ne: Vector2, sw: Vector2, li
 	c.draw_colored_polygon(floor_poly, Color("9a855e"))
 	for fraction in [0.22, 0.42, 0.62, 0.82]:
 		c.draw_line(_pt(nw, ne, sw, 0.08, fraction) + floor, _pt(nw, ne, sw, 0.92, fraction) + floor, Color("6d5b42", 0.65), 1.0)
-	# A horizontal timber drum dominates the open camp, with extra cut logs below.
+	# A low open rack frames the timber pile without hiding its cut ends.
 	var rack_left := _pt(nw, ne, sw, 0.14, 0.18) + floor
 	var rack_right := _pt(nw, ne, sw, 0.86, 0.18) + floor
-	var rack_front_left := _pt(nw, ne, sw, 0.14, 0.70) + floor
-	var rack_front_right := _pt(nw, ne, sw, 0.86, 0.70) + floor
-	var rack_up := _up(canvas, zoom, 9.0)
-	for post in [rack_left, rack_right, rack_front_left, rack_front_right]:
-		c.draw_line(post, post + rack_up, timber.darkened(0.12), 3.0)
-	c.draw_line(rack_left + rack_up, rack_right + rack_up, timber, 2.8)
-	c.draw_line(rack_front_left + rack_up, rack_front_right + rack_up, timber, 2.8)
-	var drum_start := _pt(nw, ne, sw, 0.22, 0.42) + floor + _up(canvas, zoom, 9.0)
-	var drum_end := _pt(nw, ne, sw, 0.78, 0.42) + floor + _up(canvas, zoom, 9.0)
-	c.draw_line(drum_start, drum_end, Color("65432d"), 15.0)
-	c.draw_line(drum_start + _up(canvas, zoom, 3.0), drum_end + _up(canvas, zoom, 3.0), Color("a57647"), 8.0)
-	c.draw_circle(drum_end, 7.2, Color("bd925d"))
-	c.draw_arc(drum_end, 5.4, 0.0, TAU, 20, Color("765133"), 1.5)
-	c.draw_circle(drum_end, 2.1, Color("765133"))
-	for fraction in [0.28, 0.48, 0.68]:
-		var start := _pt(nw, ne, sw, 0.19, fraction + 0.14) + floor + _up(canvas, zoom, 2.0)
-		var finish := _pt(nw, ne, sw, 0.8, fraction + 0.14) + floor + _up(canvas, zoom, 2.0)
-		c.draw_line(start, finish, Color("805333"), 6.5)
-		c.draw_circle(finish, 3.4, Color("c49a67"))
-		c.draw_circle(finish, 1.2, Color("7d5737"))
-	# Three beams form the simple lifting trestle visible at the front of the camp.
-	var hoist_left := _pt(nw, ne, sw, 0.18, 0.85) + floor
-	var hoist_right := _pt(nw, ne, sw, 0.82, 0.85) + floor
-	var hoist_peak := (hoist_left + hoist_right) * 0.5 + _up(canvas, zoom, 20.0)
-	c.draw_line(hoist_left, hoist_peak, timber, 3.7)
-	c.draw_line(hoist_peak, hoist_right, timber, 3.7)
-	c.draw_line(hoist_left + _up(canvas, zoom, 4.0), hoist_right + _up(canvas, zoom, 4.0), trim, 2.2)
-	c.draw_line(hoist_peak, hoist_peak + _up(canvas, zoom, -10.0), Color("3f392e"), 1.5)
-	c.draw_circle(hoist_peak + _up(canvas, zoom, -10.0), 2.1, trim)
+	var rack_up := _up(canvas, zoom, 13.0)
+	for post in [rack_left, rack_right]:
+		c.draw_line(post, post + rack_up, timber.darkened(0.18), 3.0)
+	c.draw_line(rack_left + rack_up, rack_right + rack_up, timber.lightened(0.12), 3.1)
+	for u in [0.25, 0.68]:
+		var left_foot := _pt(nw, ne, sw, u - 0.09, 0.78) + floor
+		var right_foot := _pt(nw, ne, sw, u + 0.09, 0.78) + floor
+		var saddle := _pt(nw, ne, sw, u, 0.55) + floor + _up(canvas, zoom, 6.0)
+		c.draw_line(left_foot, saddle, timber.darkened(0.18), 2.8)
+		c.draw_line(right_foot, saddle, timber, 2.8)
+	# Three separate trunks, with pale circular end grain, sit on the rack.
+	for log in [[0.58, 0.0, 0.18, 0.76], [0.75, 0.0, 0.22, 0.79], [0.66, 5.0, 0.20, 0.75]]:
+		var start := _pt(nw, ne, sw, float(log[2]), float(log[0])) + floor + _up(canvas, zoom, float(log[1]))
+		var finish := _pt(nw, ne, sw, float(log[3]), float(log[0])) + floor + _up(canvas, zoom, float(log[1]))
+		c.draw_line(start, finish, Color("4e3526"), 9.0)
+		c.draw_line(start + _up(canvas, zoom, 1.8), finish + _up(canvas, zoom, 1.8), Color("98643d"), 5.8)
+		c.draw_circle(finish, 5.1, Color("5c3b28"))
+		c.draw_circle(finish, 3.9, Color("dfb77d"))
+		c.draw_arc(finish, 2.5, 0.0, TAU, 16, Color("9f7148"), 1.0)
+		c.draw_circle(finish, 0.8, Color("765034"))
+	# A chopping block and axe identify the work area at a glance.
+	var stump := _pt(nw, ne, sw, 0.82, 0.32) + floor
+	var stump_top := stump + _up(canvas, zoom, 6.0)
+	c.draw_line(stump, stump_top, Color("68452f"), 10.0)
+	c.draw_circle(stump_top, 5.3, Color("d3aa70"))
+	c.draw_arc(stump_top, 3.3, 0.0, TAU, 16, Color("91613d"), 1.1)
+	var axe_top := stump_top + _up(canvas, zoom, 12.0)
+	c.draw_line(stump_top, axe_top, timber.darkened(0.18), 1.7)
+	c.draw_colored_polygon(PackedVector2Array([axe_top + Vector2(-1, 0), axe_top + Vector2(6, -1), axe_top + Vector2(5, 4), axe_top + Vector2(-1, 2)]), Color("aab4aa"))
 	c.draw_line(_pt(nw, ne, sw, 0.12, 0.89) + floor, _pt(nw, ne, sw, 0.88, 0.89) + floor, accent, 1.8)
 
 
@@ -314,16 +313,18 @@ static func _lumber_2d(c: CanvasItem, bounds: Rect2, palette: Dictionary, accent
 	for fraction in [0.17, 0.35, 0.53, 0.71, 0.89]:
 		var y := lerpf(deck.position.y, deck.end.y, fraction)
 		c.draw_line(Vector2(deck.position.x + 2, y), Vector2(deck.end.x - 2, y), Color("654d35", 0.6), 1.0)
-	var rack := Rect2(deck.position + deck.size * Vector2(0.1, 0.12), deck.size * Vector2(0.8, 0.58))
-	c.draw_rect(rack, palette["timber"], false, 3.4)
-	var drum := Rect2(rack.position + rack.size * Vector2(0.12, 0.16), rack.size * Vector2(0.72, 0.58))
-	c.draw_rect(drum, Color("805535"))
-	for fraction in [0.18, 0.48, 0.78]:
-		var x := lerpf(drum.position.x, drum.end.x, fraction)
-		c.draw_line(Vector2(x, drum.position.y), Vector2(x, drum.end.y), Color("b18450"), 2.0)
-	c.draw_circle(Vector2(drum.end.x, drum.get_center().y), drum.size.y * 0.48, Color("c69c65"))
-	c.draw_circle(Vector2(drum.end.x, drum.get_center().y), drum.size.y * 0.17, palette["timber"])
-	var peak := Vector2(rack.get_center().x, deck.end.y - 3)
-	c.draw_line(Vector2(peak.x - 16, rack.end.y), peak, palette["timber"], 3.2)
-	c.draw_line(peak, Vector2(peak.x + 16, rack.end.y), palette["timber"], 3.2)
+	var rack := Rect2(deck.position + deck.size * Vector2(0.1, 0.12), deck.size * Vector2(0.8, 0.66))
+	c.draw_rect(rack, palette["timber"], false, 2.4)
+	for v in [0.38, 0.57, 0.76]:
+		var start := Vector2(lerpf(rack.position.x, rack.end.x, 0.12), lerpf(rack.position.y, rack.end.y, v))
+		var finish := Vector2(lerpf(rack.position.x, rack.end.x, 0.77), start.y)
+		c.draw_line(start, finish, Color("543827"), 8.0)
+		c.draw_line(start + Vector2(0, -1.5), finish + Vector2(0, -1.5), Color("9c6a40"), 4.2)
+		c.draw_circle(finish, 4.7, Color("ddb47b"))
+		c.draw_arc(finish, 2.8, 0.0, TAU, 16, Color("91613d"), 1.0)
+	var stump := Vector2(lerpf(deck.position.x, deck.end.x, 0.84), lerpf(deck.position.y, deck.end.y, 0.26))
+	c.draw_circle(stump, 5.6, Color("d3aa70"))
+	c.draw_arc(stump, 3.4, 0.0, TAU, 16, Color("91613d"), 1.1)
+	c.draw_line(stump, stump + Vector2(2, -10), palette["timber"], 2.0)
+	c.draw_colored_polygon(PackedVector2Array([stump + Vector2(0, -11), stump + Vector2(7, -12), stump + Vector2(6, -7), stump + Vector2(1, -8)]), Color("aab4aa"))
 	c.draw_line(Vector2(deck.position.x + 6, deck.end.y - 3), Vector2(deck.end.x - 6, deck.end.y - 3), accent, 2.3)
