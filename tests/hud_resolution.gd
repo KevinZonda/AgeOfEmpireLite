@@ -60,5 +60,28 @@ func _run() -> void:
 	await process_frame
 	assert(game.queue_controls.visible, "production queue controls should remain visible")
 	assert(game.hud_bottom.size.y <= 230.0, "production queue should fit in the bottom HUD")
+	game.ui_scale = 1.5
+	game.text_scale = 2.0
+	game._apply_ui_scales()
+	game.civilizations[0] = "Chinese"
+	game.players[0]["dynasty"] = "Tang"
+	game._update_hud()
+	for frame in 3: await process_frame
+	assert(game.hud_top.get_global_rect().end.x <= 1280.0, "large Chinese top HUD should fit within the screen")
+	assert(game.hud_ui.top_tools.get_parent() == game.hud_ui.top_column, "top tools should wrap when large text needs another row")
+	assert(is_equal_approx(game.hud_bottom.get_global_rect().end.y, 720.0), "large text must not push the bottom HUD off screen")
+	game.selected.clear()
+	game.selected.append(game.units[0])
+	game.build_page = 0
+	game._rebuild_actions()
+	game._update_hud()
+	for frame in 3: await process_frame
+	assert(game.action_bar.get_child_count() == 12, "large text should retain the full villager construction page")
+	assert(game.action_bar.get_rect().end.y <= game.action_bar.get_parent().size.y, "all construction commands should remain visible with large text")
+	assert(game.hud_bottom.size.y <= 300.0, "compact selection summary should preserve battlefield space")
+	root.size = Vector2i(1920, 1080)
+	for frame in 3: await process_frame
+	assert(game.hud_ui.top_tools.get_parent() == game.hud_ui.top_row, "top tools should return to a single row when space allows")
+	assert(is_equal_approx(game.hud_bottom.get_global_rect().end.y, 1080.0), "bottom HUD should track a larger screen")
 	print("HUD_RESOLUTION_OK")
 	quit()

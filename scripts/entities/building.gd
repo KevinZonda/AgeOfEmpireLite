@@ -467,7 +467,11 @@ func _draw() -> void:
 	var font := ThemeDB.fallback_font
 	if font != null and game.get("show_building_names") != false:
 		var font_size: int = RtsUiTypography.world_caption_size(game)
-		draw_string(font, Vector2(-size().x * 0.5, size().y * 0.5 + font_size + 2), display_label(), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color.WHITE)
+		var canvas := get_viewport().get_canvas_transform()
+		var label_anchor := canvas.basis_xform(Vector2(-size().x * 0.5, size().y * 0.5))
+		draw_set_transform_matrix(RtsIsoProjection.upright(canvas, Vector2.ZERO))
+		draw_string(font, label_anchor + Vector2(0, font_size + 2), display_label(), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color.WHITE)
+		draw_set_transform_matrix(Transform2D.IDENTITY)
 	var bar_y := -size().y * 0.5 - side - 18.0
 	draw_rect(Rect2(-size().x * 0.5, bar_y, size().x, 5), Color("432e2b"))
 	draw_rect(Rect2(-size().x * 0.5, bar_y, size().x * clampf(hp / max_hp, 0.0, 1.0), 5), Color("7fd47a"))

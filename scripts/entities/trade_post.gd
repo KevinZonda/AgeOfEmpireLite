@@ -18,9 +18,11 @@ func _draw() -> void:
 	draw_colored_polygon(PackedVector2Array([Vector2(-27, -20), Vector2(0, -37), Vector2(27, -20)]), Color("79513c"))
 	if game != null and game.view_mode_25d:
 		draw_set_transform_matrix(RtsIsoProjection.upright(get_viewport().get_canvas_transform(), RtsIsoProjection.ground_lift(game, position)))
+	else:
+		draw_set_transform_matrix(RtsIsoProjection.upright(get_viewport().get_canvas_transform(), Vector2.ZERO))
 	var font := ThemeDB.fallback_font
 	if font != null:
 		var font_size: int = RtsUiTypography.world_caption_size(game)
 		var label_width := font.get_string_size("贸易站", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
 		draw_string(font, Vector2(-label_width * 0.5, 24 + font_size), "贸易站", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color.WHITE)
-	if game != null and game.view_mode_25d: draw_set_transform_matrix(Transform2D.IDENTITY)
+	draw_set_transform_matrix(Transform2D.IDENTITY)

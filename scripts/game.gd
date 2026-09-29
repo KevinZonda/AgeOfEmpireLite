@@ -310,6 +310,8 @@ func _apply_ui_scales() -> void:
 	ui_root.scale = Vector2.ONE * effective_scale
 	ui_root.size = viewport_size / effective_scale
 	RtsUiTypography.apply_tree(ui_root, text_scale, effective_scale, base_tooltip_font_size)
+	hud_ui.call_deferred("_fit_top_hud")
+	hud_ui.call_deferred("_fit_bottom_hud")
 	if cursor != null:
 		cursor.text_scale = text_scale
 		cursor.queue_redraw()

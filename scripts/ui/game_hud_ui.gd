@@ -105,6 +105,9 @@ const BUILD_PAGES := [
 const COMMANDS_PER_PAGE := 12
 const HUD_BOTTOM_HEIGHT := 230.0
 var game: Node2D
+var top_column: VBoxContainer
+var top_row: HBoxContainer
+var top_tools: HBoxContainer
 var build_tab_bar: HBoxContainer
 var minimap_anchor: Control
 var minimap_panel: PanelContainer
@@ -143,9 +146,13 @@ func _create_hud() -> void:
 	top.offset_bottom = 54
 	top.add_theme_stylebox_override("panel", game._hud_panel_style(Color("251e17"), 8))
 	root.add_child(top)
-	var top_row := HBoxContainer.new()
+	top.minimum_size_changed.connect(func() -> void: call_deferred("_fit_top_hud"))
+	top_column = VBoxContainer.new()
+	top_column.add_theme_constant_override("separation", 4)
+	top.add_child(top_column)
+	top_row = HBoxContainer.new()
 	top_row.add_theme_constant_override("separation", 5)
-	top.add_child(top_row)
+	top_column.add_child(top_row)
 	game.top_label = Label.new()
 	game.top_label.custom_minimum_size.x = 230
 	game.top_label.add_theme_font_size_override("font_size", RtsUiTypography.BODY)
@@ -160,7 +167,7 @@ func _create_hud() -> void:
 	game.population_label.add_theme_font_size_override("font_size", RtsUiTypography.BODY)
 	game.population_label.add_theme_color_override("font_color", Color("eee2c7"))
 	top_row.add_child(game.population_label)
-	var top_tools := HBoxContainer.new()
+	top_tools = HBoxContainer.new()
 	top_tools.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top_tools.alignment = BoxContainer.ALIGNMENT_END
 	top_tools.add_theme_constant_override("separation", 5)
@@ -201,6 +208,7 @@ func _create_hud() -> void:
 	bottom.offset_top = -HUD_BOTTOM_HEIGHT
 	bottom.add_theme_stylebox_override("panel", game._hud_panel_style(Color("241d16"), 7))
 	root.add_child(bottom)
+	bottom.minimum_size_changed.connect(func() -> void: call_deferred("_fit_bottom_hud"))
 	var dock := HBoxContainer.new()
 	dock.add_theme_constant_override("separation", 9)
 	bottom.add_child(dock)
@@ -269,6 +277,8 @@ func _create_hud() -> void:
 	selection_summary.add_theme_font_size_override("font_size", RtsUiTypography.CAPTION)
 	selection_summary.add_theme_color_override("font_color", Color("d3c5a8"))
 	selection_summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	selection_summary.max_lines_visible = 2
+	selection_summary.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	selection_summary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	selection_column.add_child(selection_summary)
 	multi_selection_scroll = ScrollContainer.new()
@@ -400,12 +410,29 @@ func _create_hud() -> void:
 
 func _apply_minimap_size() -> void:
 	var panel_size: Vector2 = Vector2.ONE * (game.minimap_size + 14.0)
-	game.hud_bottom.offset_top = -HUD_BOTTOM_HEIGHT
 	minimap_anchor.custom_minimum_size = Vector2(panel_size.x, HUD_BOTTOM_HEIGHT - 14.0)
 	minimap_slot.custom_minimum_size = Vector2.ONE * game.minimap_size
 	minimap_panel.custom_minimum_size = panel_size
 	minimap_panel.size = panel_size
 	_layout_minimap()
+	_fit_bottom_hud()
+
+func _fit_bottom_hud() -> void:
+	if game.hud_bottom == null: return
+	var required_height := maxf(HUD_BOTTOM_HEIGHT, game.hud_bottom.get_combined_minimum_size().y)
+	if not is_equal_approx(game.hud_bottom.offset_top, -required_height):
+		game.hud_bottom.offset_top = -required_height
+
+func _fit_top_hud() -> void:
+	if top_row == null or top_tools == null or game.ui_root == null: return
+	var available_width: float = game.ui_root.size.x - game.hud_top.get_theme_stylebox("panel").get_minimum_size().x
+	var single_row_width: float = top_row.get_combined_minimum_size().x
+	if top_tools.get_parent() != top_row:
+		single_row_width += top_tools.get_combined_minimum_size().x + 5.0
+	if single_row_width > available_width and top_tools.get_parent() == top_row:
+		top_tools.reparent(top_column)
+	elif single_row_width <= available_width and top_tools.get_parent() != top_row:
+		top_tools.reparent(top_row)
 
 func _layout_minimap() -> void:
 	if game.minimap == null or minimap_slot == null: return
@@ -440,6 +467,7 @@ func _update_population_hud() -> void:
 	var idle_count: int = game.idle_villagers().size()
 	game.idle_villager_button.text = "村民 %d" % idle_count
 	game.idle_villager_button.disabled = idle_count == 0
+	call_deferred("_fit_top_hud")
 
 func _update_selection_hud() -> void:
 	game.selection_health.hide()
