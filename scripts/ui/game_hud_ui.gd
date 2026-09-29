@@ -117,6 +117,8 @@ var minimap_slot: Control
 var multi_selection_scroll: ScrollContainer
 var multi_selection_grid: GridContainer
 var multi_selection_ids: Array[int] = []
+var queue_scroll: ScrollContainer
+var displayed_queue_jobs: Array[String] = []
 var selection_summary: Label
 var selection_details_button: Button
 var selection_details_scroll: ScrollContainer
@@ -196,11 +198,11 @@ func _create_hud() -> void:
 	game.global_queue_panel.offset_bottom = 415
 	game.global_queue_panel.add_theme_stylebox_override("panel", game._hud_panel_style(Color("2c241b"), 12))
 	root.add_child(game.global_queue_panel)
-	var queue_scroll := ScrollContainer.new()
-	game.global_queue_panel.add_child(queue_scroll)
+	var global_queue_scroll := ScrollContainer.new()
+	game.global_queue_panel.add_child(global_queue_scroll)
 	game.global_queue_list = VBoxContainer.new()
 	game.global_queue_list.custom_minimum_size.x = 350
-	queue_scroll.add_child(game.global_queue_list)
+	global_queue_scroll.add_child(game.global_queue_list)
 	game.global_queue_panel.hide()
 	var bottom := PanelContainer.new()
 	game.hud_bottom = bottom
@@ -325,18 +327,16 @@ func _create_hud() -> void:
 	game.queue_label.add_theme_font_size_override("font_size", RtsUiTypography.CAPTION)
 	game.queue_label.add_theme_color_override("font_color", Color("e5d1a1"))
 	selection_column.add_child(game.queue_label)
+	queue_scroll = ScrollContainer.new()
+	queue_scroll.custom_minimum_size.y = 65
+	queue_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	queue_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	queue_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	queue_scroll.hide()
+	selection_column.add_child(queue_scroll)
 	game.queue_controls = HBoxContainer.new()
-	game.queue_controls.hide()
-	selection_column.add_child(game.queue_controls)
-	game.queue_choice = OptionButton.new()
-	game.queue_choice.custom_minimum_size.x = 205
-	game._style_button(game.queue_choice)
-	game.queue_controls.add_child(game.queue_choice)
-	game.cancel_queue_button = Button.new()
-	game.cancel_queue_button.text = "取消并退款"
-	game._style_button(game.cancel_queue_button)
-	game.cancel_queue_button.pressed.connect(game._cancel_selected_job)
-	game.queue_controls.add_child(game.cancel_queue_button)
+	game.queue_controls.add_theme_constant_override("separation", 4)
+	queue_scroll.add_child(game.queue_controls)
 	game.notice_label = Label.new()
 	game.notice_label.add_theme_color_override("font_color", Color("f0d783"))
 	game.notice_label.add_theme_font_size_override("font_size", RtsUiTypography.CAPTION)
@@ -470,10 +470,20 @@ func _update_population_hud() -> void:
 	call_deferred("_fit_top_hud")
 
 func _update_selection_hud() -> void:
-	game.selection_health.hide()
-	game.selection_progress.hide()
+	var subject: Node2D
+	if game.selected.size() == 1 and is_instance_valid(game.selected[0]): subject = game.selected[0]
+	game.selection_health.visible = subject != null and not subject is RtsResource
+	var has_progress := subject is RtsResource
+	if subject is RtsUnit:
+		var unit: RtsUnit = subject
+		has_progress = unit.field_build_remaining > 0.0
+	elif subject is RtsBuilding:
+		var building: RtsBuilding = subject
+		has_progress = not building.is_complete() or building.kind == "farm" or not building.production_queue.is_empty()
+	game.selection_progress.visible = has_progress
 	game.queue_label.text = ""
-	game.queue_controls.hide()
+	var selected_building: RtsBuilding = subject if subject is RtsBuilding else null
+	queue_scroll.visible = selected_building != null and selected_building.owner_id == 0 and not selected_building.production_queue.is_empty()
 	game.selection_portrait.show()
 	multi_selection_scroll.hide()
 	if game.selected.is_empty() or not is_instance_valid(game.selected[0]):
@@ -615,7 +625,6 @@ func _update_building_progress(building: RtsBuilding) -> void:
 		game.selection_progress.max_value = job["time"]
 		game.selection_progress.value = job["time"] - job["remaining"]
 		game.selection_progress.show()
-		game.queue_label.text = "%s   队列 %d" % [_job_label(job), building.production_queue.size()]
 
 func _unit_stats_text(unit: RtsUnit) -> String:
 	var stats: Dictionary = unit.stats
@@ -663,19 +672,45 @@ func _job_label(job: Dictionary) -> String:
 
 func _refresh_queue_controls(building: RtsBuilding) -> void:
 	if building.owner_id != 0 or building.production_queue.is_empty(): return
-	game.queue_controls.show()
-	var previous: int = game.queue_choice.get_selected_id()
-	var needs_rebuild: bool = game.queue_choice.item_count != building.production_queue.size()
-	if not needs_rebuild:
-		for index in building.production_queue.size():
-			if game.queue_choice.get_item_text(index) != "%d. %s" % [index + 1, _job_label(building.production_queue[index])]:
-				needs_rebuild = true
-				break
-	if not needs_rebuild: return
-	game.queue_choice.clear()
+	var jobs: Array[String] = [str(building.get_instance_id())]
 	for index in building.production_queue.size():
-		game.queue_choice.add_item("%d. %s" % [index + 1, _job_label(building.production_queue[index])], index)
-	game.queue_choice.select(clampi(previous, 0, building.production_queue.size() - 1))
+		var job: Dictionary = building.production_queue[index]
+		jobs.append("%s:%s" % [job["type"], job["kind"]])
+	if jobs == displayed_queue_jobs: return
+	var previous_scroll := queue_scroll.scroll_horizontal if not displayed_queue_jobs.is_empty() and displayed_queue_jobs[0] == jobs[0] else 0
+	displayed_queue_jobs = jobs
+	for child in game.queue_controls.get_children():
+		game.queue_controls.remove_child(child)
+		child.queue_free()
+	for index in building.production_queue.size():
+		game.queue_controls.add_child(_queue_job_button(building, index, building.production_queue[index]))
+	queue_scroll.scroll_horizontal = previous_scroll
+
+func _queue_job_button(building: RtsBuilding, index: int, job: Dictionary) -> Button:
+	var button := RtsCommandButton.new()
+	button.configure(str(job["kind"]), "", "")
+	button.tooltip_text = "%s\n点击取消并返还 %s" % [_job_label(job), GameData.cost_text(job["cost"])]
+	var overlay := ColorRect.new()
+	overlay.color = Color(0.13, 0.08, 0.04, 0.8)
+	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	button.add_child(overlay)
+	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var cross := Label.new()
+	cross.text = "×"
+	cross.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	cross.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	cross.add_theme_font_size_override("font_size", 30)
+	cross.add_theme_color_override("font_color", Color("fff2d2"))
+	cross.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	overlay.add_child(cross)
+	cross.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	overlay.hide()
+	button.mouse_entered.connect(func() -> void: overlay.show())
+	button.mouse_exited.connect(func() -> void: overlay.hide())
+	button.pressed.connect(func() -> void:
+		if is_instance_valid(building): game.cancel_production_job(building, index)
+	)
+	return button
 
 func _toggle_global_queue() -> void:
 	game.global_queue_panel.visible = not game.global_queue_panel.visible

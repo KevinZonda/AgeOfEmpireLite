@@ -54,7 +54,7 @@ func _run() -> void:
 	if focus_buildings:
 		ids = ["town_center", "lumber_camp", "mining_camp", "mill", "blacksmith", "siege_workshop"]
 	if OS.get_cmdline_user_args().has("--fortifications"):
-		ids = ["keep", "outpost", "stone_wall", "stone_gate", "stone_wall_vertical", "stone_gate_vertical"]
+		ids = ["keep", "outpost", "palisade_wall", "palisade_gate", "stone_wall", "stone_gate", "palisade_wall_vertical", "palisade_gate_vertical", "stone_wall_vertical", "stone_gate_vertical"]
 	var sheet := Image.create(cell_size.x * columns, cell_size.y * ceili(ids.size() / float(columns)), false, Image.FORMAT_RGB8)
 	sheet.fill(Color("77876a"))
 	for i in ids.size():

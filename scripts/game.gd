@@ -142,8 +142,6 @@ var selection_health: ProgressBar
 var selection_progress: ProgressBar
 var queue_label: Label
 var queue_controls: HBoxContainer
-var queue_choice: OptionButton
-var cancel_queue_button: Button
 var global_queue_panel: PanelContainer
 var global_queue_list: VBoxContainer
 var view_button: Button
@@ -1213,11 +1211,6 @@ func complete_age(owner_id: int, target_age: int, landmark_id := "") -> void:
 func cancel_production_job(building: RtsBuilding, index: int = 0) -> bool:
 	return MATCH_PRODUCTION.cancel_job(self, building, index)
 
-func _cancel_selected_job() -> void:
-	if selected.is_empty() or not is_instance_valid(selected[0]) or not selected[0] is RtsBuilding: return
-	var building: RtsBuilding = selected[0]
-	if building.owner_id == 0: cancel_production_job(building, queue_choice.get_selected_id())
-
 func build_footprint_size(kind: String, vertical := false) -> Vector2:
 	var dimensions: Vector2 = GameData.BUILDINGS[kind]["size"]
 	if vertical and (kind.ends_with("_wall") or kind.ends_with("_gate")): dimensions = Vector2(dimensions.y, dimensions.x)
@@ -1641,8 +1634,7 @@ func _update_cursor() -> void:
 		if _selection_drag_visible(): cursor.set_state("select")
 		cursor.set_context("")
 		return
-	var hovered := get_viewport().gui_get_hovered_control()
-	var over_ui := hovered != null and hovered != cursor
+	var over_ui := _selection_point_over_hud(screen_point)
 	var world_point := get_viewport().get_canvas_transform().affine_inverse() * screen_point
 	cursor.set_state(_cursor_state_at(world_point, over_ui))
 	var resource := _resource_at(world_point) if not over_ui and build_mode == "" else null

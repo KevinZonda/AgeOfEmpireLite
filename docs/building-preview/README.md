@@ -4,6 +4,8 @@
 
 - [22 种普通建筑：2.5D](regular-25d.png)
 - [22 种普通建筑：2D](regular-2d.png)
+- [城堡、哨塔与 8 种墙门朝向：2.5D](fortifications-25d.png)
+- [城堡、哨塔与 8 种墙门朝向：2D](fortifications-2d.png)
 - [18 座地标与 3 座奇观：2.5D](landmarks-25d.png)
 
 ## 六座建筑重绘
@@ -15,6 +17,8 @@
 四座建筑的单张放大截图：[城镇中心](town_center-corrected-25d.png) · [采矿场](mining_camp-corrected-25d.png) · [磨坊](mill-corrected-25d.png) · [攻城器械厂](siege_workshop-corrected-25d.png)。
 
 市场和大学参考了 AoE4 的[英格兰市场](https://ageofempires.fandom.com/wiki/Market_(Age_of_Empires_IV))与[英格兰大学](https://ageofempires.fandom.com/wiki/University_(Age_of_Empires_IV))：市场以木构主楼、条纹摊棚、货物和中央石柱组成；大学改成围合前院的多翼建筑，增加中央门楼、窗列与庭院石像。
+
+城堡、修道院、码头与墙门也已重绘。城堡参考 [AoE4 城堡截图](https://forums.ageofempires.com/t/rotating-buildings/224074/)的围墙、角塔和中央主楼；修道院参考[西欧建筑截图](https://forums.ageofempires.com/t/hre-uniqueness-mechanic-and-army-rant-there-is-a-lot-of-potential-lying-fallow/176231?page=16)，中国配色另参考[官方少林寺页面](https://www.ageofempires.com/games/age-of-empires-iv/civilizations/zhu-xis-legacy/)；码头参考[海岸实战截图](https://forums.ageofempires.com/t/how-to-dominate-french-in-boulder-bay-as-hre/184269/)，改成木栈台、仓棚与瞭望亭；木墙、石墙及两类门参考[城门实战截图](https://forums.ageofempires.com/t/the-gate-of-wall-should-be-the-focal-point-of-the-attack/223892)，增加尖桩、垛口和清楚的门洞。四类建筑均可在上方的普通建筑总览中查看。
 
 造型参考是《帝国时代 IV》原版建筑图：
 
@@ -39,6 +43,7 @@ docs/godot/bin/godot.macos.template_debug.arm64 --path . \
   --script res://tests/landmark_rendering.gd --rendering-method gl_compatibility \
   -- /tmp/buildings-2d --buildings --topdown
 # 把 --buildings 换成 --focus-buildings，可只导出本次重绘的六座建筑。
+# 把 --buildings 换成 --fortifications，可导出城堡、哨塔与横纵两向的木墙、木门、石墙、石门。
 ```
 
 输出目录中的 `all.png` 是总览图，每个建筑也有单独的 PNG。该脚本必须在有图形界面的环境运行，不使用 `--headless`。
