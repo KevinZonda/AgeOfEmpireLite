@@ -22,12 +22,31 @@ func _arrive(unit: RtsUnit, point: Vector2, reach := 6.0) -> bool:
 	return false
 
 func _run() -> void:
-	for test in [_test_reuse_and_retarget, _test_obstacle_changes, _test_failure_recovery, _test_dynamic_blocker, _test_range_target]:
+	for test in [_test_reuse_and_retarget, _test_obstacle_changes, _test_failure_recovery, _test_dynamic_blocker, _test_range_target, _test_nearest_fallback]:
 		if not test.call():
 			quit(1)
 			return
 	print("NAVIGATION_REPLANNING_OK")
 	quit()
+
+func _test_nearest_fallback() -> bool:
+	var game := _fixture()
+	var unit := game.spawn_unit(Vector2(125, 525))
+	var obstacle := RtsResource.new()
+	obstacle.position = Vector2(825, 525)
+	obstacle.radius = 260.0
+	game.add_child(obstacle)
+	obstacle.set_process(false)
+	obstacle.hide()
+	game.resources.append(obstacle)
+	game.navigation.invalidate_obstacles()
+	# Every local-ring sample is inside this obstacle. The four nearest free
+	# grid centers are equally distant; preserve the top-left tie-break.
+	var result := game.navigation.nearest_walkable_point(obstacle.position, unit.radius(), unit, true)
+	assert(result == Vector2(625, 325), "global fallback must select the nearest reachable point with stable ties")
+	assert(not game.navigation.path_between(unit.position, result, unit).is_empty())
+	game.free()
+	return true
 
 func _test_reuse_and_retarget() -> bool:
 	var game := _fixture()

@@ -1,0 +1,278 @@
+{
+  "baseline_commit": "f9f7379",
+  "engine": "Godot 4.7.2 custom template_debug arm64",
+  "platform": "macOS / Apple M2",
+  "group_steps": 90,
+  "runs": {
+    "before": [
+      {
+        "performance_400": {
+          "command_ms": 157.1,
+          "paths_ms": 180.7,
+          "destinations_ms": 14.7,
+          "target_ms": 78.9,
+          "collision_ms": 26.1,
+          "simulation_avg_ms": 77.6,
+          "simulation_peak_ms": 1238.4,
+          "fog_ms": 14.5,
+          "squads": 34.0,
+          "steps": 90.0,
+          "p95_ms": 157.7
+        },
+        "performance_navigation": {
+          "units": 400.0,
+          "steps": 180.0,
+          "avg_ms": 5.61,
+          "p95_ms": 4.75,
+          "p99_ms": 5.9,
+          "first_step_ms": 207.62,
+          "steady_peak_ms": 5.9
+        },
+        "performance_combat": {
+          "units": 400.0,
+          "steps": 90.0,
+          "step_avg_ms": 2.71,
+          "step_peak_ms": 7.76,
+          "attacks": 1204.0,
+          "hp_lost": 14448.0,
+          "survivors": 400.0
+        }
+      },
+      {
+        "performance_400": {
+          "command_ms": 153.2,
+          "paths_ms": 120.0,
+          "destinations_ms": 14.6,
+          "target_ms": 77.9,
+          "collision_ms": 25.9,
+          "simulation_avg_ms": 76.7,
+          "simulation_peak_ms": 1132.2,
+          "fog_ms": 13.7,
+          "squads": 34.0,
+          "steps": 90.0,
+          "p95_ms": 160.6
+        },
+        "performance_navigation": {
+          "units": 400.0,
+          "steps": 180.0,
+          "avg_ms": 5.58,
+          "p95_ms": 4.79,
+          "p99_ms": 5.54,
+          "first_step_ms": 200.54,
+          "steady_peak_ms": 5.54
+        },
+        "performance_combat": {
+          "units": 400.0,
+          "steps": 90.0,
+          "step_avg_ms": 2.81,
+          "step_peak_ms": 8.0,
+          "attacks": 1204.0,
+          "hp_lost": 14448.0,
+          "survivors": 400.0
+        }
+      },
+      {
+        "performance_400": {
+          "command_ms": 186.3,
+          "paths_ms": 126.0,
+          "destinations_ms": 15.0,
+          "target_ms": 79.6,
+          "collision_ms": 26.9,
+          "simulation_avg_ms": 87.5,
+          "simulation_peak_ms": 1145.6,
+          "fog_ms": 19.1,
+          "squads": 34.0,
+          "steps": 90.0,
+          "p95_ms": 263.3
+        },
+        "performance_navigation": {
+          "units": 400.0,
+          "steps": 180.0,
+          "avg_ms": 6.4,
+          "p95_ms": 5.99,
+          "p99_ms": 11.25,
+          "first_step_ms": 286.93,
+          "steady_peak_ms": 11.25
+        },
+        "performance_combat": {
+          "units": 400.0,
+          "steps": 90.0,
+          "step_avg_ms": 2.77,
+          "step_peak_ms": 8.19,
+          "attacks": 1204.0,
+          "hp_lost": 14448.0,
+          "survivors": 400.0
+        }
+      }
+    ],
+    "after": [
+      {
+        "performance_400": {
+          "command_ms": 123.1,
+          "paths_ms": 42.7,
+          "destinations_ms": 11.4,
+          "target_ms": 41.9,
+          "collision_ms": 18.8,
+          "simulation_avg_ms": 53.0,
+          "simulation_peak_ms": 642.4,
+          "fog_ms": 13.8,
+          "squads": 34.0,
+          "steps": 90.0,
+          "p95_ms": 156.9
+        },
+        "performance_navigation": {
+          "units": 400.0,
+          "steps": 180.0,
+          "avg_ms": 3.97,
+          "p95_ms": 3.77,
+          "p99_ms": 4.25,
+          "first_step_ms": 72.14,
+          "steady_peak_ms": 4.25
+        },
+        "performance_combat": {
+          "units": 400.0,
+          "steps": 90.0,
+          "step_avg_ms": 2.76,
+          "step_peak_ms": 7.74,
+          "attacks": 1204.0,
+          "hp_lost": 14448.0,
+          "survivors": 400.0
+        }
+      },
+      {
+        "performance_400": {
+          "command_ms": 119.5,
+          "paths_ms": 43.1,
+          "destinations_ms": 11.0,
+          "target_ms": 38.9,
+          "collision_ms": 18.1,
+          "simulation_avg_ms": 61.7,
+          "simulation_peak_ms": 1061.9,
+          "fog_ms": 14.7,
+          "squads": 34.0,
+          "steps": 90.0,
+          "p95_ms": 92.8
+        },
+        "performance_navigation": {
+          "units": 400.0,
+          "steps": 180.0,
+          "avg_ms": 4.07,
+          "p95_ms": 4.38,
+          "p99_ms": 5.74,
+          "first_step_ms": 71.26,
+          "steady_peak_ms": 5.74
+        },
+        "performance_combat": {
+          "units": 400.0,
+          "steps": 90.0,
+          "step_avg_ms": 2.78,
+          "step_peak_ms": 7.85,
+          "attacks": 1204.0,
+          "hp_lost": 14448.0,
+          "survivors": 400.0
+        }
+      },
+      {
+        "performance_400": {
+          "command_ms": 127.3,
+          "paths_ms": 42.3,
+          "destinations_ms": 11.0,
+          "target_ms": 39.2,
+          "collision_ms": 18.3,
+          "simulation_avg_ms": 47.3,
+          "simulation_peak_ms": 587.5,
+          "fog_ms": 14.1,
+          "squads": 34.0,
+          "steps": 90.0,
+          "p95_ms": 91.8
+        },
+        "performance_navigation": {
+          "units": 400.0,
+          "steps": 180.0,
+          "avg_ms": 4.03,
+          "p95_ms": 3.86,
+          "p99_ms": 4.12,
+          "first_step_ms": 71.92,
+          "steady_peak_ms": 4.12
+        },
+        "performance_combat": {
+          "units": 400.0,
+          "steps": 90.0,
+          "step_avg_ms": 2.78,
+          "step_peak_ms": 7.89,
+          "attacks": 1204.0,
+          "hp_lost": 14448.0,
+          "survivors": 400.0
+        }
+      }
+    ]
+  },
+  "median": {
+    "before": {
+      "performance_400": {
+        "command_ms": 157.1,
+        "paths_ms": 126.0,
+        "destinations_ms": 14.7,
+        "target_ms": 78.9,
+        "collision_ms": 26.1,
+        "simulation_avg_ms": 77.6,
+        "simulation_peak_ms": 1145.6,
+        "fog_ms": 14.5,
+        "squads": 34.0,
+        "steps": 90.0,
+        "p95_ms": 160.6
+      },
+      "performance_navigation": {
+        "units": 400.0,
+        "steps": 180.0,
+        "avg_ms": 5.61,
+        "p95_ms": 4.79,
+        "p99_ms": 5.9,
+        "first_step_ms": 207.62,
+        "steady_peak_ms": 5.9
+      },
+      "performance_combat": {
+        "units": 400.0,
+        "steps": 90.0,
+        "step_avg_ms": 2.77,
+        "step_peak_ms": 8.0,
+        "attacks": 1204.0,
+        "hp_lost": 14448.0,
+        "survivors": 400.0
+      }
+    },
+    "after": {
+      "performance_400": {
+        "command_ms": 123.1,
+        "paths_ms": 42.7,
+        "destinations_ms": 11.0,
+        "target_ms": 39.2,
+        "collision_ms": 18.3,
+        "simulation_avg_ms": 53.0,
+        "simulation_peak_ms": 642.4,
+        "fog_ms": 14.1,
+        "squads": 34.0,
+        "steps": 90.0,
+        "p95_ms": 92.8
+      },
+      "performance_navigation": {
+        "units": 400.0,
+        "steps": 180.0,
+        "avg_ms": 4.03,
+        "p95_ms": 3.86,
+        "p99_ms": 4.25,
+        "first_step_ms": 71.92,
+        "steady_peak_ms": 4.25
+      },
+      "performance_combat": {
+        "units": 400.0,
+        "steps": 90.0,
+        "step_avg_ms": 2.78,
+        "step_peak_ms": 7.85,
+        "attacks": 1204.0,
+        "hp_lost": 14448.0,
+        "survivors": 400.0
+      }
+    }
+  }
+}

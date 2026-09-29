@@ -30,7 +30,7 @@ func _run() -> void:
 	var requested_projection := OS.get_environment("RTS_BENCH_PROJECTION")
 	if requested_projection in projections: projections = [requested_projection]
 	for projection in projections:
-		if projection == "2.5d": game._toggle_view_mode()
+		if game.view_mode_25d != (projection == "2.5d"): game._toggle_view_mode()
 		game.camera.position = center
 		game.camera.force_update_scroll()
 		if not idle: game.issue_group_order(army, center + Vector2(700, 35), true)

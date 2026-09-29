@@ -557,8 +557,15 @@ func _make_fine_grid(unit: RtsUnit, bounds: Rect2) -> AStarGrid2D:
 	grid.cell_size = Vector2.ONE * step
 	grid.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES
 	grid.update()
+	_rasterize_static_grid(unit, grid)
+	return grid
+
+func _rasterize_static_grid(unit: RtsUnit, grid: AStarGrid2D, allow_resource_escape := false) -> void:
 	# Rasterize static geometry once. Querying all spatial buckets for every
 	# fine cell made the first shared route stall a large army's command frame.
+	var step := grid.cell_size.x
+	var origin := grid.offset
+	var size := grid.region.size
 	var radius := unit.radius()
 	var first := Vector2i(((Vector2.ONE * radius - origin) / step).ceil()).clamp(Vector2i.ZERO, size)
 	var last := Vector2i(((world_map.world_size - Vector2.ONE * radius - origin) / step).floor()).clamp(-Vector2i.ONE, size - Vector2i.ONE)
@@ -591,12 +598,13 @@ func _make_fine_grid(unit: RtsUnit, bounds: Rect2) -> AStarGrid2D:
 	for obstacle in game.resources:
 		if not is_instance_valid(obstacle) or obstacle.is_queued_for_deletion(): continue
 		var reach: float = radius + obstacle.radius
+		var current := unit.position.distance_squared_to(obstacle.position)
 		var region := _fine_region(grid, Rect2(obstacle.position - Vector2.ONE * reach, Vector2.ONE * reach * 2))
 		for y in range(region.position.y, region.end.y):
 			for x in range(region.position.x, region.end.x):
 				var cell := Vector2i(x, y)
-				if grid.get_point_position(cell).distance_squared_to(obstacle.position) < reach * reach: grid.set_point_solid(cell)
-	return grid
+				var distance := grid.get_point_position(cell).distance_squared_to(obstacle.position)
+				if distance < reach * reach and (not allow_resource_escape or current >= reach * reach or distance + 0.001 < current): grid.set_point_solid(cell)
 
 func _fine_region(grid: AStarGrid2D, bounds: Rect2) -> Rect2i:
 	var first := Vector2i(((bounds.position - grid.offset) / grid.cell_size).floor())
@@ -642,10 +650,16 @@ func _static_segment_clear(from: Vector2, to: Vector2, radius: float, unit: RtsU
 	# grazes a circle or a building corner, especially inside narrow passages.
 	var center := (from + to) * 0.5
 	var extent := from.distance_to(to) * 0.5
+	var samples := maxi(1, ceili(from.distance_to(to) / maxf(6.0, minf(12.0, radius * 0.75))))
 	for obstacle in nearby_buildings(center, extent + radius):
 		if unit != null and obstacle.kind.ends_with("_gate") and obstacle.is_complete() and not game.is_enemy(unit.owner_id, obstacle.owner_id): continue
 		var bounds := Rect2(obstacle.position - obstacle.size() * 0.5, obstacle.size()).grow(radius)
 		if _segment_hits_rect(from, to, bounds.grow(-0.0001)): return false
+		# Preserve Rect2's half-open boundary rule on exact edge tangencies.
+		# The ordinary case needs no per-point entity checks.
+		if _segment_hits_rect(from, to, bounds):
+			for i in range(samples + 1):
+				if bounds.has_point(from.lerp(to, float(i) / samples)): return false
 	for obstacle in nearby_resources(center, extent + radius + max_dynamic_radius):
 		var limit := radius + obstacle.radius
 		var closest := Geometry2D.get_closest_point_to_segment(obstacle.position, from, to)
@@ -653,9 +667,12 @@ func _static_segment_clear(from: Vector2, to: Vector2, radius: float, unit: RtsU
 		if distance >= limit * limit: continue
 		var current := unit.position.distance_squared_to(obstacle.position) if unit != null else INF
 		if not allow_resource_escape or current >= limit * limit or distance + 0.001 < current: return false
-	var samples := maxi(1, ceili(from.distance_to(to) / maxf(6.0, minf(12.0, radius * 0.75))))
+	# Buildings and resources were already tested against the entire segment.
+	# Only terrain needs sampling; repeating entity queries at every sample
+	# multiplies the cost of path attachment, validation and smoothing.
+	var naval: bool = unit != null and unit.stats.get("tags", []).has("naval")
 	for i in range(samples + 1):
-		if not can_occupy(from.lerp(to, float(i) / samples), radius, unit, false, allow_resource_escape): return false
+		if not _terrain_can_occupy(from.lerp(to, float(i) / samples), radius, naval): return false
 	return true
 
 func _segment_hits_rect(from: Vector2, to: Vector2, bounds: Rect2) -> bool:
@@ -759,7 +776,9 @@ func nearest_walkable_point(point: Vector2, radius := CLEARANCE, self_unit: RtsU
 
 func _nearest_walkable_point(point: Vector2, radius: float, self_unit: RtsUnit, require_path: bool, include_units: bool) -> Vector2:
 	_ensure_current()
-	var grid := _grid_for(self_unit)
+	# Most placement/formation queries only need a free point. Build the
+	# clearance grid only when reachability or the final fallback needs it.
+	var grid: AStarGrid2D = _grid_for(self_unit) if require_path and self_unit != null else null
 	var clamped := point.clamp(Vector2.ONE * radius, world_map.world_size - Vector2.ONE * radius)
 	var start := nearest_open_cell(self_unit.position, grid) if require_path and self_unit != null else Vector2i(-1, -1)
 	if _valid_destination(clamped, radius, self_unit, start, grid, include_units): return clamped
@@ -772,19 +791,26 @@ func _nearest_walkable_point(point: Vector2, radius: float, self_unit: RtsUnit, 
 			var candidate := clamped + Vector2.from_angle(approach_angle + TAU * angular_step / 16.0) * ring * maxf(radius, 12.0)
 			if _valid_destination(candidate, radius, self_unit, start, grid, include_units): return candidate
 	if start.x >= 0:
-		var best := Vector2.INF
-		var best_distance := INF
+		var candidates: Array[Vector2] = []
 		for y in world_map.grid_size.y:
 			for x in world_map.grid_size.x:
 				var cell := Vector2i(x, y)
 				if grid.is_point_solid(cell): continue
-				var candidate := world_map.cell_center(cell)
-				var distance := candidate.distance_squared_to(clamped)
-				if distance >= best_distance or not can_occupy(candidate, radius, self_unit, include_units): continue
-				if self_unit != null and _path_between(self_unit.position, candidate, self_unit, true).is_empty(): continue
-				best = candidate
-				best_distance = distance
-		if best != Vector2.INF: return best
+				candidates.append(world_map.cell_center(cell))
+		# The row-major scan used to search paths to successive record minima
+		# across the whole map. Nearest-first gives the same result with early
+		# exit; preserve row/column ordering when distances tie.
+		candidates.sort_custom(func(a: Vector2, b: Vector2) -> bool:
+			var da := a.distance_squared_to(clamped)
+			var db := b.distance_squared_to(clamped)
+			if da != db: return da < db
+			return a.y < b.y if a.y != b.y else a.x < b.x
+		)
+		for candidate in candidates:
+			if not can_occupy(candidate, radius, self_unit, include_units): continue
+			if self_unit != null and _path_between(self_unit.position, candidate, self_unit, true).is_empty(): continue
+			return candidate
+	if grid == null: grid = _grid_for(self_unit)
 	return world_map.cell_center(nearest_open_cell(clamped, grid))
 
 func _valid_destination(point: Vector2, radius: float, self_unit: RtsUnit, start: Vector2i, grid: AStarGrid2D, include_units := true) -> bool:
@@ -810,6 +836,13 @@ func has_fixed_unit_blocker(unit: RtsUnit, target: Vector2) -> bool:
 	return false
 
 func path_around_units(unit: RtsUnit, target: Vector2) -> PackedVector2Array:
+	if not profiling_enabled: return _path_around_units(unit, target)
+	var started := Time.get_ticks_usec()
+	var result := _path_around_units(unit, target)
+	_record_profile(&"path_around_units", started)
+	return result
+
+func _path_around_units(unit: RtsUnit, target: Vector2) -> PackedVector2Array:
 	# Recovery only: a local fine grid can route between parked formation
 	# members that the 50-pixel strategic grid cannot represent. A wide corral
 	# may require backtracking beyond the first window before making progress.
@@ -821,17 +854,32 @@ func path_around_units(unit: RtsUnit, target: Vector2) -> PackedVector2Array:
 		if not path.is_empty(): return path
 	return PackedVector2Array()
 
-func _local_unit_path(unit: RtsUnit, target: Vector2, step: float, half: int) -> PackedVector2Array:
+func _local_unit_grid(unit: RtsUnit, step: float, half: int) -> AStarGrid2D:
 	var grid := AStarGrid2D.new()
 	grid.region = Rect2i(0, 0, half * 2 + 1, half * 2 + 1)
 	grid.cell_size = Vector2.ONE * step
 	grid.offset = unit.position - Vector2.ONE * half * step
 	grid.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES
 	grid.update()
-	for y in grid.region.size.y:
-		for x in grid.region.size.x:
-			var cell := Vector2i(x, y)
-			if not can_occupy(grid.get_point_position(cell), unit.radius(), unit): grid.set_point_solid(cell)
+	_rasterize_static_grid(unit, grid, true)
+	# Mark each nearby unit's footprint once instead of querying every
+	# neighborhood for each of the up to 37,249 recovery-grid cells.
+	_ensure_spatial_index()
+	var extent := float(half) * step
+	for other in nearby_units(unit.position, sqrt(2.0) * extent + unit.radius() + max_dynamic_radius):
+		if other == unit: continue
+		var reach := unit.radius() + other.radius()
+		var current := unit.position.distance_squared_to(other.position)
+		var region := _fine_region(grid, Rect2(other.position - Vector2.ONE * reach, Vector2.ONE * reach * 2.0))
+		for y in range(region.position.y, region.end.y):
+			for x in range(region.position.x, region.end.x):
+				var cell := Vector2i(x, y)
+				var distance := grid.get_point_position(cell).distance_squared_to(other.position)
+				if distance < reach * reach and distance <= current: grid.set_point_solid(cell)
+	return grid
+
+func _local_unit_path(unit: RtsUnit, target: Vector2, step: float, half: int) -> PackedVector2Array:
+	var grid := _local_unit_grid(unit, step, half)
 	var start := Vector2i(half, half)
 	grid.set_point_solid(start, false)
 	var components := _components_for(grid, false)
@@ -898,6 +946,13 @@ func _yield_allies(unit: RtsUnit, destination: Vector2, yielding: Array[int] = [
 	return changed
 
 func move_step(unit: RtsUnit, desired_position: Vector2) -> Vector2:
+	if not profiling_enabled: return _move_step(unit, desired_position)
+	var started := Time.get_ticks_usec()
+	var result := _move_step(unit, desired_position)
+	_record_profile(&"move_step", started)
+	return result
+
+func _move_step(unit: RtsUnit, desired_position: Vector2) -> Vector2:
 	var movement := desired_position - unit.position
 	if movement.is_zero_approx(): return unit.position
 	# Sweep the full requested displacement, preserving speed at ordinary
@@ -953,20 +1008,9 @@ func can_occupy(point: Vector2, radius: float, self_unit: RtsUnit, include_units
 	return result
 
 func _can_occupy(point: Vector2, radius: float, self_unit: RtsUnit, include_units: bool, escape_from := Vector2.INF, allow_resource_escape := true) -> bool:
-	_ensure_spatial_index()
-	if point.x < radius or point.y < radius or point.x > world_map.world_size.x - radius or point.y > world_map.world_size.y - radius: return false
 	var naval: bool = self_unit != null and self_unit.stats.get("tags", []).has("naval")
-	var cell_size := float(RtsWorldMap.CELL_SIZE)
-	var first_x := floori((point.x - radius) / cell_size)
-	var last_x := mini(world_map.grid_size.x - 1, floori((point.x + radius) / cell_size))
-	var first_y := floori((point.y - radius) / cell_size)
-	var last_y := mini(world_map.grid_size.y - 1, floori((point.y + radius) / cell_size))
-	for cy in range(first_y, last_y + 1):
-		for cx in range(first_x, last_x + 1):
-			var terrain: int = world_map.cells[cy * world_map.grid_size.x + cx]
-			if (terrain == RtsWorldMap.Terrain.WATER) == naval and terrain != RtsWorldMap.Terrain.MOUNTAIN: continue
-			var closest := Vector2(clampf(point.x, cx * cell_size, (cx + 1) * cell_size), clampf(point.y, cy * cell_size, (cy + 1) * cell_size))
-			if point.distance_squared_to(closest) < radius * radius: return false
+	if not _terrain_can_occupy(point, radius, naval): return false
+	_ensure_spatial_index()
 	for building in buildings_by_cell.get(_spatial_cell(point), []):
 		if not is_instance_valid(building) or building.is_queued_for_deletion(): continue
 		if self_unit != null and not game.is_enemy(self_unit.owner_id, building.owner_id) and building.kind.ends_with("_gate") and building.is_complete(): continue
@@ -976,10 +1020,11 @@ func _can_occupy(point: Vector2, radius: float, self_unit: RtsUnit, include_unit
 			# Ordinary collision checks and cached pathfinding grids remain strict.
 			if escape_from == Vector2.INF or not bounds.has_point(escape_from): return false
 			if _rect_depth(bounds, point) > _rect_depth(bounds, escape_from) + 0.001: return false
-	var center_cell := _spatial_cell(point)
-	var search_radius := ceili((radius + max_dynamic_radius) / SPATIAL_CELL_SIZE)
-	for y in range(center_cell.y - search_radius, center_cell.y + search_radius + 1):
-		for x in range(center_cell.x - search_radius, center_cell.x + search_radius + 1):
+	var reach := Vector2.ONE * (radius + max_dynamic_radius)
+	var first := _spatial_cell(point - reach)
+	var last := _spatial_cell(point + reach)
+	for y in range(first.y, last.y + 1):
+		for x in range(first.x, last.x + 1):
 			var cell := Vector2i(x, y)
 			for resource in resources_by_cell.get(cell, []):
 				if not is_instance_valid(resource) or resource.is_queued_for_deletion(): continue
@@ -999,6 +1044,21 @@ func _can_occupy(point: Vector2, radius: float, self_unit: RtsUnit, include_unit
 					if self_unit == null or point.distance_squared_to(other.position) <= self_unit.position.distance_squared_to(other.position): return false
 	return true
 
+func _terrain_can_occupy(point: Vector2, radius: float, naval: bool) -> bool:
+	if point.x < radius or point.y < radius or point.x > world_map.world_size.x - radius or point.y > world_map.world_size.y - radius: return false
+	var cell_size := float(RtsWorldMap.CELL_SIZE)
+	var first_x := floori((point.x - radius) / cell_size)
+	var last_x := mini(world_map.grid_size.x - 1, floori((point.x + radius) / cell_size))
+	var first_y := floori((point.y - radius) / cell_size)
+	var last_y := mini(world_map.grid_size.y - 1, floori((point.y + radius) / cell_size))
+	for cy in range(first_y, last_y + 1):
+		for cx in range(first_x, last_x + 1):
+			var terrain: int = world_map.cells[cy * world_map.grid_size.x + cx]
+			if (terrain == RtsWorldMap.Terrain.WATER) == naval and terrain != RtsWorldMap.Terrain.MOUNTAIN: continue
+			var closest := Vector2(clampf(point.x, cx * cell_size, (cx + 1) * cell_size), clampf(point.y, cy * cell_size, (cy + 1) * cell_size))
+			if point.distance_squared_to(closest) < radius * radius: return false
+	return true
+
 func _rect_depth(bounds: Rect2, point: Vector2) -> float:
 	return minf(minf(point.x - bounds.position.x, bounds.end.x - point.x), minf(point.y - bounds.position.y, bounds.end.y - point.y))
 
@@ -1012,6 +1072,13 @@ func _building_escape_clear(unit: RtsUnit, destination: Vector2) -> bool:
 	return true
 
 func recover_building_overlap(unit: RtsUnit, delta: float) -> bool:
+	if not profiling_enabled: return _recover_building_overlap(unit, delta)
+	var started := Time.get_ticks_usec()
+	var result := _recover_building_overlap(unit, delta)
+	_record_profile(&"recover_building_overlap", started)
+	return result
+
+func _recover_building_overlap(unit: RtsUnit, delta: float) -> bool:
 	# Foundations can be placed over builders and bystanders. Walk them out
 	# before doing work, preserving their command queue and normal movement speed.
 	_ensure_spatial_index()

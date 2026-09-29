@@ -1,0 +1,121 @@
+[
+  {
+    "test": "navigation_grid_raster",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 1.604
+  },
+  {
+    "test": "navigation_dense_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 1.921
+  },
+  {
+    "test": "navigation_tasks_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 27.002
+  },
+  {
+    "test": "navigation_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.926
+  },
+  {
+    "test": "navigation_poc_matrix",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 3.719
+  },
+  {
+    "test": "navigation_construction_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 2.083
+  },
+  {
+    "test": "navigation",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 2.232
+  },
+  {
+    "test": "navigation_routes",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.34
+  },
+  {
+    "test": "navigation_replanning",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.445
+  },
+  {
+    "test": "group_replanning",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.455
+  },
+  {
+    "test": "group_chokepoint",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 2.15
+  },
+  {
+    "test": "group_mass_chokepoint",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 4.693
+  },
+  {
+    "test": "group_multiplayer",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 5.263
+  },
+  {
+    "test": "terrain_selection_follow",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 2.005
+  },
+  {
+    "test": "extended_systems",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 3.363
+  },
+  {
+    "test": "economy_siege_controls",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 1.633
+  },
+  {
+    "test": "smoke",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 3.509
+  }
+]

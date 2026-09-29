@@ -268,7 +268,14 @@ func _tick() -> void:
 	if not active: activate()
 	if members.is_empty(): return
 	game.navigation._ensure_current()
-	if game.navigation.obstacle_revision != last_obstacle_revision: _replan()
+	if game.navigation.obstacle_revision != last_obstacle_revision:
+		# Wildlife anywhere on the map can change the navigation revision.
+		# Invalidate geometric caches, but retain an unaffected shared route
+		# and its slots instead of making every squad search again.
+		corridor_cache.clear()
+		member_segments.clear()
+		last_obstacle_revision = game.navigation.obstacle_revision
+		if not _remaining_route_clear(): _replan()
 	if route.is_empty(): return
 	var center := _center()
 	for i in range(route_index, route.size() - 1):
@@ -278,6 +285,24 @@ func _tick() -> void:
 	var next_heading := (waypoint - center).normalized()
 	if not next_heading.is_zero_approx(): heading = next_heading
 	narrow = not final_approach and (_corridor_is_narrow(waypoint) or _corridor_is_narrow(center))
+
+func _remaining_route_clear() -> bool:
+	if route.is_empty(): return false
+	var representative: RtsUnit
+	var first := route.size() - 1
+	for unit in members:
+		if not is_instance_valid(unit) or unit.is_queued_for_deletion() or unit.movement_group != self: continue
+		if representative == null: representative = unit
+		first = mini(first, maxi(0, int(member_route_index.get(unit.get_instance_id(), 0)) - 1))
+		if not game.navigation.can_occupy(destination_for(unit), unit.radius(), unit, false): return false
+	if representative == null: return true
+	# Revisit adjusted goals: a blocked or disconnected click may now be
+	# reachable. Clamping an off-map click alone does not require a search.
+	var clamped_goal := requested_goal.clamp(Vector2.ONE * representative.radius(), game.world_size - Vector2.ONE * representative.radius())
+	if goal.distance_squared_to(clamped_goal) > 1.0: return false
+	for index in range(first, route.size() - 1):
+		if not game.navigation._static_segment_clear(route[index], route[index + 1], representative.radius(), representative, false): return false
+	return true
 
 func target_for(unit: RtsUnit) -> Vector2:
 	_tick()
