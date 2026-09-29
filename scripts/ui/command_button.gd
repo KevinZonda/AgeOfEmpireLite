@@ -76,6 +76,7 @@ func _draw() -> void:
 
 func _load_icon(kind: String) -> Texture2D:
 	rank_icon_fallback = false
+	if kind == "ungarrison": return null
 	var path := "res://assets/ui/command_icons/%s.png" % kind
 	var texture := _texture_at(path)
 	if texture == null and kind.begins_with("rank_"):

@@ -16,6 +16,7 @@ LIBRARY = ROOT / "docs/aoe4-icons-library"
 OUTPUT = ROOT / "assets/ui/command_icons"
 RESOURCE_OUTPUT = ROOT / "assets/ui/resource_icons"
 RESOURCE_ICONS = {"food": "肉", "wood": "木", "gold": "金", "stone": "石"}
+STAT_ICONS = {"population": "pop2"}
 
 # Game labels differ from a few names in the reference archive. Keep these
 # choices explicit so a visually similar but unrelated icon is never picked by
@@ -110,6 +111,8 @@ def main() -> None:
     RESOURCE_OUTPUT.mkdir(parents=True, exist_ok=True)
     for resource_id, name in RESOURCE_ICONS.items():
         shutil.copyfile(LIBRARY / "tech" / f"{name}.png", RESOURCE_OUTPUT / f"{resource_id}.png")
+    for stat_id, name in STAT_ICONS.items():
+        shutil.copyfile(LIBRARY / "stats" / f"{name}.png", RESOURCE_OUTPUT / f"{stat_id}.png")
     rows: list[tuple[str, str, str]] = []
     groups = [
         definitions("scripts/catalogs/game_data.gd", "BUILDINGS"),
@@ -145,7 +148,7 @@ def main() -> None:
         writer.writerows(rows)
 
     print(f"Copied {len(rows)} icons to {OUTPUT.relative_to(ROOT)}")
-    print(f"Copied {len(RESOURCE_ICONS)} resource icons to {RESOURCE_OUTPUT.relative_to(ROOT)}")
+    print(f"Copied {len(RESOURCE_ICONS)} resource and {len(STAT_ICONS)} stat icons to {RESOURCE_OUTPUT.relative_to(ROOT)}")
     if missing:
         print("No matching source icon: " + ", ".join(missing))
 

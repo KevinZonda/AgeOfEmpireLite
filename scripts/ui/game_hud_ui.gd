@@ -168,12 +168,26 @@ func _create_hud() -> void:
 	top_row.add_child(game.top_label)
 	for kind in ["food", "wood", "gold", "stone"]:
 		game._add_resource_readout(top_row, kind)
+	var population_chip := PanelContainer.new()
+	population_chip.add_theme_stylebox_override("panel", game._hud_panel_style(Color("352b1e"), 5))
+	top_row.add_child(population_chip)
+	var population_row := HBoxContainer.new()
+	population_row.add_theme_constant_override("separation", 4)
+	population_chip.add_child(population_row)
+	var population_icon := TextureRect.new()
+	population_icon.texture = RtsCommandButton._texture_at("res://assets/ui/resource_icons/population.png")
+	population_icon.custom_minimum_size = Vector2(30, 28)
+	population_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	population_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	population_icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	population_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	population_row.add_child(population_icon)
 	game.population_label = Label.new()
 	game.population_label.custom_minimum_size.x = 102
 	game.population_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	game.population_label.add_theme_font_size_override("font_size", RtsUiTypography.BODY)
 	game.population_label.add_theme_color_override("font_color", Color("eee2c7"))
-	top_row.add_child(game.population_label)
+	population_row.add_child(game.population_label)
 	top_tools = HBoxContainer.new()
 	top_tools.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top_tools.alignment = BoxContainer.ALIGNMENT_END
