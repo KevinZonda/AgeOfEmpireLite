@@ -28,9 +28,12 @@ var focus_attack := OS.get_environment("RTS_POC_FOCUS") != "0"
 func _initialize() -> void:
 	call_deferred("_run")
 
+func _create_game() -> Node2D:
+	return DemoGame.new()
+
 func _run() -> void:
 	seed(4242)
-	game = DemoGame.new()
+	game = _create_game()
 	root.add_child(game)
 	await process_frame
 	game.start_game("English", 4242)
