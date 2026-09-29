@@ -18,8 +18,6 @@ var active := false
 var last_frame := -1
 var last_obstacle_revision := -1
 var heading := Vector2.RIGHT
-var narrow := false
-var final_approach := false
 var formation := "balanced"
 var formation_width := 5
 var corridor_cache: Dictionary = {}
@@ -324,10 +322,8 @@ func _tick() -> void:
 	for i in range(route_index, route.size() - 1):
 		if center.distance_to(route[i]) < 65.0: route_index = i + 1
 	var waypoint: Vector2 = route[route_index] if route_index < route.size() else goal
-	final_approach = route_index >= route.size() - 1 and center.distance_to(goal) < 115.0
 	var next_heading := (waypoint - center).normalized()
 	if not next_heading.is_zero_approx(): heading = next_heading
-	narrow = not final_approach and (_corridor_is_narrow(waypoint) or _corridor_is_narrow(center))
 
 func _remaining_route_clear() -> bool:
 	if route.is_empty(): return false
@@ -364,17 +360,13 @@ func target_for(unit: RtsUnit) -> Vector2:
 	var target_point := route[index]
 	# Advance only onto segments the full unit can traverse. Look ahead through
 	# bends instead of repeatedly backing up to an offset beside a wall.
-	var found := false
 	for next_index in range(mini(route.size() - 1, index + 4), maxi(-1, index - 3), -1):
 		if next_index < route.size() - 1 and not _corridor_is_narrow(route[next_index]) and _segment_clear_for(unit, route[next_index] + offset):
 			target_point = route[next_index] + offset
-			found = true
 			break
 		if _segment_clear_for(unit, route[next_index]):
 			target_point = route[next_index]
-			found = true
 			break
-	if not found: return target_point
 	return target_point
 
 func _segment_clear_for(unit: RtsUnit, point: Vector2) -> bool:

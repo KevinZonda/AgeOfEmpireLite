@@ -403,8 +403,12 @@ func _mark_reachable_cells() -> void:
 			frontier.append(next)
 
 func nearest_walkable_cell(point: Vector2) -> Vector2i:
+	return nearest_open_cell(point, pathfinder)
+
+func nearest_open_cell(point: Vector2, grid: AStarGrid2D) -> Vector2i:
+	# Both terrain and navigation coarse grids use this map's cell alignment.
 	var origin := cell_at(point)
-	if not pathfinder.is_point_solid(origin): return origin
+	if not grid.is_point_solid(origin): return origin
 	for radius in range(1, maxi(grid_size.x, grid_size.y)):
 		var best := Vector2i(-1, -1)
 		var best_distance := INF
@@ -412,7 +416,7 @@ func nearest_walkable_cell(point: Vector2) -> Vector2i:
 			for x in range(maxi(0, origin.x - radius), mini(grid_size.x - 1, origin.x + radius) + 1):
 				if absi(x - origin.x) != radius and absi(y - origin.y) != radius: continue
 				var cell := Vector2i(x, y)
-				if pathfinder.is_point_solid(cell): continue
+				if grid.is_point_solid(cell): continue
 				var distance := point.distance_squared_to(cell_center(cell))
 				if distance < best_distance:
 					best_distance = distance

@@ -26,8 +26,8 @@ func _run() -> void:
 	var gate: RtsBuilding = game.spawn_building(2, "palisade_gate", Vector2(900, 750))
 	game.navigation.refresh()
 	var gate_cell: Vector2i = game.world_map.cell_at(gate.position)
-	assert(not game.navigation.owner_pathfinders[0].is_point_solid(gate_cell), "allied gates should open for pathfinding")
-	assert(game.navigation.owner_pathfinders[1].is_point_solid(gate_cell), "enemy gates should block pathfinding")
+	for unit in game.units:
+		assert(game.navigation._grid_for(unit).is_point_solid(gate_cell) == game.is_enemy(unit.owner_id, gate.owner_id), "actual unit grids should respect allied and enemy gates")
 	var squad: Array[RtsUnit] = []
 	for i in 5:
 		var unit: RtsUnit = game.spawn_unit(0, "spearman", Vector2(550 + i * 29, 760))

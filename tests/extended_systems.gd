@@ -101,8 +101,8 @@ func _run() -> void:
 	gate.advance_construction(100.0)
 	assert(game.convert_wall_to_gate(gate))
 	assert(gate.kind == "palisade_gate")
-	assert(not game.navigation.pathfinder.is_point_solid(game.world_map.cell_at(gate.position)))
-	assert(game.navigation.enemy_pathfinder.is_point_solid(game.world_map.cell_at(gate.position)))
+	assert(not game.navigation._grid_for(workers[0]).is_point_solid(game.world_map.cell_at(gate.position)))
+	assert(game.navigation._grid_for(game.units[5]).is_point_solid(game.world_map.cell_at(gate.position)))
 	var passer: RtsUnit = game.spawn_unit(0, "spearman", gate.position + Vector2(0, -85))
 	passer.order_move(gate.position + Vector2(0, 85))
 	for step in 200:
@@ -114,7 +114,7 @@ func _run() -> void:
 	var breached_cell: Vector2i = game.world_map.cell_at(gate.position)
 	gate.take_damage(2000.0)
 	game.navigation.path_between(enemy.position, game.world_map.cell_center(breached_cell), enemy)
-	assert(not game.navigation.enemy_pathfinder.is_point_solid(breached_cell), "breaching the gate should open the route")
+	assert(not game.navigation._grid_for(enemy).is_point_solid(breached_cell), "breaching the gate should open the route")
 	game.selected_map_size = Vector2(3000, 3000)
 	game.selected_map_style = "lakes"
 	game.start_game("Chinese", 6789)

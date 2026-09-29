@@ -9,10 +9,13 @@ const MAX_FINE_GRIDS := 4
 
 var game: Node2D
 var world_map: RtsWorldMap
-var pathfinder := AStarGrid2D.new()
-var enemy_pathfinder := AStarGrid2D.new()
-var water_pathfinder := AStarGrid2D.new()
-var owner_pathfinders: Array[AStarGrid2D] = []
+# Generic queries retain their fixed-clearance grid, built only when requested.
+var pathfinder: AStarGrid2D:
+	get:
+		_ensure_current()
+		if _default_grid == null: _default_grid = _make_default_grid()
+		return _default_grid
+var _default_grid: AStarGrid2D
 var clearance_grids: Dictionary = {}
 var fine_grids: Dictionary = {}
 var local_fine_grids: Array[Dictionary] = []
@@ -53,13 +56,6 @@ func _point_path(grid: AStarGrid2D, start: Vector2i, end: Vector2i) -> PackedVec
 	_record_profile(&"astar", started)
 	return result
 
-func _id_path(grid: AStarGrid2D, start: Vector2i, end: Vector2i) -> Array[Vector2i]:
-	if not profiling_enabled: return grid.get_id_path(start, end)
-	var started := Time.get_ticks_usec()
-	var result := grid.get_id_path(start, end)
-	_record_profile(&"astar", started)
-	return result
-
 func _init(game_ref: Node2D, map_ref: RtsWorldMap) -> void:
 	game = game_ref
 	world_map = map_ref
@@ -79,41 +75,30 @@ func _refresh_grids() -> void:
 	obstacle_signature = _obstacle_signature()
 	obstacle_check_frame = Engine.get_process_frames()
 	invalidate_spatial_index()
-	owner_pathfinders.clear()
-	for owner_id in game.players.size(): owner_pathfinders.append(AStarGrid2D.new())
-	pathfinder = owner_pathfinders[0]
-	enemy_pathfinder = owner_pathfinders[1]
-	var grids: Array[AStarGrid2D] = owner_pathfinders.duplicate()
-	grids.append(water_pathfinder)
-	for grid in grids:
-		grid.clear()
-		grid.region = Rect2i(Vector2i.ZERO, world_map.grid_size)
-		grid.cell_size = Vector2(RtsWorldMap.CELL_SIZE, RtsWorldMap.CELL_SIZE)
-		grid.offset = Vector2.ONE * RtsWorldMap.CELL_SIZE * 0.5
-		grid.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES
-		grid.update()
+	_default_grid = null
+
+func _make_default_grid() -> AStarGrid2D:
+	var grid := AStarGrid2D.new()
+	grid.region = Rect2i(Vector2i.ZERO, world_map.grid_size)
+	grid.cell_size = Vector2.ONE * RtsWorldMap.CELL_SIZE
+	grid.offset = Vector2.ONE * RtsWorldMap.CELL_SIZE * 0.5
+	grid.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES
+	grid.update()
 	for y in world_map.grid_size.y:
 		for x in world_map.grid_size.x:
 			var cell := Vector2i(x, y)
-			var center := world_map.cell_center(cell)
-			if not world_map.is_walkable(center):
-				for grid in owner_pathfinders: grid.set_point_solid(cell)
-			if not world_map.is_navigable(center): water_pathfinder.set_point_solid(cell)
+			if not world_map.is_walkable(world_map.cell_center(cell)): grid.set_point_solid(cell)
 	for building in game.buildings:
 		if not is_instance_valid(building) or building.is_queued_for_deletion(): continue
-		var footprint := Rect2(building.position - building.size() * 0.5, building.size()).grow(CLEARANCE)
-		if building.kind.ends_with("_gate") and building.is_complete():
-			for owner_id in owner_pathfinders.size():
-				if game.is_enemy(owner_id, building.owner_id): _mark_rect(footprint, owner_pathfinders[owner_id])
-		else:
-			for grid in owner_pathfinders: _mark_rect(footprint, grid)
-		_mark_rect(footprint, water_pathfinder)
+		if not _gate_passable(building, 0):
+			_mark_rect(Rect2(building.position - building.size() * 0.5, building.size()).grow(CLEARANCE), grid)
 	for resource in game.resources:
 		if not is_instance_valid(resource) or resource.is_queued_for_deletion(): continue
-		for grid in grids:
-			_mark_circle(resource.position, resource.radius + CLEARANCE, grid)
+		_mark_circle(resource.position, resource.radius + CLEARANCE, grid)
+	# Preserve the generic query's player-zero gate corridor. Unit queries use
+	# their actual body size and owner through _grid_for instead.
 	for building in game.buildings:
-		if not is_instance_valid(building) or building.is_queued_for_deletion() or not building.is_complete() or not building.kind.ends_with("_gate"): continue
+		if not is_instance_valid(building) or building.is_queued_for_deletion() or not _gate_passable(building, 0): continue
 		var first := world_map.cell_at(building.position - Vector2.ONE * RtsWorldMap.CELL_SIZE)
 		var last := world_map.cell_at(building.position + Vector2.ONE * RtsWorldMap.CELL_SIZE)
 		for y in range(first.y, last.y + 1):
@@ -123,8 +108,8 @@ func _refresh_grids() -> void:
 				var along := absf(delta.y) if building.wall_vertical else absf(delta.x)
 				var across := absf(delta.x) if building.wall_vertical else absf(delta.y)
 				if along <= RtsWorldMap.CELL_SIZE * 0.55 and across <= RtsWorldMap.CELL_SIZE * 1.1 and world_map.is_walkable(world_map.cell_center(cell)):
-					for owner_id in owner_pathfinders.size():
-						if not game.is_enemy(owner_id, building.owner_id): owner_pathfinders[owner_id].set_point_solid(cell, false)
+					grid.set_point_solid(cell, false)
+	return grid
 
 func _obstacle_signature() -> int:
 	var signature := 0
@@ -230,8 +215,6 @@ func unit_moved(unit: RtsUnit, previous_position: Vector2) -> void:
 
 func resource_moved(resource: RtsResource, previous_position: Vector2) -> void:
 	if previous_position != resource.position: invalidate_obstacles()
-	if spatial_frame != Engine.get_process_frames(): return
-	_move_in_index(resources_by_cell, resource, previous_position)
 
 func _move_in_index(index: Dictionary, entity: Node2D, previous_position: Vector2) -> void:
 	var old_cell := _spatial_cell(previous_position)
@@ -259,17 +242,25 @@ func _mark_circle(center: Vector2, radius: float, grid: AStarGrid2D) -> void:
 			if center.distance_to(world_map.cell_center(cell)) < radius:
 				grid.set_point_solid(cell)
 
+func _grid_key(unit: RtsUnit) -> Vector3:
+	return Vector3(unit.owner_id, unit.radius(), 1.0 if unit.stats.get("tags", []).has("naval") else 0.0)
+
+func _gate_passable(building: RtsBuilding, owner_id: int) -> bool:
+	return building.kind.ends_with("_gate") and building.is_complete() and not game.is_enemy(owner_id, building.owner_id)
+
+func _terrain_passable(terrain: int, naval: bool, boarding := false) -> bool:
+	return terrain != RtsWorldMap.Terrain.MOUNTAIN and (boarding or (terrain == RtsWorldMap.Terrain.WATER) == naval)
+
 func _grid_for(unit: RtsUnit) -> AStarGrid2D:
 	if unit == null: return pathfinder
-	var naval: bool = unit.stats.get("tags", []).has("naval")
-	var key := Vector3(unit.owner_id, unit.radius(), 1.0 if naval else 0.0)
+	var key := _grid_key(unit)
 	if clearance_grids.has(key): return clearance_grids[key]
 	# The search and movement must agree on the body's actual clearance.
 	# Cache per owner/body size; allied gates are handled by can_occupy too.
 	var grid := AStarGrid2D.new()
-	grid.region = pathfinder.region
-	grid.cell_size = pathfinder.cell_size
-	grid.offset = pathfinder.offset
+	grid.region = Rect2i(Vector2i.ZERO, world_map.grid_size)
+	grid.cell_size = Vector2.ONE * RtsWorldMap.CELL_SIZE
+	grid.offset = Vector2.ONE * RtsWorldMap.CELL_SIZE * 0.5
 	grid.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES
 	grid.update()
 	for y in world_map.grid_size.y:
@@ -294,14 +285,13 @@ func _connected_cell(point: Vector2, grid: AStarGrid2D, radius: float, unit: Rts
 				best_distance = distance
 	return best
 
-func _visible_cells(point: Vector2, grid: AStarGrid2D, radius: float, unit: RtsUnit) -> Array[Vector2i]:
+func _visible_cells(point: Vector2, grid: AStarGrid2D, radius: float, unit: RtsUnit, origin: Vector2i, extent: int) -> Array[Vector2i]:
 	var result: Array[Vector2i] = []
-	var origin := world_map.cell_at(point)
-	for y in range(maxi(0, origin.y - 2), mini(world_map.grid_size.y, origin.y + 3)):
-		for x in range(maxi(0, origin.x - 2), mini(world_map.grid_size.x, origin.x + 3)):
+	for y in range(maxi(0, origin.y - extent), mini(grid.region.size.y, origin.y + extent + 1)):
+		for x in range(maxi(0, origin.x - extent), mini(grid.region.size.x, origin.x + extent + 1)):
 			var cell := Vector2i(x, y)
-			if not grid.is_point_solid(cell) and _static_segment_clear(point, world_map.cell_center(cell), radius, unit): result.append(cell)
-	result.sort_custom(func(a: Vector2i, b: Vector2i) -> bool: return point.distance_squared_to(world_map.cell_center(a)) < point.distance_squared_to(world_map.cell_center(b)))
+			if not grid.is_point_solid(cell) and _static_segment_clear(point, grid.get_point_position(cell), radius, unit): result.append(cell)
+	result.sort_custom(func(a: Vector2i, b: Vector2i) -> bool: return point.distance_squared_to(grid.get_point_position(a)) < point.distance_squared_to(grid.get_point_position(b)))
 	return result
 
 func _safe_point_path(grid: AStarGrid2D, start: Vector2i, end: Vector2i, unit: RtsUnit) -> PackedVector2Array:
@@ -375,23 +365,7 @@ func _components_for(grid: AStarGrid2D, cache := true) -> PackedInt32Array:
 	return labels
 
 func nearest_open_cell(point: Vector2, grid: AStarGrid2D = null) -> Vector2i:
-	if grid == null: grid = pathfinder
-	var origin := world_map.cell_at(point)
-	if not grid.is_point_solid(origin): return origin
-	var best := Vector2i(-1, -1)
-	var best_distance := INF
-	for radius in range(1, maxi(world_map.grid_size.x, world_map.grid_size.y)):
-		for y in range(maxi(0, origin.y - radius), mini(world_map.grid_size.y - 1, origin.y + radius) + 1):
-			for x in range(maxi(0, origin.x - radius), mini(world_map.grid_size.x - 1, origin.x + radius) + 1):
-				if absi(x - origin.x) != radius and absi(y - origin.y) != radius: continue
-				var cell := Vector2i(x, y)
-				if grid.is_point_solid(cell): continue
-				var distance := point.distance_squared_to(world_map.cell_center(cell))
-				if distance < best_distance:
-					best = cell
-					best_distance = distance
-		if best.x >= 0: return best
-	return origin
+	return world_map.nearest_open_cell(point, pathfinder if grid == null else grid)
 
 func path_between(from: Vector2, to: Vector2, unit: RtsUnit = null, smooth := true) -> PackedVector2Array:
 	if not profiling_enabled: return _path_between(from, to, unit, smooth)
@@ -413,8 +387,8 @@ func _path_between(from: Vector2, to: Vector2, unit: RtsUnit, smooth: bool, allo
 	if raw.is_empty() and unit != null:
 		# Try other visible attachments at BOTH ends: the nearest center can
 		# be isolated by geometry that fits between coarse grid centers.
-		var starts := _visible_cells(from, grid, radius, unit)
-		var ends := _visible_cells(to, grid, radius, unit)
+		var starts := _visible_cells(from, grid, radius, unit, world_map.cell_at(from), 2)
+		var ends := _visible_cells(to, grid, radius, unit, world_map.cell_at(to), 2)
 		for last in ends:
 			for first in starts:
 				if first == start and last == end: continue
@@ -434,7 +408,7 @@ func _fine_static_path(from: Vector2, to: Vector2, unit: RtsUnit) -> PackedVecto
 	# Reachability cannot depend on the request's bounding box: the only
 	# opening may lie far beyond it. Share a world-wide fallback by body type
 	# and obstacle revision instead of rebuilding a local grid for every worker.
-	var key := Vector3(unit.owner_id, unit.radius(), 1.0 if unit.stats.get("tags", []).has("naval") else 0.0)
+	var key := _grid_key(unit)
 	if not fine_grids.has(key):
 		var local := _local_fine_grid_for(from, to, unit, key)
 		if local != null:
@@ -476,12 +450,12 @@ func _obstacle_corner_path(from: Vector2, to: Vector2, unit: RtsUnit) -> PackedV
 	# Even a fine lattice can miss a legal 1px-wide band between expanded
 	# footprints or terrain and a resource. Boundary corners provide portals
 	# independent of the lattice; every connecting edge still uses a full sweep.
-	var key := Vector3(unit.owner_id, unit.radius(), 1.0 if unit.stats.get("tags", []).has("naval") else 0.0)
+	var key := _grid_key(unit)
 	if not corner_graphs.has(key):
 		var corners := PackedVector2Array()
 		for obstacle in game.buildings:
 			if not is_instance_valid(obstacle) or obstacle.is_queued_for_deletion(): continue
-			if obstacle.kind.ends_with("_gate") and obstacle.is_complete() and not game.is_enemy(unit.owner_id, obstacle.owner_id): continue
+			if _gate_passable(obstacle, unit.owner_id): continue
 			var bounds := Rect2(obstacle.position - obstacle.size() * 0.5, obstacle.size()).grow(unit.radius() + 0.05)
 			for point in [bounds.position, bounds.end, Vector2(bounds.position.x, bounds.end.y), Vector2(bounds.end.x, bounds.position.y)]:
 				if not corners.has(point) and can_occupy(point, unit.radius(), unit, false, false): corners.append(point)
@@ -489,7 +463,7 @@ func _obstacle_corner_path(from: Vector2, to: Vector2, unit: RtsUnit) -> PackedV
 		for y in world_map.grid_size.y:
 			for x in world_map.grid_size.x:
 				var terrain: int = world_map.cells[y * world_map.grid_size.x + x]
-				if (terrain == RtsWorldMap.Terrain.WATER) == naval and terrain != RtsWorldMap.Terrain.MOUNTAIN: continue
+				if _terrain_passable(terrain, naval): continue
 				var bounds := Rect2(Vector2(x, y) * RtsWorldMap.CELL_SIZE, Vector2.ONE * RtsWorldMap.CELL_SIZE).grow(unit.radius() + 0.05)
 				for point in [bounds.position, bounds.end, Vector2(bounds.position.x, bounds.end.y), Vector2(bounds.end.x, bounds.position.y)]:
 					if not corners.has(point) and can_occupy(point, unit.radius(), unit, false, false): corners.append(point)
@@ -539,10 +513,11 @@ func _obstacle_corner_path(from: Vector2, to: Vector2, unit: RtsUnit) -> PackedV
 			if clear:
 				costs[next] = cost
 				parents[next] = current
+	# GDScript requires a terminal return even though the loop exits above.
 	return PackedVector2Array()
 
 func _fine_grid_for(unit: RtsUnit) -> AStarGrid2D:
-	var key := Vector3(unit.owner_id, unit.radius(), 1.0 if unit.stats.get("tags", []).has("naval") else 0.0)
+	var key := _grid_key(unit)
 	if fine_grids.has(key): return fine_grids[key]
 	if fine_grids.size() >= MAX_FINE_GRIDS:
 		var oldest: Vector3 = fine_grids.keys()[0]
@@ -582,7 +557,7 @@ func _rasterize_static_grid(unit: RtsUnit, grid: AStarGrid2D, allow_resource_esc
 	for y in world_map.grid_size.y:
 		for x in world_map.grid_size.x:
 			var terrain: int = world_map.cells[y * world_map.grid_size.x + x]
-			if (terrain == RtsWorldMap.Terrain.WATER) == naval and terrain != RtsWorldMap.Terrain.MOUNTAIN: continue
+			if _terrain_passable(terrain, naval): continue
 			var tile := Rect2(Vector2(x, y) * RtsWorldMap.CELL_SIZE, Vector2.ONE * RtsWorldMap.CELL_SIZE)
 			var region := _fine_region(grid, tile.grow(radius))
 			for cy in range(region.position.y, region.end.y):
@@ -593,7 +568,7 @@ func _rasterize_static_grid(unit: RtsUnit, grid: AStarGrid2D, allow_resource_esc
 					if point.distance_squared_to(point.clamp(tile.position, tile.end)) < radius * radius: grid.set_point_solid(cell)
 	for obstacle in game.buildings:
 		if not is_instance_valid(obstacle) or obstacle.is_queued_for_deletion(): continue
-		if obstacle.kind.ends_with("_gate") and obstacle.is_complete() and not game.is_enemy(unit.owner_id, obstacle.owner_id): continue
+		if _gate_passable(obstacle, unit.owner_id): continue
 		var footprint := Rect2(obstacle.position - obstacle.size() * 0.5, obstacle.size()).grow(radius)
 		var region := _fine_region(grid, footprint)
 		for y in range(region.position.y, region.end.y):
@@ -618,13 +593,7 @@ func _fine_region(grid: AStarGrid2D, bounds: Rect2) -> Rect2i:
 
 func _fine_visible_cells(point: Vector2, grid: AStarGrid2D, unit: RtsUnit) -> Array[Vector2i]:
 	var origin := Vector2i(((point - grid.offset) / grid.cell_size).round())
-	var result: Array[Vector2i] = []
-	for y in range(maxi(0, origin.y - 1), mini(grid.region.size.y, origin.y + 2)):
-		for x in range(maxi(0, origin.x - 1), mini(grid.region.size.x, origin.x + 2)):
-			var cell := Vector2i(x, y)
-			if not grid.is_point_solid(cell) and _static_segment_clear(point, grid.get_point_position(cell), unit.radius(), unit): result.append(cell)
-	result.sort_custom(func(a: Vector2i, b: Vector2i) -> bool: return point.distance_squared_to(grid.get_point_position(a)) < point.distance_squared_to(grid.get_point_position(b)))
-	return result
+	return _visible_cells(point, grid, unit.radius(), unit, origin, 1)
 
 func _simplify_path(raw: PackedVector2Array, from: Vector2, to: Vector2, unit: RtsUnit) -> PackedVector2Array:
 	if raw.is_empty(): return raw
@@ -657,7 +626,7 @@ func _static_segment_clear(from: Vector2, to: Vector2, radius: float, unit: RtsU
 	var extent := from.distance_to(to) * 0.5
 	var samples := maxi(1, ceili(from.distance_to(to) / maxf(6.0, minf(12.0, radius * 0.75))))
 	for obstacle in nearby_buildings(center, extent + radius):
-		if unit != null and obstacle.kind.ends_with("_gate") and obstacle.is_complete() and not game.is_enemy(unit.owner_id, obstacle.owner_id): continue
+		if unit != null and _gate_passable(obstacle, unit.owner_id): continue
 		var bounds := Rect2(obstacle.position - obstacle.size() * 0.5, obstacle.size()).grow(radius)
 		if _segment_hits_rect(from, to, bounds.grow(-0.0001)): return false
 		# Preserve Rect2's half-open boundary rule on exact edge tangencies.
@@ -684,7 +653,7 @@ func _terrain_segment_clear(from: Vector2, to: Vector2, radius: float, naval: bo
 	for y in range(first.y, last.y + 1):
 		for x in range(first.x, last.x + 1):
 			var terrain: int = world_map.cells[y * world_map.grid_size.x + x]
-			if terrain != RtsWorldMap.Terrain.MOUNTAIN and (boarding or (terrain == RtsWorldMap.Terrain.WATER) == naval): continue
+			if _terrain_passable(terrain, naval, boarding): continue
 			var tile := Rect2(Vector2(x, y) * RtsWorldMap.CELL_SIZE, Vector2.ONE * RtsWorldMap.CELL_SIZE)
 			# A rounded rectangle is two strips plus four corner circles.
 			if _segment_hits_rect(from, to, Rect2(tile.position - Vector2(radius, 0), tile.size + Vector2(radius * 2, 0)).grow(-0.00001)): return false
@@ -778,12 +747,15 @@ func _path_to_range(from: Vector2, target: Vector2, reach: float, unit: RtsUnit)
 			if boarding and not boarding_clear(point, target, unit): continue
 			if not grid.is_point_solid(cell) and point.distance_to(target) <= reach and can_occupy(point, unit.radius(), unit): candidates.append(point)
 	candidates.sort_custom(func(a: Vector2, b: Vector2) -> bool: return from.distance_squared_to(a) < from.distance_squared_to(b))
-	for allow_fine in [false, true]:
+	if not can_occupy(from, unit.radius(), unit, false): return PackedVector2Array()
+	# Candidates already passed occupancy checks. After every coarse route
+	# fails, refine directly without repeating those same coarse searches.
+	for refine in [false, true]:
 		var best := PackedVector2Array()
 		var best_length := INF
 		for point in candidates:
 			if from.distance_to(point) >= best_length: break
-			var candidate := _path_between(from, point, unit, true, allow_fine)
+			var candidate := _fine_static_path(from, point, unit) if refine else _path_between(from, point, unit, true, false)
 			if candidate.is_empty(): continue
 			var length := from.distance_to(candidate[0]) + _path_length(candidate)
 			if length < best_length:
@@ -801,12 +773,10 @@ func nearest_walkable_point(point: Vector2, radius := CLEARANCE, self_unit: RtsU
 
 func _nearest_walkable_point(point: Vector2, radius: float, self_unit: RtsUnit, require_path: bool, include_units: bool) -> Vector2:
 	_ensure_current()
-	# Most placement/formation queries only need a free point. Build the
-	# clearance grid only when reachability or the final fallback needs it.
-	var grid: AStarGrid2D = _grid_for(self_unit) if require_path and self_unit != null else null
+	# Directly reachable points need no grid, even when a path is required.
+	var check_path := require_path and self_unit != null
 	var clamped := point.clamp(Vector2.ONE * radius, world_map.world_size - Vector2.ONE * radius)
-	var start := nearest_open_cell(self_unit.position, grid) if require_path and self_unit != null else Vector2i(-1, -1)
-	if _valid_destination(clamped, radius, self_unit, start, grid, include_units): return clamped
+	if _valid_destination(clamped, radius, self_unit, check_path, include_units): return clamped
 	var approach_angle := (self_unit.position - clamped).angle() if self_unit != null else 0.0
 	for ring in range(1, 17):
 		for i in 16:
@@ -814,8 +784,9 @@ func _nearest_walkable_point(point: Vector2, radius: float, self_unit: RtsUnit, 
 			# an east-first scan can send a west-side unit around the obstacle.
 			var angular_step := ceili(i / 2.0) * (1 if i % 2 == 1 else -1)
 			var candidate := clamped + Vector2.from_angle(approach_angle + TAU * angular_step / 16.0) * ring * maxf(radius, 12.0)
-			if _valid_destination(candidate, radius, self_unit, start, grid, include_units): return candidate
-	if start.x >= 0:
+			if _valid_destination(candidate, radius, self_unit, check_path, include_units): return candidate
+	var grid := _grid_for(self_unit)
+	if check_path:
 		var candidates: Array[Vector2] = []
 		for y in world_map.grid_size.y:
 			for x in world_map.grid_size.x:
@@ -833,19 +804,14 @@ func _nearest_walkable_point(point: Vector2, radius: float, self_unit: RtsUnit, 
 		)
 		for candidate in candidates:
 			if not can_occupy(candidate, radius, self_unit, include_units, false): continue
-			if self_unit != null and _path_between(self_unit.position, candidate, self_unit, true).is_empty(): continue
+			if _path_between(self_unit.position, candidate, self_unit, true).is_empty(): continue
 			return candidate
-	if grid == null: grid = _grid_for(self_unit)
 	return world_map.cell_center(nearest_open_cell(clamped, grid))
 
 # Final destinations cannot use movement-only overlap escape allowances.
-func _valid_destination(point: Vector2, radius: float, self_unit: RtsUnit, start: Vector2i, grid: AStarGrid2D, include_units := true) -> bool:
+func _valid_destination(point: Vector2, radius: float, self_unit: RtsUnit, require_path: bool, include_units: bool) -> bool:
 	if not can_occupy(point, radius, self_unit, include_units, false): return false
-	if start.x < 0: return true
-	if self_unit != null:
-		return not _path_between(self_unit.position, point, self_unit, true).is_empty()
-	var end := world_map.cell_at(point)
-	return not grid.is_point_solid(end) and not _id_path(grid, start, end).is_empty()
+	return not require_path or not _path_between(self_unit.position, point, self_unit, true).is_empty()
 
 func _segment_clear(from: Vector2, to: Vector2, radius: float, self_unit: RtsUnit) -> bool:
 	if not _static_segment_clear(from, to, radius, self_unit): return false
@@ -1071,7 +1037,7 @@ func _can_occupy(point: Vector2, radius: float, self_unit: RtsUnit, include_unit
 	_ensure_spatial_index()
 	for building in buildings_by_cell.get(_spatial_cell(point), []):
 		if not is_instance_valid(building) or building.is_queued_for_deletion(): continue
-		if self_unit != null and not game.is_enemy(self_unit.owner_id, building.owner_id) and building.kind.ends_with("_gate") and building.is_complete(): continue
+		if self_unit != null and _gate_passable(building, self_unit.owner_id): continue
 		var bounds := Rect2(building.position - building.size() * 0.5, building.size()).grow(radius)
 		if bounds.has_point(point):
 			# Only the dedicated overlap recovery may leave an existing overlap.
@@ -1112,7 +1078,7 @@ func _terrain_can_occupy(point: Vector2, radius: float, naval: bool) -> bool:
 	for cy in range(first_y, last_y + 1):
 		for cx in range(first_x, last_x + 1):
 			var terrain: int = world_map.cells[cy * world_map.grid_size.x + cx]
-			if (terrain == RtsWorldMap.Terrain.WATER) == naval and terrain != RtsWorldMap.Terrain.MOUNTAIN: continue
+			if _terrain_passable(terrain, naval): continue
 			var closest := Vector2(clampf(point.x, cx * cell_size, (cx + 1) * cell_size), clampf(point.y, cy * cell_size, (cy + 1) * cell_size))
 			if point.distance_squared_to(closest) < radius * radius: return false
 	return true
@@ -1144,7 +1110,7 @@ func _recover_building_overlap(unit: RtsUnit, delta: float) -> bool:
 	var overlapping := false
 	for building in buildings_by_cell.get(_spatial_cell(unit.position), []):
 		if not is_instance_valid(building) or building.is_queued_for_deletion(): continue
-		if not game.is_enemy(unit.owner_id, building.owner_id) and building.kind.ends_with("_gate") and building.is_complete(): continue
+		if _gate_passable(building, unit.owner_id): continue
 		var bounds := Rect2(building.position - building.size() * 0.5, building.size()).grow(unit.radius())
 		if not bounds.has_point(unit.position): continue
 		overlapping = true
