@@ -810,6 +810,7 @@ func spawn_unit(owner_id: int, kind: String, world_point: Vector2, rally := Vect
 	unit.setup(self, owner_id, kind)
 	unit.position = navigation.nearest_walkable_point(unit.position, unit.radius(), unit)
 	units.append(unit)
+	if fog.active: fog.update_unit_visibility(unit)
 	navigation.invalidate_spatial_index()
 	if rally != Vector2.INF:
 		if kind == "trader" and rally_target is RtsTradePost:

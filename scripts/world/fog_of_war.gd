@@ -246,7 +246,7 @@ func _clear_building_memory() -> void:
 func _update_entity_visibility() -> void:
 	for unit in game.units:
 		if not is_instance_valid(unit) or unit.is_queued_for_deletion(): continue
-		unit.visible = unit.garrisoned_in == null and (unit.owner_id == 0 or can_detect_unit(0, unit))
+		update_unit_visibility(unit)
 	for building in game.buildings:
 		if not is_instance_valid(building) or building.is_queued_for_deletion(): continue
 		building.visible = building.owner_id == 0 or can_see(0, building.position)
@@ -260,6 +260,9 @@ func _update_entity_visibility() -> void:
 			post.modulate = Color.WHITE if can_see(0, post.position) else Color(0.42, 0.46, 0.48)
 	for relic in game.relics:
 		if is_instance_valid(relic): relic.visible = relic.available() and can_see(0, relic.position)
+
+func update_unit_visibility(unit: RtsUnit) -> void:
+	unit.visible = unit.garrisoned_in == null and (unit.owner_id == 0 or can_detect_unit(0, unit))
 
 func _update_mask() -> void:
 	var image := Image.create(grid_size.x, grid_size.y, false, Image.FORMAT_RGBA8)

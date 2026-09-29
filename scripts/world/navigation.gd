@@ -232,8 +232,9 @@ func nearby_buildings(point: Vector2, radius: float) -> Array[RtsBuilding]:
 	return result
 
 func unit_moved(unit: RtsUnit, previous_position: Vector2) -> void:
-	if spatial_frame != Engine.get_process_frames(): return
-	_move_in_index(units_by_cell, unit, previous_position)
+	if unit.position == previous_position: return
+	if spatial_frame == Engine.get_process_frames(): _move_in_index(units_by_cell, unit, previous_position)
+	if game.fog.active and unit.owner_id != 0: game.fog.update_unit_visibility(unit)
 
 func resource_moved(resource: RtsResource, previous_position: Vector2) -> void:
 	if previous_position != resource.position: invalidate_obstacles(false)
