@@ -1,6 +1,7 @@
 class_name RtsGameMenuUi
 extends RefCounted
 const RtsUiTypography = preload("res://scripts/ui/typography.gd")
+const RtsMapPreview = preload("res://scripts/ui/map_preview.gd")
 
 # Owns settings and lobby presentation; match state stays in the game root.
 signal match_requested(settings: Dictionary)
@@ -8,8 +9,12 @@ signal match_requested(settings: Dictionary)
 const SETTINGS_LABEL_WIDTH := 120.0
 const SETTINGS_FIELD_WIDTH := 240.0
 const SETTINGS_ROW_SPACING := 12.0
+const MAP_PREVIEW_SEED := 0
 
 var game: Node2D
+var map_preview_texture: TextureRect
+var map_preview_caption: Label
+var map_preview_timer: Timer
 
 func _init(game_ref: Node2D) -> void:
 	game = game_ref
@@ -423,12 +428,30 @@ func _show_setup_menu() -> void:
 	var player_hint := _menu_ink_label(players_column, "同队共享视野与胜利；至少需要两个队伍。", RtsUiTypography.CAPTION)
 	player_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	var settings_column := _menu_section(body, "对局设置", 0)
+	_menu_ink_label(settings_column, "地图预览", RtsUiTypography.CAPTION)
+	map_preview_texture = TextureRect.new()
+	map_preview_texture.custom_minimum_size = Vector2(192, 192)
+	map_preview_texture.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	map_preview_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	map_preview_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	map_preview_texture.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	settings_column.add_child(map_preview_texture)
+	map_preview_caption = _menu_ink_label(settings_column, "", RtsUiTypography.CAPTION)
+	map_preview_caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var preview_legend := _menu_ink_label(settings_column, "彩色 出生点 · 金色 圣地 · 紫色 贸易站", RtsUiTypography.CAPTION)
+	preview_legend.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	preview_legend.tooltip_text = "出生点使用玩家颜色；金色为圣地，紫色为贸易站。"
+	map_preview_timer = Timer.new()
+	map_preview_timer.one_shot = true
+	map_preview_timer.timeout.connect(_refresh_map_preview)
+	settings_column.add_child(map_preview_timer)
 	_menu_ink_label(settings_column, "地图选择", RtsUiTypography.CAPTION)
 	game.map_style_choice = OptionButton.new()
 	for option in ["平衡", "大湖", "高地", "群岛"]: game.map_style_choice.add_item(option)
 	game.map_style_choice.selected = ["balanced", "lakes", "highlands", "islands"].find(game.selected_map_style)
 	game._style_menu_button(game.map_style_choice)
 	settings_column.add_child(game.map_style_choice)
+	game.map_style_choice.item_selected.connect(func(_index: int) -> void: _queue_map_preview())
 	_menu_ink_label(settings_column, "地图大小", RtsUiTypography.CAPTION)
 	game.map_size_choice = OptionButton.new()
 	game.map_size_choice.add_item("标准地图")
@@ -436,6 +459,7 @@ func _show_setup_menu() -> void:
 	game.map_size_choice.selected = 1 if game.selected_map_size.x > game.WORLD_SIZE.x else 0
 	game._style_menu_button(game.map_size_choice)
 	settings_column.add_child(game.map_size_choice)
+	game.map_size_choice.item_selected.connect(func(_index: int) -> void: _queue_map_preview())
 	_menu_ink_label(settings_column, "初始资源", RtsUiTypography.CAPTION)
 	game.initial_resources_choice = OptionButton.new()
 	for option in ["较少", "标准", "丰富"]: game.initial_resources_choice.add_item(option)
@@ -477,6 +501,22 @@ func _show_setup_menu() -> void:
 	footer.add_child(game.setup_start_button)
 	_refresh_player_rows()
 	game.menu_panel.show()
+	_refresh_map_preview()
+
+func _queue_map_preview() -> void:
+	if is_instance_valid(map_preview_timer): map_preview_timer.start(0.1)
+
+func _selected_setup_seed() -> int:
+	var entered: String = game.map_seed_input.text.strip_edges()
+	return int(entered) if entered.is_valid_int() and int(entered) >= 0 else -1
+
+func _refresh_map_preview() -> void:
+	if not is_instance_valid(map_preview_texture): return
+	var colors: Array[Color] = []
+	for index in game.lobby_players.size():
+		colors.append(game.PLAYER_COLORS[clampi(int(game.lobby_players[index].get("color", index)), 0, game.PLAYER_COLORS.size() - 1)])
+	map_preview_texture.texture = RtsMapPreview.create_texture(MAP_PREVIEW_SEED, Vector2(3000, 3000) if game.map_size_choice.selected == 1 else game.WORLD_SIZE, ["balanced", "lakes", "highlands", "islands"][game.map_style_choice.selected], colors)
+	map_preview_caption.text = "示意地图 · 种子 0"
 
 func _refresh_player_rows() -> void:
 	if game.player_list == null: return
@@ -564,6 +604,7 @@ func _refresh_player_rows() -> void:
 		row.add_child(remove_button)
 	game.add_player_button.disabled = game.lobby_players.size() >= 4
 	_update_lobby_team_state()
+	_queue_map_preview()
 
 func _color_swatch(color: Color) -> ImageTexture:
 	var swatch := Image.create(20, 20, false, Image.FORMAT_RGBA8)
@@ -643,7 +684,7 @@ func _begin_menu_match() -> void:
 	for player in game.lobby_players: unique_teams[int(player.get("team", 1))] = true
 	if unique_teams.size() < 2: return
 	var count: int = game.lobby_players.size()
-	var requested := int(game.map_seed_input.text) if game.map_seed_input.text.is_valid_int() else -1
+	var requested := _selected_setup_seed()
 	match_requested.emit({
 		"match_mode": "duel" if count == 2 else "ffa3" if count == 3 else "ffa4",
 		"map_size": Vector2(3000, 3000) if game.map_size_choice.selected == 1 else game.WORLD_SIZE,
