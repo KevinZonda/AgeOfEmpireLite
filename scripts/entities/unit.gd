@@ -305,7 +305,6 @@ func _start_command(command: Dictionary) -> bool:
 			order_attack(command["target"])
 		"gather":
 			if not ["villager", "fishing_boat"].has(kind) or not is_instance_valid(command["target"]) or command["target"].is_queued_for_deletion(): return false
-			if command["target"] is RtsResource and command["target"].appearance == "sheep" and command["target"].claimed_by != owner_id: return false
 			if kind == "fishing_boat" and (not command["target"] is RtsResource or command["target"].appearance != "fish"): return false
 			if kind == "villager" and command["target"] is RtsResource and command["target"].appearance == "fish": return false
 			order_gather(command["target"])
@@ -447,7 +446,6 @@ func activate_ability(ability_id: String) -> bool:
 	return false
 
 func order_gather(resource: Node2D) -> void:
-	if resource is RtsResource and resource.appearance == "sheep" and resource.claimed_by != owner_id: return
 	if not ["villager", "fishing_boat"].has(kind): return
 	if resource is RtsBuilding and resource.kind == "farm" and game.farm_worker(resource, self) != null:
 		resource = game.find_nearest_free_farm(owner_id, position, 190.0, self)

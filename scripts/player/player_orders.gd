@@ -57,10 +57,8 @@ static func issue_order(game: Node2D, point: Vector2, append_order := false) -> 
 			subject.issue_command("build", Vector2.INF, entity, append_order)
 		elif entity != null and entity.owner_id == 0 and subject.kind == "villager" and (entity is RtsBuilding or entity is RtsUnit and entity.stats.get("tags", []).has("siege")) and entity.hp < entity.max_hp:
 			subject.issue_command("repair", Vector2.INF, entity, append_order)
-		elif resource != null and (subject.kind == "villager" and resource.appearance != "fish" and (resource.appearance != "sheep" or resource.claimed_by == 0) or subject.kind == "fishing_boat" and resource.appearance == "fish"):
+		elif resource != null and (subject.kind == "villager" and resource.appearance != "fish" or subject.kind == "fishing_boat" and resource.appearance == "fish"):
 			subject.issue_command("gather", Vector2.INF, resource, append_order)
-		elif resource != null and resource.appearance == "sheep" and subject.kind == "villager":
-			if subject == game.selected[0]: game.notify_player("先用侦察兵认领羊群")
 		elif entity is RtsBuilding and entity.owner_id == 0 and entity.kind == "farm" and subject.kind == "villager":
 			subject.issue_command("gather", Vector2.INF, entity, append_order)
 		elif entity is RtsBuilding and entity.owner_id == 0 and entity.is_complete() and subject.kind == "imperial_official":

@@ -1340,7 +1340,6 @@ func find_nearest_resource(world_point: Vector2, kind: String, max_distance := I
 	for resource in resources:
 		if not is_instance_valid(resource) or resource.is_queued_for_deletion() or resource.kind != kind: continue
 		if naval != (resource.appearance == "fish"): continue
-		if resource.appearance == "sheep" and viewer_id >= 0 and resource.claimed_by != viewer_id: continue
 		if viewer_id >= 0 and fog.active and not fog.can_show_resource(viewer_id, resource): continue
 		var distance := world_point.distance_squared_to(resource.position)
 		if distance < shortest:
@@ -1718,7 +1717,7 @@ func _cursor_state_at(world_point: Vector2, over_ui := false) -> String:
 	if entity is RtsUnit and entity.kind in ["transport_ship", "battering_ram", "siege_tower"] and entity.owner_id == 0 and selected.any(func(subject: Node2D) -> bool: return subject is RtsUnit and not subject.stats.get("tags", []).has("naval") and not subject.stats.get("tags", []).has("siege")): return "board"
 	if has_worker and entity is RtsBuilding and entity.owner_id == 0 and not entity.is_complete(): return "construct"
 	if has_worker and entity != null and entity.owner_id == 0 and (entity is RtsBuilding or entity is RtsUnit and entity.stats.get("tags", []).has("siege")) and entity.hp < entity.max_hp: return "construct"
-	if has_worker and (resource != null and resource.appearance != "fish" and (resource.appearance != "sheep" or resource.claimed_by == 0) or entity is RtsBuilding and entity.kind == "farm"): return "gather"
+	if has_worker and (resource != null and resource.appearance != "fish" or entity is RtsBuilding and entity.kind == "farm"): return "gather"
 	if resource != null and resource.appearance == "fish" and not selected.is_empty() and selected[0] is RtsUnit and selected[0].kind == "fishing_boat": return "gather"
 	if post != null and not selected.is_empty() and selected[0] is RtsUnit and selected[0].kind == "trader": return "trade"
 	if relic != null and not selected.is_empty() and selected[0] is RtsUnit and selected[0].kind == "monk": return "relic"

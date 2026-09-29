@@ -562,7 +562,7 @@ func _resource_status(resource: RtsResource) -> String:
 func _resource_guide(resource: RtsResource) -> String:
 	match resource.appearance:
 		"boar": return "先选中可攻击的单位，右键攻击野猪。击杀后选中村民，右键采集。"
-		"sheep": return "让侦察兵靠近羊群认领，再选中村民右键采集。"
+		"sheep": return "选中村民，右键点击羊群采集；侦察兵可认领羊群并带回城镇中心。"
 		"fish": return "选中渔船，右键点击鱼群捕鱼。"
 		"deer": return "选中村民，右键点击鹿群狩猎；鹿会躲避靠近的军队。"
 	return "选中村民，右键点击%s采集%s。" % [_resource_label(resource), GameData.RESOURCE_LABELS.get(resource.kind, resource.kind)]
