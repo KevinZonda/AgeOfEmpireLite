@@ -1,0 +1,17 @@
+--- a/platform/macos/os_macos.mm
++++ b/platform/macos/os_macos.mm
+@@ -69,7 +69,13 @@
+ 		}
+ 	}
+ 	if (wake_for_events) {
+-		uint64_t delay = get_frame_delay(p_can_draw);
++		// The async timer replaces OS::add_frame_delay, so it must also deduct
++		// work already done this frame. Sleeping a full period after a slow
++		// frame adds 8.33 ms at a 120 FPS cap, even when we are below 20 FPS.
++		const uint64_t fixed_delay_ms = Engine::get_singleton()->get_frame_delay();
++		const uint64_t period = get_frame_delay(p_can_draw) - fixed_delay_ms;
++		const uint64_t elapsed = get_ticks_usec() - Engine::get_singleton()->get_frame_ticks();
++		const uint64_t delay = fixed_delay_ms * 1000 + (period > elapsed ? period - elapsed : 0);
+ 		if (delay == 0) {
+ 			return;
+ 		}

@@ -17,6 +17,8 @@ run/max_fps.macos=120
 
 请保留这项配置。当前验证的是补丁与限帧共同生效的方案，单独设置 120 FPS 未能解决问题。测量结果、根因分析和独立诊断工具见 [输入延迟 POC](docs/input-poc/README.md)。
 
+异步窗口限帧还会扣除当前帧已经消耗的时间，避免慢帧之后仍额外等待完整的 8.33 ms。复现与数据见 [帧预算 PoC](docs/battle-overhead/frame-budget.md)。
+
 独立的 headless 补丁让 `OS_MacOS_Headless` 使用阻塞式帧等待，跳过 Magnet 查询及 AppKit 定时器。它同时适用于 `--headless` 和 `--display-driver headless`，保留 60/120 FPS 上限及未设上限时的默认休眠，不依赖上述 120 FPS 配置。修复前后的空项目对照见 [headless 等待 PoC](docs/headless-wait-poc/README.md)。
 
 ## 环境与固定版本
@@ -33,6 +35,7 @@ run/max_fps.macos=120
 | 固定提交 | `ed1daf0bf001b61586d9930840f2f1394092c079` |
 | 源码目录 | `docs/godot/` |
 | 引擎补丁 | [godot-4.7.2-macos-frame-wait.patch](patches/godot-4.7.2-macos-frame-wait.patch) |
+| 帧预算补丁 | [godot-4.7.2-macos-frame-budget.patch](patches/godot-4.7.2-macos-frame-budget.patch) |
 | headless 补丁 | [godot-4.7.2-macos-headless-wait.patch](patches/godot-4.7.2-macos-headless-wait.patch) |
 | 构建脚本 | [build_godot_macos.sh](tools/build_godot_macos.sh) |
 | 构建目标 | `template_debug`，当前机器架构（`uname -m`） |
@@ -108,7 +111,7 @@ make run GODOT=/你的/Godot/路径
 
 ## macOS 发布与导出
 
-**发布包中的 Godot 运行时也必须包含这两份补丁**，并保留项目的 macOS 120 FPS 上限。仅在开发机器上使用修复版运行时，不会让官方导出模板自动获得修复。
+**发布包中的 Godot 运行时也必须包含这三份补丁**，并保留项目的 macOS 120 FPS 上限。仅在开发机器上使用修复版运行时，不会让官方导出模板自动获得修复。
 
 目前 `make build-macos` 只构建用于本地运行和测试的 `template_debug` 二进制，仓库尚未提供完整的 macOS 发布包构建流程。正式发布还需要：
 
