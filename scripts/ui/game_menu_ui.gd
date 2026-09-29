@@ -91,6 +91,12 @@ func _create_settings(parent: Control) -> void:
 	game.building_names_toggle.custom_minimum_size.y = 42
 	game.building_names_toggle.add_theme_color_override("font_color", Color("f5e4bf"))
 	_add_settings_toggle_row(display_tab, game.building_names_toggle)
+	game.health_bar_choice = OptionButton.new()
+	game.health_bar_choice.tooltip_text = "单位和建筑的血条显示方式。血量变动后显示 3 秒。"
+	for label in ["总是", "非满血时显示", "变动时显示"]: game.health_bar_choice.add_item(label)
+	game.health_bar_choice.custom_minimum_size.y = 42
+	game._style_button(game.health_bar_choice)
+	_add_settings_option_row(display_tab, "血量显示", game.health_bar_choice)
 	game.minimap_size_choice = OptionButton.new()
 	game.minimap_size_choice.tooltip_text = "单独调整小地图尺寸；2.5D 菱形会伸出底部面板。"
 	for index in game.MINIMAP_SIZE_OPTIONS.size():
@@ -167,6 +173,7 @@ func _create_settings(parent: Control) -> void:
 		game.zoom_gesture_enabled = game.zoom_gesture_toggle.button_pressed
 		game.show_building_icons = game.building_icons_toggle.button_pressed
 		game.show_building_names = game.building_names_toggle.button_pressed
+		game.health_bar_mode = game.HEALTH_BAR_MODES[game.health_bar_choice.selected]
 		game._redraw_projected_entities()
 		game.selected_view_mode_25d = game.projection_choice.selected == 1
 		game.ui_scale = game.ui_scale_values[game.ui_scale_choice.selected]
@@ -221,6 +228,7 @@ func _show_settings(from_pause := false) -> void:
 	game.zoom_gesture_toggle.button_pressed = game.zoom_gesture_enabled
 	game.building_icons_toggle.button_pressed = game.show_building_icons
 	game.building_names_toggle.button_pressed = game.show_building_names
+	game.health_bar_choice.select(game.HEALTH_BAR_MODES.find(game.health_bar_mode))
 	game.projection_choice.select(1 if game.selected_view_mode_25d else 0)
 	game.minimap_size_choice.select(game.MINIMAP_SIZE_OPTIONS.find(game.minimap_size))
 	game.settings_tabs.current_tab = 0

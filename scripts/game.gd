@@ -8,6 +8,8 @@ const UI_SCALE_OPTIONS := [0.75, 1.0, 1.25, 1.5]
 const TEXT_SCALE_OPTIONS := [0.75, 1.0, 1.25, 1.5, 1.75, 2.0]
 static var base_tooltip_font_size := -1
 const MINIMAP_SIZE_OPTIONS := [160, 216, 264]
+const HEALTH_BAR_MODES := ["always", "damaged", "changed"]
+const HEALTH_BAR_CHANGE_DURATION := 3.0
 const MIN_UI_VIEWPORT_SIZE := Vector2(1280, 720)
 const SETTINGS_PATH := "user://settings.cfg"
 const LEGACY_DISPLAY_SETTINGS_PATH := "user://display.cfg"
@@ -160,8 +162,10 @@ var applied_world_text_scale := -1.0
 var minimap_size := 216
 var show_building_icons := true
 var show_building_names := true
+var health_bar_mode := "damaged"
 var building_icons_toggle: CheckButton
 var building_names_toggle: CheckButton
+var health_bar_choice: OptionButton
 var ui_scale_choice: OptionButton
 var text_scale_choice: OptionButton
 var minimap_size_choice: OptionButton
@@ -490,6 +494,7 @@ func _save_settings() -> void:
 	config.set_value("display", "minimap_size", minimap_size)
 	config.set_value("display", "show_building_icons", show_building_icons)
 	config.set_value("display", "show_building_names", show_building_names)
+	config.set_value("display", "health_bar_mode", health_bar_mode)
 	config.set_value("controls", "edge_scroll_enabled", edge_scroll_enabled)
 	config.set_value("controls", "zoom_gesture_enabled", zoom_gesture_enabled)
 	config.save(SETTINGS_PATH)
@@ -502,6 +507,8 @@ func _load_settings() -> void:
 	selected_view_mode_25d = bool(config.get_value("display", "view_mode_25d", false))
 	show_building_icons = bool(config.get_value("display", "show_building_icons", true))
 	show_building_names = bool(config.get_value("display", "show_building_names", true))
+	var saved_health_bar_mode: String = str(config.get_value("display", "health_bar_mode", "damaged"))
+	health_bar_mode = saved_health_bar_mode if HEALTH_BAR_MODES.has(saved_health_bar_mode) else "damaged"
 	var saved_ui_scale: float = float(config.get_value("display", "ui_scale", 1.0))
 	var saved_text_scale: float = float(config.get_value("display", "text_scale", 1.0))
 	var saved_minimap_size: int = int(config.get_value("display", "minimap_size", 216))
@@ -1474,6 +1481,12 @@ func _redraw_projected_entities() -> void:
 		if is_instance_valid(resource): resource.queue_redraw()
 	for post in trade_posts: post.queue_redraw()
 	for relic in relics: relic.queue_redraw()
+
+func should_show_health_bar(current_hp: float, maximum_hp: float, change_timer: float) -> bool:
+	match health_bar_mode:
+		"always": return true
+		"changed": return change_timer > 0.0
+		_: return current_hp < maximum_hp
 
 func _update_iso_depths() -> void:
 	for building in buildings:

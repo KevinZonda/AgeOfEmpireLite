@@ -994,10 +994,10 @@ func _draw_iso_university(nw: Vector2, ne: Vector2, sw: Vector2, lift: Vector2, 
 	var court_c := _military_point(nw, ne, sw, 0.7, 0.91) + floor_lift
 	var court_d := _military_point(nw, ne, sw, 0.3, 0.91) + floor_lift
 	draw_colored_polygon(PackedVector2Array([court_a, court_b, court_c, court_d]), Color("b9ae94"))
-	_draw_iso_military_block(nw, ne, sw, floor_lift, canvas, college, 0.07, 0.07, 0.86, 0.3, 27.0, "gable_u")
-	_draw_iso_military_block(nw, ne, sw, floor_lift, canvas, college, 0.07, 0.32, 0.23, 0.51, 26.0, "gable_v")
-	_draw_iso_military_block(nw, ne, sw, floor_lift, canvas, college, 0.7, 0.32, 0.23, 0.51, 26.0, "gable_v")
+	_draw_iso_military_block(nw, ne, sw, floor_lift, canvas, college, 0.07, 0.07, 0.86, 0.3, 27.0, "gable_u", false)
 	_draw_iso_university_tower(nw, ne, sw, floor_lift, canvas, college)
+	_draw_iso_military_block(nw, ne, sw, floor_lift, canvas, college, 0.07, 0.32, 0.23, 0.51, 26.0, "gable_v", false)
+	_draw_iso_military_block(nw, ne, sw, floor_lift, canvas, college, 0.7, 0.32, 0.23, 0.51, 26.0, "gable_v", false)
 
 func _draw_iso_university_tower(nw: Vector2, ne: Vector2, sw: Vector2, floor_lift: Vector2, canvas: Transform2D, palette: Dictionary) -> void:
 	var a := _military_point(nw, ne, sw, 0.41, 0.16) + floor_lift
@@ -1012,11 +1012,9 @@ func _draw_iso_university_tower(nw: Vector2, ne: Vector2, sw: Vector2, floor_lif
 	draw_colored_polygon(PackedVector2Array([a + up, b + up, peak, d + up]), palette["roof_dark"])
 	draw_colored_polygon(PackedVector2Array([b + up, c + up, peak]), palette["roof"])
 	draw_colored_polygon(PackedVector2Array([d + up, c + up, peak]), palette["roof"])
-	var doorway := (d + c) * 0.5
-	draw_line(doorway, doorway + up * 0.46, Color("303333"), 5.0)
-	draw_circle(doorway + up * 0.46, 2.5, Color("303333"))
-	draw_line(d + up * 0.75, c + up * 0.75, palette["trim"], 1.6)
-	draw_line(doorway + up * 0.65, doorway + up * 0.87, Color("37403e"), 2.7)
+	var window := (d + c) * 0.5
+	draw_line(window + up * 0.7, window + up * 0.84, palette["trim"], 4.0)
+	draw_line(window + up * 0.72, window + up * 0.82, Color("37403e"), 2.3)
 
 func _military_point(nw: Vector2, ne: Vector2, sw: Vector2, u: float, v: float) -> Vector2:
 	return nw + (ne - nw) * u + (sw - nw) * v
@@ -1031,7 +1029,7 @@ func _draw_iso_upright_disc(center: Vector2, radius: float, color: Color, canvas
 		outline.append(center + horizontal * cos(angle) + vertical * sin(angle))
 	draw_colored_polygon(outline, color)
 
-func _draw_iso_military_block(nw: Vector2, ne: Vector2, sw: Vector2, floor_lift: Vector2, canvas: Transform2D, palette: Dictionary, u: float, v: float, width: float, depth: float, height: float, style: String) -> void:
+func _draw_iso_military_block(nw: Vector2, ne: Vector2, sw: Vector2, floor_lift: Vector2, canvas: Transform2D, palette: Dictionary, u: float, v: float, width: float, depth: float, height: float, style: String, draw_door := true) -> void:
 	var a := _military_point(nw, ne, sw, u, v) + floor_lift
 	var b := _military_point(nw, ne, sw, u + width, v) + floor_lift
 	var c := _military_point(nw, ne, sw, u + width, v + depth) + floor_lift
@@ -1090,8 +1088,9 @@ func _draw_iso_military_block(nw: Vector2, ne: Vector2, sw: Vector2, floor_lift:
 		for portion in [0.22, 0.51, 0.8]:
 			var post := d.lerp(c, portion)
 			draw_line(post, post + up * 0.82, palette["timber"], 1.8)
-		var doorway := (d + c) * 0.5
-		draw_line(doorway, doorway + up * 0.56, Color("39433d"), 5.0)
+		if draw_door:
+			var doorway := (d + c) * 0.5
+			draw_line(doorway, doorway + up * 0.56, Color("39433d"), 5.0)
 
 func _draw_iso_military_structure(art_kind: String, nw: Vector2, ne: Vector2, sw: Vector2, lift: Vector2, palette: Dictionary, canvas: Transform2D) -> void:
 	var floor_lift := lift * 0.18
