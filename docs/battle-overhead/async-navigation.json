@@ -1,0 +1,111 @@
+{
+  "async_wall_us": 343791,
+  "buildings": 6,
+  "deer": 8,
+  "main_work_us": 46039,
+  "max_main_tick_us": 1283,
+  "metrics": {
+    "accepted": 80,
+    "discarded": 0,
+    "finished": 80,
+    "max_active": 2,
+    "max_pending": 80,
+    "snapshot_us": 11565,
+    "submitted": 80,
+    "worker_us": 184928
+  },
+  "resources": 150,
+  "serial_us": 114758,
+  "snapshot_kernel_us": 128670,
+  "ticks": 44,
+  "units": 80,
+  "checks": 23,
+  "failures": 0,
+  "main_work_includes": "snapshot capture, dispatch, completion/reaping, polling and live result validation; excludes unrelated game work",
+  "regressions": [
+    {
+      "test": "navigation_async_poc",
+      "passed": true,
+      "exit_code": 0,
+      "timeout": false,
+      "seconds": 2.198
+    },
+    {
+      "test": "deer_movement_poc",
+      "passed": true,
+      "exit_code": 0,
+      "timeout": false,
+      "seconds": 0.447
+    },
+    {
+      "test": "navigation_battle_static_grid_poc",
+      "passed": true,
+      "exit_code": 0,
+      "timeout": false,
+      "seconds": 1.034
+    },
+    {
+      "test": "navigation_battle_native_poc",
+      "passed": true,
+      "exit_code": 0,
+      "timeout": false,
+      "seconds": 0.431
+    },
+    {
+      "test": "navigation_battle_recovery_poc",
+      "passed": true,
+      "exit_code": 0,
+      "timeout": false,
+      "seconds": 0.549
+    },
+    {
+      "test": "navigation_battle_retry_poc",
+      "passed": true,
+      "exit_code": 0,
+      "timeout": false,
+      "seconds": 0.441
+    },
+    {
+      "test": "navigation_dense_poc",
+      "passed": true,
+      "exit_code": 0,
+      "timeout": false,
+      "seconds": 1.725
+    },
+    {
+      "test": "navigation_tasks_poc",
+      "passed": true,
+      "exit_code": 0,
+      "timeout": false,
+      "seconds": 20.962
+    },
+    {
+      "test": "navigation_state_poc",
+      "passed": true,
+      "exit_code": 0,
+      "timeout": false,
+      "seconds": 20.727
+    },
+    {
+      "test": "navigation_construction_poc",
+      "passed": true,
+      "exit_code": 0,
+      "timeout": false,
+      "seconds": 1.734
+    },
+    {
+      "test": "group_replanning",
+      "passed": true,
+      "exit_code": 0,
+      "timeout": false,
+      "seconds": 0.452
+    },
+    {
+      "test": "group_mass_chokepoint",
+      "passed": true,
+      "exit_code": 0,
+      "timeout": false,
+      "seconds": 3.761
+    }
+  ]
+}

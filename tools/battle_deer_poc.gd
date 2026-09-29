@@ -133,7 +133,7 @@ func _render_end() -> void:
 			summary[key] = {"mean": values.reduce(func(a, b): return a + b, 0.0) / values.size(), "p50": values[values.size() / 2], "p95": values[ceili(values.size() * 0.95) - 1], "max": values[-1]}
 		var damage := 0.0
 		for fort in forts: damage += fort.max_hp - fort.hp
-		print("LIVE_PROFILE ", JSON.stringify({"buildings": building_count, "focus_attack": focus_attack, "samples": samples.size(), "viewport": str(root.size), "damage": damage, "timings": summary, "navigation": game.navigation.profile_snapshot()}))
+		print("LIVE_PROFILE ", JSON.stringify({"buildings": building_count, "focus_attack": focus_attack, "samples": samples.size(), "viewport": str(root.size), "damage": damage, "timings": summary, "navigation": game.navigation.profile_snapshot(), "async_navigation": game.navigation.background_jobs.metrics, "async_enabled": game.navigation.background_recovery_enabled}))
 		quit()
 
 func _toggle_deer() -> void:

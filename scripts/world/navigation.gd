@@ -6,6 +6,10 @@ const CLEARANCE := 16.0
 const SPATIAL_CELL_SIZE := 64.0
 const SMOOTH_LOOKAHEAD := 8
 const MAX_FINE_GRIDS := 4
+const RecoveryKernel = preload("res://scripts/world/navigation_recovery.gd")
+const BackgroundJobs = preload("res://scripts/world/navigation_jobs.gd")
+var background_jobs = BackgroundJobs.new()
+var background_recovery_enabled := false
 
 var game: Node2D
 var world_map: RtsWorldMap
@@ -259,7 +263,7 @@ func _gate_passable(building: RtsBuilding, owner_id: int) -> bool:
 	return building.kind.ends_with("_gate") and building.is_complete() and not game.is_enemy(owner_id, building.owner_id)
 
 func _terrain_passable(terrain: int, naval: bool, boarding := false) -> bool:
-	return terrain != RtsWorldMap.Terrain.MOUNTAIN and (boarding or (terrain == RtsWorldMap.Terrain.WATER) == naval)
+	return RecoveryKernel._terrain_passable(terrain, naval, boarding)
 
 func _grid_for(unit: RtsUnit) -> AStarGrid2D:
 	if unit == null: return pathfinder
@@ -599,9 +603,7 @@ func _rasterize_static_grid(unit: RtsUnit, grid: AStarGrid2D, allow_resource_esc
 				if distance < reach * reach and (not allow_resource_escape or current >= reach * reach or distance + 0.001 < current): grid.set_point_solid(cell)
 
 func _fine_region(grid: AStarGrid2D, bounds: Rect2) -> Rect2i:
-	var first := Vector2i(((bounds.position - grid.offset) / grid.cell_size).floor())
-	var last := Vector2i(((bounds.end - grid.offset) / grid.cell_size).ceil()) + Vector2i.ONE
-	return Rect2i(first, last - first).intersection(grid.region)
+	return RecoveryKernel._fine_region(grid, bounds)
 
 func _fine_visible_cells(point: Vector2, grid: AStarGrid2D, unit: RtsUnit) -> Array[Vector2i]:
 	var origin := Vector2i(((point - grid.offset) / grid.cell_size).round())
@@ -679,19 +681,7 @@ func boarding_clear(from: Vector2, carrier_position: Vector2, unit: RtsUnit) -> 
 	return _static_segment_clear(from, carrier_position, unit.radius(), unit, false, true)
 
 func _segment_hits_rect(from: Vector2, to: Vector2, bounds: Rect2) -> bool:
-	var delta := to - from
-	var low := 0.0
-	var high := 1.0
-	for axis in 2:
-		if is_zero_approx(delta[axis]):
-			if from[axis] < bounds.position[axis] or from[axis] > bounds.end[axis]: return false
-			continue
-		var first := (bounds.position[axis] - from[axis]) / delta[axis]
-		var last := (bounds.end[axis] - from[axis]) / delta[axis]
-		low = maxf(low, minf(first, last))
-		high = minf(high, maxf(first, last))
-		if low > high: return false
-	return true
+	return RecoveryKernel._segment_hits_rect(from, to, bounds)
 
 func _path_length(path: PackedVector2Array) -> float:
 	var length := 0.0
@@ -888,73 +878,16 @@ func _local_unit_grid(unit: RtsUnit, step: float, half: int) -> AStarGrid2D:
 	return grid
 
 func _rasterize_unit_circle(grid: AStarGrid2D, center: Vector2, radius: float, current_distance_squared: float) -> void:
-	# A circle intersects each grid row in one span. Fill that span natively
-	# instead of doing a GDScript distance test and setter for every cell.
-	# Retain the exact strict contact / inclusive overlap-escape predicates at
-	# both endpoints; sqrt/rounding alone can change tangent-cell occupancy.
-	var radius_squared := radius * radius
-	var limit := minf(radius_squared, current_distance_squared)
-	var region := _fine_region(grid, Rect2(center - Vector2.ONE * radius, Vector2.ONE * radius * 2.0))
-	for y in range(region.position.y, region.end.y):
-		var dy := grid.get_point_position(Vector2i(0, y)).y - center.y
-		var span_squared := limit - dy * dy
-		# Keep the nearest column even for a marginally negative span: Vector2
-		# distance rounding can still include an overlap-escape tangent.
-		var span := sqrt(maxf(0.0, span_squared))
-		var first := maxi(region.position.x, floori((center.x - span - grid.offset.x) / grid.cell_size.x))
-		var last := mini(region.end.x - 1, ceili((center.x + span - grid.offset.x) / grid.cell_size.x))
-		while first <= last:
-			var distance := grid.get_point_position(Vector2i(first, y)).distance_squared_to(center)
-			if distance < radius_squared and distance <= current_distance_squared: break
-			first += 1
-		while last >= first:
-			var distance := grid.get_point_position(Vector2i(last, y)).distance_squared_to(center)
-			if distance < radius_squared and distance <= current_distance_squared: break
-			last -= 1
-		if first <= last: grid.fill_solid_region(Rect2i(first, y, last - first + 1, 1))
+	RecoveryKernel._rasterize_unit_circle(grid, center, radius, current_distance_squared)
 
 func _local_reachable_cells(grid: AStarGrid2D, start: Vector2i) -> Array[Vector2i]:
-	# Recovery needs only the mover's component. Labeling every disconnected
-	# island scanned up to 37,249 cells even when the mover was boxed into one.
-	# Four-neighbor connectivity is equivalent for no-corner-cutting A*.
-	var size := grid.region.size
-	var visited := PackedByteArray()
-	visited.resize(size.x * size.y)
-	var cells: Array[Vector2i] = [start]
-	visited[start.y * size.x + start.x] = 1
-	var head := 0
-	while head < cells.size():
-		var cell := cells[head]
-		head += 1
-		for offset in [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]:
-			var next: Vector2i = cell + offset
-			if not grid.region.has_point(next): continue
-			var index := next.y * size.x + next.x
-			if visited[index]: continue
-			visited[index] = 1
-			if not grid.is_point_solid(next): cells.append(next)
-	return cells
+	return RecoveryKernel._local_reachable_cells(grid, start)
 
 func _local_exit_candidates(grid: AStarGrid2D, origin: Vector2, target: Vector2) -> Dictionary:
-	var result := {}
-	var size := grid.region.size
-	var local_target := Vector2i(((target - grid.offset) / grid.cell_size).round()).clamp(Vector2i.ZERO, size - Vector2i.ONE)
-	var limit := origin.distance_to(target) - 4.0
-	for y in range(maxi(0, local_target.y - 3), mini(size.y, local_target.y + 4)):
-		for x in range(maxi(0, local_target.x - 3), mini(size.x, local_target.x + 4)):
-			var cell := Vector2i(x, y)
-			if cell.distance_squared_to(local_target) <= 9: _add_local_exit(result, grid, cell, target, limit)
-	for x in size.x:
-		_add_local_exit(result, grid, Vector2i(x, 0), target, limit)
-		_add_local_exit(result, grid, Vector2i(x, size.y - 1), target, limit)
-	for y in range(1, size.y - 1):
-		_add_local_exit(result, grid, Vector2i(0, y), target, limit)
-		_add_local_exit(result, grid, Vector2i(size.x - 1, y), target, limit)
-	return result
+	return RecoveryKernel._local_exit_candidates(grid, origin, target)
 
 func _add_local_exit(exits: Dictionary, grid: AStarGrid2D, cell: Vector2i, target: Vector2, limit: float) -> void:
-	if not grid.is_point_solid(cell) and grid.get_point_position(cell).distance_to(target) < limit:
-		exits[cell] = true
+	RecoveryKernel._add_local_exit(exits, grid, cell, target, limit)
 
 func _local_unit_path(unit: RtsUnit, target: Vector2, step: float, half: int) -> PackedVector2Array:
 	var grid := _local_unit_grid(unit, step, half)

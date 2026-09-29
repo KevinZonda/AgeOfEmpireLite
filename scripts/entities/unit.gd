@@ -58,6 +58,7 @@ var gather_location := Vector2.ZERO
 var route := PackedVector2Array()
 var route_index := 0
 var route_goal := Vector2.INF
+var route_generation := 0
 var route_retry := 0.0
 var route_failures := 0
 var route_stop_distance := -1.0
@@ -504,6 +505,8 @@ func order_build(building: Node2D) -> void:
 	_reset_route()
 
 func _reset_route() -> void:
+	route_generation += 1
+	if game != null and game.navigation != null: game.navigation.background_jobs.cancel(self)
 	yield_timer = 0.0
 	route.clear()
 	route_index = 0
@@ -836,8 +839,25 @@ func _move_toward(point: Vector2, delta: float, stop_distance: float) -> bool:
 		route_retry = minf(route_retry, 0.15 + stagger)
 	var exhausted := not route.is_empty() and route_index == route.size() - 1 and position.distance_to(route[route_index]) < 0.5
 	var stalled := route_stalled_time >= ROUTE_STALL_SECONDS
+	if game.navigation.background_recovery_enabled:
+		if target_changed: game.navigation.background_jobs.cancel(self)
+		var recovery: Dictionary = game.navigation.background_jobs.take(self, point, game.navigation)
+		if not recovery.is_empty():
+			var escape: PackedVector2Array = recovery.path
+			if escape.size() > 1:
+				route = escape
+				route_index = 1
+				route_best_distance = position.distance_to(route[route_index])
+				route_recovery_distance = route_best_distance
+				route_stalled_time = 0.0
+				route_check_pending = true
+				route_blocked = false
+				stalled = false
+				exhausted = false
+			elif route_failures >= 3:
+				game.navigation.request_passage(self, recovery.target)
 	var needs_route := target_changed or route.is_empty() or route_blocked or exhausted or stalled
-	if needs_route and route_retry <= 0.0:
+	if needs_route and route_retry <= 0.0 and not (game.navigation.background_recovery_enabled and game.navigation.background_jobs.has_request(self)):
 		if (stalled or exhausted or route_failures > 0) and order in ["move", "attack_move"] and point == destination and not game.navigation.can_occupy(point, radius(), self):
 			# A slot can become occupied after the order was issued. Finish at
 			# the nearest reachable free point instead of retrying it forever.
@@ -853,14 +873,21 @@ func _move_toward(point: Vector2, delta: float, stop_distance: float) -> bool:
 			route = game.navigation.path_to_range(position, point, stop_distance, self)
 		else:
 			route = game.navigation.path_between(position, point, self)
+		var recovery_target := Vector2.INF
+		var recovery_fallback := Vector2.INF
 		if stalled and not route.is_empty() and game.navigation.has_fixed_unit_blocker(self, route[mini(1, route.size() - 1)]):
-			var escape: PackedVector2Array = game.navigation.path_around_units(self, route[mini(1, route.size() - 1)])
-			if escape.is_empty() and route_failures >= 3 and route.size() > 2: escape = game.navigation.path_around_units(self, point)
-			if not escape.is_empty(): route = escape
-			elif route_failures >= 3: game.navigation.request_passage(self, route[mini(1, route.size() - 1)])
+			if game.navigation.background_recovery_enabled:
+				recovery_target = route[mini(1, route.size() - 1)]
+				if route_failures >= 3 and route.size() > 2: recovery_fallback = point
+			else:
+				var escape: PackedVector2Array = game.navigation.path_around_units(self, route[mini(1, route.size() - 1)])
+				if escape.is_empty() and route_failures >= 3 and route.size() > 2: escape = game.navigation.path_around_units(self, point)
+				if not escape.is_empty(): route = escape
+				elif route_failures >= 3: game.navigation.request_passage(self, route[mini(1, route.size() - 1)])
 		route_index = 1 if route.size() > 1 and position.distance_to(route[0]) < 8.0 else 0
 		route_goal = point
 		route_stop_distance = stop_distance
+		if recovery_target != Vector2.INF: game.navigation.background_jobs.request(self, recovery_target, recovery_fallback)
 		route_best_distance = position.distance_to(route[route_index]) if not route.is_empty() else INF
 		route_recovery_distance = route_best_distance
 		route_stalled_time = 0.0

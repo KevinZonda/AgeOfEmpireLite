@@ -1,0 +1,98 @@
+[
+  {
+    "async_enabled": false,
+    "attackers": 80,
+    "buildings": 6,
+    "damage": 1060.0,
+    "headless": true,
+    "jobs": {
+      "accepted": 0,
+      "discarded": 0,
+      "finished": 0,
+      "max_active": 0,
+      "max_pending": 0,
+      "snapshot_us": 0,
+      "submitted": 0,
+      "worker_us": 0
+    },
+    "main_max_ms": 126.051,
+    "main_mean_ms": 14.3861860465116,
+    "main_p95_ms": 46.138,
+    "navigation": {},
+    "samples": 645,
+    "simulation_seconds": 12.0045555396825,
+    "warm_damage": 50.0
+  },
+  {
+    "async_enabled": true,
+    "attackers": 80,
+    "buildings": 6,
+    "damage": 1160.0,
+    "headless": true,
+    "jobs": {
+      "accepted": 219,
+      "discarded": 3,
+      "finished": 222,
+      "max_active": 2,
+      "max_pending": 4,
+      "snapshot_us": 32370,
+      "submitted": 223,
+      "worker_us": 2238086
+    },
+    "main_max_ms": 68.986,
+    "main_mean_ms": 12.8995362116992,
+    "main_p95_ms": 27.212,
+    "navigation": {},
+    "samples": 718,
+    "simulation_seconds": 12.0,
+    "warm_damage": 50.0
+  },
+  {
+    "async_enabled": true,
+    "attackers": 80,
+    "buildings": 6,
+    "damage": 1230.0,
+    "headless": true,
+    "jobs": {
+      "accepted": 217,
+      "discarded": 3,
+      "finished": 220,
+      "max_active": 2,
+      "max_pending": 6,
+      "snapshot_us": 34178,
+      "submitted": 221,
+      "worker_us": 2227660
+    },
+    "main_max_ms": 64.006,
+    "main_mean_ms": 12.8738848821082,
+    "main_p95_ms": 26.147,
+    "navigation": {},
+    "samples": 721,
+    "simulation_seconds": 12.0190793333334,
+    "warm_damage": 50.0
+  },
+  {
+    "async_enabled": false,
+    "attackers": 80,
+    "buildings": 6,
+    "damage": 1150.0,
+    "headless": true,
+    "jobs": {
+      "accepted": 0,
+      "discarded": 0,
+      "finished": 0,
+      "max_active": 0,
+      "max_pending": 0,
+      "snapshot_us": 0,
+      "submitted": 0,
+      "worker_us": 0
+    },
+    "main_max_ms": 105.438,
+    "main_mean_ms": 14.9190302066773,
+    "main_p95_ms": 46.129,
+    "navigation": {},
+    "samples": 629,
+    "simulation_seconds": 12.0280296666667,
+    "warm_damage": 50.0
+  }
+]
