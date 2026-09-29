@@ -134,7 +134,7 @@ func _run() -> void:
 	assert(saved.get_value("display", "show_building_icons", null) == false)
 	assert(saved.get_value("display", "show_building_names", null) == false)
 	assert(not game.show_building_icons and not game.show_building_names)
-	assert(is_equal_approx(game.hud_ui.transform.get_scale().x, 0.75))
+	assert(is_equal_approx(game.ui_root.scale.x, 0.75))
 	assert(is_equal_approx(game.ui_root.size.x, game.get_viewport_rect().size.x / 0.75))
 	var top_base_font: int = game.top_label.get_meta("base_ui_font_size")
 	assert(absf(game.top_label.get_theme_font_size("font_size") * 0.75 - top_base_font * 2.0) < 1.0)

@@ -306,7 +306,8 @@ func _apply_ui_scales() -> void:
 	var viewport_size := get_viewport_rect().size
 	var max_scale := minf(viewport_size.x / MIN_UI_VIEWPORT_SIZE.x, viewport_size.y / MIN_UI_VIEWPORT_SIZE.y)
 	var effective_scale := maxf(0.5, minf(ui_scale, max_scale))
-	hud_ui.transform = Transform2D.IDENTITY.scaled(Vector2.ONE * effective_scale)
+	# CanvasItem font oversampling sees Control transforms, but not CanvasLayer transforms.
+	ui_root.scale = Vector2.ONE * effective_scale
 	ui_root.size = viewport_size / effective_scale
 	_scale_ui_fonts(ui_root, text_scale / effective_scale)
 	var tooltip_size := maxi(1, roundi(base_tooltip_font_size * text_scale))
