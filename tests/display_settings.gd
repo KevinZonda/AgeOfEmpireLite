@@ -149,7 +149,7 @@ func _run() -> void:
 	assert(save_result == OK and saved_edge_scroll == false and saved_zoom_gesture == false and saved_view == true)
 	assert(saved_ui_scale == 0.75 and saved_text_scale == 2.0 and saved_minimap_size == 264)
 	assert(saved_health_bar_mode == "changed" and game.health_bar_mode == "changed")
-	assert(saved_show_fps == true and game.show_fps and game.fps_label.visible)
+	assert(saved_show_fps == true and game.show_fps and not game.fps_label.visible, "FPS should stay hidden in the main menu")
 	assert(saved.get_value("display", "show_building_icons", null) == false)
 	assert(saved.get_value("display", "show_building_names", null) == false)
 	assert(not game.show_building_icons and not game.show_building_names)
@@ -173,11 +173,17 @@ func _run() -> void:
 	assert(game._edge_pan_direction(Vector2(2, 360), Vector2(1280, 720)) == Vector2.LEFT)
 	game.start_game("English", 12345)
 	await process_frame
+	assert(game.fps_label.visible, "FPS should appear with the gameplay HUD")
 	assert(game.fps_label.text.begins_with("FPS: "))
-	assert(game.fps_label.get_global_rect().position.x >= game.view_button.get_global_rect().end.x)
+	assert(game.fps_label.get_parent() == game.ui_root, "FPS should float outside the top HUD")
+	assert(game.fps_label.get_global_rect().position.y >= game.hud_top.get_global_rect().end.y)
 	assert(game.fps_label.get_global_rect().end.x <= game.hud_top.get_global_rect().end.x)
+	assert(game.fps_label.get_global_rect().end.x >= game.hud_top.get_global_rect().end.x - 24.0)
+	assert(game.global_queue_panel.get_global_rect().position.y >= game.fps_label.get_global_rect().end.y)
 	game.ui_scale = 0.75
 	game._apply_ui_scales()
+	await process_frame
+	assert(game.fps_label.get_global_rect().position.y >= game.hud_top.get_global_rect().end.y, "FPS should stay below a scaled HUD")
 	var bottom_transform: Transform2D = game.hud_bottom.get_global_transform_with_canvas()
 	assert(game._selection_point_over_hud(bottom_transform * Vector2(20, 20)))
 	game.ui_scale = 1.0
@@ -249,6 +255,7 @@ func _run() -> void:
 	game.text_scale = 1.5
 	game._apply_ui_scales()
 	game._show_menu()
+	assert(not game.fps_label.visible, "FPS should hide when returning to the menu")
 	game.menu_ui._show_setup_menu()
 	await process_frame
 	var scaled_title: Label

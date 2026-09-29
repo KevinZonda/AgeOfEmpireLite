@@ -93,7 +93,7 @@ func _create_settings(parent: Control) -> void:
 	_add_settings_toggle_row(display_tab, game.building_names_toggle)
 	game.fps_toggle = CheckButton.new()
 	game.fps_toggle.text = "显示 FPS"
-	game.fps_toggle.tooltip_text = "在游戏画面右上角显示每秒帧数。"
+	game.fps_toggle.tooltip_text = "在顶部界面下方靠右显示每秒帧数。"
 	game.fps_toggle.custom_minimum_size.y = 42
 	game.fps_toggle.add_theme_color_override("font_color", Color("f5e4bf"))
 	_add_settings_toggle_row(display_tab, game.fps_toggle)
@@ -180,7 +180,7 @@ func _create_settings(parent: Control) -> void:
 		game.show_building_icons = game.building_icons_toggle.button_pressed
 		game.show_building_names = game.building_names_toggle.button_pressed
 		game.show_fps = game.fps_toggle.button_pressed
-		game.fps_label.visible = game.show_fps
+		game.fps_label.visible = game.show_fps and game.hud_top.visible
 		game.fps_update_timer = 0.0
 		game.health_bar_mode = game.HEALTH_BAR_MODES[game.health_bar_choice.selected]
 		game._redraw_projected_entities()

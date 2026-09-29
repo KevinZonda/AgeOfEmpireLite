@@ -149,6 +149,7 @@ func _create_hud() -> void:
 	top.add_theme_stylebox_override("panel", game._hud_panel_style(Color("251e17"), 8))
 	root.add_child(top)
 	top.minimum_size_changed.connect(func() -> void: call_deferred("_fit_top_hud"))
+	top.resized.connect(_layout_top_overlays)
 	top_column = VBoxContainer.new()
 	top_column.add_theme_constant_override("separation", 4)
 	top.add_child(top_column)
@@ -190,16 +191,6 @@ func _create_hud() -> void:
 	game._style_button(game.view_button)
 	game.view_button.pressed.connect(func() -> void: game._toggle_view_mode(true))
 	top_tools.add_child(game.view_button)
-	game.fps_label = Label.new()
-	game.fps_label.text = "FPS: --"
-	game.fps_label.custom_minimum_size.x = 76
-	game.fps_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	game.fps_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	game.fps_label.add_theme_font_size_override("font_size", RtsUiTypography.CAPTION)
-	game.fps_label.add_theme_color_override("font_color", Color("f4dfaa"))
-	game.fps_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	game.fps_label.visible = game.show_fps
-	top_tools.add_child(game.fps_label)
 	game.global_queue_panel = PanelContainer.new()
 	game.global_queue_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
 	game.global_queue_panel.offset_left = -390
@@ -208,6 +199,22 @@ func _create_hud() -> void:
 	game.global_queue_panel.offset_bottom = 415
 	game.global_queue_panel.add_theme_stylebox_override("panel", game._hud_panel_style(Color("2c241b"), 12))
 	root.add_child(game.global_queue_panel)
+	game.fps_label = Label.new()
+	game.fps_label.text = "FPS: --"
+	game.fps_label.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	game.fps_label.offset_left = -100
+	game.fps_label.offset_right = -12
+	game.fps_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	game.fps_label.add_theme_font_size_override("font_size", RtsUiTypography.CAPTION)
+	game.fps_label.add_theme_color_override("font_color", Color("f4dfaa"))
+	game.fps_label.add_theme_color_override("font_outline_color", Color("1b1814"))
+	game.fps_label.add_theme_constant_override("outline_size", 3)
+	game.fps_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	game.fps_label.visible = game.show_fps
+	root.add_child(game.fps_label)
+	top.visibility_changed.connect(func() -> void: game.fps_label.visible = game.show_fps and top.visible)
+	game.fps_label.visibility_changed.connect(_layout_top_overlays)
+	call_deferred("_layout_top_overlays")
 	var global_queue_scroll := ScrollContainer.new()
 	game.global_queue_panel.add_child(global_queue_scroll)
 	game.global_queue_list = VBoxContainer.new()
@@ -443,6 +450,15 @@ func _fit_top_hud() -> void:
 		top_tools.reparent(top_column)
 	elif single_row_width <= available_width and top_tools.get_parent() != top_row:
 		top_tools.reparent(top_row)
+	_layout_top_overlays()
+
+func _layout_top_overlays() -> void:
+	if game.hud_top == null or game.fps_label == null or game.global_queue_panel == null: return
+	var top_bottom: float = game.hud_top.position.y + game.hud_top.size.y
+	game.fps_label.offset_top = top_bottom + 6.0
+	game.fps_label.offset_bottom = top_bottom + 29.0
+	game.global_queue_panel.offset_top = top_bottom + (35.0 if game.show_fps else 4.0)
+	game.global_queue_panel.offset_bottom = game.global_queue_panel.offset_top + 357.0
 
 func _layout_minimap() -> void:
 	if game.minimap == null or minimap_slot == null: return
