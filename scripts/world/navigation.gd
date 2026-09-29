@@ -23,6 +23,10 @@ var grid_components: Dictionary = {}
 var corner_graphs: Dictionary = {}
 var obstacle_signature := -1
 var obstacle_revision := 0
+# Resource motion changes collision geometry, but must not wake every failed
+# route in the match. Structural edits still interrupt retry backoff.
+var retry_obstacle_revision := 0
+var retry_obstacle_signature := -1
 var obstacle_check_frame := -1
 var spatial_frame := -1
 var indexed_unit_count := -1
@@ -60,7 +64,8 @@ func _init(game_ref: Node2D, map_ref: RtsWorldMap) -> void:
 	game = game_ref
 	world_map = map_ref
 
-func refresh() -> void:
+func refresh(wake_failed_routes := true) -> void:
+	if wake_failed_routes: retry_obstacle_signature = -1
 	var started := Time.get_ticks_usec() if profiling_enabled else 0
 	_refresh_grids()
 	if profiling_enabled: _record_profile(&"grid_refresh", started)
@@ -73,6 +78,10 @@ func _refresh_grids() -> void:
 	corner_graphs.clear()
 	obstacle_revision += 1
 	obstacle_signature = _obstacle_signature()
+	var retry_signature := _obstacle_signature(true)
+	if retry_signature != retry_obstacle_signature:
+		retry_obstacle_signature = retry_signature
+		retry_obstacle_revision += 1
 	obstacle_check_frame = Engine.get_process_frames()
 	invalidate_spatial_index()
 	_default_grid = null
@@ -111,26 +120,27 @@ func _make_default_grid() -> AStarGrid2D:
 					grid.set_point_solid(cell, false)
 	return grid
 
-func _obstacle_signature() -> int:
+func _obstacle_signature(ignore_resource_positions := false) -> int:
 	var signature := 0
 	for building in game.buildings:
 		if is_instance_valid(building) and not building.is_queued_for_deletion():
 			signature = hash([signature, building.get_instance_id(), building.position, building.size(), building.owner_id, building.kind, building.is_complete()])
 	for resource in game.resources:
 		if is_instance_valid(resource) and not resource.is_queued_for_deletion():
-			signature = hash([signature, resource.get_instance_id(), resource.position, resource.radius])
+			signature = hash([signature, resource.get_instance_id(), Vector2.ZERO if ignore_resource_positions else resource.position, resource.radius])
 	return signature
 
 func _ensure_current() -> void:
 	var frame := Engine.get_process_frames()
 	if obstacle_check_frame == frame: return
 	obstacle_check_frame = frame
-	if obstacle_signature != _obstacle_signature(): refresh()
+	if obstacle_signature != _obstacle_signature(): refresh(false)
 
 func invalidate_spatial_index() -> void:
 	spatial_frame = -1
 
-func invalidate_obstacles() -> void:
+func invalidate_obstacles(wake_failed_routes := true) -> void:
+	if wake_failed_routes: retry_obstacle_signature = -1
 	obstacle_signature = -1
 	obstacle_check_frame = -1
 	invalidate_spatial_index()
@@ -214,7 +224,7 @@ func unit_moved(unit: RtsUnit, previous_position: Vector2) -> void:
 	_move_in_index(units_by_cell, unit, previous_position)
 
 func resource_moved(resource: RtsResource, previous_position: Vector2) -> void:
-	if previous_position != resource.position: invalidate_obstacles()
+	if previous_position != resource.position: invalidate_obstacles(false)
 
 func _move_in_index(index: Dictionary, entity: Node2D, previous_position: Vector2) -> void:
 	var old_cell := _spatial_cell(previous_position)

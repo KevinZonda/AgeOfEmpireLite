@@ -12,10 +12,19 @@
 
 初步 100 对 100、600 步野战诊断中，恢复搜索累计 12.66 秒，占单位模拟总耗时约 61%，单步最大 336 ms；A* 核心本身仅累计 0.15 秒。主要开销是 GDScript 中为恢复搜索准备和遍历网格，不是伤害计算。
 
+## PoC 2：远处动物移动取消失败退避
+
+`navigation_battle_retry_poc.gd` 用四名单位占满建筑接触位置，一名进攻者等待，另一端资源每步移动 0.1 像素。修复前 90 步发起 **90 次**完整射程寻路，耗时 **245.6 ms**；修复后 **3 次、8.8 ms**。原实现遇到任意障碍版本变化就把空路径的重试计时归零，远处动物移动让指数退避失效。
+
+现在区分碰撞版本和失败重试版本。资源移动仍立即刷新几何、验证现有路径，但不唤醒所有失败请求；建筑位置、类型、完成状态、资源增删和大小变化，以及显式地形更新仍会唤醒。资源移动后原本无路的单位在正常退避到期后重试，最多等待现有的 `ROUTE_RETRY_MAX` 加错峰时间；新的目标仍使用原有快速重试规则。
+
+新增断言验证移动资源依旧阻挡碰撞、结构更新即时唤醒、临时拥堵消失后可抵达目标。重新验证了失败退避、目标切换、施工、复杂地形和密集编队。
+
 ## 复现
 
 ```sh
 make run RUN_ARGS='--headless --script res://tests/navigation_battle_recovery_poc.gd'
+make run RUN_ARGS='--headless --script res://tests/navigation_battle_retry_poc.gd'
 python3 tools/check_navigation.py
 RTS_BATTLE_SIEGE=1 RTS_BATTLE_MAP=generated RTS_NAV_PROFILE=1 make run RUN_ARGS='--script res://tests/performance_battle_poc.gd --windowed --resolution 1280x720'
 ```

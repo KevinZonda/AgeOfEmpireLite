@@ -1,0 +1,79 @@
+[
+  {
+    "test": "navigation_battle_recovery_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.537
+  },
+  {
+    "test": "navigation_battle_retry_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.658
+  },
+  {
+    "test": "navigation_replanning",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.712
+  },
+  {
+    "test": "navigation_state_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 20.491
+  },
+  {
+    "test": "navigation_construction_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 1.963
+  },
+  {
+    "test": "navigation_tasks_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 22.426
+  },
+  {
+    "test": "navigation_corner_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 25.497
+  },
+  {
+    "test": "navigation_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.917
+  },
+  {
+    "test": "navigation_dense_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 2.213
+  },
+  {
+    "test": "group_replanning",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.441
+  },
+  {
+    "test": "group_mass_chokepoint",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 3.919
+  }
+]

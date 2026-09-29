@@ -61,6 +61,7 @@ var route_retry := 0.0
 var route_failures := 0
 var route_stop_distance := -1.0
 var route_obstacle_revision := -1
+var route_retry_obstacle_revision := -1
 var route_check_pending := false
 var route_blocked := false
 var route_best_distance := INF
@@ -510,6 +511,7 @@ func _reset_route() -> void:
 	route_failures = 0
 	route_stop_distance = -1.0
 	route_obstacle_revision = -1
+	route_retry_obstacle_revision = -1
 	route_check_pending = false
 	route_blocked = false
 	route_best_distance = INF
@@ -812,8 +814,10 @@ func _move_toward(point: Vector2, delta: float, stop_distance: float) -> bool:
 	if route_obstacle_revision != game.navigation.obstacle_revision:
 		route_obstacle_revision = game.navigation.obstacle_revision
 		route_check_pending = true
-		# A newly opened route should wake up an unreachable unit immediately.
-		if route.is_empty(): route_retry = 0.0
+		# Structural changes wake unreachable units immediately. Moving wildlife
+		# still invalidates collision checks, but preserves failure backoff.
+		if route.is_empty() and route_retry_obstacle_revision != game.navigation.retry_obstacle_revision: route_retry = 0.0
+		route_retry_obstacle_revision = game.navigation.retry_obstacle_revision
 	while route_index < route.size() - 1 and position.distance_to(route[route_index]) < 2.0:
 		route_index += 1
 		route_best_distance = INF
