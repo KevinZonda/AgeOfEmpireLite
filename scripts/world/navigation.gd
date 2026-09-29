@@ -6,6 +6,7 @@ const CLEARANCE := 16.0
 const SPATIAL_CELL_SIZE := 64.0
 const SMOOTH_LOOKAHEAD := 8
 const MAX_FINE_GRIDS := 4
+const MAX_CORNER_ATTACHMENTS := 64
 const RecoveryKernel = preload("res://scripts/world/navigation_recovery.gd")
 const BackgroundJobs = preload("res://scripts/world/navigation_jobs.gd")
 var background_jobs = BackgroundJobs.new()
@@ -486,8 +487,20 @@ func _obstacle_corner_path(from: Vector2, to: Vector2, unit: RtsUnit) -> PackedV
 				var bounds := Rect2(Vector2(x, y) * RtsWorldMap.CELL_SIZE, Vector2.ONE * RtsWorldMap.CELL_SIZE).grow(unit.radius() + 0.05)
 				for point in [bounds.position, bounds.end, Vector2(bounds.position.x, bounds.end.y), Vector2(bounds.end.x, bounds.position.y)]:
 					if not corners.has(point) and can_occupy(point, unit.radius(), unit, false, false): corners.append(point)
-		corner_graphs[key] = {"points": corners, "edges": {}}
+		corner_graphs[key] = {"points": corners, "edges": {}, "attachments": {}}
 	var graph: Dictionary = corner_graphs[key]
+	# A range query tries many destinations from the SAME origin. Rechecking
+	# every origin-to-corner sweep made an unreachable unit block a full frame.
+	# These strict static sweeps depend on geometry/body type, not unit traffic.
+	for anchor in [from, to]:
+		if graph["attachments"].has(anchor):
+			var existing: Dictionary = graph["attachments"][anchor]
+			graph["attachments"].erase(anchor)
+			graph["attachments"][anchor] = existing
+			continue
+		if graph["attachments"].size() >= MAX_CORNER_ATTACHMENTS:
+			graph["attachments"].erase(graph["attachments"].keys()[0])
+		graph["attachments"][anchor] = {}
 	var points := PackedVector2Array([from, to])
 	points.append_array(graph["points"])
 	var costs := PackedFloat64Array()
@@ -526,6 +539,11 @@ func _obstacle_corner_path(from: Vector2, to: Vector2, unit: RtsUnit) -> PackedV
 			var edge := Vector2i(mini(current, next), maxi(current, next))
 			var clear: bool
 			if edge.x >= 2 and graph["edges"].has(edge): clear = graph["edges"][edge]
+			elif edge.x < 2 and edge.y >= 2:
+				var attachment: Dictionary = graph["attachments"][points[edge.x]]
+				if not attachment.has(edge.y):
+					attachment[edge.y] = _static_segment_clear(points[edge.x], points[edge.y], unit.radius(), unit, false)
+				clear = attachment[edge.y]
 			else:
 				clear = _static_segment_clear(points[current], points[next], unit.radius(), unit, false)
 				if edge.x >= 2: graph["edges"][edge] = clear
