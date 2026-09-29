@@ -1107,7 +1107,6 @@ func complete_research(owner_id: int, tech_id: String) -> void:
 func is_age_queued(owner_id: int) -> bool:
 	for building in buildings:
 		if is_instance_valid(building) and building.owner_id == owner_id and building.kind == "landmark" and not building.is_complete(): return true
-		if is_instance_valid(building) and building.owner_id == owner_id and building.has_queued_age(): return true
 	return false
 
 func active_landmark_id(owner_id: int) -> String:

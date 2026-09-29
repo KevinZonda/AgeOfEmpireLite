@@ -659,7 +659,6 @@ func _job_label(job: Dictionary) -> String:
 	match job["type"]:
 		"train": return "训练：%s" % GameData.UNITS[job["kind"]]["label"]
 		"research": return "研究：%s" % RtsTechTree.get_technology(job["kind"])["label"]
-		"age": return "升级到时代 %d" % job["target_age"]
 	return "未知任务"
 
 func _refresh_queue_controls(building: RtsBuilding) -> void:

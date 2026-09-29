@@ -24,7 +24,6 @@ var training_queue: Array[String] = []
 var training_remaining := 0.0
 var research_queue: Array[String] = []
 var research_remaining := 0.0
-var age_remaining := 0.0
 # A building works on one job at a time. The two typed queues above remain useful
 # for population accounting and the existing selection UI.
 var production_queue: Array[Dictionary] = []
@@ -263,16 +262,6 @@ func enqueue_research(tech_kind: String, duration: float, paid_cost: Dictionary)
 	if production_queue.size() == 1: _begin_next_job()
 	queue_redraw()
 
-func enqueue_age(target_age: int, duration: float, paid_cost: Dictionary) -> void:
-	production_queue.append({"type": "age", "kind": "age_%d" % target_age, "target_age": target_age, "time": maxf(0.01, duration), "cost": paid_cost.duplicate(true)})
-	if production_queue.size() == 1: _begin_next_job()
-	queue_redraw()
-
-func has_queued_age() -> bool:
-	for job in production_queue:
-		if job["type"] == "age": return true
-	return false
-
 func current_job() -> Dictionary:
 	if production_queue.is_empty(): return {}
 	var job := production_queue[0].duplicate(true)
@@ -304,7 +293,6 @@ func _begin_next_job() -> void:
 	production_remaining = 0.0
 	training_remaining = 0.0
 	research_remaining = 0.0
-	age_remaining = 0.0
 	if production_queue.is_empty(): return
 	production_remaining = production_queue[0]["time"]
 	_sync_remaining()
@@ -312,7 +300,6 @@ func _begin_next_job() -> void:
 func _sync_remaining() -> void:
 	training_remaining = production_remaining if not production_queue.is_empty() and production_queue[0]["type"] == "train" else 0.0
 	research_remaining = production_remaining if not production_queue.is_empty() and production_queue[0]["type"] == "research" else 0.0
-	age_remaining = production_remaining if not production_queue.is_empty() and production_queue[0]["type"] == "age" else 0.0
 
 func _training_time(unit_kind: String) -> float:
 	var producer := producer_kind()
@@ -455,8 +442,6 @@ func _process(delta: float) -> void:
 	elif job["type"] == "research":
 		research_queue.pop_front()
 		game.complete_research(owner_id, job["kind"])
-	else:
-		game.complete_age(owner_id, job["target_age"])
 	_begin_next_job()
 	queue_redraw()
 
