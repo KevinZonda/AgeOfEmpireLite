@@ -882,15 +882,33 @@ func _local_unit_grid(unit: RtsUnit, step: float, half: int) -> AStarGrid2D:
 	var extent := float(half) * step
 	for other in nearby_units(unit.position, sqrt(2.0) * extent + unit.radius() + max_dynamic_radius):
 		if other == unit: continue
-		var reach := unit.radius() + other.radius()
-		var current := unit.position.distance_squared_to(other.position)
-		var region := _fine_region(grid, Rect2(other.position - Vector2.ONE * reach, Vector2.ONE * reach * 2.0))
-		for y in range(region.position.y, region.end.y):
-			for x in range(region.position.x, region.end.x):
-				var cell := Vector2i(x, y)
-				var distance := grid.get_point_position(cell).distance_squared_to(other.position)
-				if distance < reach * reach and distance <= current: grid.set_point_solid(cell)
+		_rasterize_unit_circle(grid, other.position, unit.radius() + other.radius(), unit.position.distance_squared_to(other.position))
 	return grid
+
+func _rasterize_unit_circle(grid: AStarGrid2D, center: Vector2, radius: float, current_distance_squared: float) -> void:
+	# A circle intersects each grid row in one span. Fill that span natively
+	# instead of doing a GDScript distance test and setter for every cell.
+	# Retain the exact strict contact / inclusive overlap-escape predicates at
+	# both endpoints; sqrt/rounding alone can change tangent-cell occupancy.
+	var radius_squared := radius * radius
+	var limit := minf(radius_squared, current_distance_squared)
+	var region := _fine_region(grid, Rect2(center - Vector2.ONE * radius, Vector2.ONE * radius * 2.0))
+	for y in range(region.position.y, region.end.y):
+		var dy := grid.get_point_position(Vector2i(0, y)).y - center.y
+		var span_squared := limit - dy * dy
+		if span_squared < 0.0: continue
+		var span := sqrt(span_squared)
+		var first := maxi(region.position.x, floori((center.x - span - grid.offset.x) / grid.cell_size.x))
+		var last := mini(region.end.x - 1, ceili((center.x + span - grid.offset.x) / grid.cell_size.x))
+		while first <= last:
+			var distance := grid.get_point_position(Vector2i(first, y)).distance_squared_to(center)
+			if distance < radius_squared and distance <= current_distance_squared: break
+			first += 1
+		while last >= first:
+			var distance := grid.get_point_position(Vector2i(last, y)).distance_squared_to(center)
+			if distance < radius_squared and distance <= current_distance_squared: break
+			last -= 1
+		if first <= last: grid.fill_solid_region(Rect2i(first, y, last - first + 1, 1))
 
 func _local_reachable_cells(grid: AStarGrid2D, start: Vector2i) -> Array[Vector2i]:
 	# Recovery needs only the mover's component. Labeling every disconnected

@@ -1533,6 +1533,12 @@ func _edge_pan_direction(screen_point: Vector2, viewport_size: Vector2) -> Vecto
 	# Confined mouse coordinates can land exactly on the right or bottom edge.
 	# Clamping also keeps edge scrolling continuous during a focus transition.
 	var point := screen_point.clamp(Vector2.ZERO, (viewport_size - Vector2.ONE).max(Vector2.ZERO))
+	# Command buttons and the minimap can overlap the edge-scroll strip.
+	# Hovering the HUD must not move the battlefield while clicking a command.
+	if hud_top != null and hud_top.visible and hud_top.get_global_rect().has_point(point): return Vector2.ZERO
+	if hud_bottom != null and hud_bottom.visible and hud_bottom.get_global_rect().has_point(point): return Vector2.ZERO
+	if global_queue_panel != null and global_queue_panel.visible and global_queue_panel.get_global_rect().has_point(point): return Vector2.ZERO
+	if hud_ui != null and hud_ui.minimap_panel != null and hud_ui.minimap_panel.visible and hud_ui.minimap_panel.get_global_rect().has_point(point): return Vector2.ZERO
 	var direction := Vector2.ZERO
 	if point.x <= EDGE_SCROLL_MARGIN: direction.x -= 1
 	if point.x >= viewport_size.x - EDGE_SCROLL_MARGIN: direction.x += 1

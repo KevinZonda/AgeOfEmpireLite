@@ -117,6 +117,10 @@ var minimap_slot: Control
 var multi_selection_scroll: ScrollContainer
 var multi_selection_grid: GridContainer
 var multi_selection_ids: Array[int] = []
+var selection_panel: PanelContainer
+var selection_column: VBoxContainer
+var selection_header: HBoxContainer
+var command_panel: PanelContainer
 var queue_scroll: ScrollContainer
 var displayed_queue_jobs: Array[String] = []
 var selection_summary: Label
@@ -231,7 +235,7 @@ func _create_hud() -> void:
 	var dock := HBoxContainer.new()
 	dock.add_theme_constant_override("separation", 9)
 	bottom.add_child(dock)
-	var command_panel := PanelContainer.new()
+	command_panel = PanelContainer.new()
 	command_panel.custom_minimum_size.x = 300
 	command_panel.add_theme_stylebox_override("panel", game._hud_panel_style(Color("30261b"), 7))
 	dock.add_child(command_panel)
@@ -244,6 +248,8 @@ func _create_hud() -> void:
 	game.command_title = Label.new()
 	game.command_title.text = "命令"
 	game.command_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	game.command_title.clip_text = true
+	game.command_title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	game.command_title.add_theme_font_size_override("font_size", RtsUiTypography.SUBSECTION_TITLE)
 	game.command_title.add_theme_color_override("font_color", Color("e8cb85"))
 	command_header.add_child(game.command_title)
@@ -262,7 +268,7 @@ func _create_hud() -> void:
 	game.action_bar.add_theme_constant_override("h_separation", 6)
 	game.action_bar.add_theme_constant_override("v_separation", 4)
 	action_scroll.add_child(game.action_bar)
-	var selection_panel := PanelContainer.new()
+	selection_panel = PanelContainer.new()
 	selection_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	selection_panel.add_theme_stylebox_override("panel", game._hud_panel_style(Color("30271c"), 8))
 	dock.add_child(selection_panel)
@@ -272,11 +278,11 @@ func _create_hud() -> void:
 	game.selection_portrait = game.SELECTION_PORTRAIT.new()
 	game.selection_portrait.custom_minimum_size = Vector2(100, 140)
 	selection_row.add_child(game.selection_portrait)
-	var selection_column := VBoxContainer.new()
+	selection_column = VBoxContainer.new()
 	selection_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	selection_column.add_theme_constant_override("separation", 4)
 	selection_row.add_child(selection_column)
-	var selection_header := HBoxContainer.new()
+	selection_header = HBoxContainer.new()
 	selection_header.add_theme_constant_override("separation", 4)
 	selection_column.add_child(selection_header)
 	game.info_label = Label.new()
@@ -436,9 +442,32 @@ func _apply_minimap_size() -> void:
 
 func _fit_bottom_hud() -> void:
 	if game.hud_bottom == null: return
-	var required_height := maxf(HUD_BOTTOM_HEIGHT, game.hud_bottom.get_combined_minimum_size().y)
+	var font_scale: float = game.text_scale / maxf(0.01, game.ui_root.scale.x)
+	# Allow the villager's title and build tabs to fit at each font scale.
+	var command_width := maxf(300.0, 173.0 + 110.0 * font_scale)
+	if not is_equal_approx(command_panel.custom_minimum_size.x, command_width):
+		command_panel.custom_minimum_size.x = command_width
+	var content_height: float = game.hud_bottom.get_combined_minimum_size().y
+	var required_height := maxf(maxf(HUD_BOTTOM_HEIGHT, content_height), _production_hud_floor())
 	if not is_equal_approx(game.hud_bottom.offset_top, -required_height):
 		game.hud_bottom.offset_top = -required_height
+
+func _production_hud_floor() -> float:
+	if selection_header == null or queue_scroll == null: return HUD_BOTTOM_HEIGHT
+	var header_height := maxf(maxf(selection_header.get_combined_minimum_size().y, selection_details_button.get_combined_minimum_size().y), game.info_label.get_combined_minimum_size().y)
+	var summary_font: Font = selection_summary.get_theme_font("font")
+	var summary_size := selection_summary.get_theme_font_size("font_size")
+	var summary_height := summary_font.get_height(summary_size)
+	# At narrow widths the town center's summary wraps onto a second line.
+	var town_center_summary := "生命 1050/1050   已建成   右键设置集结点"
+	if selection_column.size.x > 0.0 and summary_font.get_string_size(town_center_summary, HORIZONTAL_ALIGNMENT_LEFT, -1, summary_size).x > selection_column.size.x:
+		summary_height = summary_height * 2.0 + selection_summary.get_theme_constant("line_spacing")
+	var column_height := header_height + summary_height
+	column_height += game.selection_health.get_combined_minimum_size().y + game.selection_progress.get_combined_minimum_size().y
+	column_height += game.queue_label.get_combined_minimum_size().y + queue_scroll.get_combined_minimum_size().y + game.notice_label.get_combined_minimum_size().y
+	column_height += selection_column.get_theme_constant("separation") * 6
+	var content_height := maxf(game.selection_portrait.get_combined_minimum_size().y, column_height)
+	return content_height + selection_panel.get_theme_stylebox("panel").get_minimum_size().y + game.hud_bottom.get_theme_stylebox("panel").get_minimum_size().y
 
 func _fit_top_hud() -> void:
 	if top_row == null or top_tools == null or game.ui_root == null: return
