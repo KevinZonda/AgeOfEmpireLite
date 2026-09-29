@@ -259,7 +259,7 @@ func _update_entity_visibility() -> void:
 			post.visible = is_explored(0, post.position)
 			post.modulate = Color.WHITE if can_see(0, post.position) else Color(0.42, 0.46, 0.48)
 	for relic in game.relics:
-		if is_instance_valid(relic): relic.visible = relic.stored_in == null and can_see(0, relic.position)
+		if is_instance_valid(relic): relic.visible = relic.available() and can_see(0, relic.position)
 
 func _update_mask() -> void:
 	var image := Image.create(grid_size.x, grid_size.y, false, Image.FORMAT_RGBA8)

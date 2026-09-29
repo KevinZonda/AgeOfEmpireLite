@@ -58,8 +58,11 @@ static func _staff(canvas: CanvasItem, base: Vector2, has_relic: bool, swing: fl
 	canvas.draw_line(top + Vector2(-5, 5), top + Vector2(5, 5), GOLD, 2.4)
 	canvas.draw_circle(top, 2.0, GOLD)
 	if has_relic:
-		canvas.draw_arc(top, 6.5, 0, TAU, 20, Color(GOLD, 0.65), 1.4)
-		canvas.draw_circle(top, 3.1, Color("fff2ae"))
+		var held := base + Vector2(6, -10)
+		_poly(canvas, [held + Vector2(-5, 3), held + Vector2(-5, -3), held + Vector2(0, -7), held + Vector2(5, -3), held + Vector2(5, 3)], GOLD)
+		canvas.draw_rect(Rect2(held + Vector2(-3, -2), Vector2(6, 4)), Color("f7e7b3"))
+		canvas.draw_circle(held, 1.6, Color("5f8f8a"))
+		canvas.draw_line(held + Vector2(-5, 4), held + Vector2(5, 4), Color("fff1bd"), 1.5)
 
 static func _match_2d(canvas: CanvasItem, kind: String, team: Color, gait: float, swing: float, gather_kind: String, has_relic: bool, braced: bool) -> void:
 	_boots(canvas, Vector2(-5, 6), Vector2(5, 6), gait)

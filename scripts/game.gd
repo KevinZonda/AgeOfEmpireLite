@@ -1558,8 +1558,9 @@ func _can_begin_native_selection(screen_point: Vector2) -> bool:
 	return get_window().has_focus() and started and not paused and not game_over and build_mode == "" and order_mode == "" and not wall_dragging and not _selection_point_over_hud(screen_point)
 
 func _poll_selection_pointer() -> void:
-	var screen_point := _selection_pointer_screen_position()
-	var left_down := _selection_native_left_down()
+	_advance_selection_pointer(_selection_pointer_screen_position(), _selection_native_left_down())
+
+func _advance_selection_pointer(screen_point: Vector2, left_down: bool) -> void:
 	if left_down and not selection_previous_left_down:
 		if selection_drag_phase == SelectionDragPhase.BLOCKED:
 			pass
@@ -1580,6 +1581,13 @@ func _poll_selection_pointer() -> void:
 		else:
 			selection_drag_phase = SelectionDragPhase.IDLE
 	selection_previous_left_down = left_down
+
+func _consume_placement_left_press() -> void:
+	# Placing may clear build_mode before macOS polls the still-held button.
+	# Keep this press blocked until release so it cannot select the new building.
+	_cancel_selection_drag()
+	selection_drag_phase = SelectionDragPhase.BLOCKED
+	selection_previous_left_down = true
 
 func _begin_selection_candidate(screen_point: Vector2) -> void:
 	dragging = true
@@ -1776,6 +1784,7 @@ func _unhandled_input(event: InputEvent) -> void:
 				_issue_mode_order(get_global_mouse_position(), event.shift_pressed)
 				return
 			if build_mode != "":
+				_consume_placement_left_press()
 				if build_mode.ends_with("_wall"):
 					wall_dragging = true
 					wall_start = get_global_mouse_position()

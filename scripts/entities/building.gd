@@ -731,12 +731,6 @@ func _draw_topdown_university(bounds: Rect2, palette: Dictionary) -> void:
 	draw_rect(tower, college["wall"].darkened(0.28))
 	draw_rect(tower.grow(-2), college["roof_dark"])
 	draw_rect(tower, palette["trim"], false, 1.5)
-	var monument := bounds.position + bounds.size * Vector2(0.5, 0.68)
-	draw_rect(Rect2(monument - Vector2(4, 3), Vector2(8, 6)), palette["wall"])
-	draw_circle(monument, 2.0, palette["trim"])
-	for u in [0.34, 0.66]:
-		var y := bounds.position.y + bounds.size.y * 0.8
-		draw_line(Vector2(bounds.position.x + bounds.size.x * u, y), Vector2(bounds.position.x + bounds.size.x * u, bounds.end.y - 2), Color("687957"), 3.0)
 
 func _military_rect(bounds: Rect2, u: float, v: float, width: float, depth: float) -> Rect2:
 	return Rect2(bounds.position + bounds.size * Vector2(u, v), bounds.size * Vector2(width, depth))
