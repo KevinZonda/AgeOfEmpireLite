@@ -576,13 +576,9 @@ func _fine_grid_for(unit: RtsUnit) -> AStarGrid2D:
 	return grid
 
 func _make_fine_grid(unit: RtsUnit, bounds: Rect2) -> AStarGrid2D:
-	var diag_started := Time.get_ticks_usec() if profiling_enabled else 0
 	var step := _fine_step(unit)
 	var origin := (bounds.position / step).floor() * step
 	var size := Vector2i(((bounds.end - origin) / step).ceil()) + Vector2i.ONE
-	if profiling_enabled:
-		if not profile.has(&"fine_grid_cells"): profile[&"fine_grid_cells"] = {"calls": 0, "total_us": 0, "max_us": 0}
-		profile[&"fine_grid_cells"]["calls"] += size.x * size.y
 	var grid := AStarGrid2D.new()
 	grid.region = Rect2i(Vector2i.ZERO, size)
 	grid.offset = origin
@@ -590,7 +586,6 @@ func _make_fine_grid(unit: RtsUnit, bounds: Rect2) -> AStarGrid2D:
 	grid.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES
 	grid.update()
 	_rasterize_static_grid(unit, grid)
-	if profiling_enabled: _record_profile(&"fine_grid_build", diag_started)
 	return grid
 
 func _rasterize_static_grid(unit: RtsUnit, grid: AStarGrid2D, allow_resource_escape := false) -> void:
@@ -828,7 +823,6 @@ func _search_path_to_range(from: Vector2, target: Vector2, reach: float, unit: R
 	# Candidates already passed occupancy checks. After every coarse route
 	# fails, refine directly without repeating those same coarse searches.
 	for refine in [false, true]:
-		var diag_started := Time.get_ticks_usec() if profiling_enabled else 0
 		var best := PackedVector2Array()
 		var best_length := INF
 		for point in candidates:
@@ -839,7 +833,6 @@ func _search_path_to_range(from: Vector2, target: Vector2, reach: float, unit: R
 			if length < best_length:
 				best = candidate
 				best_length = length
-		if profiling_enabled: _record_profile(&"ptr_refine" if refine else &"ptr_coarse", diag_started)
 		if not best.is_empty(): return best
 	return PackedVector2Array()
 
