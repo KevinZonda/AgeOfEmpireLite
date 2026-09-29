@@ -182,6 +182,9 @@ var window_mode_choice: OptionButton
 var resolution_choice: OptionButton
 var resolution_values: Array[Vector2i] = []
 var windowed_resolution := Vector2i.ZERO
+var adaptive_resolution_enabled := false
+var adaptive_usable_rect := Rect2i()
+var adaptive_resolution_check_timer := 0.0
 var fullscreen_enabled := false
 var edge_scroll_toggle: CheckButton
 var edge_scroll_enabled := true
@@ -457,16 +460,31 @@ func _close_settings() -> void:
 func _refresh_resolution_options() -> void:
 	menu_ui._refresh_resolution_options()
 
+static func _fit_window_size_to_screen(usable_size: Vector2i) -> Vector2i:
+	var minimum := Vector2i(MIN_UI_VIEWPORT_SIZE * UI_SCALE_OPTIONS[0])
+	return Vector2i(
+		mini(usable_size.x, maxi(minimum.x, floori(usable_size.x * 0.9))),
+		mini(usable_size.y, maxi(minimum.y, floori(usable_size.y * 0.9)))
+	)
+
+func _adaptive_window_resolution() -> Vector2i:
+	if DisplayServer.get_name() == "headless": return get_window().size
+	return _fit_window_size_to_screen(DisplayServer.screen_get_usable_rect(get_window().current_screen).size)
+
 func _apply_window_resolution(resolution: Vector2i, save_setting := true) -> void:
-	if not WINDOW_RESOLUTIONS.has(resolution) and resolution != windowed_resolution and resolution != get_window().size: return
+	var adaptive := resolution == Vector2i.ZERO
+	if not adaptive and not WINDOW_RESOLUTIONS.has(resolution) and resolution != windowed_resolution and resolution != get_window().size: return
+	var target := _adaptive_window_resolution() if adaptive else resolution
 	var window := get_window()
 	window.mode = Window.MODE_WINDOWED
-	window.size = resolution
-	windowed_resolution = resolution
+	window.size = target
+	windowed_resolution = target
+	adaptive_resolution_enabled = adaptive
 	fullscreen_enabled = false
 	if DisplayServer.get_name() != "headless":
 		var usable := DisplayServer.screen_get_usable_rect(window.current_screen)
-		window.position = usable.position + (usable.size - resolution) / 2
+		window.position = usable.position + (usable.size - target) / 2
+		adaptive_usable_rect = usable if adaptive else Rect2i()
 	if started: call_deferred("_clamp_camera_position")
 	if save_setting: _save_settings()
 
@@ -479,13 +497,14 @@ func _apply_window_mode(fullscreen: bool, save_setting := true) -> void:
 	if fullscreen:
 		get_window().mode = Window.MODE_FULLSCREEN
 	else:
-		_apply_window_resolution(windowed_resolution, false)
+		_apply_window_resolution(Vector2i.ZERO if adaptive_resolution_enabled else windowed_resolution, false)
 	if started: call_deferred("_clamp_camera_position")
 	if save_setting: _save_settings()
 
 func _save_settings() -> void:
 	var config := ConfigFile.new()
 	config.set_value("display", "window_size", windowed_resolution)
+	config.set_value("display", "adaptive_resolution", adaptive_resolution_enabled)
 	config.set_value("display", "fullscreen", _window_is_fullscreen())
 	config.set_value("display", "view_mode_25d", selected_view_mode_25d)
 	config.set_value("display", "ui_scale", ui_scale)
@@ -514,9 +533,12 @@ func _load_settings() -> void:
 	edge_scroll_enabled = bool(config.get_value("controls", "edge_scroll_enabled", true))
 	zoom_gesture_enabled = bool(config.get_value("controls", "zoom_gesture_enabled", true))
 	var resolution: Variant = config.get_value("display", "window_size", Vector2i.ZERO)
-	if resolution is Vector2i and WINDOW_RESOLUTIONS.has(resolution):
+	if bool(config.get_value("display", "adaptive_resolution", false)):
+		_apply_window_resolution(Vector2i.ZERO, false)
+	elif resolution is Vector2i and resolution.x > 0 and resolution.y > 0:
 		var usable := DisplayServer.screen_get_usable_rect(get_window().current_screen).size
 		if resolution.x <= usable.x and resolution.y <= usable.y:
+			windowed_resolution = resolution
 			_apply_window_resolution(resolution, false)
 	if bool(config.get_value("display", "fullscreen", false)):
 		_apply_window_mode(true, false)
@@ -1390,6 +1412,12 @@ func notify_player(message: String) -> void:
 	notice_timer = 3.5
 
 func _process(delta: float) -> void:
+	if adaptive_resolution_enabled and not _window_is_fullscreen() and DisplayServer.get_name() != "headless":
+		adaptive_resolution_check_timer -= delta
+		if adaptive_resolution_check_timer <= 0.0:
+			adaptive_resolution_check_timer = 1.0
+			if DisplayServer.screen_get_usable_rect(get_window().current_screen) != adaptive_usable_rect:
+				_apply_window_resolution(Vector2i.ZERO, false)
 	if not started or game_over or paused: return
 	if _uses_native_selection_pointer():
 		_poll_selection_pointer()

@@ -4,6 +4,10 @@ extends RefCounted
 # Owns settings and lobby presentation; match state stays in the game root.
 signal match_requested(settings: Dictionary)
 
+const SETTINGS_LABEL_WIDTH := 120.0
+const SETTINGS_FIELD_WIDTH := 240.0
+const SETTINGS_ROW_SPACING := 12.0
+
 var game: Node2D
 
 func _init(game_ref: Node2D) -> void:
@@ -58,6 +62,7 @@ func _create_settings(parent: Control) -> void:
 	game.window_mode_choice.item_selected.connect(func(_index: int) -> void: _refresh_ui_scale_options())
 	_add_settings_option_row(display_tab, "显示模式", game.window_mode_choice)
 	game.resolution_choice = OptionButton.new()
+	game.resolution_choice.tooltip_text = "自动模式会按当前屏幕可用区域的 90% 设置窗口；全屏始终使用屏幕尺寸。"
 	game.resolution_choice.custom_minimum_size.y = 42
 	game._style_button(game.resolution_choice)
 	game.resolution_choice.item_selected.connect(func(_index: int) -> void: _refresh_ui_scale_options())
@@ -73,13 +78,13 @@ func _create_settings(parent: Control) -> void:
 	game.building_icons_toggle.tooltip_text = "显示地图上建筑上方的图标"
 	game.building_icons_toggle.custom_minimum_size.y = 42
 	game.building_icons_toggle.add_theme_color_override("font_color", Color("f5e4bf"))
-	display_tab.add_child(game.building_icons_toggle)
+	_add_settings_toggle_row(display_tab, game.building_icons_toggle)
 	game.building_names_toggle = CheckButton.new()
 	game.building_names_toggle.text = "显示建筑名称"
 	game.building_names_toggle.tooltip_text = "显示地图上建筑下方的名称"
 	game.building_names_toggle.custom_minimum_size.y = 42
 	game.building_names_toggle.add_theme_color_override("font_color", Color("f5e4bf"))
-	display_tab.add_child(game.building_names_toggle)
+	_add_settings_toggle_row(display_tab, game.building_names_toggle)
 	game.minimap_size_choice = OptionButton.new()
 	game.minimap_size_choice.tooltip_text = "单独调整小地图尺寸；2.5D 菱形会伸出底部面板。"
 	for index in game.MINIMAP_SIZE_OPTIONS.size():
@@ -101,6 +106,7 @@ func _create_settings(parent: Control) -> void:
 	_add_menu_label(display_tab, "高于当前屏幕可用尺寸的选项不会显示。", 14)
 	var controls_tab := VBoxContainer.new()
 	controls_tab.name = "操作设置"
+	controls_tab.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	controls_tab.alignment = BoxContainer.ALIGNMENT_CENTER
 	controls_tab.add_theme_constant_override("separation", 12)
 	game.settings_tabs.add_child(controls_tab)
@@ -109,13 +115,13 @@ func _create_settings(parent: Control) -> void:
 	game.edge_scroll_toggle.tooltip_text = "鼠标靠近窗口边缘时移动镜头"
 	game.edge_scroll_toggle.custom_minimum_size.y = 42
 	game.edge_scroll_toggle.add_theme_color_override("font_color", Color("f5e4bf"))
-	controls_tab.add_child(game.edge_scroll_toggle)
+	_add_settings_toggle_row(controls_tab, game.edge_scroll_toggle)
 	game.zoom_gesture_toggle = CheckButton.new()
 	game.zoom_gesture_toggle.text = "启用缩放手势"
 	game.zoom_gesture_toggle.tooltip_text = "双指捏合时缩放镜头；鼠标滚轮不受影响"
 	game.zoom_gesture_toggle.custom_minimum_size.y = 42
 	game.zoom_gesture_toggle.add_theme_color_override("font_color", Color("f5e4bf"))
-	controls_tab.add_child(game.zoom_gesture_toggle)
+	_add_settings_toggle_row(controls_tab, game.zoom_gesture_toggle)
 	game.settings_tab_buttons.clear()
 	for tab_index in game.settings_tabs.get_tab_count():
 		var tab_button := Button.new()
@@ -146,7 +152,8 @@ func _create_settings(parent: Control) -> void:
 		if index < 0 or index >= game.resolution_values.size(): return
 		var resolution: Vector2i = game.resolution_values[index]
 		if game.window_mode_choice.selected == 1:
-			game.windowed_resolution = resolution
+			game.adaptive_resolution_enabled = resolution == Vector2i.ZERO
+			game.windowed_resolution = game._adaptive_window_resolution() if game.adaptive_resolution_enabled else resolution
 			game._apply_window_mode(true, false)
 		else:
 			game._apply_window_resolution(resolution, false)
@@ -170,17 +177,28 @@ func _create_settings(parent: Control) -> void:
 
 func _add_settings_option_row(parent: VBoxContainer, title: String, choice: OptionButton) -> void:
 	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 12)
+	row.custom_minimum_size.x = SETTINGS_LABEL_WIDTH + SETTINGS_ROW_SPACING + SETTINGS_FIELD_WIDTH
+	row.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	row.add_theme_constant_override("separation", SETTINGS_ROW_SPACING)
 	parent.add_child(row)
 	var label := Label.new()
 	label.text = title
-	label.custom_minimum_size.x = 140
+	label.custom_minimum_size.x = SETTINGS_LABEL_WIDTH
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.add_theme_font_size_override("font_size", 17)
 	label.add_theme_color_override("font_color", Color("f0ddb1"))
 	row.add_child(label)
-	choice.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	choice.custom_minimum_size.x = SETTINGS_FIELD_WIDTH
+	choice.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	row.add_child(choice)
+
+func _add_settings_toggle_row(parent: VBoxContainer, toggle: CheckButton) -> void:
+	var row := HBoxContainer.new()
+	row.custom_minimum_size.x = SETTINGS_LABEL_WIDTH + SETTINGS_ROW_SPACING + SETTINGS_FIELD_WIDTH
+	row.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	parent.add_child(row)
+	toggle.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	row.add_child(toggle)
 
 func _update_settings_tab_buttons(active_tab: int) -> void:
 	for index in game.settings_tab_buttons.size():
@@ -188,7 +206,7 @@ func _update_settings_tab_buttons(active_tab: int) -> void:
 
 func _show_settings(from_pause := false) -> void:
 	game.settings_from_pause = from_pause
-	if not game._window_is_fullscreen(): game.windowed_resolution = game.get_window().size
+	if not game._window_is_fullscreen() and not game.adaptive_resolution_enabled: game.windowed_resolution = game.get_window().size
 	_refresh_resolution_options()
 	game.window_mode_choice.select(1 if game._window_is_fullscreen() else 0)
 	_refresh_ui_scale_options()
@@ -216,6 +234,9 @@ func _close_settings() -> void:
 func _refresh_resolution_options() -> void:
 	game.resolution_choice.clear()
 	game.resolution_values.clear()
+	var adaptive_size: Vector2i = game._adaptive_window_resolution()
+	game.resolution_values.append(Vector2i.ZERO)
+	game.resolution_choice.add_item("自动（%d × %d）" % [adaptive_size.x, adaptive_size.y])
 	var current: Vector2i = game.windowed_resolution if game._window_is_fullscreen() else game.get_window().size
 	var usable := DisplayServer.screen_get_usable_rect(game.get_window().current_screen).size
 	for resolution in game.WINDOW_RESOLUTIONS:
@@ -225,7 +246,7 @@ func _refresh_resolution_options() -> void:
 	if not game.resolution_values.has(current):
 		game.resolution_values.append(current)
 		game.resolution_choice.add_item("当前窗口：%d × %d" % [current.x, current.y])
-	game.resolution_choice.select(game.resolution_values.find(current))
+	game.resolution_choice.select(0 if game.adaptive_resolution_enabled else game.resolution_values.find(current))
 
 func _refresh_ui_scale_options() -> void:
 	var wanted_scale: float = game.ui_scale
@@ -235,7 +256,8 @@ func _refresh_ui_scale_options() -> void:
 	if game.window_mode_choice.selected == 1 and DisplayServer.get_name() != "headless":
 		available_size = Vector2(DisplayServer.screen_get_size(game.get_window().current_screen))
 	elif game.resolution_choice.selected >= 0 and game.resolution_choice.selected < game.resolution_values.size():
-		available_size = Vector2(game.resolution_values[game.resolution_choice.selected])
+		var selected_resolution: Vector2i = game.resolution_values[game.resolution_choice.selected]
+		available_size = Vector2(game._adaptive_window_resolution() if selected_resolution == Vector2i.ZERO else selected_resolution)
 	else:
 		available_size = game.get_viewport_rect().size
 	game.ui_scale_choice.clear()
@@ -244,6 +266,9 @@ func _refresh_ui_scale_options() -> void:
 		if game.MIN_UI_VIEWPORT_SIZE.x * scale > available_size.x or game.MIN_UI_VIEWPORT_SIZE.y * scale > available_size.y: continue
 		game.ui_scale_values.append(scale)
 		game.ui_scale_choice.add_item("%d%%" % roundi(scale * 100.0))
+	if game.ui_scale_values.is_empty():
+		game.ui_scale_values.append(game.UI_SCALE_OPTIONS[0])
+		game.ui_scale_choice.add_item("%d%%" % roundi(game.UI_SCALE_OPTIONS[0] * 100.0))
 	var chosen_index: int = game.ui_scale_values.find(wanted_scale)
 	game.ui_scale_choice.select(chosen_index if chosen_index >= 0 else game.ui_scale_values.size() - 1)
 

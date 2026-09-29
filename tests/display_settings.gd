@@ -28,10 +28,18 @@ func _run() -> void:
 	assert(first_tab_rect.position.y < second_tab_rect.position.y)
 	game.settings_tab_buttons[1].pressed.emit()
 	assert(game.settings_tabs.current_tab == 1)
+	await process_frame
+	for toggle in [game.edge_scroll_toggle, game.zoom_gesture_toggle]:
+		assert(toggle.size.x < 240 and toggle.get_parent().size.x < 430, "control switches should stay next to their labels")
 	game.settings_tab_buttons[0].pressed.emit()
 	assert(game.settings_tabs.current_tab == 0)
+	await process_frame
 	assert(game.resolution_values.has(Vector2i(1280, 720)))
 	assert(game.resolution_values.has(Vector2i(1600, 900)))
+	assert(game.resolution_values[0] == Vector2i.ZERO and game.resolution_choice.get_item_text(0).begins_with("自动（"))
+	assert(game._fit_window_size_to_screen(Vector2i(1920, 1080)) == Vector2i(1728, 972))
+	assert(game._fit_window_size_to_screen(Vector2i(1366, 768)) == Vector2i(1229, 691))
+	assert(game._fit_window_size_to_screen(Vector2i(1024, 768)) == Vector2i(960, 691))
 	assert(game.ui_scale_values == [0.75, 1.0])
 	assert(game.ui_scale_choice.selected == 1)
 	assert(game.text_scale_choice.item_count == 4 and game.text_scale_choice.selected == 1)
@@ -51,6 +59,10 @@ func _run() -> void:
 		assert(label.text == setting[1])
 		assert(label.get_global_rect().end.x < choice.get_global_rect().position.x)
 		assert(label.get_global_rect().end.y > choice.get_global_rect().position.y)
+		assert(choice.size.x <= 300 and row.size.x < 450, "settings selectors should stay compact")
+		assert(absf(row.get_global_rect().get_center().x - row.get_parent().get_global_rect().get_center().x) < 1.0, "settings rows should be centered in the page")
+	for toggle in [game.building_icons_toggle, game.building_names_toggle]:
+		assert(toggle.size.x < 240 and toggle.get_parent().size.x < 430, "display switches should stay next to their labels")
 	assert(game.window_mode_choice.get_item_text(0) == "窗口化")
 	assert(game.window_mode_choice.get_item_text(1) == "全屏")
 	assert(game.window_mode_choice.selected == 0)
@@ -189,6 +201,11 @@ func _run() -> void:
 	game.text_scale = 1.25
 	game._apply_ui_scales()
 	assert(game.window_mode_choice.get_popup().get_theme_font_size("font_size") == 20, "dropdown text scale should be independent of UI scale")
+	game.text_scale = 1.5
+	game._apply_ui_scales()
+	await process_frame
+	assert(game.window_mode_choice.size.x <= 300 and game.window_mode_choice.get_parent().size.x < 450, "selectors should remain compact at 150% UI and text scale")
+	assert(game.building_icons_toggle.size.x < 240, "switches should remain compact at 150% UI and text scale")
 	game.text_scale = 1.0
 	game._apply_ui_scales()
 	game.ui_scale = 1.0
@@ -230,6 +247,22 @@ func _run() -> void:
 	await process_frame
 	var settings_rect: Rect2 = game.settings_overlay.get_child(0).get_global_rect()
 	assert(settings_rect == Rect2(Vector2.ZERO, Vector2(1280, 720)), "settings should fill the view from match setup")
+	game.resolution_choice.select(0)
+	save_button.pressed.emit()
+	assert(game.adaptive_resolution_enabled and game.windowed_resolution == game._adaptive_window_resolution())
+	var adaptive_settings := ConfigFile.new()
+	assert(adaptive_settings.load(settings_path) == OK)
+	assert(adaptive_settings.get_value("display", "adaptive_resolution", false) == true)
+	game._apply_window_mode(true, false)
+	game._apply_window_mode(false, false)
+	assert(game.adaptive_resolution_enabled and game.get_window().size == game._adaptive_window_resolution())
+	game._show_settings()
+	assert(game.resolution_choice.selected == 0)
+	if had_settings:
+		var previous_file := FileAccess.open(settings_path, FileAccess.WRITE)
+		previous_file.store_buffer(old_settings)
+	else:
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(settings_path))
 	game.free()
 	print("DISPLAY_SETTINGS_OK")
 	quit()
