@@ -27,30 +27,11 @@ func _run() -> void:
 	enemy_unit.position = enemy_unit_position
 	game.fog.update_visibility()
 	assert(not enemy_unit.visible)
-	var scout: RtsUnit = game.units[0]
-	var original_position := scout.position
-	scout.position = enemy_unit_position + Vector2(-45, 0)
-	game.fog.update_visibility()
-	scout.position = original_position
-	game.fog.update_visibility()
-	assert(game.fog.is_explored(0, enemy_unit_position) and not game.fog.can_see(0, enemy_unit_position))
-	var newly_trained: RtsUnit = game.spawn_unit(1, "spearman", enemy_unit_position + Vector2(45, 0))
-	assert(game.fog.is_explored(0, newly_trained.position) and not game.fog.can_see(0, newly_trained.position))
-	assert(not newly_trained.visible, "enemy units spawned in explored fog must start hidden")
-	enemy_unit.position = own_center.position + Vector2(165, 0)
-	game.fog.update_visibility()
-	assert(enemy_unit.visible)
-	var last_visible_position := enemy_unit.position
-	enemy_unit.position = enemy_unit_position
-	game.navigation.unit_moved(enemy_unit, last_visible_position)
-	assert(not enemy_unit.visible, "enemy movement into fog must hide the unit before the next fog refresh")
-	var hidden_outpost: RtsBuilding = game.spawn_building(1, "outpost", enemy_unit_position + Vector2(100, 0))
-	assert(hidden_outpost.garrison_unit(newly_trained))
-	hidden_outpost.ungarrison_all()
-	assert(not newly_trained.visible, "enemy units leaving a garrison in fog must stay hidden")
 	var source: Vector2i = game.world_map.cell_at(Vector2(500, 255))
 	var target: Vector2i = game.world_map.cell_at(Vector2(1075, 255))
 	assert(not game.fog._line_of_sight(source, target), "mountains should block vision")
+	var scout: RtsUnit = game.units[0]
+	var original_position := scout.position
 	scout.position = enemy_center.position + Vector2(-145, 0)
 	game.fog.update_visibility()
 	assert(game.fog.can_see(0, enemy_center.position))

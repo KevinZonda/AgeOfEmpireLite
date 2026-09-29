@@ -252,7 +252,7 @@ func ungarrison_all() -> void:
 		passenger.garrisoned_in = null
 		passenger.position = game.navigation.nearest_walkable_point(shore + Vector2((index % 3 - 1) * 23, (index / 3) * 23), passenger.radius(), passenger)
 		game.navigation.invalidate_spatial_index()
-		game.fog.update_unit_visibility(passenger)
+		passenger.show()
 		passenger.order_stop()
 	passengers.clear()
 	landing_position = Vector2.INF
@@ -405,7 +405,6 @@ func leave_wall() -> void:
 	position = game.navigation.nearest_walkable_point(exit_point, radius(), self)
 	refresh_stats()
 	game.navigation.invalidate_spatial_index()
-	if game.fog.active: game.fog.update_unit_visibility(self)
 
 func is_braced() -> bool:
 	if kind == "longbow" and paling_timer > 0.0: return true
@@ -565,7 +564,6 @@ func _process(delta: float) -> void:
 		z_index = 3
 		refresh_stats()
 		game.navigation.invalidate_spatial_index()
-		if game.fog.active: game.fog.update_unit_visibility(self)
 		_advance_command()
 		return
 	if order == "assault_wall":
@@ -577,10 +575,10 @@ func _process(delta: float) -> void:
 			for passenger in passengers.duplicate():
 				if not is_instance_valid(passenger): continue
 				passenger.garrisoned_in = null
+				passenger.show()
 				passenger.wall_host = target
 				passenger.wall_entry_point = self
 				passenger.position = target.position + Vector2(float(passenger.get_instance_id() % 3 - 1) * 17.0, -9.0)
-				game.fog.update_unit_visibility(passenger)
 				passenger.order_stop()
 				passenger.refresh_stats()
 			passengers.clear()
