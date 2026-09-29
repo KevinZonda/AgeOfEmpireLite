@@ -967,8 +967,7 @@ func _draw_iso_market(nw: Vector2, ne: Vector2, sw: Vector2, lift: Vector2, pale
 		var goods := _military_point(nw, ne, sw, spot.x, spot.y) + floor_lift
 		draw_circle(goods, 3.8, Color("7a5437"))
 		draw_circle(goods + Vector2(0, -1), 2.5, Color("c69f64"))
-	_draw_iso_market_stall(nw, ne, sw, floor_lift, canvas, palette, 0.07, 0.62, 0.36, 0.24)
-	_draw_iso_market_stall(nw, ne, sw, floor_lift, canvas, palette, 0.69, 0.52, 0.25, 0.25)
+	# The stone marker stands behind the right stall, so draw it first.
 	var cross := _military_point(nw, ne, sw, 0.87, 0.37) + floor_lift
 	var cross_u := (ne - nw) * 0.075
 	var cross_v := (sw - nw) * 0.075
@@ -976,6 +975,8 @@ func _draw_iso_market(nw: Vector2, ne: Vector2, sw: Vector2, lift: Vector2, pale
 	var cross_top := cross + RtsIsoProjection.world_delta(canvas, Vector2(0, -19.0 * game.camera.zoom.x))
 	draw_line(cross, cross_top, wall.lightened(0.1), 4.0)
 	draw_circle(cross_top, 2.4, palette["trim"])
+	_draw_iso_market_stall(nw, ne, sw, floor_lift, canvas, palette, 0.07, 0.62, 0.36, 0.24)
+	_draw_iso_market_stall(nw, ne, sw, floor_lift, canvas, palette, 0.69, 0.52, 0.25, 0.25)
 
 func _draw_iso_market_stall(nw: Vector2, ne: Vector2, sw: Vector2, floor_lift: Vector2, canvas: Transform2D, palette: Dictionary, u: float, v: float, width: float, depth: float) -> void:
 	var a := _military_point(nw, ne, sw, u, v) + floor_lift

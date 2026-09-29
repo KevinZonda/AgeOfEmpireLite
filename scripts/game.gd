@@ -131,6 +131,8 @@ var feedback_audio: Node
 var match_statistics := RtsMatchStatistics.new()
 
 var top_label: Label
+var fps_label: Label
+var fps_update_timer := 0.0
 var resource_readouts: Dictionary = {}
 var population_label: Label
 var hud_top: PanelContainer
@@ -162,9 +164,11 @@ var applied_world_text_scale := -1.0
 var minimap_size := 216
 var show_building_icons := true
 var show_building_names := true
+var show_fps := false
 var health_bar_mode := "damaged"
 var building_icons_toggle: CheckButton
 var building_names_toggle: CheckButton
+var fps_toggle: CheckButton
 var health_bar_choice: OptionButton
 var ui_scale_choice: OptionButton
 var text_scale_choice: OptionButton
@@ -494,6 +498,7 @@ func _save_settings() -> void:
 	config.set_value("display", "minimap_size", minimap_size)
 	config.set_value("display", "show_building_icons", show_building_icons)
 	config.set_value("display", "show_building_names", show_building_names)
+	config.set_value("display", "show_fps", show_fps)
 	config.set_value("display", "health_bar_mode", health_bar_mode)
 	config.set_value("controls", "edge_scroll_enabled", edge_scroll_enabled)
 	config.set_value("controls", "zoom_gesture_enabled", zoom_gesture_enabled)
@@ -507,6 +512,7 @@ func _load_settings() -> void:
 	selected_view_mode_25d = bool(config.get_value("display", "view_mode_25d", false))
 	show_building_icons = bool(config.get_value("display", "show_building_icons", true))
 	show_building_names = bool(config.get_value("display", "show_building_names", true))
+	show_fps = bool(config.get_value("display", "show_fps", false))
 	var saved_health_bar_mode: String = str(config.get_value("display", "health_bar_mode", "damaged"))
 	health_bar_mode = saved_health_bar_mode if HEALTH_BAR_MODES.has(saved_health_bar_mode) else "damaged"
 	var saved_ui_scale: float = float(config.get_value("display", "ui_scale", 1.0))
@@ -1382,6 +1388,11 @@ func notify_player(message: String) -> void:
 	notice_timer = 3.5
 
 func _process(delta: float) -> void:
+	if show_fps and fps_label != null:
+		fps_update_timer -= delta
+		if fps_update_timer <= 0.0:
+			fps_label.text = "FPS: %d" % Engine.get_frames_per_second()
+			fps_update_timer = 0.5
 	if adaptive_resolution_enabled and not _window_is_fullscreen() and DisplayServer.get_name() != "headless":
 		adaptive_resolution_check_timer -= delta
 		if adaptive_resolution_check_timer <= 0.0:

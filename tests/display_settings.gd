@@ -70,7 +70,7 @@ func _run() -> void:
 		assert(label.get_global_rect().end.y > choice.get_global_rect().position.y)
 		assert(choice.size.x <= 300 and row.size.x < 450, "settings selectors should stay compact")
 		assert(absf(row.get_global_rect().get_center().x - row.get_parent().get_global_rect().get_center().x) < 1.0, "settings rows should be centered in the page")
-	for toggle in [game.building_icons_toggle, game.building_names_toggle]:
+	for toggle in [game.building_icons_toggle, game.building_names_toggle, game.fps_toggle]:
 		assert(toggle.size.x < 240 and toggle.get_parent().size.x < 430, "display switches should stay next to their labels")
 	assert(game.window_mode_choice.get_item_text(0) == "窗口化")
 	assert(game.window_mode_choice.get_item_text(1) == "全屏")
@@ -78,8 +78,10 @@ func _run() -> void:
 	assert(game.edge_scroll_toggle.button_pressed)
 	assert(game.zoom_gesture_toggle.button_pressed)
 	assert(game.building_icons_toggle.button_pressed and game.building_names_toggle.button_pressed)
+	assert(not game.show_fps and not game.fps_toggle.button_pressed and not game.fps_label.visible)
 	game.building_icons_toggle.button_pressed = false
 	game.building_names_toggle.button_pressed = false
+	game.fps_toggle.button_pressed = true
 	game.health_bar_choice.select(0)
 	game.projection_choice.select(1)
 	game.window_mode_choice.select(1)
@@ -93,6 +95,7 @@ func _run() -> void:
 	game._close_settings()
 	assert(game.edge_scroll_enabled, "return should discard unsaved control changes")
 	assert(game.show_building_icons and game.show_building_names, "return should discard unsaved building display changes")
+	assert(not game.show_fps and not game.fps_label.visible, "return should discard unsaved FPS changes")
 	assert(game.health_bar_mode == "damaged", "return should discard unsaved health bar changes")
 	assert(game.zoom_gesture_enabled and not game.selected_view_mode_25d, "return should discard unsaved view and gesture changes")
 	assert(game.ui_scale == 1.0 and game.text_scale == 1.0 and game.minimap_size == 216, "return should discard unsaved scale changes")
@@ -103,9 +106,11 @@ func _run() -> void:
 	assert(game.edge_scroll_toggle.button_pressed)
 	assert(game.zoom_gesture_toggle.button_pressed and game.projection_choice.selected == 0)
 	assert(game.building_icons_toggle.button_pressed and game.building_names_toggle.button_pressed)
+	assert(not game.fps_toggle.button_pressed)
 	assert(game.health_bar_choice.selected == 1)
 	game.building_icons_toggle.button_pressed = false
 	game.building_names_toggle.button_pressed = false
+	game.fps_toggle.button_pressed = true
 	game.health_bar_choice.select(2)
 	game.projection_choice.select(1)
 	game.window_mode_choice.select(1)
@@ -133,6 +138,7 @@ func _run() -> void:
 	var saved_text_scale: Variant = saved.get_value("display", "text_scale", null) if save_result == OK else null
 	var saved_minimap_size: Variant = saved.get_value("display", "minimap_size", null) if save_result == OK else null
 	var saved_health_bar_mode: Variant = saved.get_value("display", "health_bar_mode", null) if save_result == OK else null
+	var saved_show_fps: Variant = saved.get_value("display", "show_fps", null) if save_result == OK else null
 	var saved_fullscreen: Variant = saved.get_value("display", "fullscreen", null) if save_result == OK else null
 	var saved_window_size: Variant = saved.get_value("display", "window_size", null) if save_result == OK else null
 	if had_settings:
@@ -143,6 +149,7 @@ func _run() -> void:
 	assert(save_result == OK and saved_edge_scroll == false and saved_zoom_gesture == false and saved_view == true)
 	assert(saved_ui_scale == 0.75 and saved_text_scale == 2.0 and saved_minimap_size == 264)
 	assert(saved_health_bar_mode == "changed" and game.health_bar_mode == "changed")
+	assert(saved_show_fps == true and game.show_fps and game.fps_label.visible)
 	assert(saved.get_value("display", "show_building_icons", null) == false)
 	assert(saved.get_value("display", "show_building_names", null) == false)
 	assert(not game.show_building_icons and not game.show_building_names)
@@ -166,6 +173,9 @@ func _run() -> void:
 	assert(game._edge_pan_direction(Vector2(2, 360), Vector2(1280, 720)) == Vector2.LEFT)
 	game.start_game("English", 12345)
 	await process_frame
+	assert(game.fps_label.text.begins_with("FPS: "))
+	assert(game.fps_label.get_global_rect().position.x >= game.view_button.get_global_rect().end.x)
+	assert(game.fps_label.get_global_rect().end.x <= game.hud_top.get_global_rect().end.x)
 	game.ui_scale = 0.75
 	game._apply_ui_scales()
 	var bottom_transform: Transform2D = game.hud_bottom.get_global_transform_with_canvas()

@@ -190,6 +190,16 @@ func _create_hud() -> void:
 	game._style_button(game.view_button)
 	game.view_button.pressed.connect(func() -> void: game._toggle_view_mode(true))
 	top_tools.add_child(game.view_button)
+	game.fps_label = Label.new()
+	game.fps_label.text = "FPS: --"
+	game.fps_label.custom_minimum_size.x = 76
+	game.fps_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	game.fps_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	game.fps_label.add_theme_font_size_override("font_size", RtsUiTypography.CAPTION)
+	game.fps_label.add_theme_color_override("font_color", Color("f4dfaa"))
+	game.fps_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	game.fps_label.visible = game.show_fps
+	top_tools.add_child(game.fps_label)
 	game.global_queue_panel = PanelContainer.new()
 	game.global_queue_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
 	game.global_queue_panel.offset_left = -390
