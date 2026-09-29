@@ -118,3 +118,13 @@ rank_knight_4,upgrade,升级到精锐骑士
 rank_royal_knight_3,upgrade,升级到老练皇家骑士
 rank_royal_knight_4,upgrade,升级到精锐皇家骑士
 rank_man_at_arms_2,upgrade,升级到早期武士
+palings,tech_ability,拒马
+volley,tech_ability,万箭齐发
+pavise,tech_ability,部署大盾
+helmsman,tech_ability,掌舵人
+convert,tech_ability,招降
+camp,tech_ability,预备营地
+artillery_shot,tech_ability,火炮射击
+hold,tech,就地坚守
+ungarrison,tech,驻扎命令
+trade,tech,交易袋

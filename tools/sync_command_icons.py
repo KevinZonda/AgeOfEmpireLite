@@ -70,6 +70,21 @@ UPGRADE_ICON_OVERRIDES = {
 }
 EARLY_UPGRADE_ICONS = {"rank_man_at_arms_2": "升级到早期武士"}
 
+# Command and ability IDs do not appear in the building/unit/technology catalogs.
+# Keep their approved reference images in the same runtime icon directory.
+ACTION_ICON_SOURCES = {
+    "palings": ("tech_ability", "拒马"),
+    "volley": ("tech_ability", "万箭齐发"),
+    "pavise": ("tech_ability", "部署大盾"),
+    "helmsman": ("tech_ability", "掌舵人"),
+    "convert": ("tech_ability", "招降"),
+    "camp": ("tech_ability", "预备营地"),
+    "artillery_shot": ("tech_ability", "火炮射击"),
+    "hold": ("tech", "就地坚守"),
+    "ungarrison": ("tech", "驻扎命令"),
+    "trade": ("tech", "交易袋"),
+}
+
 
 def definitions(path: str, constant: str) -> dict[str, str]:
     source = (ROOT / path).read_text(encoding="utf-8")
@@ -120,6 +135,10 @@ def main() -> None:
             copy_icon(rows, icon_id, "upgrade", icon_name)
     for icon_id, icon_name in EARLY_UPGRADE_ICONS.items():
         copy_icon(rows, icon_id, "upgrade", icon_name)
+
+    for icon_id, (category, name) in ACTION_ICON_SOURCES.items():
+        if not copy_icon(rows, icon_id, category, name):
+            missing.append(f"{icon_id} ({name})")
 
     with (OUTPUT / "sources.csv").open("w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file, lineterminator="\n")
