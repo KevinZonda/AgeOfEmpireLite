@@ -12,6 +12,8 @@
 
 根据实渲染截图的反馈又调整了四座建筑：[反馈前 2.5D](before-feedback-six-25d.png)、[反馈后 2.5D](redrawn-six-25d.png)，以及对应的[反馈前 2D](before-feedback-six-2d.png)、[反馈后 2D](redrawn-six-2d.png)。城镇中心撤去前门楼，在开阔院内悬挂带钟舌的铜钟；采矿场强调矿口、矿轨、满载矿车和矿石堆；磨坊改为高墙、陡顶与正面风帆；攻城器械厂的前院零件改成双轮投石车。
 
+四座建筑的单张放大截图：[城镇中心](town_center-corrected-25d.png) · [采矿场](mining_camp-corrected-25d.png) · [磨坊](mill-corrected-25d.png) · [攻城器械厂](siege_workshop-corrected-25d.png)。
+
 造型参考是《帝国时代 IV》原版建筑图：
 
 | 建筑 | 借鉴的轮廓 | 参考 |
