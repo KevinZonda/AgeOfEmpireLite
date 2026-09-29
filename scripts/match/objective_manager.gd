@@ -175,14 +175,6 @@ func status_for(owner_id: int) -> Dictionary:
 	}
 
 
-func status_text(owner_id: int) -> String:
-	var status := status_for(owner_id)
-	var parts: Array[String] = ["圣地 %d/3" % status["sacred_owned"]]
-	if status["sacred_holder"] >= 0 and not _is_enemy(owner_id, status["sacred_holder"]): parts.append("圣地胜利 %ds" % ceili(status["sacred_remaining"]))
-	if status["wonder_active"]: parts.append("奇观胜利 %ds" % ceili(status["wonder_remaining"]))
-	return "  ·  ".join(parts)
-
-
 func _emit_victory(owner_id: int, reason: String) -> void:
 	if _victory_emitted: return
 	_victory_emitted = true

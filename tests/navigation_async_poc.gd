@@ -23,7 +23,7 @@ func _run() -> void:
 	var lane = ParallelPoc.Lane.new(0, 1, "recovery")
 	var game = lane.game
 	# Six buildings, 80 soldiers, 150 resources including eight deer. Compare
-	# against the original live-object implementation, not the new kernel itself.
+	# live-object geometry against the value snapshot used by worker recovery.
 	var serial_started := Time.get_ticks_usec()
 	var reference := []
 	for unit in game.units:

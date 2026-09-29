@@ -6,18 +6,16 @@ static var texture_cache: Dictionary = {}
 var icon_kind := ""
 var caption := ""
 var shortcut_label := ""
-var slot_index := -1
 var availability_reason := ""
 var action_cost: Dictionary = {}
 var description := ""
 var icon_texture: Texture2D
 var rank_icon_fallback := false
 
-func configure(kind: String, label_text: String, key_text: String, slot: int = -1) -> void:
+func configure(kind: String, label_text: String, key_text: String) -> void:
 	icon_kind = kind
 	caption = label_text
 	shortcut_label = key_text
-	slot_index = slot
 	icon_texture = _load_icon(kind)
 	custom_minimum_size = Vector2(51, 51)
 	add_theme_stylebox_override("normal", _tile_style(Color("473725"), Color("8d7549")))

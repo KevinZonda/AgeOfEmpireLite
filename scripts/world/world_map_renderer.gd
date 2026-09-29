@@ -144,7 +144,7 @@ static func _relief_mesh(map: RtsWorldMap, grass_colors: PackedColorArray) -> Ar
 			if outside:
 				builder.quad(nw, ne, se, sw, RtsWorldMap.OUTSIDE_COLOR, RtsWorldMap.OUTSIDE_COLOR, RtsWorldMap.OUTSIDE_COLOR, RtsWorldMap.OUTSIDE_COLOR)
 				continue
-			if not outside and terrain in [RtsWorldMap.Terrain.GRASS, RtsWorldMap.Terrain.MEADOW]:
+			if terrain in [RtsWorldMap.Terrain.GRASS, RtsWorldMap.Terrain.MEADOW]:
 				var stride := map.grid_size.x + 1
 				var c_nw := grass_colors[y * stride + x]
 				var c_ne := grass_colors[y * stride + x + 1]
@@ -153,14 +153,14 @@ static func _relief_mesh(map: RtsWorldMap, grass_colors: PackedColorArray) -> Ar
 				builder.quad(nw, ne, se, sw, c_nw, c_ne, c_se, c_sw)
 				continue
 			var average := (h_nw + h_ne + h_se + h_sw) * 0.25
-			var color := RtsWorldMap.OUTSIDE_COLOR if outside else relief_color(terrain, average)
+			var color := relief_color(terrain, average)
 			var east_slope := (h_ne + h_se - h_nw - h_sw) / (2.0 * RtsWorldMap.CELL_SIZE)
 			var south_slope := (h_sw + h_se - h_nw - h_ne) / (2.0 * RtsWorldMap.CELL_SIZE)
 			var light := clampf(0.98 - east_slope * 0.16 - south_slope * 0.12, 0.72, 1.15)
 			builder.triangle(nw, ne, se, color * light, color * light, color * light)
 			var second := color * clampf(light - (h_sw - h_ne) / 500.0, 0.69, 1.13)
 			builder.triangle(nw, se, sw, second, second, second)
-			if not outside and terrain == RtsWorldMap.Terrain.MOUNTAIN and average > 65.0 and (x * 7 + y * 11) % 4 == 0:
+			if terrain == RtsWorldMap.Terrain.MOUNTAIN and average > 65.0 and (x * 7 + y * 11) % 4 == 0:
 				var scratch := nw.lerp(se, 0.37)
 				builder.line(scratch, scratch.lerp(ne, 0.30), Color(color.darkened(0.20), 0.55), 1.2)
 				if average > 105.0: builder.line(nw.lerp(ne, 0.38), nw.lerp(se, 0.53), Color("eee9d4", 0.40), 1.4)
@@ -212,45 +212,6 @@ static func grass_vertex_colors(map: RtsWorldMap) -> PackedColorArray:
 				color.a = 1.0
 			colors[y * width + x] = color
 	return colors
-
-
-static func draw_relief_tile(map: RtsWorldMap, x: int, y: int, grass_colors: PackedColorArray) -> void:
-	var h_nw := visual_vertex_height(map, x, y)
-	var h_ne := visual_vertex_height(map, x + 1, y)
-	var h_se := visual_vertex_height(map, x + 1, y + 1)
-	var h_sw := visual_vertex_height(map, x, y + 1)
-	if maxf(maxf(h_nw, h_ne), maxf(h_se, h_sw)) < 0.5: return
-	var nw := projected_vertex(map, x, y)
-	var ne := projected_vertex(map, x + 1, y)
-	var se := projected_vertex(map, x + 1, y + 1)
-	var sw := projected_vertex(map, x, y + 1)
-	var terrain: int = map.cells[map._index(Vector2i(clampi(x, 0, map.grid_size.x - 1), clampi(y, 0, map.grid_size.y - 1)))]
-	var average := (h_nw + h_ne + h_se + h_sw) * 0.25
-	var outside := x < 0 or y < 0 or x >= map.grid_size.x or y >= map.grid_size.y
-	if outside:
-		map.draw_colored_polygon(PackedVector2Array([nw, ne, se, sw]), RtsWorldMap.OUTSIDE_COLOR)
-		return
-	if not outside and terrain in [RtsWorldMap.Terrain.GRASS, RtsWorldMap.Terrain.MEADOW]:
-		var stride := map.grid_size.x + 1
-		var c_nw := grass_colors[y * stride + x]
-		var c_ne := grass_colors[y * stride + x + 1]
-		var c_se := grass_colors[(y + 1) * stride + x + 1]
-		var c_sw := grass_colors[(y + 1) * stride + x]
-		map.draw_polygon(PackedVector2Array([nw, ne, se]), PackedColorArray([c_nw, c_ne, c_se]))
-		map.draw_polygon(PackedVector2Array([nw, se, sw]), PackedColorArray([c_nw, c_se, c_sw]))
-		return
-	var color := RtsWorldMap.OUTSIDE_COLOR if outside else relief_color(terrain, average)
-	var east_slope := (h_ne + h_se - h_nw - h_sw) / (2.0 * RtsWorldMap.CELL_SIZE)
-	var south_slope := (h_sw + h_se - h_nw - h_ne) / (2.0 * RtsWorldMap.CELL_SIZE)
-	var light := clampf(0.98 - east_slope * 0.16 - south_slope * 0.12, 0.72, 1.15)
-	map.draw_colored_polygon(PackedVector2Array([nw, ne, se]), color * light)
-	map.draw_colored_polygon(PackedVector2Array([nw, se, sw]), color * clampf(light - (h_sw - h_ne) / 500.0, 0.69, 1.13))
-	if not outside and terrain == RtsWorldMap.Terrain.MOUNTAIN and average > 65.0 and (x * 7 + y * 11) % 4 == 0:
-		var rock_ink := color.darkened(0.20)
-		var scratch := nw.lerp(se, 0.37)
-		map.draw_line(scratch, scratch.lerp(ne, 0.30), Color(rock_ink, 0.55), 1.2)
-		if average > 105.0:
-			map.draw_line(nw.lerp(ne, 0.38), nw.lerp(se, 0.53), Color("eee9d4", 0.40), 1.4)
 
 
 static func draw_map(map: RtsWorldMap) -> void:

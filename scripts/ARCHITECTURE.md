@@ -48,6 +48,7 @@ flowchart TD
 - `game.gd` 仍持有玩家、实体、选中对象及界面控件；旧调用方可以继续使用 `start_game`、`train_unit`、`credit_resource` 等方法。
 - `player_selection.gd` 处理框选、双击同类、编组与地图目标命中；`player_orders.gd` 处理右键命令、攻击移动和编队下令。输入事件分发仍在 `game.gd`。
 - `match_economy.gd` 处理资源、市场和人口规则；`match_production.gd` 处理训练、研究及取消队列。它们目前通过 `game` 读取对局状态，尚未拥有独立状态。
+- 建筑的 `production_queue` 是训练和研究任务的唯一数据源；AI、人口统计及研究去重通过建筑查询方法读取队列，不再维护额外的训练或研究数组。
 - `unit.gd` 保留命令状态与逐帧调度，工作和战斗细节分别交给 `unit_work.gd`、`unit_combat.gd`。
 - `ai_controller.gd` 保留思考周期与原有状态字段，经济和战术决策分别交给 `ai_economy.gd`、`ai_tactics.gd`。
 - `world_map.gd` 保留地图生成和地形查询；绘制交给 `world_map_renderer.gd`。

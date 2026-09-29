@@ -63,6 +63,7 @@ func _run() -> void:
 	assert(not landing.is_empty())
 	boat.position = landing["water"]
 	infantry.position = landing["land"]
+	game.navigation.invalidate_spatial_index()
 	game.selected.clear()
 	game.selected.append(infantry)
 	assert(game._cursor_state_at(boat.position) == "board")

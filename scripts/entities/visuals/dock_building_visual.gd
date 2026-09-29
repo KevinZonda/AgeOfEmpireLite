@@ -1,5 +1,7 @@
 extends RefCounted
 
+const Geometry = preload("res://scripts/entities/visuals/building_geometry.gd")
+
 # A broad timber quay with a storehouse and a small lookout, adapted from the
 # recognizable silhouette of Age of Empires IV docks to this game's tile size.
 
@@ -47,28 +49,28 @@ static func draw_iso(c: CanvasItem, nw: Vector2, ne: Vector2, _se: Vector2, sw: 
 	var dark: Color = palette["roof_dark"]
 	var wall: Color = palette["wall"]
 	var floor := lift * 0.18
-	var deck_a := _pt(nw, ne, sw, 0.04, 0.04) + floor
-	var deck_b := _pt(nw, ne, sw, 0.96, 0.04) + floor
-	var deck_c := _pt(nw, ne, sw, 0.96, 0.96) + floor
-	var deck_d := _pt(nw, ne, sw, 0.04, 0.96) + floor
+	var deck_a := Geometry.point(nw, ne, sw, 0.04, 0.04) + floor
+	var deck_b := Geometry.point(nw, ne, sw, 0.96, 0.04) + floor
+	var deck_c := Geometry.point(nw, ne, sw, 0.96, 0.96) + floor
+	var deck_d := Geometry.point(nw, ne, sw, 0.04, 0.96) + floor
 	c.draw_colored_polygon(PackedVector2Array([deck_a, deck_b, deck_c, deck_d]), Color("a98559"))
 	c.draw_colored_polygon(PackedVector2Array([deck_d, deck_c, deck_c - lift * 0.14, deck_d - lift * 0.14]), Color("745536"))
 	for fraction in [0.13, 0.25, 0.37, 0.49, 0.61, 0.73, 0.85]:
-		c.draw_line(_pt(nw, ne, sw, 0.05, fraction) + floor, _pt(nw, ne, sw, 0.95, fraction) + floor, Color(timber.darkened(0.37), 0.62), 1.0)
+		c.draw_line(Geometry.point(nw, ne, sw, 0.05, fraction) + floor, Geometry.point(nw, ne, sw, 0.95, fraction) + floor, Color(timber.darkened(0.37), 0.62), 1.0)
 	for u in [0.05, 0.30, 0.70, 0.95]:
-		var front := _pt(nw, ne, sw, u, 0.96) + floor
-		c.draw_line(front - lift * 0.21, front + _up(canvas, zoom, 9.0), timber.darkened(0.25), 3.0)
-		c.draw_circle(front + _up(canvas, zoom, 9.0), 1.5, trim)
+		var front := Geometry.point(nw, ne, sw, u, 0.96) + floor
+		c.draw_line(front - lift * 0.21, front + Geometry.up(canvas, zoom, 9.0), timber.darkened(0.25), 3.0)
+		c.draw_circle(front + Geometry.up(canvas, zoom, 9.0), 1.5, trim)
 	for v in [0.14, 0.54, 0.91]:
-		var edge := _pt(nw, ne, sw, 0.96, v) + floor
-		c.draw_line(edge - lift * 0.17, edge + _up(canvas, zoom, 7.0), timber.darkened(0.25), 2.5)
+		var edge := Geometry.point(nw, ne, sw, 0.96, v) + floor
+		c.draw_line(edge - lift * 0.17, edge + Geometry.up(canvas, zoom, 7.0), timber.darkened(0.25), 2.5)
 	# Low timber storehouse: dark entry below a single pitched roof.
-	var a := _pt(nw, ne, sw, 0.09, 0.10) + floor
-	var b := _pt(nw, ne, sw, 0.58, 0.10) + floor
-	var f := _pt(nw, ne, sw, 0.58, 0.48) + floor
-	var d := _pt(nw, ne, sw, 0.09, 0.48) + floor
-	var up := _up(canvas, zoom, 18.0)
-	var rise := _up(canvas, zoom, 7.0)
+	var a := Geometry.point(nw, ne, sw, 0.09, 0.10) + floor
+	var b := Geometry.point(nw, ne, sw, 0.58, 0.10) + floor
+	var f := Geometry.point(nw, ne, sw, 0.58, 0.48) + floor
+	var d := Geometry.point(nw, ne, sw, 0.09, 0.48) + floor
+	var up := Geometry.up(canvas, zoom, 18.0)
+	var rise := Geometry.up(canvas, zoom, 7.0)
 	c.draw_colored_polygon(PackedVector2Array([b + up, f + up, f, b]), wall.darkened(0.24))
 	c.draw_colored_polygon(PackedVector2Array([d + up, f + up, f, d]), wall.darkened(0.08))
 	var ridge_back := (a + d) * 0.5 + up + rise
@@ -83,13 +85,13 @@ static func draw_iso(c: CanvasItem, nw: Vector2, ne: Vector2, _se: Vector2, sw: 
 	for fraction in [0.15, 0.45, 0.77]:
 		c.draw_line(d.lerp(f, fraction), d.lerp(f, fraction) + up * 0.91, timber.darkened(0.16), 1.7)
 	# Open watch shelter: posts and railing keep the deck visible beneath it.
-	var tower_a := _pt(nw, ne, sw, 0.69, 0.16) + floor
+	var tower_a := Geometry.point(nw, ne, sw, 0.69, 0.16) + floor
 	var tower_u := (ne - nw) * 0.21
 	var tower_v := (sw - nw) * 0.20
 	var tower_b := tower_a + tower_u
 	var tower_d := tower_a + tower_v
 	var tower_f := tower_b + tower_v
-	var tower_up := _up(canvas, zoom, 21.0)
+	var tower_up := Geometry.up(canvas, zoom, 21.0)
 	for post in [tower_a, tower_b, tower_d, tower_f]:
 		c.draw_line(post, post + tower_up, timber.darkened(0.27), 2.6)
 	var rail_height := tower_up * 0.42
@@ -99,25 +101,17 @@ static func draw_iso(c: CanvasItem, nw: Vector2, ne: Vector2, _se: Vector2, sw: 
 	var roof_b := tower_b + tower_up
 	var roof_d := tower_d + tower_up
 	var roof_f := tower_f + tower_up
-	var peak := (roof_a + roof_b + roof_d + roof_f) * 0.25 + _up(canvas, zoom, 6.0)
+	var peak := (roof_a + roof_b + roof_d + roof_f) * 0.25 + Geometry.up(canvas, zoom, 6.0)
 	c.draw_colored_polygon(PackedVector2Array([roof_a, roof_b, peak]), roof.darkened(0.2))
 	c.draw_colored_polygon(PackedVector2Array([roof_b, roof_f, peak]), dark)
 	c.draw_colored_polygon(PackedVector2Array([roof_d, roof_f, peak]), roof)
 	c.draw_colored_polygon(PackedVector2Array([roof_a, roof_d, peak]), roof.darkened(0.08))
 	c.draw_line(roof_d, roof_f, trim, 1.2)
 	# A short loading boom and hook finish the silhouette without filling the berth.
-	var mast := _pt(nw, ne, sw, 0.71, 0.72) + floor
-	var mast_top := mast + _up(canvas, zoom, 19.0)
+	var mast := Geometry.point(nw, ne, sw, 0.71, 0.72) + floor
+	var mast_top := mast + Geometry.up(canvas, zoom, 19.0)
 	var boom_end := mast_top + (ne - nw) * 0.18 + (sw - nw) * 0.04
 	c.draw_line(mast, mast_top, timber.darkened(0.21), 2.2)
 	c.draw_line(mast_top, boom_end, timber, 2.0)
-	c.draw_line(boom_end, boom_end - _up(canvas, zoom, 8.0), dark, 1.0)
-	c.draw_line(_pt(nw, ne, sw, 0.08, 0.97) + floor, _pt(nw, ne, sw, 0.92, 0.97) + floor, accent, 2.0)
-
-
-static func _pt(nw: Vector2, ne: Vector2, sw: Vector2, u: float, v: float) -> Vector2:
-	return nw + (ne - nw) * u + (sw - nw) * v
-
-
-static func _up(canvas: Transform2D, zoom: float, pixels: float) -> Vector2:
-	return RtsIsoProjection.world_delta(canvas, Vector2(0.0, -pixels * zoom))
+	c.draw_line(boom_end, boom_end - Geometry.up(canvas, zoom, 8.0), dark, 1.0)
+	c.draw_line(Geometry.point(nw, ne, sw, 0.08, 0.97) + floor, Geometry.point(nw, ne, sw, 0.92, 0.97) + floor, accent, 2.0)

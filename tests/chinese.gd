@@ -71,7 +71,7 @@ func _run() -> void:
 	game.complete_age(1, 2, "zh_imperial_academy")
 	var ai_archery: RtsBuilding = game.spawn_building(1, "archery_range", Vector2(1750, 700))
 	game.ai.tick()
-	assert(ai_archery.training_queue.has("archer"), "Chinese AI should train archers before unlocking Song")
+	assert(ai_archery.queued_unit_count("archer") > 0, "Chinese AI should train archers before unlocking Song")
 	var dynasty_landmark_started := false
 	for building in game.buildings:
 		if building.owner_id == 1 and building.kind == "landmark" and building.landmark_id == "zh_barbican": dynasty_landmark_started = true

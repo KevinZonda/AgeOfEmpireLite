@@ -1299,7 +1299,7 @@ func _add_action_spacer() -> void:
 func _add_action(icon_kind: String, label_text: String, cost: Dictionary, keycode: int, action_type: String, callback: Callable) -> void:
 	var button := RtsCommandButton.new()
 	var key_text := OS.get_keycode_string(keycode) if keycode != KEY_NONE else ""
-	button.configure(icon_kind, label_text, key_text, game.command_buttons.size())
+	button.configure(icon_kind, label_text, key_text)
 	if action_type == "train" and GameData.UNITS.has(icon_kind):
 		var source_landmark: String = game.selected[0].landmark_id if not game.selected.is_empty() and game.selected[0] is RtsBuilding else ""
 		var unit_stats := RtsUnitCatalog.unit_definition(game.civilizations[0], icon_kind, game.players[0]["researched"], game.players[0]["age"], game.players[0]["landmarks"], game.players[0].get("dynasty", ""), source_landmark)

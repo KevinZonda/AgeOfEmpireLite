@@ -1,6 +1,8 @@
 class_name RtsKeepMonasteryVisual
 extends RefCounted
 
+const Geometry = preload("res://scripts/entities/visuals/building_geometry.gd")
+
 # Finished regular buildings; the owning node provides the low foundation.
 static func draw_topdown(c: CanvasItem, kind: String, bounds: Rect2, palette: Dictionary, accent: Color, civ: String) -> void:
 	match kind:
@@ -14,18 +16,6 @@ static func draw_iso(c: CanvasItem, kind: String, nw: Vector2, ne: Vector2, se: 
 		"monastery": _monastery_iso(c, nw, ne, sw, lift, palette, accent, civ, canvas, zoom)
 
 
-static func _pt(nw: Vector2, ne: Vector2, sw: Vector2, u: float, v: float) -> Vector2:
-	return nw + (ne - nw) * u + (sw - nw) * v
-
-
-static func _up(canvas: Transform2D, zoom: float, pixels: float) -> Vector2:
-	return RtsIsoProjection.world_delta(canvas, Vector2(0, -pixels * zoom))
-
-
-static func _rect(bounds: Rect2, u: float, v: float, w: float, h: float) -> Rect2:
-	return Rect2(bounds.position + bounds.size * Vector2(u, v), bounds.size * Vector2(w, h))
-
-
 static func _wall(c: CanvasItem, a: Vector2, b: Vector2, up: Vector2, face: Color, coping: Color) -> void:
 	c.draw_colored_polygon(PackedVector2Array([a + up, b + up, b, a]), face)
 	c.draw_line(a + up, b + up, coping, 3.0)
@@ -35,10 +25,10 @@ static func _wall(c: CanvasItem, a: Vector2, b: Vector2, up: Vector2, face: Colo
 
 
 static func _block(c: CanvasItem, nw: Vector2, ne: Vector2, sw: Vector2, floor: Vector2, up: Vector2, u: float, v: float, width: float, depth: float, wall: Color, trim: Color) -> Array[Vector2]:
-	var a := _pt(nw, ne, sw, u, v) + floor
-	var b := _pt(nw, ne, sw, u + width, v) + floor
-	var f := _pt(nw, ne, sw, u + width, v + depth) + floor
-	var d := _pt(nw, ne, sw, u, v + depth) + floor
+	var a := Geometry.point(nw, ne, sw, u, v) + floor
+	var b := Geometry.point(nw, ne, sw, u + width, v) + floor
+	var f := Geometry.point(nw, ne, sw, u + width, v + depth) + floor
+	var d := Geometry.point(nw, ne, sw, u, v + depth) + floor
 	c.draw_colored_polygon(PackedVector2Array([b + up, f + up, f, b]), wall.darkened(0.18))
 	c.draw_colored_polygon(PackedVector2Array([d + up, f + up, f, d]), wall)
 	c.draw_line(d + up, f + up, trim, 1.4)
@@ -73,39 +63,39 @@ static func _keep_iso(c: CanvasItem, nw: Vector2, ne: Vector2, sw: Vector2, lift
 	var dark: Color = palette["roof_dark"]
 	var ground := lift * 0.18
 	var court := PackedVector2Array([
-		_pt(nw, ne, sw, 0.09, 0.09) + ground,
-		_pt(nw, ne, sw, 0.91, 0.09) + ground,
-		_pt(nw, ne, sw, 0.91, 0.91) + ground,
-		_pt(nw, ne, sw, 0.09, 0.91) + ground,
+		Geometry.point(nw, ne, sw, 0.09, 0.09) + ground,
+		Geometry.point(nw, ne, sw, 0.91, 0.09) + ground,
+		Geometry.point(nw, ne, sw, 0.91, 0.91) + ground,
+		Geometry.point(nw, ne, sw, 0.09, 0.91) + ground,
 	])
 	c.draw_colored_polygon(court, wall.darkened(0.27))
-	var curtain_up := _up(canvas, zoom, 22.0)
-	_wall(c, _pt(nw, ne, sw, 0.1, 0.1) + ground, _pt(nw, ne, sw, 0.9, 0.1) + ground, curtain_up, wall.darkened(0.23), trim)
-	_wall(c, _pt(nw, ne, sw, 0.9, 0.1) + ground, _pt(nw, ne, sw, 0.9, 0.9) + ground, curtain_up, wall.darkened(0.17), trim)
+	var curtain_up := Geometry.up(canvas, zoom, 22.0)
+	_wall(c, Geometry.point(nw, ne, sw, 0.1, 0.1) + ground, Geometry.point(nw, ne, sw, 0.9, 0.1) + ground, curtain_up, wall.darkened(0.23), trim)
+	_wall(c, Geometry.point(nw, ne, sw, 0.9, 0.1) + ground, Geometry.point(nw, ne, sw, 0.9, 0.9) + ground, curtain_up, wall.darkened(0.17), trim)
 	# The near curtains sit below the donjon roof in screen space. Draw them
 	# first so their tall polygons cannot erase the upper tower and battlements.
-	_wall(c, _pt(nw, ne, sw, 0.1, 0.1) + ground, _pt(nw, ne, sw, 0.1, 0.9) + ground, curtain_up, wall.darkened(0.07), trim)
-	_wall(c, _pt(nw, ne, sw, 0.1, 0.9) + ground, _pt(nw, ne, sw, 0.9, 0.9) + ground, curtain_up, wall, trim)
+	_wall(c, Geometry.point(nw, ne, sw, 0.1, 0.1) + ground, Geometry.point(nw, ne, sw, 0.1, 0.9) + ground, curtain_up, wall.darkened(0.07), trim)
+	_wall(c, Geometry.point(nw, ne, sw, 0.1, 0.9) + ground, Geometry.point(nw, ne, sw, 0.9, 0.9) + ground, curtain_up, wall, trim)
 	_turret(c, nw, ne, sw, ground, 0.12, 0.12, palette, canvas, zoom, false)
 	_turret(c, nw, ne, sw, ground, 0.88, 0.12, palette, canvas, zoom, false)
 	# The taller square donjon gives the keep a distinct center above the walls.
-	var donjon_up := _up(canvas, zoom, 51.0)
+	var donjon_up := Geometry.up(canvas, zoom, 51.0)
 	var top := _block(c, nw, ne, sw, ground, donjon_up, 0.3, 0.18, 0.4, 0.44, wall, trim)
 	c.draw_colored_polygon(PackedVector2Array(top), dark)
 	for i in 4:
-		_wall_top(c, top[i], top[(i + 1) % 4], _up(canvas, zoom, 4.0), trim, 3)
-	c.draw_line(_pt(nw, ne, sw, 0.3, 0.62) + ground + donjon_up * 0.86, _pt(nw, ne, sw, 0.7, 0.62) + ground + donjon_up * 0.86, trim.darkened(0.12), 1.8)
+		_wall_top(c, top[i], top[(i + 1) % 4], Geometry.up(canvas, zoom, 4.0), trim, 3)
+	c.draw_line(Geometry.point(nw, ne, sw, 0.3, 0.62) + ground + donjon_up * 0.86, Geometry.point(nw, ne, sw, 0.7, 0.62) + ground + donjon_up * 0.86, trim.darkened(0.12), 1.8)
 	for u in [0.39, 0.61]:
-		var slit := _pt(nw, ne, sw, u, 0.62) + ground + donjon_up * 0.69
+		var slit := Geometry.point(nw, ne, sw, u, 0.62) + ground + donjon_up * 0.69
 		c.draw_line(slit, slit + donjon_up * 0.17, trim, 4.4)
 		c.draw_line(slit + donjon_up * 0.025, slit + donjon_up * 0.15, Color("394342"), 2.5)
 	for v in [0.31, 0.5]:
-		var slit := _pt(nw, ne, sw, 0.7, v) + ground + donjon_up * 0.72
+		var slit := Geometry.point(nw, ne, sw, 0.7, v) + ground + donjon_up * 0.72
 		c.draw_line(slit, slit + donjon_up * 0.15, trim, 4.0)
 		c.draw_line(slit + donjon_up * 0.025, slit + donjon_up * 0.13, Color("394342"), 2.4)
 	# Front turrets and gate frame the completed central tower.
-	var entrance := _pt(nw, ne, sw, 0.5, 0.9) + ground
-	var gate_up := _up(canvas, zoom, 14.0)
+	var entrance := Geometry.point(nw, ne, sw, 0.5, 0.9) + ground
+	var gate_up := Geometry.up(canvas, zoom, 14.0)
 	var gate_half := (ne - nw) * 0.095
 	c.draw_colored_polygon(PackedVector2Array([entrance - gate_half + gate_up * 0.7, entrance + gate_half + gate_up * 0.7, entrance + gate_half, entrance - gate_half]), Color("2f3331"))
 	c.draw_line(entrance - gate_half + gate_up * 0.7, entrance + gate_half + gate_up * 0.7, trim.darkened(0.28), 1.8)
@@ -114,7 +104,7 @@ static func _keep_iso(c: CanvasItem, nw: Vector2, ne: Vector2, sw: Vector2, lift
 		c.draw_line(bar, bar + gate_up * 0.66, palette["timber"], 0.9)
 	_turret(c, nw, ne, sw, ground, 0.12, 0.88, palette, canvas, zoom, true)
 	_turret(c, nw, ne, sw, ground, 0.88, 0.88, palette, canvas, zoom, true)
-	var banner := _pt(nw, ne, sw, 0.72, 0.65) + ground + curtain_up * 0.72
+	var banner := Geometry.point(nw, ne, sw, 0.72, 0.65) + ground + curtain_up * 0.72
 	c.draw_colored_polygon(PackedVector2Array([banner, banner + (ne - nw) * 0.1, banner + (ne - nw) * 0.1 - curtain_up * 0.24, banner - curtain_up * 0.2]), accent)
 
 
@@ -128,19 +118,19 @@ static func _turret(c: CanvasItem, nw: Vector2, ne: Vector2, sw: Vector2, floor:
 	var radius := 0.105
 	var corners: Array[Vector2] = []
 	for offset in [Vector2(-0.65, -1), Vector2(0.65, -1), Vector2(1, -0.55), Vector2(1, 0.55), Vector2(0.65, 1), Vector2(-0.65, 1), Vector2(-1, 0.55), Vector2(-1, -0.55)]:
-		corners.append(_pt(nw, ne, sw, u + offset.x * radius, v + offset.y * radius) + floor)
-	var height := _up(canvas, zoom, 34.0 if foreground else 31.0)
+		corners.append(Geometry.point(nw, ne, sw, u + offset.x * radius, v + offset.y * radius) + floor)
+	var height := Geometry.up(canvas, zoom, 34.0 if foreground else 31.0)
 	var wall: Color = palette["wall"]
 	for index in [2, 3, 4, 5, 6]:
 		var next: int = (index + 1) % 8
 		c.draw_colored_polygon(PackedVector2Array([corners[index] + height, corners[next] + height, corners[next], corners[index]]), wall.darkened(0.05 + float(index - 2) * 0.035))
 	var top := PackedVector2Array()
 	for corner in corners: top.append(corner + height)
-	var peak := _pt(nw, ne, sw, u, v) + floor + height + _up(canvas, zoom, 8.0)
+	var peak := Geometry.point(nw, ne, sw, u, v) + floor + height + Geometry.up(canvas, zoom, 8.0)
 	for index in 8:
 		c.draw_colored_polygon(PackedVector2Array([top[index], top[(index + 1) % 8], peak]), palette["roof"].lightened(0.07) if index in [0, 1, 6, 7] else palette["roof_dark"])
 	c.draw_polyline(PackedVector2Array([corners[2] + height, corners[3] + height, corners[4] + height, corners[5] + height, corners[6] + height]), palette["trim"], 1.7)
-	var slit := _pt(nw, ne, sw, u, v + radius * 0.9) + floor + height * 0.59
+	var slit := Geometry.point(nw, ne, sw, u, v + radius * 0.9) + floor + height * 0.59
 	c.draw_line(slit, slit + height * 0.16, Color("394342"), 1.9)
 
 
@@ -150,7 +140,7 @@ static func _keep_2d(c: CanvasItem, bounds: Rect2, palette: Dictionary, accent: 
 	c.draw_rect(outer, palette["wall"])
 	c.draw_rect(court, palette["wall"].darkened(0.26))
 	c.draw_rect(outer, palette["trim"], false, 2.5)
-	var donjon := _rect(outer, 0.31, 0.28, 0.38, 0.38)
+	var donjon := Geometry.rect(outer, 0.31, 0.28, 0.38, 0.38)
 	c.draw_rect(donjon, palette["roof_dark"])
 	c.draw_rect(donjon, palette["trim"], false, 2.0)
 	for u in [0.12, 0.88]:
@@ -175,36 +165,36 @@ static func _monastery_iso(c: CanvasItem, nw: Vector2, ne: Vector2, sw: Vector2,
 	var dark: Color = palette["roof_dark"]
 	# The nave is the visible central mass; detached aisle roofs overlap its
 	# projected gable at this camera angle and leave stray roof slivers.
-	var nave_up := _up(canvas, zoom, 27.0)
+	var nave_up := Geometry.up(canvas, zoom, 27.0)
 	var nave := _block(c, nw, ne, sw, floor, nave_up, 0.31, 0.1, 0.43, 0.76, wall, trim)
-	_gable(c, nave, _up(canvas, zoom, 15.0), palette, civ)
+	_gable(c, nave, Geometry.up(canvas, zoom, 15.0), palette, civ)
 	for v in [0.34, 0.53, 0.71]:
-		var window := _pt(nw, ne, sw, 0.74, v) + floor + nave_up * 0.62
+		var window := Geometry.point(nw, ne, sw, 0.74, v) + floor + nave_up * 0.62
 		c.draw_line(window, window + nave_up * 0.2, trim, 5.0)
 		c.draw_line(window + nave_up * 0.02, window + nave_up * 0.17, Color("34454a"), 2.9)
-	var front := _pt(nw, ne, sw, 0.525, 0.86) + floor
-	var door_up := _up(canvas, zoom, 16.0)
+	var front := Geometry.point(nw, ne, sw, 0.525, 0.86) + floor
+	var door_up := Geometry.up(canvas, zoom, 16.0)
 	var half := (ne - nw) * 0.065
 	c.draw_colored_polygon(PackedVector2Array([front - half + door_up * 0.75, front + half + door_up * 0.75, front + half, front - half]), Color("3d3932"))
 	c.draw_line(front - half + door_up * 0.75, front + half + door_up * 0.75, trim, 1.6)
 	# Offset bell tower keeps the roof ridge and the entrance visible.
-	var tower_up := _up(canvas, zoom, 43.0)
+	var tower_up := Geometry.up(canvas, zoom, 43.0)
 	var tower := _block(c, nw, ne, sw, floor, tower_up, 0.73, 0.12, 0.2, 0.23, wall, trim)
 	# One window on each visible face, inset from the edges and below the eave.
 	for face in [Vector2(0.83, 0.35), Vector2(0.93, 0.235)]:
-		var opening := _pt(nw, ne, sw, face.x, face.y) + floor + tower_up * 0.59
+		var opening := Geometry.point(nw, ne, sw, face.x, face.y) + floor + tower_up * 0.59
 		c.draw_line(opening, opening + tower_up * 0.15, trim, 5.0)
 		c.draw_line(opening + tower_up * 0.02, opening + tower_up * 0.13, Color("34454a"), 2.9)
-	var peak := (tower[0] + tower[1] + tower[2] + tower[3]) * 0.25 + _up(canvas, zoom, 21.0)
+	var peak := (tower[0] + tower[1] + tower[2] + tower[3]) * 0.25 + Geometry.up(canvas, zoom, 21.0)
 	c.draw_colored_polygon(PackedVector2Array([tower[0], tower[3], peak]), roof.lightened(0.09))
 	c.draw_colored_polygon(PackedVector2Array([tower[1], tower[2], peak]), roof)
 	c.draw_colored_polygon(PackedVector2Array([tower[3], tower[2], peak]), dark)
 	if civ == "Chinese":
 		c.draw_line(tower[3], tower[2], trim, 2.1)
 	else:
-		c.draw_line(peak, peak + _up(canvas, zoom, 9.0), trim, 1.6)
-		c.draw_line(peak + _up(canvas, zoom, 5.0) - (ne - nw) * 0.035, peak + _up(canvas, zoom, 5.0) + (ne - nw) * 0.035, trim, 1.6)
-	c.draw_line(_pt(nw, ne, sw, 0.31, 0.85) + floor, _pt(nw, ne, sw, 0.74, 0.85) + floor, accent, 1.8)
+		c.draw_line(peak, peak + Geometry.up(canvas, zoom, 9.0), trim, 1.6)
+		c.draw_line(peak + Geometry.up(canvas, zoom, 5.0) - (ne - nw) * 0.035, peak + Geometry.up(canvas, zoom, 5.0) + (ne - nw) * 0.035, trim, 1.6)
+	c.draw_line(Geometry.point(nw, ne, sw, 0.31, 0.85) + floor, Geometry.point(nw, ne, sw, 0.74, 0.85) + floor, accent, 1.8)
 
 
 static func _temple_iso(c: CanvasItem, nw: Vector2, ne: Vector2, sw: Vector2, lift: Vector2, palette: Dictionary, accent: Color, canvas: Transform2D, zoom: float) -> void:
@@ -212,54 +202,54 @@ static func _temple_iso(c: CanvasItem, nw: Vector2, ne: Vector2, sw: Vector2, li
 	var wall: Color = palette["wall"]
 	var timber: Color = palette["timber"]
 	var trim: Color = palette["trim"]
-	var hall_up := _up(canvas, zoom, 24.0)
+	var hall_up := Geometry.up(canvas, zoom, 24.0)
 	var hall := _block(c, nw, ne, sw, floor, hall_up, 0.1, 0.18, 0.8, 0.58, wall, trim)
-	_gable(c, hall, _up(canvas, zoom, 13.0), palette, "Chinese")
+	_gable(c, hall, Geometry.up(canvas, zoom, 13.0), palette, "Chinese")
 	for u in [0.2, 0.39, 0.61, 0.8]:
-		var post := _pt(nw, ne, sw, u, 0.76) + floor
+		var post := Geometry.point(nw, ne, sw, u, 0.76) + floor
 		c.draw_line(post, post + hall_up * 0.82, timber, 2.8)
-	var doorway := _pt(nw, ne, sw, 0.5, 0.76) + floor
+	var doorway := Geometry.point(nw, ne, sw, 0.5, 0.76) + floor
 	c.draw_line(doorway, doorway + hall_up * 0.52, palette["roof_dark"], 7.0)
 	# The rear pagoda rises over the hall's roof, with two projecting eaves.
-	var tower_up := _up(canvas, zoom, 39.0)
+	var tower_up := Geometry.up(canvas, zoom, 39.0)
 	var tower := _block(c, nw, ne, sw, floor, tower_up, 0.39, 0.08, 0.22, 0.22, wall, trim)
 	var cap := PackedVector2Array([tower[0], tower[1], tower[2], tower[3]])
 	c.draw_colored_polygon(cap, palette["roof_dark"])
 	c.draw_polyline(PackedVector2Array([tower[0], tower[1], tower[2], tower[3], tower[0]]), trim, 2.2)
-	var tier := _up(canvas, zoom, 10.0)
+	var tier := Geometry.up(canvas, zoom, 10.0)
 	c.draw_colored_polygon(PackedVector2Array([tower[1] + tier, tower[2] + tier, tower[2], tower[1]]), wall.darkened(0.16))
 	c.draw_colored_polygon(PackedVector2Array([tower[3] + tier, tower[2] + tier, tower[2], tower[3]]), wall)
 	var tier_top: Array[Vector2] = [tower[0] + tier, tower[1] + tier, tower[2] + tier, tower[3] + tier]
-	_gable(c, tier_top, _up(canvas, zoom, 8.0), palette, "Chinese")
-	var incense := _pt(nw, ne, sw, 0.5, 0.9) + floor
+	_gable(c, tier_top, Geometry.up(canvas, zoom, 8.0), palette, "Chinese")
+	var incense := Geometry.point(nw, ne, sw, 0.5, 0.9) + floor
 	c.draw_circle(incense, 3.5, Color("756246"))
-	c.draw_line(incense, incense + _up(canvas, zoom, 7.0), trim, 1.3)
-	c.draw_line(_pt(nw, ne, sw, 0.21, 0.9) + floor, _pt(nw, ne, sw, 0.79, 0.9) + floor, accent, 1.8)
+	c.draw_line(incense, incense + Geometry.up(canvas, zoom, 7.0), trim, 1.3)
+	c.draw_line(Geometry.point(nw, ne, sw, 0.21, 0.9) + floor, Geometry.point(nw, ne, sw, 0.79, 0.9) + floor, accent, 1.8)
 
 
 static func _monastery_2d(c: CanvasItem, bounds: Rect2, palette: Dictionary, accent: Color, civ: String) -> void:
 	var area := bounds.grow(-5.0)
 	if civ == "Chinese":
 		c.draw_rect(area, palette["wall"].darkened(0.16))
-		var hall := _rect(area, 0.1, 0.18, 0.8, 0.59)
+		var hall := Geometry.rect(area, 0.1, 0.18, 0.8, 0.59)
 		c.draw_rect(hall, palette["roof"])
 		c.draw_rect(hall, palette["roof_dark"], false, 1.7)
 		c.draw_line(Vector2(hall.position.x, hall.get_center().y), Vector2(hall.end.x, hall.get_center().y), palette["trim"], 2.2)
-		var tower := _rect(area, 0.39, 0.08, 0.22, 0.22)
+		var tower := Geometry.rect(area, 0.39, 0.08, 0.22, 0.22)
 		c.draw_rect(tower, palette["roof_dark"])
 		c.draw_rect(tower, palette["trim"], false, 1.6)
 		c.draw_circle(area.position + area.size * Vector2(0.5, 0.9), 3.5, palette["trim"])
 		c.draw_line(Vector2(hall.position.x, hall.end.y + 2), Vector2(hall.end.x, hall.end.y + 2), accent, 2.2)
 		return
 	c.draw_rect(area, palette["wall"].darkened(0.16))
-	for side in [_rect(area, 0.07, 0.29, 0.28, 0.5), _rect(area, 0.7, 0.29, 0.24, 0.5)]:
+	for side in [Geometry.rect(area, 0.07, 0.29, 0.28, 0.5), Geometry.rect(area, 0.7, 0.29, 0.24, 0.5)]:
 		c.draw_rect(side, palette["roof"])
 		c.draw_line(Vector2(side.get_center().x, side.position.y), Vector2(side.get_center().x, side.end.y), palette["trim"], 1.6)
-	var nave := _rect(area, 0.31, 0.1, 0.43, 0.77)
+	var nave := Geometry.rect(area, 0.31, 0.1, 0.43, 0.77)
 	c.draw_rect(nave, palette["roof"])
 	c.draw_rect(nave, palette["roof_dark"], false, 1.5)
 	c.draw_line(Vector2(nave.get_center().x, nave.position.y), Vector2(nave.get_center().x, nave.end.y), palette["trim"], 2.0)
-	var tower := _rect(area, 0.73, 0.12, 0.2, 0.23)
+	var tower := Geometry.rect(area, 0.73, 0.12, 0.2, 0.23)
 	c.draw_rect(tower, palette["wall"])
 	c.draw_rect(tower.grow(-2.0), palette["roof_dark"])
 	c.draw_rect(tower, palette["trim"], false, 1.5)

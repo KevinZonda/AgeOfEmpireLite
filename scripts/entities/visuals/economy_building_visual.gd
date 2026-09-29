@@ -1,5 +1,7 @@
 extends RefCounted
 
+const Geometry = preload("res://scripts/entities/visuals/building_geometry.gd")
+
 # The surrounding building node draws the foundation and construction state.
 # These finished details stay inside its existing footprint and use its palette.
 
@@ -17,14 +19,6 @@ static func draw_iso(c: CanvasItem, kind: String, nw: Vector2, ne: Vector2, se: 
 		"lumber_camp": _lumber_iso(c, nw, ne, sw, lift, palette, accent, canvas, zoom)
 
 
-static func _pt(nw: Vector2, ne: Vector2, sw: Vector2, u: float, v: float) -> Vector2:
-	return nw + (ne - nw) * u + (sw - nw) * v
-
-
-static func _up(canvas: Transform2D, zoom: float, pixels: float) -> Vector2:
-	return RtsIsoProjection.world_delta(canvas, Vector2(0.0, -pixels * zoom))
-
-
 static func _upright_disc(c: CanvasItem, center: Vector2, radius: float, color: Color, canvas: Transform2D, zoom: float) -> void:
 	var horizontal := RtsIsoProjection.world_delta(canvas, Vector2(radius * zoom, 0.0))
 	var vertical := RtsIsoProjection.world_delta(canvas, Vector2(0.0, radius * zoom))
@@ -36,10 +30,10 @@ static func _upright_disc(c: CanvasItem, center: Vector2, radius: float, color: 
 
 
 static func _box(c: CanvasItem, nw: Vector2, ne: Vector2, sw: Vector2, base: Vector2, up: Vector2, u: float, v: float, width: float, depth: float, wall: Color, trim: Color) -> Array[Vector2]:
-	var a := _pt(nw, ne, sw, u, v) + base
-	var b := _pt(nw, ne, sw, u + width, v) + base
-	var d := _pt(nw, ne, sw, u, v + depth) + base
-	var f := _pt(nw, ne, sw, u + width, v + depth) + base
+	var a := Geometry.point(nw, ne, sw, u, v) + base
+	var b := Geometry.point(nw, ne, sw, u + width, v) + base
+	var d := Geometry.point(nw, ne, sw, u, v + depth) + base
+	var f := Geometry.point(nw, ne, sw, u + width, v + depth) + base
 	c.draw_colored_polygon(PackedVector2Array([b + up, f + up, f, b]), wall.darkened(0.2))
 	c.draw_colored_polygon(PackedVector2Array([d + up, f + up, f, d]), wall)
 	c.draw_line(d + up, f + up, trim, 1.3)
@@ -80,40 +74,40 @@ static func _town_center_iso(c: CanvasItem, nw: Vector2, ne: Vector2, sw: Vector
 	var floor := lift * 0.18
 	# The front third is a paved working court. The main hall occupies the back.
 	var court := PackedVector2Array([
-		_pt(nw, ne, sw, 0.11, 0.50) + floor,
-		_pt(nw, ne, sw, 0.89, 0.50) + floor,
-		_pt(nw, ne, sw, 0.89, 0.90) + floor,
-		_pt(nw, ne, sw, 0.11, 0.90) + floor,
+		Geometry.point(nw, ne, sw, 0.11, 0.50) + floor,
+		Geometry.point(nw, ne, sw, 0.89, 0.50) + floor,
+		Geometry.point(nw, ne, sw, 0.89, 0.90) + floor,
+		Geometry.point(nw, ne, sw, 0.11, 0.90) + floor,
 	])
 	c.draw_colored_polygon(court, Color("a79b7e"))
 	for fraction in [0.59, 0.69, 0.79]:
-		c.draw_line(_pt(nw, ne, sw, 0.13, fraction) + floor, _pt(nw, ne, sw, 0.87, fraction) + floor, Color("716e5f", 0.45), 0.8)
-	var hall_up := _up(canvas, zoom, 27.0)
+		c.draw_line(Geometry.point(nw, ne, sw, 0.13, fraction) + floor, Geometry.point(nw, ne, sw, 0.87, fraction) + floor, Color("716e5f", 0.45), 0.8)
+	var hall_up := Geometry.up(canvas, zoom, 27.0)
 	var hall := _box(c, nw, ne, sw, floor, hall_up, 0.10, 0.07, 0.80, 0.34, wall, trim)
-	_gable(c, hall, _up(canvas, zoom, 9.0), palette, civ)
+	_gable(c, hall, Geometry.up(canvas, zoom, 9.0), palette, civ)
 	for fraction in [0.12, 0.38, 0.62, 0.88]:
-		var post := _pt(nw, ne, sw, fraction, 0.41) + floor
+		var post := Geometry.point(nw, ne, sw, fraction, 0.41) + floor
 		c.draw_line(post, post + hall_up * 0.95, timber, 2.0)
-	c.draw_line(_pt(nw, ne, sw, 0.1, 0.41) + floor + hall_up * 0.45, _pt(nw, ne, sw, 0.9, 0.41) + floor + hall_up * 0.45, timber, 1.8)
+	c.draw_line(Geometry.point(nw, ne, sw, 0.1, 0.41) + floor + hall_up * 0.45, Geometry.point(nw, ne, sw, 0.9, 0.41) + floor + hall_up * 0.45, timber, 1.8)
 	for fraction in [0.27, 0.73]:
-		var window := _pt(nw, ne, sw, fraction, 0.41) + floor + hall_up * 0.65
+		var window := Geometry.point(nw, ne, sw, fraction, 0.41) + floor + hall_up * 0.65
 		c.draw_line(window, window + hall_up * 0.18, dark, 4.0)
 		c.draw_line(window + hall_up * 0.83, window + hall_up * 0.83 + (ne - nw) * 0.05, trim, 1.1)
 	# Low parapets on the sides frame the open court rather than enclosing it in one roof.
 	for u in [0.08, 0.92]:
-		var rear := _pt(nw, ne, sw, u, 0.40) + floor
-		var near := _pt(nw, ne, sw, u, 0.86) + floor
-		var parapet := _up(canvas, zoom, 6.0)
+		var rear := Geometry.point(nw, ne, sw, u, 0.40) + floor
+		var near := Geometry.point(nw, ne, sw, u, 0.86) + floor
+		var parapet := Geometry.up(canvas, zoom, 6.0)
 		c.draw_line(rear, rear + parapet, wall.darkened(0.1), 3.0)
 		c.draw_line(near, near + parapet, wall, 3.0)
 		c.draw_line(rear + parapet, near + parapet, trim, 3.0)
 		for fraction in [0.1, 0.42, 0.74]:
 			var crenel := rear.lerp(near, fraction) + parapet
-			c.draw_line(crenel, crenel + _up(canvas, zoom, 2.0), wall, 3.4)
+			c.draw_line(crenel, crenel + Geometry.up(canvas, zoom, 2.0), wall, 3.4)
 	# The front remains open. A large bronze bell hangs in its own timber frame.
-	var bell_left := _pt(nw, ne, sw, 0.29, 0.70) + floor
-	var bell_right := _pt(nw, ne, sw, 0.71, 0.70) + floor
-	var frame_up := _up(canvas, zoom, 25.0)
+	var bell_left := Geometry.point(nw, ne, sw, 0.29, 0.70) + floor
+	var bell_right := Geometry.point(nw, ne, sw, 0.71, 0.70) + floor
+	var frame_up := Geometry.up(canvas, zoom, 25.0)
 	c.draw_line(bell_left, bell_left + frame_up, timber.darkened(0.12), 3.2)
 	c.draw_line(bell_right, bell_right + frame_up, timber.darkened(0.12), 3.2)
 	c.draw_line(bell_left + frame_up, bell_right + frame_up, timber, 3.8)
@@ -121,16 +115,16 @@ static func _town_center_iso(c: CanvasItem, nw: Vector2, ne: Vector2, sw: Vector
 	var brace_right := bell_left.lerp(bell_right, 0.82) + frame_up
 	c.draw_line(bell_left + frame_up * 0.72, brace_left, timber, 1.7)
 	c.draw_line(bell_right + frame_up * 0.72, brace_right, timber, 1.7)
-	var bell_top := (bell_left + bell_right) * 0.5 + frame_up + _up(canvas, zoom, -5.0)
+	var bell_top := (bell_left + bell_right) * 0.5 + frame_up + Geometry.up(canvas, zoom, -5.0)
 	c.draw_line((bell_left + bell_right) * 0.5 + frame_up, bell_top, Color("5c4b31"), 1.6)
 	_draw_bell_iso(c, bell_top, canvas, zoom)
-	c.draw_line(_pt(nw, ne, sw, 0.11, 0.97) + floor, _pt(nw, ne, sw, 0.36, 0.97) + floor, accent, 2.0)
-	c.draw_line(_pt(nw, ne, sw, 0.64, 0.97) + floor, _pt(nw, ne, sw, 0.89, 0.97) + floor, accent, 2.0)
+	c.draw_line(Geometry.point(nw, ne, sw, 0.11, 0.97) + floor, Geometry.point(nw, ne, sw, 0.36, 0.97) + floor, accent, 2.0)
+	c.draw_line(Geometry.point(nw, ne, sw, 0.64, 0.97) + floor, Geometry.point(nw, ne, sw, 0.89, 0.97) + floor, accent, 2.0)
 
 
 static func _draw_bell_iso(c: CanvasItem, top: Vector2, canvas: Transform2D, zoom: float) -> void:
 	var right := RtsIsoProjection.world_delta(canvas, Vector2(9.5 * zoom, 0.0))
-	var down := _up(canvas, zoom, -13.0)
+	var down := Geometry.up(canvas, zoom, -13.0)
 	var bronze := Color("c99748")
 	var shadow := Color("604526")
 	var highlight := Color("f5d985")
@@ -208,35 +202,35 @@ static func _mill_iso(c: CanvasItem, nw: Vector2, ne: Vector2, sw: Vector2, lift
 	var wall: Color = palette["wall"]
 	var dark: Color = palette["roof_dark"]
 	var floor := lift * 0.18
-	var wall_up := _up(canvas, zoom, 27.0)
+	var wall_up := Geometry.up(canvas, zoom, 27.0)
 	# The mill is a narrow, tall gabled house; the surrounding low base is its yard.
 	_box(c, nw, ne, sw, floor, wall_up, 0.22, 0.14, 0.56, 0.65, wall, trim)
 	var eave := floor + wall_up
 	var roof_corners: Array[Vector2] = [
-		_pt(nw, ne, sw, 0.18, 0.10) + eave,
-		_pt(nw, ne, sw, 0.82, 0.10) + eave,
-		_pt(nw, ne, sw, 0.82, 0.84) + eave,
-		_pt(nw, ne, sw, 0.18, 0.84) + eave,
+		Geometry.point(nw, ne, sw, 0.18, 0.10) + eave,
+		Geometry.point(nw, ne, sw, 0.82, 0.10) + eave,
+		Geometry.point(nw, ne, sw, 0.82, 0.84) + eave,
+		Geometry.point(nw, ne, sw, 0.18, 0.84) + eave,
 	]
-	_gable(c, roof_corners, _up(canvas, zoom, 13.0), palette, civ)
+	_gable(c, roof_corners, Geometry.up(canvas, zoom, 13.0), palette, civ)
 	for fraction in [0.24, 0.76]:
-		var post := _pt(nw, ne, sw, fraction, 0.79) + floor
+		var post := Geometry.point(nw, ne, sw, fraction, 0.79) + floor
 		c.draw_line(post, post + wall_up * 0.94, timber, 2.2)
-	c.draw_line(_pt(nw, ne, sw, 0.22, 0.79) + floor + wall_up * 0.47, _pt(nw, ne, sw, 0.78, 0.79) + floor + wall_up * 0.47, timber, 1.7)
-	var door_left := _pt(nw, ne, sw, 0.43, 0.79) + floor
-	var door_right := _pt(nw, ne, sw, 0.57, 0.79) + floor
+	c.draw_line(Geometry.point(nw, ne, sw, 0.22, 0.79) + floor + wall_up * 0.47, Geometry.point(nw, ne, sw, 0.78, 0.79) + floor + wall_up * 0.47, timber, 1.7)
+	var door_left := Geometry.point(nw, ne, sw, 0.43, 0.79) + floor
+	var door_right := Geometry.point(nw, ne, sw, 0.57, 0.79) + floor
 	c.draw_colored_polygon(PackedVector2Array([door_left + wall_up * 0.38, door_right + wall_up * 0.38, door_right, door_left]), Color("514433"))
 	c.draw_line(door_left + wall_up * 0.38, door_right + wall_up * 0.38, trim, 1.3)
 	# Mount the four sails in front of the facade, after the roof has been drawn.
-	var hub := _pt(nw, ne, sw, 0.5, 0.8) + floor + wall_up * 0.7
+	var hub := Geometry.point(nw, ne, sw, 0.5, 0.8) + floor + wall_up * 0.7
 	var right := RtsIsoProjection.world_delta(canvas, Vector2(15.0 * zoom, 0.0))
-	var upward := _up(canvas, zoom, 15.0)
+	var upward := Geometry.up(canvas, zoom, 15.0)
 	_draw_sails(c, hub, right, upward, timber, trim, canvas)
 	for u in [0.14, 0.27, 0.76, 0.89]:
-		var bag := _pt(nw, ne, sw, u, 0.89) + floor
+		var bag := Geometry.point(nw, ne, sw, u, 0.89) + floor
 		c.draw_circle(bag, 3.1, Color("d5bc88"))
 		c.draw_line(bag + Vector2(-2, -1), bag + Vector2(2, -1), Color("79684c"), 0.9)
-	c.draw_line(_pt(nw, ne, sw, 0.22, 0.87) + floor, _pt(nw, ne, sw, 0.78, 0.87) + floor, accent, 2.0)
+	c.draw_line(Geometry.point(nw, ne, sw, 0.22, 0.87) + floor, Geometry.point(nw, ne, sw, 0.78, 0.87) + floor, accent, 2.0)
 
 
 static func _draw_sails(c: CanvasItem, hub: Vector2, right: Vector2, up: Vector2, timber: Color, trim: Color, canvas: Transform2D) -> void:
@@ -274,48 +268,48 @@ static func _lumber_iso(c: CanvasItem, nw: Vector2, ne: Vector2, sw: Vector2, li
 	var floor := lift * 0.18
 	var timber: Color = palette["timber"]
 	var floor_poly := PackedVector2Array([
-		_pt(nw, ne, sw, 0.07, 0.08) + floor,
-		_pt(nw, ne, sw, 0.93, 0.08) + floor,
-		_pt(nw, ne, sw, 0.93, 0.92) + floor,
-		_pt(nw, ne, sw, 0.07, 0.92) + floor,
+		Geometry.point(nw, ne, sw, 0.07, 0.08) + floor,
+		Geometry.point(nw, ne, sw, 0.93, 0.08) + floor,
+		Geometry.point(nw, ne, sw, 0.93, 0.92) + floor,
+		Geometry.point(nw, ne, sw, 0.07, 0.92) + floor,
 	])
 	c.draw_colored_polygon(floor_poly, Color("9a855e"))
 	for fraction in [0.22, 0.42, 0.62, 0.82]:
-		c.draw_line(_pt(nw, ne, sw, 0.08, fraction) + floor, _pt(nw, ne, sw, 0.92, fraction) + floor, Color("6d5b42", 0.65), 1.0)
+		c.draw_line(Geometry.point(nw, ne, sw, 0.08, fraction) + floor, Geometry.point(nw, ne, sw, 0.92, fraction) + floor, Color("6d5b42", 0.65), 1.0)
 	# A low open rack frames the timber pile without hiding its cut ends.
-	var rack_left := _pt(nw, ne, sw, 0.14, 0.18) + floor
-	var rack_right := _pt(nw, ne, sw, 0.86, 0.18) + floor
-	var rack_up := _up(canvas, zoom, 13.0)
+	var rack_left := Geometry.point(nw, ne, sw, 0.14, 0.18) + floor
+	var rack_right := Geometry.point(nw, ne, sw, 0.86, 0.18) + floor
+	var rack_up := Geometry.up(canvas, zoom, 13.0)
 	for post in [rack_left, rack_right]:
 		c.draw_line(post, post + rack_up, timber.darkened(0.18), 3.0)
 	c.draw_line(rack_left + rack_up, rack_right + rack_up, timber.lightened(0.12), 3.1)
 	for u in [0.25, 0.68]:
-		var left_foot := _pt(nw, ne, sw, u - 0.09, 0.78) + floor
-		var right_foot := _pt(nw, ne, sw, u + 0.09, 0.78) + floor
-		var saddle := _pt(nw, ne, sw, u, 0.55) + floor + _up(canvas, zoom, 6.0)
+		var left_foot := Geometry.point(nw, ne, sw, u - 0.09, 0.78) + floor
+		var right_foot := Geometry.point(nw, ne, sw, u + 0.09, 0.78) + floor
+		var saddle := Geometry.point(nw, ne, sw, u, 0.55) + floor + Geometry.up(canvas, zoom, 6.0)
 		c.draw_line(left_foot, saddle, timber.darkened(0.18), 2.8)
 		c.draw_line(right_foot, saddle, timber, 2.8)
 	# Three separate trunks, with pale circular end grain, sit on the rack.
 	for log in [[0.58, 0.0, 0.18, 0.76], [0.75, 0.0, 0.22, 0.79], [0.66, 5.0, 0.20, 0.75]]:
-		var start := _pt(nw, ne, sw, float(log[2]), float(log[0])) + floor + _up(canvas, zoom, float(log[1]))
-		var finish := _pt(nw, ne, sw, float(log[3]), float(log[0])) + floor + _up(canvas, zoom, float(log[1]))
+		var start := Geometry.point(nw, ne, sw, float(log[2]), float(log[0])) + floor + Geometry.up(canvas, zoom, float(log[1]))
+		var finish := Geometry.point(nw, ne, sw, float(log[3]), float(log[0])) + floor + Geometry.up(canvas, zoom, float(log[1]))
 		c.draw_line(start, finish, Color("4e3526"), 9.0)
-		c.draw_line(start + _up(canvas, zoom, 1.8), finish + _up(canvas, zoom, 1.8), Color("98643d"), 5.8)
+		c.draw_line(start + Geometry.up(canvas, zoom, 1.8), finish + Geometry.up(canvas, zoom, 1.8), Color("98643d"), 5.8)
 		_upright_disc(c, finish, 3.0, Color("5c3b28"), canvas, zoom)
 		_upright_disc(c, finish, 2.4, Color("dfb77d"), canvas, zoom)
 		_upright_disc(c, finish, 1.65, Color("9f7148"), canvas, zoom)
 		_upright_disc(c, finish, 1.25, Color("dfb77d"), canvas, zoom)
 		_upright_disc(c, finish, 0.42, Color("765034"), canvas, zoom)
 	# A chopping block and axe identify the work area at a glance.
-	var stump := _pt(nw, ne, sw, 0.82, 0.32) + floor
-	var stump_top := stump + _up(canvas, zoom, 6.0)
+	var stump := Geometry.point(nw, ne, sw, 0.82, 0.32) + floor
+	var stump_top := stump + Geometry.up(canvas, zoom, 6.0)
 	c.draw_line(stump, stump_top, Color("68452f"), 10.0)
 	c.draw_circle(stump_top, 5.3, Color("d3aa70"))
 	c.draw_arc(stump_top, 3.3, 0.0, TAU, 16, Color("91613d"), 1.1)
-	var axe_top := stump_top + _up(canvas, zoom, 12.0)
+	var axe_top := stump_top + Geometry.up(canvas, zoom, 12.0)
 	c.draw_line(stump_top, axe_top, timber.darkened(0.18), 1.7)
 	c.draw_colored_polygon(PackedVector2Array([axe_top + Vector2(-1, 0), axe_top + Vector2(6, -1), axe_top + Vector2(5, 4), axe_top + Vector2(-1, 2)]), Color("aab4aa"))
-	c.draw_line(_pt(nw, ne, sw, 0.12, 0.89) + floor, _pt(nw, ne, sw, 0.88, 0.89) + floor, accent, 1.8)
+	c.draw_line(Geometry.point(nw, ne, sw, 0.12, 0.89) + floor, Geometry.point(nw, ne, sw, 0.88, 0.89) + floor, accent, 1.8)
 
 
 static func _lumber_2d(c: CanvasItem, bounds: Rect2, palette: Dictionary, accent: Color) -> void:

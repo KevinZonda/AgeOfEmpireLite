@@ -53,7 +53,7 @@ static func population_used(game: Node2D, owner_id: int) -> int:
 		if is_instance_valid(unit) and unit.owner_id == owner_id: used += RtsBalanceData.population_cost(unit.kind)
 	for building in game.buildings:
 		if is_instance_valid(building) and building.owner_id == owner_id:
-			for queued_kind in building.training_queue: used += RtsBalanceData.population_cost(queued_kind)
+			used += building.queued_population_cost()
 	return used
 
 static func population_cap(game: Node2D, owner_id: int) -> int:

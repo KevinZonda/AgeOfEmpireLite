@@ -50,6 +50,8 @@ func _run() -> void:
 	for soldier in soldiers: lateral_positions.append(line.slots[soldier.get_instance_id()].dot(lateral))
 	assert(lateral_positions.max() - lateral_positions.min() > 190.0, "line width should spread the squad")
 	var enemy: RtsUnit = game.spawn_unit(1, "spearman", soldiers[0].position + Vector2(70, 0))
+	# Refresh sight after spawning the armies before testing automatic engagement.
+	game.fog.update_visibility()
 	soldiers[0].engagement = "passive"
 	soldiers[0]._process_idle_order()
 	assert(soldiers[0].order == "idle", "passive units should not acquire targets")

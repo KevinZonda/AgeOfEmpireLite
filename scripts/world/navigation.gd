@@ -957,24 +957,12 @@ func path_around_units(unit: RtsUnit, target: Vector2) -> PackedVector2Array:
 	return result
 
 func _path_around_units(unit: RtsUnit, target: Vector2) -> PackedVector2Array:
-	# Recovery only: a local fine grid can route between parked formation
-	# members that the 50-pixel strategic grid cannot represent. A wide corral
-	# may require backtracking beyond the first window before making progress.
-	for resolution in [Vector2i(8, 24), Vector2i(2, 48), Vector2i(8, 48), Vector2i(8, 96), Vector2i(2, 96)]:
-		# Let short-lived work-site traffic clear before escalating. Persistent
-		# blockers still get the fine/wider search under the unit's retry backoff.
-		if resolution != Vector2i(8, 24) and unit.route_failures < 3: break
-		var path := _local_unit_path(unit, target, resolution.x, resolution.y)
-		if not path.is_empty(): return path
-	return PackedVector2Array()
+	# Recovery only: retain live queries while sharing the worker's search policy.
+	return RecoveryKernel.recover_path(unit.route_failures,
+		func(step: float, half: int) -> PackedVector2Array: return _local_unit_path(unit, target, step, half))
 
 func _local_unit_grid(unit: RtsUnit, step: float, half: int) -> AStarGrid2D:
-	var grid := AStarGrid2D.new()
-	grid.region = Rect2i(0, 0, half * 2 + 1, half * 2 + 1)
-	grid.cell_size = Vector2.ONE * step
-	grid.offset = unit.position - Vector2.ONE * half * step
-	grid.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES
-	grid.update()
+	var grid := RecoveryKernel.make_local_grid(unit.position, step, half)
 	_rasterize_static_grid(unit, grid, true)
 	# Mark each nearby unit's footprint once instead of querying every
 	# neighborhood for each of the up to 37,249 recovery-grid cells.
@@ -994,48 +982,10 @@ func _local_reachable_cells(grid: AStarGrid2D, start: Vector2i) -> Array[Vector2
 func _local_exit_candidates(grid: AStarGrid2D, origin: Vector2, target: Vector2) -> Dictionary:
 	return RecoveryKernel._local_exit_candidates(grid, origin, target)
 
-func _add_local_exit(exits: Dictionary, grid: AStarGrid2D, cell: Vector2i, target: Vector2, limit: float) -> void:
-	RecoveryKernel._add_local_exit(exits, grid, cell, target, limit)
-
 func _local_unit_path(unit: RtsUnit, target: Vector2, step: float, half: int) -> PackedVector2Array:
 	var grid := _local_unit_grid(unit, step, half)
-	var start := Vector2i(half, half)
-	grid.set_point_solid(start, false)
-	# Only the perimeter and the 3-cell disk around the target can be exits.
-	# Reject occupied/non-improving exits BEFORE flooding tens of thousands of
-	# cells. At contact with a parked unit there is often no useful exit at all.
-	var exits := _local_exit_candidates(grid, unit.position, target)
-	if exits.is_empty(): return PackedVector2Array()
-	var candidates: Array[Vector2i] = []
-	candidates.assign(exits.keys())
-	candidates.sort_custom(func(a: Vector2i, b: Vector2i) -> bool: return grid.get_point_position(a).distance_squared_to(target) < grid.get_point_position(b).distance_squared_to(target))
-	var connectivity_checked := false
-	var reachable := {}
-	for cell in candidates:
-		if connectivity_checked and not reachable.has(cell): continue
-		# Native A* usually reaches the nearest usable exit immediately. Avoid
-		# a GDScript flood of the entire open region before that cheap search.
-		# On failure, filter once so disconnected exits cannot multiply A* work.
-		var raw := _point_path(grid, start, cell)
-		if raw.size() < 2:
-			if not connectivity_checked:
-				for point in _local_reachable_cells(grid, start): reachable[point] = true
-				connectivity_checked = true
-			continue
-		var result := PackedVector2Array([unit.position])
-		var anchor := 0
-		while anchor < raw.size() - 1:
-			var next := anchor + 1
-			if not _segment_clear(raw[anchor], raw[next], unit.radius(), unit): break
-			for index in range(anchor + 2, mini(raw.size(), anchor + 12)):
-				if not _segment_clear(raw[anchor], raw[index], unit.radius(), unit): break
-				next = index
-			result.append(raw[next])
-			anchor = next
-		if anchor != raw.size() - 1: continue
-		if _segment_clear(result[result.size() - 1], target, unit.radius(), unit): result.append(target)
-		return result
-	return PackedVector2Array()
+	return RecoveryKernel.search_local_grid(grid, Vector2i(half, half), unit.position, target,
+		_point_path, _segment_clear.bind(unit.radius(), unit), _local_reachable_cells, _local_exit_candidates)
 
 func request_passage(unit: RtsUnit, target: Vector2) -> bool:
 	# Recovery requests consider the whole blocked segment. A tiny sidestep

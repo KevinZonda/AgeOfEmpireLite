@@ -34,7 +34,6 @@ const PlayerOrders = preload("res://scripts/player/player_orders.gd")
 const MATCH_ECONOMY := preload("res://scripts/match/match_economy.gd")
 const MATCH_PRODUCTION := preload("res://scripts/match/match_production.gd")
 const FEEDBACK_AUDIO := preload("res://scripts/ui/feedback_audio.gd")
-const MILITARY_RESEARCH_BUILDINGS := ["barracks", "archery_range", "stable", "siege_workshop", "dock", "white_tower", "wynguard", "royal_institute"]
 const UNIT_ABILITY_ACTIONS := [
 	{"id": "palings", "label": "架设拒马", "kinds": ["longbow"]},
 	{"id": "volley", "label": "万箭齐发", "kinds": ["longbow"]},

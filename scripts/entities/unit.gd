@@ -155,13 +155,19 @@ func gathering_per_second() -> float:
 	return float(gathering_amount()) / 1.1
 
 func order_move(world_point: Vector2) -> void:
+	_order_move_to(world_point, "move")
+
+func order_attack_move(world_point: Vector2) -> void:
+	_order_move_to(world_point, "attack_move")
+
+func _order_move_to(world_point: Vector2, move_order: String) -> void:
 	if is_instance_valid(wall_host): leave_wall()
 	if stance == "hold": stance = "aggressive"
 	resume_order = ""
 	conversion_timer = 0.0
 	if paling_timer > 0.0: paling_timer = 0.0
 	movement_group = null
-	order = "move"
+	order = move_order
 	destination = game.navigation.nearest_walkable_point(world_point, radius(), self, true)
 	target = null
 	charging = false
@@ -183,20 +189,6 @@ func order_attack(enemy: Node2D, automatic := false) -> void:
 	charging = enemy is RtsUnit and (stats.get("profiles", {}).has("charge") or float(stats.get("charge_bonus", 0.0)) > 0.0) and charge_cooldown <= 0.0 and position.distance_to(enemy.position) >= 110.0 and position.distance_to(enemy.position) <= 180.0
 	charge_distance = 0.0
 	charge_elapsed = 0.0
-	resume_destination = Vector2.INF
-	_reset_route()
-
-func order_attack_move(world_point: Vector2) -> void:
-	if is_instance_valid(wall_host): leave_wall()
-	if stance == "hold": stance = "aggressive"
-	resume_order = ""
-	conversion_timer = 0.0
-	if paling_timer > 0.0: paling_timer = 0.0
-	movement_group = null
-	order = "attack_move"
-	destination = game.navigation.nearest_walkable_point(world_point, radius(), self, true)
-	target = null
-	charging = false
 	resume_destination = Vector2.INF
 	_reset_route()
 

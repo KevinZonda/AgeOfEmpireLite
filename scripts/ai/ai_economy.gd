@@ -69,7 +69,7 @@ func _unit_count(kind: String) -> int:
 	for unit in game.units:
 		if is_instance_valid(unit) and unit.owner_id == owner_id and unit.kind == kind: count += 1
 	for building in game.buildings:
-		if is_instance_valid(building) and building.owner_id == owner_id: count += building.training_queue.count(kind)
+		if is_instance_valid(building) and building.owner_id == owner_id: count += building.queued_unit_count(kind)
 	return count
 
 func _balance_market(age: int) -> void:

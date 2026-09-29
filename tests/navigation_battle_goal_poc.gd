@@ -2,6 +2,10 @@ extends "res://tests/navigation_dense_poc.gd"
 
 class CountedNavigation extends RtsNavigation:
 	var flood_cells := 0
+	var astar_queries := 0
+	func _point_path(grid: AStarGrid2D, start: Vector2i, end: Vector2i) -> PackedVector2Array:
+		astar_queries += 1
+		return super._point_path(grid, start, end)
 	func _local_reachable_cells(grid: AStarGrid2D, start: Vector2i) -> Array[Vector2i]:
 		var cells := super._local_reachable_cells(grid, start)
 		flood_cells += cells.size()

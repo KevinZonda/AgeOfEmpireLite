@@ -33,10 +33,7 @@ var build_total := 0.0
 var farm_stage := "sowing"
 var farm_stage_progress := 0.0
 var farm_food_buffer := 0.0
-var training_queue: Array[String] = []
-var research_queue: Array[String] = []
-# A building works on one job at a time. The two typed queues above remain useful
-# for population accounting and the existing selection UI.
+# A building works on one job at a time. All queue queries derive from these jobs.
 var production_queue: Array[Dictionary] = []
 var production_remaining := 0.0
 var rally_point := Vector2.ZERO
@@ -278,14 +275,12 @@ func advance_construction(delta: float) -> void:
 		game.building_completed(self)
 
 func enqueue(unit_kind: String, paid_cost: Dictionary = {}) -> void:
-	training_queue.append(unit_kind)
 	var cost: Dictionary = paid_cost if not paid_cost.is_empty() else GameData.unit_cost(unit_kind)
 	production_queue.append({"type": "train", "kind": unit_kind, "time": _training_time(unit_kind), "cost": cost.duplicate(true)})
 	if production_queue.size() == 1: _begin_next_job()
 	queue_redraw()
 
 func enqueue_research(tech_kind: String, duration: float, paid_cost: Dictionary) -> void:
-	research_queue.append(tech_kind)
 	production_queue.append({"type": "research", "kind": tech_kind, "time": maxf(0.01, duration), "cost": paid_cost.duplicate(true)})
 	if production_queue.size() == 1: _begin_next_job()
 	queue_redraw()
@@ -296,26 +291,31 @@ func current_job() -> Dictionary:
 	job["remaining"] = production_remaining
 	return job
 
-func has_queued_research(tech_kind: String) -> bool:
-	return research_queue.has(tech_kind)
+func queued_unit_count(unit_kind: String = "") -> int:
+	var count := 0
+	for job in production_queue:
+		if job["type"] == "train" and (unit_kind.is_empty() or job["kind"] == unit_kind): count += 1
+	return count
+
+func queued_population_cost() -> int:
+	var population := 0
+	for job in production_queue:
+		if job["type"] == "train": population += RtsBalanceData.population_cost(job["kind"])
+	return population
+
+func queued_research_ids() -> Array[String]:
+	var result: Array[String] = []
+	for job in production_queue:
+		if job["type"] == "research": result.append(job["kind"])
+	return result
 
 func cancel_queue_entry(index: int = 0) -> Dictionary:
 	if index < 0 or index >= production_queue.size(): return {}
 	var job: Dictionary = production_queue[index]
 	production_queue.remove_at(index)
-	if job["type"] == "train":
-		training_queue.erase(job["kind"])
-	elif job["type"] == "research":
-		research_queue.erase(job["kind"])
 	if index == 0: _begin_next_job()
 	queue_redraw()
 	return job.duplicate(true)
-
-func drain_queue() -> Array[Dictionary]:
-	var jobs: Array[Dictionary] = []
-	while not production_queue.is_empty():
-		jobs.append(cancel_queue_entry(0))
-	return jobs
 
 func _begin_next_job() -> void:
 	production_remaining = 0.0
@@ -451,7 +451,6 @@ func _process(delta: float) -> void:
 	if production_remaining > 0.0: return
 	var job: Dictionary = production_queue.pop_front()
 	if job["type"] == "train":
-		training_queue.pop_front()
 		var trained: RtsUnit = game.spawn_unit(owner_id, job["kind"], game.find_spawn_position(self), rally_point, rally_target, rally_resource_kind)
 		if owner_id == 0 and game.has_method("play_feedback"):
 			game.play_feedback("complete")
@@ -463,7 +462,6 @@ func _process(delta: float) -> void:
 			for offset in [Vector2(-20, 30), Vector2(20, 30)]:
 				game.spawn_unit(owner_id, "spearman", game.find_spawn_position(self) + offset, rally_point, rally_target, rally_resource_kind)
 	elif job["type"] == "research":
-		research_queue.pop_front()
 		game.complete_research(owner_id, job["kind"])
 	_begin_next_job()
 	queue_redraw()

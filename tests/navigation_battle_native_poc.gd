@@ -15,6 +15,14 @@ func _run() -> void:
 		check(path.size() > 2 and safe_route(game, unit, path), "native_search_returns_safe_detour")
 	print("NATIVE_POC requests=10 elapsed_ms=%.3f flood_cells=%d" % [(Time.get_ticks_usec() - started) / 1000.0, nav.flood_cells])
 	check(nav.flood_cells == 0, "reachable_exit_does_not_need_script_flood")
+	check(nav.astar_queries == 10, "shared_recovery_preserves_astar_override")
+	nav.profiling_enabled = true
+	nav.reset_profile()
+	check(not nav.path_around_units(unit, target).is_empty(), "profiled_recovery_returns_route")
+	var profile := nav.profile_snapshot()
+	check(profile.get("astar", {}).get("calls", 0) == 1 and profile.get("path_around_units", {}).get("calls", 0) == 1,
+		"shared_recovery_preserves_profiling")
+	nav.profiling_enabled = false
 	# A failed native probe must still use the component filter, rather than
 	# repeating an exhaustive native search for every disconnected exit.
 	nav.flood_cells = 0

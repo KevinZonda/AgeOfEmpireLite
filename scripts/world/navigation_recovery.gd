@@ -51,19 +51,27 @@ func run() -> void:
 	elapsed_us = Time.get_ticks_usec() - started
 
 func recover(goal: Vector2) -> PackedVector2Array:
+	return recover_path(failures, func(step: float, half: int) -> PackedVector2Array: return local_path(goal, step, half))
+
+static func recover_path(failures: int, search: Callable) -> PackedVector2Array:
+	# Let transient traffic clear before escalating to fine/wider recovery.
 	for resolution in [Vector2i(8, 24), Vector2i(2, 48), Vector2i(8, 48), Vector2i(8, 96), Vector2i(2, 96)]:
 		if resolution != Vector2i(8, 24) and failures < 3: break
-		var path := local_path(goal, resolution.x, resolution.y)
+		var path: PackedVector2Array = search.call(resolution.x, resolution.y)
 		if not path.is_empty(): return path
 	return PackedVector2Array()
 
-func make_grid(step: float, half: int) -> AStarGrid2D:
+static func make_local_grid(origin: Vector2, step: float, half: int) -> AStarGrid2D:
 	var grid := AStarGrid2D.new()
 	grid.region = Rect2i(0, 0, half * 2 + 1, half * 2 + 1)
 	grid.cell_size = Vector2.ONE * step
 	grid.offset = origin - Vector2.ONE * half * step
 	grid.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES
 	grid.update()
+	return grid
+
+func make_grid(step: float, half: int) -> AStarGrid2D:
+	var grid := make_local_grid(origin, step, half)
 	rasterize_static(grid)
 	for i in units.size():
 		var center := units[i]
@@ -119,12 +127,19 @@ func rasterize_static(grid: AStarGrid2D) -> void:
 
 func local_path(target: Vector2, step: float, half: int) -> PackedVector2Array:
 	var grid := make_grid(step, half)
-	var start := Vector2i(half, half)
+	return search_local_grid(grid, Vector2i(half, half), origin, target,
+		func(_grid: AStarGrid2D, start: Vector2i, end: Vector2i) -> PackedVector2Array: return _grid.get_point_path(start, end),
+		_segment_clear, _local_reachable_cells, _local_exit_candidates)
+
+# Callbacks preserve the live navigation's profiling/override hooks. Worker
+# calls use only the privately owned snapshot and its grid, never scene objects.
+static func search_local_grid(grid: AStarGrid2D, start: Vector2i, origin: Vector2, target: Vector2,
+		point_path: Callable, segment_clear: Callable, reachable_cells: Callable, exit_candidates: Callable) -> PackedVector2Array:
 	grid.set_point_solid(start, false)
 	# Only the perimeter and the 3-cell disk around the target can be exits.
 	# Reject occupied/non-improving exits BEFORE flooding tens of thousands of
 	# cells. At contact with a parked unit there is often no useful exit at all.
-	var exits := _local_exit_candidates(grid, origin, target)
+	var exits: Dictionary = exit_candidates.call(grid, origin, target)
 	if exits.is_empty(): return PackedVector2Array()
 	var candidates: Array[Vector2i] = []
 	candidates.assign(exits.keys())
@@ -136,24 +151,24 @@ func local_path(target: Vector2, step: float, half: int) -> PackedVector2Array:
 		# Native A* usually reaches the nearest usable exit immediately. Avoid
 		# a GDScript flood of the entire open region before that cheap search.
 		# On failure, filter once so disconnected exits cannot multiply A* work.
-		var raw := grid.get_point_path(start, cell)
+		var raw: PackedVector2Array = point_path.call(grid, start, cell)
 		if raw.size() < 2:
 			if not connectivity_checked:
-				for point in _local_reachable_cells(grid, start): reachable[point] = true
+				for point in reachable_cells.call(grid, start): reachable[point] = true
 				connectivity_checked = true
 			continue
 		var result := PackedVector2Array([origin])
 		var anchor := 0
 		while anchor < raw.size() - 1:
 			var next := anchor + 1
-			if not _segment_clear(raw[anchor], raw[next]): break
+			if not segment_clear.call(raw[anchor], raw[next]): break
 			for index in range(anchor + 2, mini(raw.size(), anchor + 12)):
-				if not _segment_clear(raw[anchor], raw[index]): break
+				if not segment_clear.call(raw[anchor], raw[index]): break
 				next = index
 			result.append(raw[next])
 			anchor = next
 		if anchor != raw.size() - 1: continue
-		if _segment_clear(result[result.size() - 1], target): result.append(target)
+		if segment_clear.call(result[result.size() - 1], target): result.append(target)
 		return result
 	return PackedVector2Array()
 

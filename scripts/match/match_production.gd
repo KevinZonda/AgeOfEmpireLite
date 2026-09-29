@@ -10,7 +10,7 @@ static func train_unit(game: Node2D, building: RtsBuilding, unit_kind: String) -
 		for unit in game.units:
 			if is_instance_valid(unit) and unit.owner_id == building.owner_id and unit.kind == "imperial_official": officials += 1
 		for producer in game.buildings:
-			if is_instance_valid(producer) and producer.owner_id == building.owner_id: officials += producer.training_queue.count("imperial_official")
+			if is_instance_valid(producer) and producer.owner_id == building.owner_id: officials += producer.queued_unit_count("imperial_official")
 		if officials >= 4: return false
 	if game.population_used(building.owner_id) + RtsBalanceData.population_cost(unit_kind) > game.population_cap(building.owner_id):
 		if building.owner_id == 0: game.notify_player("人口已满，请建造房屋")
@@ -27,8 +27,8 @@ static func train_unit(game: Node2D, building: RtsBuilding, unit_kind: String) -
 static func queued_research(game: Node2D, owner_id: int) -> Array[String]:
 	var result: Array[String] = []
 	for building in game.buildings:
-		if not is_instance_valid(building) or building.owner_id != owner_id: continue
-		for tech_id in building.research_queue:
+		if not is_instance_valid(building) or building.owner_id != owner_id or building.production_queue.is_empty(): continue
+		for tech_id in building.queued_research_ids():
 			if not result.has(tech_id): result.append(tech_id)
 	return result
 
