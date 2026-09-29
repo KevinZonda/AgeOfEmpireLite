@@ -309,11 +309,7 @@ func _apply_ui_scales() -> void:
 	# CanvasItem font oversampling sees Control transforms, but not CanvasLayer transforms.
 	ui_root.scale = Vector2.ONE * effective_scale
 	ui_root.size = viewport_size / effective_scale
-	_scale_ui_fonts(ui_root, text_scale / effective_scale)
-	var tooltip_size := maxi(1, roundi(base_tooltip_font_size * text_scale))
-	var default_theme := ThemeDB.get_default_theme()
-	if default_theme.get_font_size("font_size", "TooltipLabel") != tooltip_size:
-		default_theme.set_font_size("font_size", "TooltipLabel", tooltip_size)
+	RtsUiTypography.apply_tree(ui_root, text_scale, effective_scale, base_tooltip_font_size)
 	if cursor != null:
 		cursor.text_scale = text_scale
 		cursor.queue_redraw()
@@ -322,32 +318,6 @@ func _apply_ui_scales() -> void:
 		_redraw_projected_entities()
 		if objectives != null: objectives.queue_redraw()
 		queue_redraw()
-
-func _scale_ui_fonts(node: Node, factor: float) -> void:
-	if node is PopupMenu:
-		var popup: PopupMenu = node
-		if not popup.has_meta("base_ui_font_size"):
-			popup.set_meta("base_ui_font_size", popup.get_theme_font_size("font_size"))
-		var popup_size := maxi(1, roundi(int(popup.get_meta("base_ui_font_size")) * text_scale))
-		if popup.get_theme_font_size("font_size") != popup_size:
-			popup.add_theme_font_size_override("font_size", popup_size)
-	elif node is Label or node is BaseButton or node is LineEdit or node is TextEdit or node is RichTextLabel or node is TabContainer:
-		var control: Control = node
-		var font_key := "normal_font_size" if node is RichTextLabel else "font_size"
-		if not control.has_meta("base_ui_font_size"):
-			control.set_meta("base_ui_font_size", control.get_theme_font_size(font_key))
-		var base_size: int = control.get_meta("base_ui_font_size")
-		var font_factor := text_scale if control.theme_type_variation == "TooltipLabel" else factor
-		var scaled_size := maxi(1, roundi(base_size * font_factor))
-		if control.get_theme_font_size(font_key) != scaled_size:
-			control.add_theme_font_size_override(font_key, scaled_size)
-	if node is RtsStatisticsChart:
-		var chart: RtsStatisticsChart = node
-		if not is_equal_approx(chart.text_scale, text_scale):
-			chart.text_scale = text_scale
-			chart.queue_redraw()
-	var child_factor := text_scale if node is PopupMenu else factor
-	for child in node.get_children(true): _scale_ui_fonts(child, child_factor)
 
 func _hud_panel_style(color: Color, margin: float) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
@@ -2216,7 +2186,7 @@ func _draw() -> void:
 				var text_color := Color("e8ce76") if effect["resource"] == "gold" else Color("a7da80") if effect["resource"] == "food" else Color("d3ac77")
 				var lift := RtsIsoProjection.world_delta(get_viewport().get_canvas_transform(), Vector2(0, -20.0 - progress * 26.0))
 				draw_set_transform_matrix(RtsIsoProjection.upright(get_viewport().get_canvas_transform(), effect_point + lift))
-				draw_string(ThemeDB.fallback_font, Vector2(-9, 0), "+%d" % effect["amount"], HORIZONTAL_ALIGNMENT_LEFT, -1, maxi(1, roundi(RtsUiTypography.CAPTION * text_scale)), Color(text_color, alpha))
+				draw_string(ThemeDB.fallback_font, Vector2(-9, 0), "+%d" % effect["amount"], HORIZONTAL_ALIGNMENT_LEFT, -1, RtsUiTypography.screen_font_size(RtsUiTypography.CAPTION, text_scale), Color(text_color, alpha))
 				draw_set_transform_matrix(Transform2D.IDENTITY)
 			"death", "collapse":
 				var radius := (10.0 if effect["kind"] == "death" else 25.0) * (0.8 + progress * 0.6)

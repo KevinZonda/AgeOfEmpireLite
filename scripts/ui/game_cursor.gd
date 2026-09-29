@@ -87,13 +87,13 @@ func _draw() -> void:
 	if label != "":
 		var font := ThemeDB.fallback_font
 		if font != null:
-			var label_size := maxi(1, roundi(RtsUiTypography.BODY * text_scale))
+			var label_size := RtsUiTypography.screen_font_size(RtsUiTypography.BODY, text_scale)
 			draw_string(font, Vector2(38, 31), label, HORIZONTAL_ALIGNMENT_LEFT, -1, label_size, Color("151d20"))
 			draw_string(font, Vector2(37, 30), label, HORIZONTAL_ALIGNMENT_LEFT, -1, label_size, accent)
 	if context_text != "":
 		var font := ThemeDB.fallback_font
 		if font != null:
-			var context_size := maxi(1, roundi(RtsUiTypography.CAPTION * text_scale))
+			var context_size := RtsUiTypography.screen_font_size(RtsUiTypography.CAPTION, text_scale)
 			var width := font.get_string_size(context_text, HORIZONTAL_ALIGNMENT_LEFT, -1, context_size).x + 16.0
 			var height := maxf(25.0, context_size + 12.0)
 			draw_rect(Rect2(18, 43, width, height), Color("2c241b", 0.94))

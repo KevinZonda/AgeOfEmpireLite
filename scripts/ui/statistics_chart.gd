@@ -6,6 +6,7 @@ var statistics: RtsMatchStatistics
 var metric := "stock"
 var player_colors: Array[Color] = []
 var text_scale := 1.0
+var ui_scale := 1.0
 
 func _ready() -> void:
 	custom_minimum_size = Vector2(690, 260)
@@ -16,7 +17,7 @@ func show_metric(chosen: String) -> void:
 	queue_redraw()
 
 func _draw() -> void:
-	var margin_scale := maxf(1.0, text_scale)
+	var margin_scale := maxf(1.0, text_scale / maxf(ui_scale, 0.01))
 	var bounds := Rect2(Vector2(46 * margin_scale, 10), size - Vector2(60 * margin_scale, 40 * margin_scale))
 	draw_rect(bounds, Color("192b2a"), true)
 	if statistics == null or statistics.samples.is_empty(): return
@@ -44,4 +45,4 @@ func _draw() -> void:
 
 func _draw_label(at: Vector2, value: String) -> void:
 	var font := ThemeDB.fallback_font
-	if font != null: draw_string(font, at, value, HORIZONTAL_ALIGNMENT_LEFT, -1, maxi(1, roundi(RtsUiTypography.CAPTION * text_scale)), Color("d8e4d8"))
+	if font != null: draw_string(font, at, value, HORIZONTAL_ALIGNMENT_LEFT, -1, RtsUiTypography.ui_font_size(RtsUiTypography.CAPTION, text_scale, ui_scale), Color("d8e4d8"))

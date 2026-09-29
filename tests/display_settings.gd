@@ -203,7 +203,7 @@ func _run() -> void:
 	assert(absf(game.top_label.get_theme_font_size("font_size") * 1.5 - top_base_font) < 1.0)
 	game.text_scale = 1.25
 	game._apply_ui_scales()
-	assert(game.window_mode_choice.get_popup().get_theme_font_size("font_size") == 20, "dropdown text scale should be independent of UI scale")
+	assert(absf(game.window_mode_choice.get_popup().get_theme_font_size("font_size") * 1.5 - 20.0) <= 1.0, "dropdown text should reach 125% on screen after UI scaling")
 	game.text_scale = 1.5
 	game._apply_ui_scales()
 	await process_frame
@@ -212,7 +212,7 @@ func _run() -> void:
 	game.text_scale = 2.0
 	game._apply_ui_scales()
 	await process_frame
-	assert(game.window_mode_choice.get_popup().get_theme_font_size("font_size") == 32)
+	assert(absf(game.window_mode_choice.get_popup().get_theme_font_size("font_size") * 1.5 - 32.0) <= 1.0)
 	assert(game.text_scale_choice.get_item_text(5) == "200%" and game.text_scale_choice.size.x <= 300)
 	game.text_scale = 1.0
 	game._apply_ui_scales()
