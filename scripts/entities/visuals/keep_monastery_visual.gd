@@ -82,6 +82,12 @@ static func _keep_iso(c: CanvasItem, nw: Vector2, ne: Vector2, sw: Vector2, lift
 	var curtain_up := _up(canvas, zoom, 22.0)
 	_wall(c, _pt(nw, ne, sw, 0.1, 0.1) + ground, _pt(nw, ne, sw, 0.9, 0.1) + ground, curtain_up, wall.darkened(0.23), trim)
 	_wall(c, _pt(nw, ne, sw, 0.9, 0.1) + ground, _pt(nw, ne, sw, 0.9, 0.9) + ground, curtain_up, wall.darkened(0.17), trim)
+	# The near curtains sit below the donjon roof in screen space. Draw them
+	# first so their tall polygons cannot erase the upper tower and battlements.
+	_wall(c, _pt(nw, ne, sw, 0.1, 0.1) + ground, _pt(nw, ne, sw, 0.1, 0.9) + ground, curtain_up, wall.darkened(0.07), trim)
+	_wall(c, _pt(nw, ne, sw, 0.1, 0.9) + ground, _pt(nw, ne, sw, 0.9, 0.9) + ground, curtain_up, wall, trim)
+	_turret(c, nw, ne, sw, ground, 0.12, 0.12, palette, canvas, zoom, false)
+	_turret(c, nw, ne, sw, ground, 0.88, 0.12, palette, canvas, zoom, false)
 	# The taller square donjon gives the keep a distinct center above the walls.
 	var donjon_up := _up(canvas, zoom, 51.0)
 	var top := _block(c, nw, ne, sw, ground, donjon_up, 0.3, 0.18, 0.4, 0.44, wall, trim)
@@ -97,11 +103,7 @@ static func _keep_iso(c: CanvasItem, nw: Vector2, ne: Vector2, sw: Vector2, lift
 		var slit := _pt(nw, ne, sw, 0.7, v) + ground + donjon_up * 0.72
 		c.draw_line(slit, slit + donjon_up * 0.15, trim, 4.0)
 		c.draw_line(slit + donjon_up * 0.025, slit + donjon_up * 0.13, Color("394342"), 2.4)
-	# Rear turrets go behind the near curtain; front turrets frame the gate.
-	_turret(c, nw, ne, sw, ground, 0.12, 0.12, palette, canvas, zoom, false)
-	_turret(c, nw, ne, sw, ground, 0.88, 0.12, palette, canvas, zoom, false)
-	_wall(c, _pt(nw, ne, sw, 0.1, 0.1) + ground, _pt(nw, ne, sw, 0.1, 0.9) + ground, curtain_up, wall.darkened(0.07), trim)
-	_wall(c, _pt(nw, ne, sw, 0.1, 0.9) + ground, _pt(nw, ne, sw, 0.9, 0.9) + ground, curtain_up, wall, trim)
+	# Front turrets and gate frame the completed central tower.
 	var entrance := _pt(nw, ne, sw, 0.5, 0.9) + ground
 	var gate_up := _up(canvas, zoom, 14.0)
 	var gate_half := (ne - nw) * 0.095
@@ -171,12 +173,8 @@ static func _monastery_iso(c: CanvasItem, nw: Vector2, ne: Vector2, sw: Vector2,
 	var trim: Color = palette["trim"]
 	var roof: Color = palette["roof"]
 	var dark: Color = palette["roof_dark"]
-	# Small roofed side aisles and the tall central nave make a church silhouette.
-	var aisle_up := _up(canvas, zoom, 18.0)
-	var left := _block(c, nw, ne, sw, floor, aisle_up, 0.07, 0.3, 0.28, 0.47, wall, trim)
-	_gable(c, left, _up(canvas, zoom, 8.0), palette, civ)
-	var right := _block(c, nw, ne, sw, floor, aisle_up, 0.7, 0.3, 0.24, 0.47, wall, trim)
-	_gable(c, right, _up(canvas, zoom, 8.0), palette, civ)
+	# The nave is the visible central mass; detached aisle roofs overlap its
+	# projected gable at this camera angle and leave stray roof slivers.
 	var nave_up := _up(canvas, zoom, 27.0)
 	var nave := _block(c, nw, ne, sw, floor, nave_up, 0.31, 0.1, 0.43, 0.76, wall, trim)
 	_gable(c, nave, _up(canvas, zoom, 15.0), palette, civ)

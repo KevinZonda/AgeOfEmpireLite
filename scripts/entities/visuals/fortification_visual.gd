@@ -65,6 +65,10 @@ static func _stone_iso(c: CanvasItem, back_a: Vector2, back_b: Vector2, front_a:
 	var top := lift
 	# The full top walkway and two stone faces replace the generic low plinth.
 	_poly(c, [back_a + top, back_b + top, front_b + top, front_a + top], trim.darkened(0.17))
+	# The far end of the wall is exposed to the isometric camera. Keep its
+	# thickness visible below the walkway, including on gate segments.
+	_poly(c, [back_b, front_b, front_b + top, back_b + top], shade)
+	c.draw_line(back_b + top, front_b + top, trim.darkened(0.2), 1.6)
 	if gate:
 		for section in [[0.0, 0.32], [0.68, 1.0]]:
 			_face(c, front_a, front_b, top, float(section[0]), float(section[1]), stone)
@@ -108,6 +112,9 @@ static func _palisade_iso(c: CanvasItem, back_a: Vector2, back_b: Vector2, front
 	var dark := timber.darkened(0.24)
 	# The back row and shadow give the fence real thickness at both rotations.
 	_poly(c, [back_a + lift * 0.85, back_b + lift * 0.85, front_b + lift * 0.85, front_a + lift * 0.85], dark)
+	_poly(c, [back_b, front_b, front_b + lift * 0.91, back_b + lift * 0.91], timber.darkened(0.34))
+	for h in [0.35, 0.68]:
+		c.draw_line(back_b + lift * h, front_b + lift * h, pale.darkened(0.16), 1.5)
 	for i in 14:
 		var t := (float(i) + 0.5) / 14.0
 		if gate and t > 0.30 and t < 0.70: continue

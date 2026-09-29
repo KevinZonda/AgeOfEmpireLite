@@ -103,7 +103,7 @@ const BUILD_PAGES := [
 	{"title": "军事", "kinds": ["barracks", "archery_range", "stable", "siege_workshop", "outpost", "keep", "", "", "palisade_wall", "stone_wall", "palisade_gate", "stone_gate"]},
 ]
 const COMMANDS_PER_PAGE := 12
-const HUD_BOTTOM_HEIGHT := 230.0
+const HUD_BOTTOM_HEIGHT := 241.0
 var game: Node2D
 var top_column: VBoxContainer
 var top_row: HBoxContainer
