@@ -44,7 +44,8 @@ func _run() -> void:
 	assert(game._fit_window_size_to_screen(Vector2i(1024, 768)) == Vector2i(960, 691))
 	assert(game.ui_scale_values == [0.75, 1.0])
 	assert(game.ui_scale_choice.selected == 1)
-	assert(game.text_scale_choice.item_count == 4 and game.text_scale_choice.selected == 1)
+	assert(game.text_scale_choice.item_count == 6 and game.text_scale_choice.selected == 1)
+	assert(game.text_scale_choice.get_item_text(4) == "175%" and game.text_scale_choice.get_item_text(5) == "200%")
 	assert(game.minimap_size_choice.item_count == 3 and game.minimap_size_choice.selected == 1)
 	for setting in [
 		[game.window_mode_choice, "显示模式"],
@@ -208,6 +209,11 @@ func _run() -> void:
 	await process_frame
 	assert(game.window_mode_choice.size.x <= 300 and game.window_mode_choice.get_parent().size.x < 450, "selectors should remain compact at 150% UI and text scale")
 	assert(game.building_icons_toggle.size.x < 240, "switches should remain compact at 150% UI and text scale")
+	game.text_scale = 2.0
+	game._apply_ui_scales()
+	await process_frame
+	assert(game.window_mode_choice.get_popup().get_theme_font_size("font_size") == 32)
+	assert(game.text_scale_choice.get_item_text(5) == "200%" and game.text_scale_choice.size.x <= 300)
 	game.text_scale = 1.0
 	game._apply_ui_scales()
 	game.ui_scale = 1.0

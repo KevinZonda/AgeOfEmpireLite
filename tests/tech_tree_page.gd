@@ -40,6 +40,16 @@ func _run() -> void:
 			assert(not unlock_details.is_empty() and (unlock_details[0] as Label).get_theme_font_size("font_size") == 21, "tech tree details should use readable caption size")
 			assert(game.tech_tree_civilization_choice.get_popup().get_theme_font_size("font_size") == 24, "tech tree dropdown items should follow text scale")
 			assert(ThemeDB.get_default_theme().get_font_size("font_size", "TooltipLabel") == 24, "tech tree tooltips should follow text scale")
+			for large_scale in [1.75, 2.0]:
+				game.text_scale = large_scale
+				game._apply_ui_scales()
+				await process_frame
+				await process_frame
+				assert(tree_title.get_theme_font_size("font_size") == roundi(28 * large_scale))
+				assert(game.tech_tree_civilization_choice.get_popup().get_theme_font_size("font_size") == roundi(16 * large_scale))
+				for node in game.tech_tree_overlay.find_children("*", "Label", true, false):
+					var label := node as Label
+					assert(label.get_combined_minimum_size().x <= label.size.x + 1.0 and label.get_combined_minimum_size().y <= label.size.y + 1.0, "tech tree text should fit at %d%%: %s" % [roundi(large_scale * 100), label.text])
 			game.text_scale = 1.0
 			game._apply_ui_scales()
 			assert(tree_title.get_theme_font_size("font_size") == 28)

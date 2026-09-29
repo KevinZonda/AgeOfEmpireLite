@@ -48,14 +48,16 @@ func _run() -> void:
 	page.selected_kind = "bombard"
 	page.age = 4
 	page._refresh_selection()
-	game.text_scale = 1.5
-	game._apply_ui_scales()
-	await process_frame
-	for node in page.find_children("*", "Label", true, false):
-		var label := node as Label
-		assert(label.get_theme_font_size("font_size") >= 21, "preview labels should use at least the shared caption size")
-		if label.get_parent() == page.stats_box:
-			assert(label.get_combined_minimum_size().x <= label.size.x + 1.0, "preview stat text should wrap inside its column")
+	for large_scale in [1.5, 1.75, 2.0]:
+		game.text_scale = large_scale
+		game._apply_ui_scales()
+		await process_frame
+		assert(page_title.get_theme_font_size("font_size") == roundi(28 * large_scale))
+		for node in page.find_children("*", "Label", true, false):
+			var label := node as Label
+			assert(label.get_theme_font_size("font_size") >= roundi(14 * large_scale), "preview labels should use at least the shared caption size")
+			if label.get_parent() == page.stats_box:
+				assert(label.get_combined_minimum_size().x <= label.size.x + 1.0, "preview stat text should wrap inside its column")
 	var preview_font: Font = page.stats_box.get_child(0).get_theme_font("font")
 	for character in "远程护甲减伤攻城":
 		assert(preview_font.has_char(character.unicode_at(0)), "the UI font should contain every preview stat glyph")
