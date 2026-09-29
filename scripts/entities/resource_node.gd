@@ -2,6 +2,9 @@ class_name RtsResource
 extends Node2D
 
 const OreVisual = preload("res://scripts/entities/visuals/ore_visual.gd")
+const DEER_WALK_SPEED := 18.0
+const DEER_FLEE_SPEED := 80.0
+const DEER_THREAT_RADIUS := 75.0
 
 var game: Node2D
 var kind: String
@@ -17,6 +20,7 @@ var claim_timer := 0.0
 var wildlife_hp := 0.0
 var wildlife_scan := 0.0
 var wildlife_attack := 0.0
+var deer_flee_target := Vector2.INF
 
 func setup(resource_kind: String, quantity: int, visual_kind := "") -> void:
 	kind = resource_kind
@@ -25,6 +29,7 @@ func setup(resource_kind: String, quantity: int, visual_kind := "") -> void:
 	appearance = visual_kind
 	wildlife_hp = 90.0 if appearance == "boar" else 12.0 if appearance == "deer" else 1.0
 	home_position = position
+	deer_flee_target = Vector2.INF
 	wander_time = position.x * 0.013 + position.y * 0.019
 	queue_redraw()
 
@@ -37,20 +42,48 @@ func _process(delta: float) -> void:
 		_process_boar(delta)
 		return
 	if appearance != "deer" or wildlife_hp <= 0.0: return
+	_process_deer(delta)
+
+func _process_deer(delta: float) -> void:
 	wander_time += delta
-	var desired := home_position + Vector2(sin(wander_time * 0.75) * 14.0, cos(wander_time * 0.52) * 10.0)
 	wildlife_scan -= delta
 	if wildlife_scan <= 0.0:
 		wildlife_scan = 0.35
-		for unit in game.navigation.nearby_units(position, 75.0):
-			if unit.garrisoned_in == null and unit.kind != "villager":
-				var away: Vector2 = (position - unit.position).normalized()
-				desired = position + away * 55.0
-				break
-	if game.world_map.is_walkable(desired):
-		var previous_position := position
-		position = desired
-		game.navigation.resource_moved(self, previous_position)
+		var threat: RtsUnit
+		var nearest := DEER_THREAT_RADIUS * DEER_THREAT_RADIUS
+		for unit in game.navigation.nearby_units(position, DEER_THREAT_RADIUS):
+			if unit.garrisoned_in != null or unit.kind == "villager": continue
+			var distance := position.distance_squared_to(unit.position)
+			if distance <= nearest:
+				nearest = distance
+				threat = unit
+		if threat != null:
+			var away := (position - threat.position).normalized()
+			if away.is_zero_approx(): away = Vector2.RIGHT
+			deer_flee_target = position + away * 55.0
+	# Keep the escape between scans instead of jumping back to the home orbit
+	# on the very next frame. Both wandering and fleeing obey a speed limit.
+	var fleeing := deer_flee_target != Vector2.INF
+	var desired := deer_flee_target if fleeing else home_position + Vector2(sin(wander_time * 0.75) * 14.0, cos(wander_time * 0.52) * 10.0)
+	desired = desired.clamp(Vector2.ONE * radius, game.world_size - Vector2.ONE * radius)
+	var previous := position
+	var next := position.move_toward(desired, (DEER_FLEE_SPEED if fleeing else DEER_WALK_SPEED) * delta)
+	# Check the whole movement, including long frames; a walkable endpoint
+	# across a lake must not let wildlife jump over the intervening water.
+	var samples := maxi(1, ceili(previous.distance_to(next) / (RtsWorldMap.CELL_SIZE * 0.25)))
+	var blocked := false
+	for index in range(1, samples + 1):
+		var point := previous.lerp(next, float(index) / samples)
+		if not game.world_map.is_walkable(point):
+			blocked = true
+			break
+		position = point
+	if fleeing and (blocked or position.distance_squared_to(desired) < 0.01):
+		# Settle where the escape ended rather than orbiting the old threat.
+		home_position = position
+		deer_flee_target = Vector2.INF
+	if position != previous:
+		game.navigation.resource_moved(self, previous)
 		queue_redraw()
 
 func _process_boar(delta: float) -> void:
