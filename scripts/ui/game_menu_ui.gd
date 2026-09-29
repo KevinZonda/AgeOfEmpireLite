@@ -16,12 +16,7 @@ func _create_settings(parent: Control) -> void:
 	game.settings_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 	parent.add_child(game.settings_overlay)
 	var panel := PanelContainer.new()
-	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	panel.custom_minimum_size = Vector2(680, 540)
-	panel.offset_left = -340
-	panel.offset_top = -270
-	panel.offset_right = 340
-	panel.offset_bottom = 270
+	panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	panel.add_theme_stylebox_override("panel", game._hud_panel_style(Color("30271c"), 20))
 	game.settings_overlay.add_child(panel)
 	var box := VBoxContainer.new()
@@ -34,6 +29,7 @@ func _create_settings(parent: Control) -> void:
 	box.add_child(settings_layout)
 	var sidebar := VBoxContainer.new()
 	sidebar.custom_minimum_size.x = 126
+	sidebar.alignment = BoxContainer.ALIGNMENT_CENTER
 	sidebar.add_theme_constant_override("separation", 8)
 	settings_layout.add_child(sidebar)
 	game.settings_tabs = TabContainer.new()
@@ -50,8 +46,10 @@ func _create_settings(parent: Control) -> void:
 	var display_tab := VBoxContainer.new()
 	display_tab.name = "显示设置"
 	display_tab.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	display_tab.alignment = BoxContainer.ALIGNMENT_CENTER
 	display_tab.add_theme_constant_override("separation", 12)
 	display_scroll.add_child(display_tab)
+	display_scroll.resized.connect(func() -> void: display_tab.custom_minimum_size.y = display_scroll.size.y)
 	game.window_mode_choice = OptionButton.new()
 	game.window_mode_choice.add_item("窗口化")
 	game.window_mode_choice.add_item("全屏")
@@ -103,6 +101,7 @@ func _create_settings(parent: Control) -> void:
 	_add_menu_label(display_tab, "高于当前屏幕可用尺寸的选项不会显示。", 14)
 	var controls_tab := VBoxContainer.new()
 	controls_tab.name = "操作设置"
+	controls_tab.alignment = BoxContainer.ALIGNMENT_CENTER
 	controls_tab.add_theme_constant_override("separation", 12)
 	game.settings_tabs.add_child(controls_tab)
 	game.edge_scroll_toggle = CheckButton.new()
@@ -262,11 +261,22 @@ func _show_menu() -> void:
 	_show_home_menu()
 
 func _menu_panel_size(dimensions: Vector2) -> void:
+	game.menu_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	game.menu_panel.custom_minimum_size = dimensions
+	game.menu_panel.add_theme_stylebox_override("panel", game._parchment_style(Color("d1bb8c"), 23))
 	game.menu_panel.offset_left = -dimensions.x * 0.5
 	game.menu_panel.offset_top = -dimensions.y * 0.5
 	game.menu_panel.offset_right = dimensions.x * 0.5
 	game.menu_panel.offset_bottom = dimensions.y * 0.5
+	_clear_menu_panel()
+
+func _menu_panel_full_view() -> void:
+	game.menu_panel.custom_minimum_size = Vector2.ZERO
+	game.menu_panel.add_theme_stylebox_override("panel", game._parchment_style(Color("d1bb8c"), 16))
+	game.menu_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_clear_menu_panel()
+
+func _clear_menu_panel() -> void:
 	for child in game.menu_panel.get_children():
 		game.menu_panel.remove_child(child)
 		child.queue_free()
@@ -320,7 +330,7 @@ func _show_home_menu() -> void:
 	game.menu_panel.show()
 
 func _show_setup_menu() -> void:
-	_menu_panel_size(Vector2(1150, 610))
+	_menu_panel_full_view()
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 10)
 	game.menu_panel.add_child(box)
@@ -340,21 +350,36 @@ func _show_setup_menu() -> void:
 	box.add_child(body_scroll)
 	var body := HBoxContainer.new()
 	body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	body.add_theme_constant_override("separation", 14)
 	body_scroll.add_child(body)
-	var players_column := _menu_section(body, "玩家信息", 665)
+	body_scroll.resized.connect(func() -> void: body.custom_minimum_size.y = body_scroll.size.y)
+	var players_column := _menu_section(body, "玩家信息", 0)
+	players_column.get_parent().size_flags_stretch_ratio = 1.7
 	var heading := HBoxContainer.new()
 	heading.add_theme_constant_override("separation", 6)
 	players_column.add_child(heading)
 	var player_heading := _menu_ink_label(heading, "玩家", 14)
 	player_heading.custom_minimum_size.x = 80
+	player_heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	player_heading.size_flags_stretch_ratio = 1.2
 	var difficulty_heading := _menu_ink_label(heading, "AI 强度", 14)
 	difficulty_heading.custom_minimum_size.x = 100
+	difficulty_heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var nation_heading := _menu_ink_label(heading, "国家", 14)
 	nation_heading.custom_minimum_size.x = 115
+	nation_heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	nation_heading.size_flags_stretch_ratio = 1.2
 	var team_heading := _menu_ink_label(heading, "队伍", 14)
 	team_heading.custom_minimum_size.x = 58
-	_menu_ink_label(heading, "颜色", 14)
+	team_heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	team_heading.size_flags_stretch_ratio = 0.7
+	var color_heading := _menu_ink_label(heading, "颜色", 14)
+	color_heading.custom_minimum_size.x = 58
+	color_heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	color_heading.size_flags_stretch_ratio = 0.7
+	_menu_ink_label(heading, "科技树", 14).custom_minimum_size.x = 72
+	_menu_ink_label(heading, "", 14).custom_minimum_size.x = 32
 	game.player_list = VBoxContainer.new()
 	game.player_list.add_theme_constant_override("separation", 7)
 	players_column.add_child(game.player_list)
@@ -440,9 +465,12 @@ func _refresh_player_rows() -> void:
 		game.player_list.add_child(row)
 		var player_name := _menu_ink_label(row, "玩家 %d%s" % [slot + 1, " (你)" if slot == 0 else ""], 15)
 		player_name.custom_minimum_size.x = 80
+		player_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		player_name.size_flags_stretch_ratio = 1.2
 		player_name.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		var difficulty := OptionButton.new()
 		difficulty.custom_minimum_size.x = 100
+		difficulty.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		if slot == 0:
 			difficulty.add_item("人类")
 			difficulty.disabled = true
@@ -456,6 +484,8 @@ func _refresh_player_rows() -> void:
 		row.add_child(difficulty)
 		var civilization := OptionButton.new()
 		civilization.custom_minimum_size.x = 115
+		civilization.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		civilization.size_flags_stretch_ratio = 1.2
 		for civ in civilization_ids: civilization.add_item(GameData.CIVILIZATIONS[civ]["label"])
 		civilization.selected = civilization_ids.find(game.lobby_players[slot]["civilization"])
 		civilization.item_selected.connect(func(value: int) -> void:
@@ -465,6 +495,8 @@ func _refresh_player_rows() -> void:
 		row.add_child(civilization)
 		var team := OptionButton.new()
 		team.custom_minimum_size.x = 58
+		team.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		team.size_flags_stretch_ratio = 0.7
 		for team_id in range(1, 4): team.add_item(str(team_id))
 		team.selected = clampi(int(game.lobby_players[slot].get("team", slot + 1)) - 1, 0, 2)
 		team.item_selected.connect(func(value: int) -> void:
@@ -475,6 +507,8 @@ func _refresh_player_rows() -> void:
 		row.add_child(team)
 		var color_choice := OptionButton.new()
 		color_choice.custom_minimum_size.x = 58
+		color_choice.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		color_choice.size_flags_stretch_ratio = 0.7
 		for color_index in game.PLAYER_COLORS.size():
 			color_choice.add_item("")
 			color_choice.set_item_icon(color_index, _color_swatch(game.PLAYER_COLORS[color_index]))

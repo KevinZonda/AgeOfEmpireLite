@@ -14,7 +14,7 @@ func _run() -> void:
 	assert(home_settings != null)
 	home_settings.pressed.emit()
 	assert(game.settings_overlay.visible and not game.menu_panel.visible)
-	assert(game.settings_overlay.get_child(0).get_global_rect().end.y <= game.get_viewport_rect().size.y)
+	assert(game.settings_overlay.get_child(0).get_global_rect() == Rect2(Vector2.ZERO, game.get_viewport_rect().size), "settings should fill the game view")
 	assert(game.settings_tabs.get_tab_count() == 2)
 	assert(game.settings_tabs.get_tab_title(0) == "显示设置")
 	assert(game.settings_tabs.get_tab_title(1) == "操作设置")
@@ -183,8 +183,8 @@ func _run() -> void:
 	var scaled_panel: Control = game.settings_overlay.get_child(0)
 	var scaled_transform: Transform2D = scaled_panel.get_global_transform_with_canvas()
 	var scaled_rect := Rect2(scaled_transform * Vector2.ZERO, scaled_transform * scaled_panel.size - scaled_transform * Vector2.ZERO)
-	assert(scaled_rect.position.x >= 0 and scaled_rect.position.y >= 0)
-	assert(scaled_rect.end.x <= 1920 and scaled_rect.end.y <= 1080)
+	assert(scaled_rect.position.is_equal_approx(Vector2.ZERO))
+	assert(scaled_rect.size.is_equal_approx(Vector2(1920, 1080)), "paused settings should fill the view with UI scaling")
 	assert(absf(game.top_label.get_theme_font_size("font_size") * 1.5 - top_base_font) < 1.0)
 	game.ui_scale = 1.0
 	game._apply_ui_scales()
@@ -204,13 +204,27 @@ func _run() -> void:
 		if label.text == "对 局 设 置": scaled_title = label
 	assert(scaled_title != null and scaled_title.get_theme_font_size("font_size") == 45)
 	var menu_rect: Rect2 = game.menu_panel.get_global_rect()
-	assert(menu_rect.position.x >= 0 and menu_rect.position.y >= 0)
-	assert(menu_rect.end.x <= 1280 and menu_rect.end.y <= 720)
+	assert(menu_rect.position.is_equal_approx(Vector2.ZERO))
+	assert(menu_rect.size.is_equal_approx(Vector2(1280, 720)), "match setup should fill the game view")
+	root.size = Vector2i(1920, 1080)
+	await process_frame
+	menu_rect = game.menu_panel.get_global_rect()
+	assert(menu_rect.position.is_equal_approx(Vector2.ZERO))
+	assert(menu_rect.size.is_equal_approx(Vector2(1920, 1080)), "match setup should fill a resized view")
+	game.ui_scale = 0.75
+	game._apply_ui_scales()
+	await process_frame
+	var setup_transform: Transform2D = game.menu_panel.get_global_transform_with_canvas()
+	var scaled_setup_size: Vector2 = setup_transform * game.menu_panel.size - setup_transform * Vector2.ZERO
+	assert(scaled_setup_size.is_equal_approx(Vector2(1920, 1080)), "match setup should also fill the view with UI scaling")
+	game.ui_scale = 1.0
+	game._apply_ui_scales()
+	root.size = Vector2i(1280, 720)
+	await process_frame
 	game._show_settings()
 	await process_frame
 	var settings_rect: Rect2 = game.settings_overlay.get_child(0).get_global_rect()
-	assert(settings_rect.position.x >= 0 and settings_rect.position.y >= 0)
-	assert(settings_rect.end.x <= 1280 and settings_rect.end.y <= 720)
+	assert(settings_rect == Rect2(Vector2.ZERO, Vector2(1280, 720)), "settings should fill the view from match setup")
 	game.free()
 	print("DISPLAY_SETTINGS_OK")
 	quit()
