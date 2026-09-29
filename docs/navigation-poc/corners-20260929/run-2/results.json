@@ -1,0 +1,10 @@
+[
+  {
+    "test": "navigation_corner_poc",
+    "passed": false,
+    "exit_code": 1,
+    "timeout": false,
+    "seconds": 11.693,
+    "log": "docs/navigation-poc/corners-20260929/run-2/navigation_corner_poc.log"
+  }
+]

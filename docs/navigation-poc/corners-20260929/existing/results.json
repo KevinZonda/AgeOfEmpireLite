@@ -1,0 +1,154 @@
+[
+  {
+    "test": "navigation_grid_raster",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 1.305,
+    "log": "docs/navigation-poc/corners-20260929/existing/navigation_grid_raster.log"
+  },
+  {
+    "test": "navigation_dense_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 2.002,
+    "log": "docs/navigation-poc/corners-20260929/existing/navigation_dense_poc.log"
+  },
+  {
+    "test": "navigation_tasks_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 26.502,
+    "log": "docs/navigation-poc/corners-20260929/existing/navigation_tasks_poc.log"
+  },
+  {
+    "test": "navigation_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 1.042,
+    "log": "docs/navigation-poc/corners-20260929/existing/navigation_poc.log"
+  },
+  {
+    "test": "navigation_poc_matrix",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 3.955,
+    "log": "docs/navigation-poc/corners-20260929/existing/navigation_poc_matrix.log"
+  },
+  {
+    "test": "navigation_construction_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 2.198,
+    "log": "docs/navigation-poc/corners-20260929/existing/navigation_construction_poc.log"
+  },
+  {
+    "test": "navigation",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 2.124,
+    "log": "docs/navigation-poc/corners-20260929/existing/navigation.log"
+  },
+  {
+    "test": "navigation_routes",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.347,
+    "log": "docs/navigation-poc/corners-20260929/existing/navigation_routes.log"
+  },
+  {
+    "test": "navigation_replanning",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.444,
+    "log": "docs/navigation-poc/corners-20260929/existing/navigation_replanning.log"
+  },
+  {
+    "test": "group_replanning",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.438,
+    "log": "docs/navigation-poc/corners-20260929/existing/group_replanning.log"
+  },
+  {
+    "test": "group_chokepoint",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 2.037,
+    "log": "docs/navigation-poc/corners-20260929/existing/group_chokepoint.log"
+  },
+  {
+    "test": "group_mass_chokepoint",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 4.662,
+    "log": "docs/navigation-poc/corners-20260929/existing/group_mass_chokepoint.log"
+  },
+  {
+    "test": "group_multiplayer",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 6.018,
+    "log": "docs/navigation-poc/corners-20260929/existing/group_multiplayer.log"
+  },
+  {
+    "test": "terrain_selection_follow",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 2.543,
+    "log": "docs/navigation-poc/corners-20260929/existing/terrain_selection_follow.log"
+  },
+  {
+    "test": "extended_systems",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 3.61,
+    "log": "docs/navigation-poc/corners-20260929/existing/extended_systems.log"
+  },
+  {
+    "test": "economy_siege_controls",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 1.669,
+    "log": "docs/navigation-poc/corners-20260929/existing/economy_siege_controls.log"
+  },
+  {
+    "test": "smoke",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 3.839,
+    "log": "docs/navigation-poc/corners-20260929/existing/smoke.log"
+  },
+  {
+    "test": "villager_boar_escape",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 2.006,
+    "log": "docs/navigation-poc/corners-20260929/existing/villager_boar_escape.log"
+  },
+  {
+    "test": "combat_rules",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.402,
+    "log": "docs/navigation-poc/corners-20260929/existing/combat_rules.log"
+  }
+]
