@@ -81,7 +81,6 @@ ACTION_ICON_SOURCES = {
     "camp": ("tech_ability", "预备营地"),
     "artillery_shot": ("tech_ability", "火炮射击"),
     "hold": ("tech", "就地坚守"),
-    "ungarrison": ("tech", "驻扎命令"),
     "trade": ("tech", "交易袋"),
 }
 
