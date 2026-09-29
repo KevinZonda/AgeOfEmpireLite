@@ -945,12 +945,21 @@ func _local_unit_path(unit: RtsUnit, target: Vector2, step: float, half: int) ->
 	var exits := _local_exit_candidates(grid, unit.position, target)
 	if exits.is_empty(): return PackedVector2Array()
 	var candidates: Array[Vector2i] = []
-	for cell in _local_reachable_cells(grid, start):
-		if exits.has(cell): candidates.append(cell)
+	candidates.assign(exits.keys())
 	candidates.sort_custom(func(a: Vector2i, b: Vector2i) -> bool: return grid.get_point_position(a).distance_squared_to(target) < grid.get_point_position(b).distance_squared_to(target))
+	var connectivity_checked := false
+	var reachable := {}
 	for cell in candidates:
+		if connectivity_checked and not reachable.has(cell): continue
+		# Native A* usually reaches the nearest usable exit immediately. Avoid
+		# a GDScript flood of the entire open region before that cheap search.
+		# On failure, filter once so disconnected exits cannot multiply A* work.
 		var raw := _point_path(grid, start, cell)
-		if raw.size() < 2: continue
+		if raw.size() < 2:
+			if not connectivity_checked:
+				for point in _local_reachable_cells(grid, start): reachable[point] = true
+				connectivity_checked = true
+			continue
 		var result := PackedVector2Array([unit.position])
 		var anchor := 0
 		while anchor < raw.size() - 1:

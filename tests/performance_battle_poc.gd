@@ -2,14 +2,28 @@ extends SceneTree
 
 # Two compact armies actually approach and congest, unlike the paired melee
 # microbenchmark. Fixed simulation time keeps headless/windowed runs comparable.
+class BattleGame extends "res://scripts/game.gd":
+	func _load_settings() -> void:
+		# A saved macOS fullscreen preference starts an asynchronous transition
+		# that can override a later resize. Keep the benchmark independent of it.
+		pass
+
 func _initialize() -> void:
 	call_deferred("_run")
 
 func _run() -> void:
 	seed(4242)
-	var game: Node2D = load("res://scenes/main.tscn").instantiate()
+	var game: Node2D = BattleGame.new()
 	root.add_child(game)
 	await process_frame
+	# Stored fullscreen/scale preferences otherwise override command-line size.
+	game._apply_window_resolution(Vector2i(1280, 720), false)
+	game.ui_scale = 1.0
+	game.text_scale = 1.0
+	game.show_building_icons = true
+	game.show_building_names = true
+	game.health_bar_mode = "damaged"
+	game._apply_ui_scales()
 	game.start_game("English", 4242)
 	game.ai_controllers.clear()
 	game.process_mode = Node.PROCESS_MODE_DISABLED
@@ -33,7 +47,8 @@ func _run() -> void:
 	var fortress: RtsBuilding
 	if siege:
 		fortress = game.spawn_building(0, "town_center", center)
-		fortress.hp = 100000.0
+		fortress.max_hp = 100000.0
+		fortress.hp = fortress.max_hp
 	for side in (1 if siege else 2):
 		for i in count:
 			var offset := Vector2((60.0 + (i / 8) * 27.0) * (-1 if side == 0 else 1), (i % 8 - 3.5) * 27.0)
@@ -75,7 +90,7 @@ func _run() -> void:
 	var remaining_hp := 0.0
 	for unit in game.units: remaining_hp += maxf(0.0, unit.hp)
 	if siege: remaining_hp += maxf(0.0, fortress.hp)
-	print("BATTLE_POC ", JSON.stringify({"side": count, "siege": siege, "steps": steps, "flat": flat, "headless": DisplayServer.get_name() == "headless", "simulation": _summary(timings), "other_cpu": _summary(other_times), "hp_lost": initial_hp - remaining_hp, "frame": _summary(frames), "survivors": game.units.size(), "navigation": game.navigation.profile_snapshot()}))
+	print("BATTLE_POC ", JSON.stringify({"side": count, "siege": siege, "steps": steps, "flat": flat, "headless": DisplayServer.get_name() == "headless", "viewport": str(root.size), "projection_25d": game.view_mode_25d, "simulation": _summary(timings), "other_cpu": _summary(other_times), "hp_lost": initial_hp - remaining_hp, "frame": _summary(frames), "survivors": game.units.size(), "navigation": game.navigation.profile_snapshot()}))
 	game.free()
 	quit(0 if remaining_hp < initial_hp else 1)
 

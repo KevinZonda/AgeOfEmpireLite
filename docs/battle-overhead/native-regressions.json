@@ -1,0 +1,114 @@
+[
+  {
+    "test": "navigation_battle_native_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.442
+  },
+  {
+    "test": "navigation_battle_goal_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.447
+  },
+  {
+    "test": "navigation_battle_recovery_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.55
+  },
+  {
+    "test": "navigation_battle_retry_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.453
+  },
+  {
+    "test": "navigation_grid_raster",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 1.576
+  },
+  {
+    "test": "navigation_dense_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 2.305
+  },
+  {
+    "test": "navigation_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.811
+  },
+  {
+    "test": "navigation_poc_matrix",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 6.825
+  },
+  {
+    "test": "navigation_replanning",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.668
+  },
+  {
+    "test": "navigation_construction_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 1.786
+  },
+  {
+    "test": "navigation_tasks_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 23.348
+  },
+  {
+    "test": "navigation_corner_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 22.89
+  },
+  {
+    "test": "navigation_state_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 18.828
+  },
+  {
+    "test": "group_replanning",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.447
+  },
+  {
+    "test": "group_chokepoint",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 1.877
+  },
+  {
+    "test": "group_mass_chokepoint",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 3.849
+  }
+]
