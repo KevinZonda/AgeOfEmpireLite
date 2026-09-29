@@ -1,6 +1,8 @@
 # 《帝国时代 IV》建筑占地参考
 
-2026-09-29 查询；机器可读数据见 [aoe4-building-footprints.json](aoe4-building-footprints.json)。范围是**本项目 `GameData.BUILDINGS` 中有《帝国时代 IV》对应物的建筑**，不声称覆盖原版所有文明专属建筑或之后的补丁。面积指原版放置格数 `宽 × 高`，不是现实平方米、模型可见面积或本项目的像素面积。
+2026-09-29 查询；机器可读数据分为[本项目对应建筑](aoe4-building-footprints.json)与[其他原版建筑](aoe4-building-footprints-additional.json)。面积指原版放置格数 `宽 × 高`，不是现实平方米、模型可见面积或本项目的像素面积。这是参考表，不声称覆盖原版全部地标或未来补丁。
+
+[原版建筑总览](https://ageofempires.fandom.com/wiki/Building_(Age_of_Empires_IV))说明，普通建筑按方格放置，墙体采用自由路径；建筑地基边缘还留有单位可通过的空间。因此**放置占格、可见模型和单位实际阻挡范围不是同一个尺寸**。
 
 ## 已核实的矩形建筑
 
@@ -11,13 +13,27 @@
 | 4×4 | 16 | [城镇中心](https://ageofempires.fandom.com/wiki/Capital_Town_Center)、[铁匠铺](https://ageofempires.fandom.com/wiki/Blacksmith_(Age_of_Empires_IV))、[大学](https://ageofempires.fandom.com/wiki/University_(Age_of_Empires_IV))、[码头](https://ageofempires.fandom.com/wiki/Dock_(Age_of_Empires_IV))、[市场](https://ageofempires.fandom.com/wiki/Market_(Age_of_Empires_IV))、[修道院](https://ageofempires.fandom.com/wiki/Monastery_(Age_of_Empires_IV))、[城堡](https://ageofempires.fandom.com/wiki/Keep_(Age_of_Empires_IV)) |
 | 6×6 | 36 | [奇观](https://ageofempires.fandom.com/wiki/Wonder_(Age_of_Empires_IV)) |
 
-以上单体尺寸来自《帝国时代》社区 Wiki 对应页面的 **Statistics → Size** 信息框，属于社区整理资料，尚未用本机原版游戏或游戏蓝图逐一复测。[官方 6.0.878 更新说明](https://www.ageofempires.com/news/ageiv_seasonfour_update_60878/)另外明确：两座马里地标从 5×5 改为 4×4，以匹配其他地标；马里奇观从 5×5 改为 6×6，以匹配其他奇观。因此独立地标在本表按 **4×4（16 格）**记录，来源性质为官方对一类建筑的概括，而非逐座实测。
+以上单体尺寸来自《帝国时代》社区 Wiki 对应页面的 **Statistics → Size** 信息框，属于社区整理资料，尚未用本机原版游戏或游戏蓝图逐一复测。[官方 6.0.878 更新说明](https://www.ageofempires.com/news/ageiv_seasonfour_update_60878/)另外明确：两座马里地标从 5×5 改为 4×4；马里奇观从 5×5 改为 6×6。**4×4 不是所有地标的无例外规则**，见下表的智慧宫和撒哈拉贸易网络。
+
+## 其他文明专属建筑和变体
+
+下表列出新增数据中有明确数字的 35 种建筑；每项的文明、证据类型和直接来源链接在 [JSON](aoe4-building-footprints-additional.json) 中。特别要留意同一功能的建筑可能尺寸不同，例如普通马厩为 3×3，晋朝战马厩为 4×4；普通哨塔为 2×2，金帐汗国强化哨站为 3×3。
+
+| 原版占格 | 格数 | 其他建筑 |
+| --- | ---: | --- |
+| 2×2 | 4 | 水池、橄榄树林、蒙古包、农舍、牧场、狩猎小屋、木制堡垒 |
+| 3×3 | 9 | 雇佣兵之家、敖包、强化哨站、庄园、锻造厂、瓦兰吉堡垒、牧牛场、大名庄园、撒哈拉贸易网络 |
+| 4×4 | 16 | 村庄、粮仓、佛塔、黄金大帐、佛寺、日式城堡、神社、草场、机械工坊、战马厩、圣殿骑士总部、要塞、海港、瓦兰吉军械库、军事学校、祭典所、图格鲁克堡、祈祷帐篷 |
+| 5×5 | 25 | 智慧宫 |
+
+[智慧宫](https://ageofempires.fandom.com/wiki/House_of_Wisdom)为 5×5；[撒哈拉贸易网络](https://ageofempires.fandom.com/wiki/Saharan_Trade_Network)为 3×3。这两座地标说明官方 6.0.878 更新里“与其他地标一致”的措辞不能当作覆盖全部地标的尺寸清单。其余地标如需逐座精确使用，仍应逐座核对。
 
 ## 特殊和未核实的占地
 
 - [木墙](https://ageofempires.fandom.com/wiki/Palisade_Wall_(Age_of_Empires_IV))、[石墙](https://ageofempires.fandom.com/wiki/Stone_Wall_(Age_of_Empires_IV))沿路径分段铺设；[木门](https://ageofempires.fandom.com/wiki/Palisade_Gate_(Age_of_Empires_IV))和[石门](https://ageofempires.fandom.com/wiki/Stone_Wall_Gate)属于墙体系统。查到的页面没有给出可比作独立建筑的固定矩形占格，JSON 中保留 `null`。
 - 中国的[长城门楼](https://ageofempires.fandom.com/wiki/Great_Wall_Gatehouse)需要至少连续三段石墙。它不应直接沿用独立地标的 4×4。
 - 本项目的“预备营地”没有查到原版同名建筑，JSON 中保留 `null`。
+- 另有 11 项原版专属建筑（包括水渠、畜栏、露天金矿、瓦兰吉军营等）未查到足以确认矩形占格的资料，或采用墙体放置方式。它们也在[新增数据](aoe4-building-footprints-additional.json)中逐项保留为 `null`，没有按相似建筑猜测。
 
 ## 与本项目尺寸的关系
 

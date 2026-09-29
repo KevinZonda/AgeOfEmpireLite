@@ -60,7 +60,7 @@
     {"project_id": "keep", "name_zh": "城堡", "width_tiles": 4, "height_tiles": 4, "area_tiles": 16, "evidence": "wiki_infobox", "source": "keep"},
     {"project_id": "siege_workshop", "name_zh": "攻城器械厂", "width_tiles": 3, "height_tiles": 3, "area_tiles": 9, "evidence": "wiki_infobox", "source": "siege_workshop"},
     {"project_id": "wonder", "name_zh": "奇观", "width_tiles": 6, "height_tiles": 6, "area_tiles": 36, "evidence": "wiki_infobox", "source": "wonder", "note": "官方 6.0.878 更新也称其他奇观为 6×6，并将马里奇观从 5×5 调整为 6×6。"},
-    {"project_id": "landmark", "name_zh": "普通独立地标", "width_tiles": 4, "height_tiles": 4, "area_tiles": 16, "evidence": "official_patch_generalization", "source": "official_season_4", "note": "官方 6.0.878 更新将两座马里地标从 5×5 调为 4×4，并称与其他地标一致；墙上建造的长城门楼应单独处理。"}
+    {"project_id": "landmark", "name_zh": "本项目对应的普通独立地标", "width_tiles": 4, "height_tiles": 4, "area_tiles": 16, "evidence": "official_patch_generalization", "source": "official_season_4", "note": "官方 6.0.878 更新将两座马里地标从 5×5 调为 4×4。此处只对应本项目英、法、中普通独立升级地标；原版另有 5×5 智慧宫、3×3 撒哈拉贸易网络等例外，长城门楼依赖石墙。"}
   ],
   "special_cases": [
     {"project_landmark_id": "zh_gatehouse", "name_zh": "长城门楼", "width_tiles": null, "height_tiles": null, "area_tiles": null, "evidence": "wall_placement", "source": "great_wall_gatehouse", "note": "原版需要至少连续三段石墙，不宜套用独立地标 4×4 占地。"}
