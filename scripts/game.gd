@@ -810,6 +810,7 @@ func spawn_unit(owner_id: int, kind: String, world_point: Vector2, rally := Vect
 	unit.setup(self, owner_id, kind)
 	unit.position = navigation.nearest_walkable_point(unit.position, unit.radius(), unit)
 	units.append(unit)
+	if fog.active: fog.update_unit_display(unit)
 	navigation.invalidate_spatial_index()
 	if rally != Vector2.INF:
 		if kind == "trader" and rally_target is RtsTradePost:
@@ -1482,6 +1483,7 @@ func _toggle_view_mode(save_setting := false) -> void:
 	_clamp_camera_position()
 	camera.force_update_scroll()
 	fog.update_projection()
+	if fog.active: fog._update_entity_visibility()
 	view_button.text = "2D 视角" if view_mode_25d else "2.5D 视角"
 	if save_setting:
 		selected_view_mode_25d = view_mode_25d
@@ -2006,7 +2008,7 @@ func _prune_hidden_enemy_selection() -> void:
 			if entity is RtsResource:
 				hidden = not fog.can_show_resource(0, entity)
 			elif entity is RtsUnit and is_enemy(0, entity.owner_id):
-				hidden = not fog.can_detect_unit(0, entity)
+				hidden = not fog.can_show_unit(0, entity)
 			elif entity is RtsBuilding and is_enemy(0, entity.owner_id):
 				hidden = not fog.can_see(0, entity.position)
 		if not is_instance_valid(entity) or entity.is_queued_for_deletion() or hidden:

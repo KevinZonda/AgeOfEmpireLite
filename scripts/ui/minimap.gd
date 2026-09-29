@@ -103,7 +103,7 @@ func _draw() -> void:
 	for unit in game.units:
 		if not is_instance_valid(unit) or unit.garrisoned_in != null: continue
 		if unit.owner_id != 0 and game.fog.active:
-			if game.is_enemy(0, unit.owner_id) and not game.fog.can_detect_unit(0, unit): continue
+			if game.is_enemy(0, unit.owner_id) and not game.fog.can_show_unit(0, unit): continue
 			if not game.is_enemy(0, unit.owner_id) and not game.fog.can_see(0, unit.position): continue
 		var color: Color = game.player_color(unit.owner_id).lightened(0.28)
 		draw_circle(world_to_map(unit.position), 1.8, color)

@@ -20,6 +20,8 @@ var remembered_buildings: Dictionary = {}
 
 func setup(game_ref: Node2D) -> void:
 	game = game_ref
+	# Apply the final unit positions after the units have processed this frame.
+	process_priority = 100
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	relief_mesh = MeshInstance2D.new()
 	relief_mesh.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
@@ -73,6 +75,8 @@ func _process(delta: float) -> void:
 	if update_timer <= 0.0:
 		update_timer = UPDATE_INTERVAL
 		update_visibility()
+	else:
+		_update_enemy_unit_display()
 
 func _index(cell: Vector2i) -> int:
 	return cell.y * grid_size.x + cell.x
@@ -93,6 +97,34 @@ func can_detect_unit(owner_id: int, enemy: RtsUnit) -> bool:
 		if observer.position.distance_to(enemy.position) <= (145.0 if observer.kind == "scout" else 85.0): return true
 		if game.world_map.forest_patch_at(observer.position) == patch_index: return true
 	return false
+
+func can_show_unit(owner_id: int, unit: RtsUnit) -> bool:
+	if not can_detect_unit(owner_id, unit): return false
+	if not active or unit.owner_id == owner_id: return true
+	# Units render above the fog plane. Hide the figure until its drawn bounds,
+	# rather than only its ground anchor, are inside current vision.
+	var reach := unit.radius() + 16.0
+	var top := maxf(40.0, unit.radius() + 18.0)
+	var offsets := [Vector2(-reach, -top), Vector2(0, -top), Vector2(reach, -top), Vector2(-reach, 0), Vector2(reach, 0), Vector2(0, reach)]
+	var origin := unit.position
+	var canvas := get_viewport().get_canvas_transform()
+	if game.view_mode_25d: origin += RtsIsoProjection.ground_lift(game, unit.position)
+	for offset in offsets:
+		var point: Vector2 = origin + (RtsIsoProjection.world_delta(canvas, offset * game.camera.zoom.x) if game.view_mode_25d else offset)
+		if not can_see(owner_id, point): return false
+	return true
+
+func update_unit_display(unit: RtsUnit) -> void:
+	unit.visible = unit.garrisoned_in == null and (unit.owner_id == 0 or can_show_unit(0, unit))
+
+func _update_enemy_unit_display() -> void:
+	var selection_may_change := false
+	for unit in game.units:
+		if not is_instance_valid(unit) or unit.is_queued_for_deletion() or unit.owner_id == 0: continue
+		var was_visible: bool = unit.visible
+		update_unit_display(unit)
+		if was_visible and not unit.visible and game.selected.has(unit): selection_may_change = true
+	if selection_may_change: game._prune_hidden_enemy_selection()
 
 func is_explored(owner_id: int, point: Vector2) -> bool:
 	if owner_id < 0 or owner_id >= game.players.size(): return false
@@ -246,7 +278,7 @@ func _clear_building_memory() -> void:
 func _update_entity_visibility() -> void:
 	for unit in game.units:
 		if not is_instance_valid(unit) or unit.is_queued_for_deletion(): continue
-		unit.visible = unit.garrisoned_in == null and (unit.owner_id == 0 or can_detect_unit(0, unit))
+		update_unit_display(unit)
 	for building in game.buildings:
 		if not is_instance_valid(building) or building.is_queued_for_deletion(): continue
 		building.visible = building.owner_id == 0 or can_see(0, building.position)

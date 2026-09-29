@@ -89,7 +89,7 @@ static func entity_at(game: Node2D, point: Vector2) -> Node2D:
 	var canvas := game.get_viewport().get_canvas_transform()
 	for unit in game.navigation.nearby_units(point, 250.0 if game.view_mode_25d else 36.0):
 		if not is_instance_valid(unit) or unit.is_queued_for_deletion() or unit.garrisoned_in != null: continue
-		if unit.owner_id != 0 and game.fog.active and not game.fog.can_detect_unit(0, unit): continue
+		if unit.owner_id != 0 and game.fog.active and not game.fog.can_show_unit(0, unit): continue
 		if game.view_mode_25d:
 			var screen_delta := canvas.basis_xform(point - unit.position - RtsIsoProjection.ground_lift(game, unit.position))
 			if absf(screen_delta.x) <= (unit.radius() + 5.0) * game.camera.zoom.x and screen_delta.y >= -34.0 * game.camera.zoom.x and screen_delta.y <= 6.0 * game.camera.zoom.x: return unit
