@@ -565,6 +565,7 @@ func _process(delta: float) -> void:
 		z_index = 3
 		refresh_stats()
 		game.navigation.invalidate_spatial_index()
+		if game.fog.active: game.fog.update_unit_visibility(self)
 		_advance_command()
 		return
 	if order == "assault_wall":
