@@ -9,6 +9,21 @@ func _run() -> void:
 	await process_frame
 	game.start_game("English", 4242)
 	var grid: float = game.BUILD_GRID_SIZE
+	var reference: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://docs/aoe4-building-footprints.json"))
+	assert(reference is Dictionary, "the footprint reference must be readable")
+	assert(reference["buildings"].size() == GameData.BUILDINGS.size(), "the footprint reference must cover every current building")
+	for entry in reference["buildings"]:
+		var kind: String = str(entry["project_id"])
+		assert(GameData.BUILDINGS.has(kind), "the footprint reference must cover a current building")
+		if entry["width_tiles"] == null:
+			assert(not GameData.BUILDINGS[kind].has("footprint_tiles"), "%s has no verified tile count" % kind)
+			continue
+		var expected := Vector2i(int(entry["width_tiles"]), int(entry["height_tiles"]))
+		assert(GameData.BUILDINGS[kind].get("footprint_tiles", Vector2i.ZERO) == expected, "%s tile count differs from the reference" % kind)
+		var footprint: Vector2 = game.build_footprint_size(kind)
+		assert(footprint == Vector2(expected) * grid, "%s preview uses the wrong footprint" % kind)
+		var body: Vector2 = RtsLandmarkCatalog.LANDMARK_SIZE if kind == "landmark" else GameData.BUILDINGS[kind]["size"]
+		assert(body.x <= footprint.x and body.y <= footprint.y, "%s body extends beyond its placement footprint" % kind)
 	var point := Vector2.INF
 	for y in range(300, 1000, 25):
 		for x in range(350, 1100, 25):

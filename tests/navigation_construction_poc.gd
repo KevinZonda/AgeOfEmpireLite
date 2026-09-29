@@ -173,7 +173,7 @@ func test_escape_terrain_and_resources() -> void:
 	var site: Vector2 = game.snap_build_point("house", Vector2(700, 500))
 	var unit := worker(site)
 	var resource: RtsResource = game.spawn_resource("wood", site + Vector2(0, -60), 1000, "tree")
-	var blocked_cell: Vector2i = game.world_map.cell_at(site + Vector2(-50, 0))
+	var blocked_cell: Vector2i = game.world_map.cell_at(site + Vector2(-75, 0))
 	game.world_map.cells[blocked_cell.y * game.world_map.grid_size.x + blocked_cell.x] = RtsWorldMap.Terrain.WATER
 	# Spawn directly to simulate an already existing overlap beside terrain.
 	var building: RtsBuilding = game.spawn_building(0, "house", site)

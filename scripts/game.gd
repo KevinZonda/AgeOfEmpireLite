@@ -1228,7 +1228,10 @@ func cancel_production_job(building: RtsBuilding, index: int = 0) -> bool:
 	return MATCH_PRODUCTION.cancel_job(self, building, index)
 
 func build_footprint_size(kind: String, vertical := false) -> Vector2:
-	var dimensions: Vector2 = GameData.BUILDINGS[kind]["size"]
+	var definition: Dictionary = GameData.BUILDINGS[kind]
+	if definition.has("footprint_tiles"):
+		return Vector2(definition["footprint_tiles"]) * BUILD_GRID_SIZE
+	var dimensions: Vector2 = definition["size"]
 	if vertical and (kind.ends_with("_wall") or kind.ends_with("_gate")): dimensions = Vector2(dimensions.y, dimensions.x)
 	var padding := 0.0 if kind.ends_with("_wall") or kind.ends_with("_gate") else 9.0
 	dimensions += Vector2.ONE * padding * 2.0
