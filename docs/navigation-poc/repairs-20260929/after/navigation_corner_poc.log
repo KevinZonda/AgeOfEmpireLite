@@ -1,0 +1,821 @@
+Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
+
+POC_PASS terrain_r10_corner0_endpoints 
+POC_PASS terrain_r10_corner0_safe_path [(655.2892, 558.8247), (675.0, 575.0), (658.8247, 555.2892)]
+POC_PASS terrain_r10_corner0_safe_motion (655.2892, 558.8247) -> (660.2892, 558.8247)
+POC_PASS terrain_r10_corner1_endpoints 
+POC_PASS terrain_r10_corner1_safe_path [(591.1753, 555.2892), (575.0, 575.0), (594.7108, 558.8247)]
+POC_PASS terrain_r10_corner1_safe_motion (591.1753, 555.2892) -> (591.1753, 560.2892)
+POC_PASS terrain_r10_corner2_endpoints 
+POC_PASS terrain_r10_corner2_safe_path [(594.7108, 491.1753), (575.0, 475.0), (591.1753, 494.7108)]
+POC_PASS terrain_r10_corner2_safe_motion (594.7108, 491.1753) -> (589.7108, 491.1753)
+POC_PASS terrain_r10_corner3_endpoints 
+POC_PASS terrain_r10_corner3_safe_path [(658.8247, 494.7108), (675.0, 475.0), (655.2892, 491.1753)]
+POC_PASS terrain_r10_corner3_safe_motion (658.8247, 494.7108) -> (658.8247, 489.7109)
+POC_PASS terrain_r12_corner0_endpoints 
+POC_PASS terrain_r12_corner0_safe_path [(656.3498, 560.5925), (675.0, 575.0), (660.5925, 556.3498)]
+POC_PASS terrain_r12_corner0_safe_motion (656.3498, 560.5925) -> (662.3499, 560.5925)
+POC_PASS terrain_r12_corner1_endpoints 
+POC_PASS terrain_r12_corner1_safe_path [(589.4075, 556.3498), (575.0, 575.0), (593.6502, 560.5925)]
+POC_PASS terrain_r12_corner1_safe_motion (589.4075, 556.3498) -> (589.4075, 562.3499)
+POC_PASS terrain_r12_corner2_endpoints 
+POC_PASS terrain_r12_corner2_safe_path [(593.6502, 489.4076), (575.0, 475.0), (589.4075, 493.6502)]
+POC_PASS terrain_r12_corner2_safe_motion (593.6502, 489.4076) -> (587.6502, 489.4075)
+POC_PASS terrain_r12_corner3_endpoints 
+POC_PASS terrain_r12_corner3_safe_path [(660.5925, 493.6502), (675.0, 475.0), (656.3498, 489.4076)]
+POC_PASS terrain_r12_corner3_safe_motion (660.5925, 493.6502) -> (660.5924, 487.6502)
+POC_PASS terrain_r18_corner0_endpoints 
+POC_PASS terrain_r18_corner0_safe_path [(659.5318, 565.8958), (675.0, 575.0), (665.8958, 559.5318)]
+POC_PASS terrain_r18_corner0_safe_motion (659.5318, 565.8958) -> (668.5319, 565.8958)
+POC_PASS terrain_r18_corner1_endpoints 
+POC_PASS terrain_r18_corner1_safe_path [(584.1042, 559.5318), (575.0, 575.0), (590.4682, 565.8958)]
+POC_PASS terrain_r18_corner1_safe_motion (584.1042, 559.5318) -> (584.1042, 568.5319)
+POC_PASS terrain_r18_corner2_endpoints 
+POC_PASS terrain_r18_corner2_safe_path [(590.4682, 484.1042), (575.0, 475.0), (584.1042, 490.4682)]
+POC_PASS terrain_r18_corner2_safe_motion (590.4682, 484.1042) -> (581.4681, 484.1042)
+POC_PASS terrain_r18_corner3_endpoints 
+POC_PASS terrain_r18_corner3_safe_path [(665.8958, 490.4682), (675.0, 475.0), (659.5318, 484.1042)]
+POC_PASS terrain_r18_corner3_safe_motion (665.8958, 490.4682) -> (665.8958, 481.4682)
+POC_PASS terrain_r24_corner0_endpoints 
+POC_PASS terrain_r24_corner0_safe_path [(662.7138, 571.199), (675.0, 575.0), (671.199, 562.7138)]
+POC_PASS terrain_r24_corner0_safe_motion (662.7138, 571.199) -> (674.7137, 571.199)
+POC_PASS terrain_r24_corner1_endpoints 
+POC_PASS terrain_r24_corner1_safe_path [(578.801, 562.7138), (575.0, 575.0), (587.2862, 571.199)]
+POC_PASS terrain_r24_corner1_safe_motion (578.801, 562.7138) -> (578.801, 574.7137)
+POC_PASS terrain_r24_corner2_endpoints 
+POC_PASS terrain_r24_corner2_safe_path [(587.2862, 478.8009), (575.0, 475.0), (578.801, 487.2862)]
+POC_PASS terrain_r24_corner2_safe_motion (587.2862, 478.8009) -> (575.2863, 478.801)
+POC_PASS terrain_r24_corner3_endpoints 
+POC_PASS terrain_r24_corner3_safe_path [(671.199, 487.2862), (675.0, 475.0), (662.7138, 478.8009)]
+POC_PASS terrain_r24_corner3_safe_motion (671.199, 487.2862) -> (671.1991, 475.2863)
+POC_PASS terrain_r28_corner0_endpoints 
+POC_PASS terrain_r28_corner0_safe_path [(664.8351, 574.7346), (675.0, 575.0), (674.7346, 564.8351)]
+POC_PASS terrain_r28_corner0_safe_motion (664.8351, 574.7346) -> (678.8351, 574.7346)
+POC_PASS terrain_r28_corner1_endpoints 
+POC_PASS terrain_r28_corner1_safe_path [(575.2654, 564.8351), (575.0, 575.0), (585.1649, 574.7346)]
+POC_PASS terrain_r28_corner1_safe_motion (575.2654, 564.8351) -> (575.2654, 578.8351)
+POC_PASS terrain_r28_corner2_endpoints 
+POC_PASS terrain_r28_corner2_safe_path [(585.1649, 475.2654), (575.0, 475.0), (575.2654, 485.1649)]
+POC_PASS terrain_r28_corner2_safe_motion (585.1649, 475.2654) -> (571.1649, 475.2654)
+POC_PASS terrain_r28_corner3_endpoints 
+POC_PASS terrain_r28_corner3_safe_path [(674.7346, 485.1649), (675.0, 475.0), (664.8351, 475.2654)]
+POC_PASS terrain_r28_corner3_safe_motion (674.7346, 485.1649) -> (674.7346, 471.1649)
+POC_PASS resource_r10_corner0_endpoints 
+POC_PASS resource_r10_corner0_safe_path [(645.8455, 549.381), (675.0, 525.0), (649.381, 545.8455)]
+POC_PASS resource_r10_corner0_safe_motion (645.8455, 549.381) -> (650.8455, 549.381)
+POC_PASS resource_r10_corner1_endpoints 
+POC_PASS resource_r10_corner1_safe_path [(600.619, 545.8455), (625.0, 575.0), (604.1545, 549.381)]
+POC_PASS resource_r10_corner1_safe_motion (600.619, 545.8455) -> (600.619, 550.8455)
+POC_PASS resource_r10_corner2_endpoints 
+POC_PASS resource_r10_corner2_safe_path [(604.1545, 500.619), (575.0, 525.0), (600.619, 504.1545)]
+POC_PASS resource_r10_corner2_safe_motion (604.1545, 500.619) -> (599.1545, 500.619)
+POC_PASS resource_r10_corner3_endpoints 
+POC_PASS resource_r10_corner3_safe_path [(649.381, 504.1545), (625.0, 475.0), (645.8455, 500.619)]
+POC_PASS resource_r10_corner3_safe_motion (649.381, 504.1545) -> (649.381, 499.1545)
+POC_PASS resource_r12_corner0_endpoints 
+POC_PASS resource_r12_corner0_safe_path [(646.9061, 551.1488), (675.0, 525.0), (651.1488, 546.9061)]
+POC_PASS resource_r12_corner0_safe_motion (646.9061, 551.1488) -> (652.9062, 551.1488)
+POC_PASS resource_r12_corner1_endpoints 
+POC_PASS resource_r12_corner1_safe_path [(598.8512, 546.9061), (625.0, 575.0), (603.0939, 551.1488)]
+POC_PASS resource_r12_corner1_safe_motion (598.8512, 546.9061) -> (598.8512, 552.9062)
+POC_PASS resource_r12_corner2_endpoints 
+POC_PASS resource_r12_corner2_safe_path [(603.0939, 498.8512), (575.0, 525.0), (598.8512, 503.0938)]
+POC_PASS resource_r12_corner2_safe_motion (603.0939, 498.8512) -> (597.0939, 498.8512)
+POC_PASS resource_r12_corner3_endpoints 
+POC_PASS resource_r12_corner3_safe_path [(651.1488, 503.0938), (625.0, 475.0), (646.9061, 498.8512)]
+POC_PASS resource_r12_corner3_safe_motion (651.1488, 503.0938) -> (651.1487, 497.0938)
+POC_PASS resource_r18_corner0_endpoints 
+POC_PASS resource_r18_corner0_safe_path [(650.0881, 556.4521), (675.0, 575.0), (656.4521, 550.0881)]
+POC_PASS resource_r18_corner0_safe_motion (650.0881, 556.4521) -> (659.0882, 556.4521)
+POC_PASS resource_r18_corner1_endpoints 
+POC_PASS resource_r18_corner1_safe_path [(593.5479, 550.0881), (575.0, 575.0), (599.9119, 556.4521)]
+POC_PASS resource_r18_corner1_safe_motion (593.5479, 550.0881) -> (593.5479, 559.0882)
+POC_PASS resource_r18_corner2_endpoints 
+POC_PASS resource_r18_corner2_safe_path [(599.9119, 493.5479), (575.0, 475.0), (593.5479, 499.9118)]
+POC_PASS resource_r18_corner2_safe_motion (599.9119, 493.5479) -> (590.9118, 493.5479)
+POC_PASS resource_r18_corner3_endpoints 
+POC_PASS resource_r18_corner3_safe_path [(656.4521, 499.9118), (675.0, 475.0), (650.0881, 493.5479)]
+POC_PASS resource_r18_corner3_safe_motion (656.4521, 499.9118) -> (656.4521, 490.9118)
+POC_PASS resource_r24_corner0_endpoints 
+POC_PASS resource_r24_corner0_safe_path [(653.2701, 561.7554), (675.0, 575.0), (661.7554, 553.2701)]
+POC_PASS resource_r24_corner0_safe_motion (653.2701, 561.7554) -> (665.2701, 561.7554)
+POC_PASS resource_r24_corner1_endpoints 
+POC_PASS resource_r24_corner1_safe_path [(588.2446, 553.2701), (575.0, 575.0), (596.7299, 561.7554)]
+POC_PASS resource_r24_corner1_safe_motion (588.2446, 553.2701) -> (588.2446, 565.2701)
+POC_PASS resource_r24_corner2_endpoints 
+POC_PASS resource_r24_corner2_safe_path [(596.7299, 488.2446), (575.0, 475.0), (588.2446, 496.7299)]
+POC_PASS resource_r24_corner2_safe_motion (596.7299, 488.2446) -> (584.7299, 488.2446)
+POC_PASS resource_r24_corner3_endpoints 
+POC_PASS resource_r24_corner3_safe_path [(661.7554, 496.7299), (675.0, 475.0), (653.2701, 488.2446)]
+POC_PASS resource_r24_corner3_safe_motion (661.7554, 496.7299) -> (661.7554, 484.7299)
+POC_PASS resource_r28_corner0_endpoints 
+POC_PASS resource_r28_corner0_safe_path [(655.3914, 565.291), (675.0, 575.0), (665.291, 555.3914)]
+POC_PASS resource_r28_corner0_safe_motion (655.3914, 565.291) -> (669.3915, 565.291)
+POC_PASS resource_r28_corner1_endpoints 
+POC_PASS resource_r28_corner1_safe_path [(584.709, 555.3914), (575.0, 575.0), (594.6086, 565.291)]
+POC_PASS resource_r28_corner1_safe_motion (584.709, 555.3914) -> (584.709, 569.3915)
+POC_PASS resource_r28_corner2_endpoints 
+POC_PASS resource_r28_corner2_safe_path [(594.6086, 484.7091), (575.0, 475.0), (584.709, 494.6086)]
+POC_PASS resource_r28_corner2_safe_motion (594.6086, 484.7091) -> (580.6086, 484.709)
+POC_PASS resource_r28_corner3_endpoints 
+POC_PASS resource_r28_corner3_safe_path [(665.291, 494.6086), (675.0, 475.0), (655.3914, 484.7091)]
+POC_PASS resource_r28_corner3_safe_motion (665.291, 494.6086) -> (665.2909, 480.6085)
+POC_PASS building_r10_corner0_endpoints 
+POC_PASS building_r10_corner0_safe_path [(657.2322, 560.7678), (675.0, 575.0), (660.7678, 557.2322)]
+POC_PASS building_r10_corner0_safe_motion (657.2322, 560.7678) -> (662.2322, 560.7678)
+POC_PASS building_r10_corner1_endpoints 
+POC_PASS building_r10_corner1_safe_path [(589.2322, 557.2322), (575.0, 575.0), (592.7678, 560.7678)]
+POC_PASS building_r10_corner1_safe_motion (589.2322, 557.2322) -> (589.2322, 562.2322)
+POC_PASS building_r10_corner2_endpoints 
+POC_PASS building_r10_corner2_safe_path [(592.7678, 489.2322), (575.0, 475.0), (589.2322, 492.7678)]
+POC_PASS building_r10_corner2_safe_motion (592.7678, 489.2322) -> (587.7678, 489.2322)
+POC_PASS building_r10_corner3_endpoints 
+POC_PASS building_r10_corner3_safe_path [(660.7678, 492.7678), (675.0, 475.0), (657.2322, 489.2322)]
+POC_PASS building_r10_corner3_safe_motion (660.7678, 492.7678) -> (660.7678, 487.7678)
+POC_PASS building_r12_corner0_endpoints 
+POC_PASS building_r12_corner0_safe_path [(658.6786, 562.9213), (675.0, 575.0), (662.9213, 558.6786)]
+POC_PASS building_r12_corner0_safe_motion (658.6786, 562.9213) -> (664.6787, 562.9213)
+POC_PASS building_r12_corner1_endpoints 
+POC_PASS building_r12_corner1_safe_path [(587.0787, 558.6786), (575.0, 575.0), (591.3214, 562.9213)]
+POC_PASS building_r12_corner1_safe_motion (587.0787, 558.6786) -> (587.0787, 564.6787)
+POC_PASS building_r12_corner2_endpoints 
+POC_PASS building_r12_corner2_safe_path [(591.3214, 487.0787), (575.0, 475.0), (587.0787, 491.3213)]
+POC_PASS building_r12_corner2_safe_motion (591.3214, 487.0787) -> (585.3214, 487.0787)
+POC_PASS building_r12_corner3_endpoints 
+POC_PASS building_r12_corner3_safe_path [(662.9213, 491.3213), (675.0, 475.0), (658.6786, 487.0787)]
+POC_PASS building_r12_corner3_safe_motion (662.9213, 491.3213) -> (662.9213, 485.3213)
+POC_PASS building_r18_corner0_endpoints 
+POC_PASS building_r18_corner0_safe_path [(663.018, 569.382), (675.0, 575.0), (669.382, 563.018)]
+POC_PASS building_r18_corner0_safe_motion (663.018, 569.382) -> (672.0181, 569.382)
+POC_PASS building_r18_corner1_endpoints 
+POC_PASS building_r18_corner1_safe_path [(580.618, 563.018), (575.0, 575.0), (586.982, 569.382)]
+POC_PASS building_r18_corner1_safe_motion (580.618, 563.018) -> (580.618, 572.0181)
+POC_PASS building_r18_corner2_endpoints 
+POC_PASS building_r18_corner2_safe_path [(586.982, 480.618), (575.0, 475.0), (580.618, 486.982)]
+POC_PASS building_r18_corner2_safe_motion (586.982, 480.618) -> (577.9819, 480.618)
+POC_PASS building_r18_corner3_endpoints 
+POC_PASS building_r18_corner3_safe_path [(669.382, 486.982), (675.0, 475.0), (663.018, 480.618)]
+POC_PASS building_r18_corner3_safe_motion (669.382, 486.982) -> (669.382, 477.9819)
+POC_PASS building_r24_corner0_endpoints 
+POC_PASS building_r24_corner0_safe_path [(667.3574, 575.8426), (675.0, 575.0), (675.8426, 567.3574)]
+POC_PASS building_r24_corner0_safe_motion (667.3574, 575.8426) -> (679.3573, 575.8426)
+POC_PASS building_r24_corner1_endpoints 
+POC_PASS building_r24_corner1_safe_path [(574.1574, 567.3574), (575.0, 575.0), (582.6426, 575.8426)]
+POC_PASS building_r24_corner1_safe_motion (574.1574, 567.3574) -> (574.1574, 579.3573)
+POC_PASS building_r24_corner2_endpoints 
+POC_PASS building_r24_corner2_safe_path [(582.6426, 474.1573), (575.0, 475.0), (574.1574, 482.6426)]
+POC_PASS building_r24_corner2_safe_motion (582.6426, 474.1573) -> (570.6427, 474.1574)
+POC_PASS building_r24_corner3_endpoints 
+POC_PASS building_r24_corner3_safe_path [(675.8426, 482.6426), (675.0, 475.0), (667.3574, 474.1573)]
+POC_PASS building_r24_corner3_safe_motion (675.8426, 482.6426) -> (675.8427, 470.6427)
+POC_PASS building_r28_corner0_endpoints 
+POC_PASS building_r28_corner0_safe_path [(670.2502, 580.1498), (725.0, 575.0), (680.1498, 570.2502)]
+POC_PASS building_r28_corner0_safe_motion (670.2502, 580.1498) -> (684.2503, 580.1498)
+POC_PASS building_r28_corner1_endpoints 
+POC_PASS building_r28_corner1_safe_path [(569.8502, 570.2502), (575.0, 625.0), (579.7498, 580.1498)]
+POC_PASS building_r28_corner1_safe_motion (569.8502, 570.2502) -> (569.8502, 584.2503)
+POC_PASS building_r28_corner2_endpoints 
+POC_PASS building_r28_corner2_safe_path [(579.7498, 469.8503), (525.0, 475.0), (569.8502, 479.7497)]
+POC_PASS building_r28_corner2_safe_motion (579.7498, 469.8503) -> (565.7498, 469.8502)
+POC_PASS building_r28_corner3_endpoints 
+POC_PASS building_r28_corner3_safe_path [(680.1498, 479.7497), (675.0, 425.0), (670.2502, 469.8503)]
+POC_PASS building_r28_corner3_safe_motion (680.1498, 479.7497) -> (680.1497, 465.7497)
+POC_PASS unit_r10_corner0_endpoints 
+POC_PASS unit_r10_corner0_safe_motion (638.7745, 542.31) -> (643.7745, 542.31)
+POC_PASS unit_r10_corner1_endpoints 
+POC_PASS unit_r10_corner1_safe_motion (607.69, 538.7745) -> (607.69, 543.7745)
+POC_PASS unit_r10_corner2_endpoints 
+POC_PASS unit_r10_corner2_safe_motion (611.2255, 507.69) -> (606.2255, 507.69)
+POC_PASS unit_r10_corner3_endpoints 
+POC_PASS unit_r10_corner3_safe_motion (642.3099, 511.2256) -> (642.3099, 506.2256)
+POC_PASS unit_r12_corner0_endpoints 
+POC_PASS unit_r12_corner0_safe_motion (639.8351, 544.0778) -> (645.8351, 544.0778)
+POC_PASS unit_r12_corner1_endpoints 
+POC_PASS unit_r12_corner1_safe_motion (605.9222, 539.8351) -> (605.9222, 545.8351)
+POC_PASS unit_r12_corner2_endpoints 
+POC_PASS unit_r12_corner2_safe_motion (610.1649, 505.9223) -> (604.1649, 505.9222)
+POC_PASS unit_r12_corner3_endpoints 
+POC_PASS unit_r12_corner3_safe_motion (644.0778, 510.1649) -> (644.0777, 504.1649)
+POC_PASS unit_r18_corner0_endpoints 
+POC_PASS unit_r18_corner0_safe_motion (643.017, 549.381) -> (652.0171, 549.381)
+POC_PASS unit_r18_corner1_endpoints 
+POC_PASS unit_r18_corner1_safe_motion (600.619, 543.017) -> (600.619, 552.0171)
+POC_PASS unit_r18_corner2_endpoints 
+POC_PASS unit_r18_corner2_safe_motion (606.983, 500.619) -> (597.9829, 500.6189)
+POC_PASS unit_r18_corner3_endpoints 
+POC_PASS unit_r18_corner3_safe_motion (649.381, 506.9829) -> (649.381, 497.9829)
+POC_PASS unit_r24_corner0_endpoints 
+POC_PASS unit_r24_corner0_safe_motion (646.1991, 554.6843) -> (658.199, 554.6843)
+POC_PASS unit_r24_corner1_endpoints 
+POC_PASS unit_r24_corner1_safe_motion (595.3157, 546.1991) -> (595.3157, 558.199)
+POC_PASS unit_r24_corner2_endpoints 
+POC_PASS unit_r24_corner2_safe_motion (603.8009, 495.3156) -> (591.8009, 495.3157)
+POC_PASS unit_r24_corner3_endpoints 
+POC_PASS unit_r24_corner3_safe_motion (654.6843, 503.8009) -> (654.6844, 491.801)
+POC_PASS unit_r28_corner0_endpoints 
+POC_PASS unit_r28_corner0_safe_motion (648.3204, 558.2199) -> (662.3204, 558.2199)
+POC_PASS unit_r28_corner1_endpoints 
+POC_PASS unit_r28_corner1_safe_motion (591.7801, 548.3204) -> (591.7801, 562.3204)
+POC_PASS unit_r28_corner2_endpoints 
+POC_PASS unit_r28_corner2_safe_motion (601.6796, 491.7801) -> (587.6796, 491.7801)
+POC_PASS unit_r28_corner3_endpoints 
+POC_PASS unit_r28_corner3_safe_motion (658.2199, 501.6796) -> (658.2198, 487.6796)
+POC_PASS mixed_slots_seed2026092901_sample0 [] buildings=[(850.0, 475.0), (975.0, 475.0), (925.0, 400.0)]
+POC_PASS mixed_slots_sample0_eventual_completion 6/6 [["scout", (918.2414, 550.3943), (925.0, 525.0), "idle"], ["knight", (921.9185, 489.4843), (921.4825, 483.1764), "idle"], ["horseman", (898.9974, 441.9767), (898.9955, 441.9706), "idle"], ["scout", (901.5009, 568.0461), (914.4875, 561.517), "idle"], ["knight", (871.0743, 560.2935), (877.9706, 563.0045), "idle"], ["horseman", (884.743, 518.5933), (874.8586, 517.7086), "idle"]]
+POC_PASS mixed_slots_seed2026092901_sample1 [] buildings=[(1025.0, 650.0), (900.0, 550.0), (900.0, 625.0)]
+POC_PASS mixed_slots_sample1_eventual_completion 6/6 [["scout", (905.9823, 507.2809), (907.7206, 508.344), "idle"], ["knight", (913.6807, 466.3891), (914.214, 466.5787), "idle"], ["horseman", (871.1345, 469.7636), (876.3345, 472.8463), "idle"], ["scout", (864.5963, 510.1632), (871.947, 509.0821), "idle"], ["knight", (851.5308, 546.6394), (854.9791, 547.3364), "idle"], ["horseman", (837.6219, 512.1091), (837.772, 512.2254), "idle"]]
+POC_PASS mixed_slots_seed2026092901_sample2 [] buildings=[(1000.0, 475.0), (1000.0, 650.0), (1025.0, 550.0)]
+POC_PASS mixed_slots_seed2026092901_sample3 [] buildings=[(875.0, 475.0), (800.0, 600.0), (950.0, 450.0)]
+POC_PASS mixed_slots_seed2026092901_sample4 [] buildings=[(850.0, 550.0), (875.0, 425.0), (950.0, 425.0)]
+POC_PASS mixed_slots_seed2026092901_sample5 [] buildings=[(1050.0, 600.0), (850.0, 425.0), (925.0, 450.0)]
+POC_PASS mixed_slots_seed2026092901_sample6 [] buildings=[(800.0, 475.0), (1050.0, 450.0), (900.0, 525.0)]
+POC_PASS mixed_slots_seed2026092901_sample7 [] buildings=[(825.0, 625.0), (950.0, 450.0), (925.0, 575.0)]
+POC_PASS mixed_slots_seed2026092901_sample8 [] buildings=[(900.0, 550.0), (975.0, 475.0), (950.0, 650.0)]
+POC_PASS mixed_slots_sample8_eventual_completion 6/6 [["scout", (905.9823, 507.2809), (907.7206, 508.344), "idle"], ["knight", (913.6807, 466.3891), (914.214, 466.5787), "idle"], ["horseman", (871.1345, 469.7636), (876.3345, 472.8463), "idle"], ["scout", (864.5963, 510.1632), (871.947, 509.0821), "idle"], ["knight", (851.5308, 546.6394), (854.9791, 547.3364), "idle"], ["horseman", (837.6219, 512.1091), (837.772, 512.2254), "idle"]]
+POC_PASS mixed_slots_seed2026092901_sample9 [] buildings=[(825.0, 450.0), (850.0, 600.0), (975.0, 425.0)]
+POC_PASS mixed_slots_seed2026092901_sample10 [] buildings=[(925.0, 650.0), (875.0, 450.0), (1025.0, 450.0)]
+POC_PASS mixed_slots_seed2026092901_sample11 [] buildings=[(900.0, 575.0), (825.0, 400.0), (950.0, 400.0)]
+POC_PASS mixed_slots_seed2026092901_sample12 [] buildings=[(950.0, 475.0), (925.0, 650.0), (825.0, 650.0)]
+POC_PASS mixed_slots_seed2026092901_sample13 [] buildings=[(800.0, 575.0), (1050.0, 400.0), (1000.0, 475.0)]
+POC_PASS mixed_slots_seed2026092901_sample14 [] buildings=[(950.0, 525.0), (825.0, 600.0), (875.0, 450.0)]
+POC_PASS mixed_slots_seed2026092901_sample15 [] buildings=[(875.0, 500.0), (875.0, 625.0), (950.0, 650.0)]
+POC_PASS mixed_slots_seed2026092901_sample16 [] buildings=[(1050.0, 625.0), (875.0, 450.0), (950.0, 500.0)]
+POC_PASS mixed_slots_seed2026092901_sample17 [] buildings=[(900.0, 400.0), (1000.0, 525.0), (825.0, 650.0)]
+POC_PASS mixed_slots_seed2026092901_sample18 [] buildings=[(1050.0, 550.0), (975.0, 600.0), (1025.0, 450.0)]
+POC_PASS mixed_slots_seed2026092901_sample19 [] buildings=[(875.0, 600.0), (825.0, 450.0), (975.0, 475.0)]
+POC_PASS mixed_slots_seed2026092901_sample20 [] buildings=[(1050.0, 475.0), (1000.0, 550.0), (800.0, 575.0)]
+POC_PASS mixed_slots_seed2026092901_sample21 [] buildings=[(1050.0, 525.0), (850.0, 400.0), (1050.0, 400.0)]
+POC_PASS mixed_slots_seed2026092901_sample22 [] buildings=[(1025.0, 425.0), (825.0, 425.0), (950.0, 625.0)]
+POC_PASS mixed_slots_seed2026092901_sample23 [] buildings=[(1050.0, 600.0), (975.0, 525.0), (975.0, 625.0)]
+POC_PASS mixed_slots_seed2026092901_sample24 [] buildings=[(1050.0, 650.0), (925.0, 525.0), (1000.0, 400.0)]
+POC_PASS mixed_slots_seed2026092901_sample25 [] buildings=[(1000.0, 625.0), (875.0, 600.0), (1050.0, 525.0)]
+POC_PASS mixed_slots_seed2026092901_sample26 [] buildings=[(1050.0, 425.0), (875.0, 600.0), (800.0, 650.0)]
+POC_PASS mixed_slots_seed2026092901_sample27 [] buildings=[(975.0, 575.0), (900.0, 475.0), (825.0, 600.0)]
+POC_PASS mixed_slots_seed2026092901_sample28 [] buildings=[(875.0, 650.0), (925.0, 475.0), (1025.0, 400.0)]
+POC_PASS mixed_slots_seed2026092901_sample29 [] buildings=[(1050.0, 400.0), (900.0, 525.0), (1025.0, 650.0)]
+POC_PASS mixed_slots_seed2026092901_sample30 [] buildings=[(875.0, 600.0), (800.0, 425.0), (1050.0, 625.0)]
+POC_PASS mixed_slots_seed2026092901_sample31 [] buildings=[(825.0, 625.0), (925.0, 425.0), (900.0, 600.0)]
+POC_PASS mixed_slots_seed2026092901_sample32 [] buildings=[(1025.0, 625.0), (950.0, 600.0), (1025.0, 500.0)]
+POC_PASS mixed_slots_seed2026092901_sample33 [] buildings=[(975.0, 525.0), (950.0, 625.0), (1050.0, 650.0)]
+POC_PASS mixed_slots_seed2026092901_sample34 [] buildings=[(1025.0, 550.0), (900.0, 525.0), (975.0, 425.0)]
+POC_PASS mixed_slots_seed2026092901_sample35 [] buildings=[(875.0, 500.0), (925.0, 625.0), (975.0, 425.0)]
+POC_PASS mixed_slots_seed2026092901_sample36 [] buildings=[(800.0, 525.0), (950.0, 650.0), (900.0, 525.0)]
+POC_PASS mixed_slots_seed2026092901_sample37 [] buildings=[(1000.0, 625.0), (925.0, 450.0), (850.0, 650.0)]
+POC_PASS mixed_slots_seed2026092901_sample38 [] buildings=[(1000.0, 625.0), (825.0, 575.0), (850.0, 450.0)]
+POC_PASS mixed_slots_seed2026092901_sample39 [] buildings=[(950.0, 425.0), (1050.0, 650.0), (900.0, 650.0)]
+POC_PASS mixed_slots_seed2026092901_sample40 [] buildings=[(975.0, 600.0), (825.0, 400.0), (1000.0, 475.0)]
+POC_PASS mixed_slots_seed2026092901_sample41 [] buildings=[(1025.0, 425.0), (925.0, 650.0), (925.0, 400.0)]
+POC_PASS mixed_slots_seed2026092901_sample42 [] buildings=[(925.0, 475.0), (825.0, 600.0), (1050.0, 650.0)]
+POC_PASS mixed_slots_seed2026092901_sample43 [] buildings=[(1025.0, 475.0), (850.0, 600.0), (875.0, 450.0)]
+POC_PASS mixed_slots_seed2026092901_sample44 [] buildings=[(975.0, 400.0), (975.0, 650.0), (1050.0, 550.0)]
+POC_PASS mixed_slots_seed2026092901_sample45 [] buildings=[(950.0, 450.0), (825.0, 500.0), (825.0, 575.0)]
+POC_PASS mixed_slots_seed2026092901_sample46 [] buildings=[(1050.0, 400.0), (925.0, 625.0), (900.0, 425.0)]
+POC_PASS mixed_slots_seed2026092901_sample47 [] buildings=[(925.0, 650.0), (800.0, 450.0), (800.0, 525.0)]
+POC_PASS mixed_slots_seed2026092901_sample48 [] buildings=[(825.0, 625.0), (875.0, 525.0), (1000.0, 625.0)]
+POC_PASS mixed_slots_seed2026092901_sample49 [] buildings=[(900.0, 625.0), (875.0, 400.0), (800.0, 475.0)]
+POC_PASS mixed_slots_seed2026092901_sample50 [] buildings=[(1000.0, 550.0), (875.0, 475.0), (900.0, 650.0)]
+POC_PASS mixed_slots_seed2026092901_sample51 [] buildings=[(1025.0, 475.0), (850.0, 650.0), (800.0, 450.0)]
+POC_PASS mixed_slots_seed2026092901_sample52 [] buildings=[(950.0, 425.0), (850.0, 475.0), (1025.0, 500.0)]
+POC_PASS mixed_slots_seed2026092901_sample53 [] buildings=[(900.0, 425.0), (975.0, 450.0), (1025.0, 575.0)]
+POC_PASS mixed_slots_seed2026092901_sample54 [] buildings=[(1025.0, 650.0), (975.0, 575.0), (1025.0, 500.0)]
+POC_PASS mixed_slots_seed2026092901_sample55 [] buildings=[(875.0, 625.0), (800.0, 650.0), (800.0, 575.0)]
+POC_PASS mixed_slots_seed2026092901_sample56 [] buildings=[(1050.0, 500.0), (825.0, 500.0), (925.0, 425.0)]
+POC_PASS mixed_slots_seed2026092901_sample57 [] buildings=[(1000.0, 500.0), (975.0, 625.0), (800.0, 400.0)]
+POC_PASS mixed_slots_seed2026092901_sample58 [] buildings=[(850.0, 550.0), (1025.0, 625.0), (800.0, 425.0)]
+POC_PASS mixed_slots_seed2026092901_sample59 [] buildings=[(800.0, 600.0), (950.0, 650.0), (1025.0, 450.0)]
+POC_PASS mixed_slots_seed2026092901_sample60 [] buildings=[(975.0, 425.0), (825.0, 400.0), (975.0, 575.0)]
+POC_PASS mixed_slots_seed2026092901_sample61 [] buildings=[(975.0, 575.0), (875.0, 550.0), (1050.0, 450.0)]
+POC_PASS mixed_slots_seed2026092901_sample62 [] buildings=[(950.0, 625.0), (850.0, 650.0), (950.0, 525.0)]
+POC_PASS mixed_slots_seed2026092901_sample63 [] buildings=[(850.0, 450.0), (850.0, 650.0), (975.0, 450.0)]
+POC_PASS mixed_slots_seed2026092901_sample64 [] buildings=[(975.0, 650.0), (825.0, 500.0), (950.0, 575.0)]
+POC_PASS mixed_slots_seed2026092901_sample65 [] buildings=[(875.0, 475.0), (925.0, 550.0), (800.0, 600.0)]
+POC_PASS mixed_slots_seed2026092901_sample66 [] buildings=[(900.0, 550.0), (800.0, 600.0), (925.0, 475.0)]
+POC_PASS mixed_slots_seed2026092901_sample67 [] buildings=[(800.0, 650.0), (875.0, 525.0), (800.0, 425.0)]
+POC_PASS mixed_slots_seed2026092901_sample68 [] buildings=[(850.0, 625.0), (1025.0, 450.0), (800.0, 450.0)]
+POC_PASS mixed_slots_seed2026092901_sample69 [] buildings=[(950.0, 575.0), (850.0, 500.0), (875.0, 575.0)]
+POC_PASS mixed_slots_sample69_eventual_completion 6/6 [["scout", (920.3314, 527.0282), (925.0, 525.0), "idle"], ["knight", (960.6279, 476.7834), (935.5125, 488.483), "idle"], ["horseman", (876.9378, 455.6276), (872.8783, 447.1432), "idle"], ["scout", (891.0687, 517.7321), (891.0091, 520.3024), "idle"], ["knight", (965.4996, 525.1891), (966.6788, 526.088), "idle"], ["horseman", (892.0335, 485.0619), (898.9955, 477.9706), "idle"]]
+POC_PASS mixed_slots_seed2026092901_sample70 [] buildings=[(975.0, 425.0), (800.0, 550.0), (1000.0, 575.0)]
+POC_PASS mixed_slots_seed2026092901_sample71 [] buildings=[(900.0, 625.0), (1000.0, 400.0), (850.0, 450.0)]
+POC_PASS mixed_slots_seed2026092901_sample72 [] buildings=[(850.0, 450.0), (850.0, 650.0), (950.0, 500.0)]
+POC_PASS mixed_slots_seed2026092901_sample73 [] buildings=[(1025.0, 650.0), (1025.0, 475.0), (1050.0, 550.0)]
+POC_PASS mixed_slots_seed2026092901_sample74 [] buildings=[(1000.0, 525.0), (875.0, 550.0), (800.0, 475.0)]
+POC_PASS mixed_slots_seed2026092901_sample75 [] buildings=[(1000.0, 475.0), (975.0, 650.0), (1025.0, 400.0)]
+POC_PASS mixed_slots_seed2026092901_sample76 [] buildings=[(1000.0, 625.0), (900.0, 625.0), (850.0, 500.0)]
+POC_PASS mixed_slots_seed2026092901_sample77 [] buildings=[(975.0, 475.0), (900.0, 525.0), (900.0, 625.0)]
+POC_PASS mixed_slots_sample77_eventual_completion 6/6 [["scout", (949.916, 553.8662), (947.0007, 551.41), "idle"], ["knight", (966.4291, 521.2793), (966.0617, 518.9763), "idle"], ["horseman", (922.2, 472.3368), (925.7537, 474.981), "idle"], ["scout", (918.2222, 567.1614), (915.7247, 566.2529), "idle"], ["knight", (854.5577, 547.1696), (872.3774, 576.1438), "idle"], ["horseman", (882.037, 479.3652), (884.6882, 481.8928), "idle"]]
+POC_PASS mixed_slots_seed2026092901_sample78 [] buildings=[(1050.0, 600.0), (975.0, 450.0), (900.0, 450.0)]
+POC_PASS mixed_slots_seed2026092901_sample79 [] buildings=[(850.0, 550.0), (1000.0, 500.0), (975.0, 575.0)]
+POC_PASS mixed_slots_seed2026092901_sample80 [] buildings=[(925.0, 500.0), (1050.0, 600.0), (875.0, 650.0)]
+POC_PASS mixed_slots_seed2026092901_sample81 [] buildings=[(1050.0, 575.0), (1050.0, 475.0), (925.0, 550.0)]
+POC_PASS mixed_slots_seed2026092901_sample82 [] buildings=[(875.0, 525.0), (1000.0, 525.0), (900.0, 400.0)]
+POC_PASS mixed_slots_sample82_eventual_completion 6/6 [["battering_ram", (949.2003, 551.4451), (953.7766, 546.6295), "idle"], ["bombard", (922.5757, 509.3648), (938.2789, 478.8733), "idle"], ["trebuchet", (846.4864, 442.7018), (841.0784, 441.4078), "idle"], ["battering_ram", (913.0598, 570.9758), (911.7211, 571.1267), "idle"], ["bombard", (848.0076, 574.3721), (854.2249, 574.3018), "idle"], ["trebuchet", (874.4828, 478.186), (846.0544, 474.7586), "idle"]]
+POC_PASS mixed_82_isolated_recovery_control stalled=0
+POC_PASS mixed_slots_seed2026092901_sample83 [] buildings=[(1025.0, 650.0), (1000.0, 450.0), (900.0, 450.0)]
+POC_PASS mixed_slots_seed2026092901_sample84 [] buildings=[(825.0, 425.0), (975.0, 600.0), (1050.0, 425.0)]
+POC_PASS mixed_slots_seed2026092901_sample85 [] buildings=[(1050.0, 550.0), (850.0, 600.0), (875.0, 475.0)]
+POC_PASS mixed_slots_sample85_eventual_completion 6/6 [["battering_ram", (922.7994, 519.1069), (925.0, 525.0), "idle"], ["bombard", (944.9993, 477.4805), (938.2789, 478.8733), "idle"], ["trebuchet", (878.2759, 427.927), (884.6254, 428.3473), "idle"], ["battering_ram", (907.9992, 567.2414), (911.7211, 571.1267), "idle"], ["bombard", (793.042, 549.289), (813.1404, 546.4782), "idle"], ["trebuchet", (864.0473, 528.7433), (863.4863, 522.8674), "idle"]]
+POC_PASS mixed_85_isolated_recovery_control stalled=0
+POC_PASS mixed_slots_seed2026092901_sample86 [] buildings=[(900.0, 525.0), (1000.0, 425.0), (875.0, 650.0)]
+POC_PASS mixed_slots_seed2026092901_sample87 [] buildings=[(1050.0, 450.0), (800.0, 425.0), (925.0, 650.0)]
+POC_PASS mixed_slots_seed2026092901_sample88 [] buildings=[(850.0, 575.0), (875.0, 400.0), (825.0, 500.0)]
+POC_PASS mixed_slots_seed2026092901_sample89 [] buildings=[(975.0, 575.0), (850.0, 550.0), (1025.0, 450.0)]
+POC_PASS mixed_slots_seed2026092901_sample90 [] buildings=[(975.0, 450.0), (825.0, 625.0), (825.0, 525.0)]
+POC_PASS mixed_slots_seed2026092901_sample91 [] buildings=[(1000.0, 600.0), (925.0, 525.0), (850.0, 425.0)]
+POC_PASS mixed_slots_seed2026092901_sample92 [] buildings=[(800.0, 575.0), (1000.0, 425.0), (925.0, 450.0)]
+POC_PASS mixed_slots_seed2026092901_sample93 [] buildings=[(1050.0, 525.0), (850.0, 575.0), (850.0, 400.0)]
+POC_PASS mixed_slots_seed2026092901_sample94 [] buildings=[(925.0, 450.0), (1050.0, 450.0), (900.0, 625.0)]
+POC_PASS mixed_slots_seed2026092901_sample95 [] buildings=[(825.0, 425.0), (1050.0, 500.0), (1000.0, 400.0)]
+POC_PASS mixed_slots_seed2026092901_sample96 [] buildings=[(950.0, 425.0), (900.0, 625.0), (1050.0, 525.0)]
+POC_PASS mixed_slots_seed2026092901_sample97 [] buildings=[(850.0, 625.0), (850.0, 475.0), (925.0, 625.0)]
+POC_PASS mixed_slots_seed2026092901_sample98 [] buildings=[(825.0, 575.0), (925.0, 450.0), (925.0, 550.0)]
+POC_PASS mixed_slots_seed2026092901_sample99 [] buildings=[(1050.0, 450.0), (925.0, 625.0), (1050.0, 650.0)]
+POC_PASS mixed_slots_seed2026092901_sample100 [] buildings=[(1025.0, 450.0), (850.0, 650.0), (925.0, 650.0)]
+POC_PASS mixed_slots_seed2026092901_sample101 [] buildings=[(850.0, 525.0), (975.0, 425.0), (1050.0, 450.0)]
+POC_PASS mixed_slots_seed2026092901_sample102 [] buildings=[(875.0, 400.0), (1000.0, 625.0), (850.0, 475.0)]
+POC_PASS mixed_slots_seed2026092901_sample103 [] buildings=[(800.0, 650.0), (875.0, 625.0), (950.0, 400.0)]
+POC_PASS mixed_slots_seed2026092901_sample104 [] buildings=[(950.0, 525.0), (800.0, 600.0), (825.0, 400.0)]
+POC_PASS mixed_slots_seed2026092901_sample105 [] buildings=[(825.0, 450.0), (875.0, 600.0), (1050.0, 400.0)]
+POC_PASS mixed_slots_seed2026092901_sample106 [] buildings=[(875.0, 600.0), (850.0, 450.0), (950.0, 525.0)]
+POC_PASS mixed_slots_seed2026092901_sample107 [] buildings=[(850.0, 500.0), (1050.0, 475.0), (1025.0, 575.0)]
+POC_PASS mixed_slots_seed2026092901_sample108 [] buildings=[(1025.0, 600.0), (850.0, 600.0), (875.0, 475.0)]
+POC_PASS mixed_slots_sample108_eventual_completion 6/6 [["battering_ram", (921.0928, 486.9329), (932.6906, 508.7256), "idle"], ["bombard", (959.1635, 484.7567), (958.2785, 478.9943), "idle"], ["trebuchet", (878.2759, 427.927), (884.6254, 428.3473), "idle"], ["battering_ram", (907.9992, 567.2414), (911.7211, 571.1267), "idle"], ["bombard", (791.8719, 552.3633), (813.1404, 546.4782), "idle"], ["trebuchet", (894.0527, 529.6483), (863.4863, 522.8674), "idle"]]
+POC_PASS mixed_108_isolated_recovery_control stalled=0
+POC_PASS mixed_slots_seed2026092901_sample109 [] buildings=[(1000.0, 400.0), (800.0, 450.0), (1025.0, 550.0)]
+POC_PASS mixed_slots_seed2026092901_sample110 [] buildings=[(900.0, 525.0), (975.0, 600.0), (800.0, 525.0)]
+POC_PASS mixed_slots_seed2026092901_sample111 [] buildings=[(1050.0, 450.0), (800.0, 450.0), (975.0, 625.0)]
+POC_PASS mixed_slots_seed2026092901_sample112 [] buildings=[(1025.0, 500.0), (1000.0, 625.0), (950.0, 425.0)]
+POC_PASS mixed_slots_seed2026092901_sample113 [] buildings=[(875.0, 575.0), (825.0, 650.0), (925.0, 400.0)]
+POC_PASS mixed_slots_seed2026092901_sample114 [] buildings=[(950.0, 400.0), (800.0, 500.0), (1025.0, 550.0)]
+POC_PASS mixed_slots_seed2026092901_sample115 [] buildings=[(950.0, 400.0), (875.0, 475.0), (1025.0, 575.0)]
+POC_PASS mixed_slots_sample115_eventual_completion 6/6 [["battering_ram", (929.809, 527.2166), (925.0, 525.0), "idle"], ["bombard", (937.8933, 485.0687), (938.2789, 478.8733), "idle"], ["trebuchet", (878.2759, 427.927), (884.6254, 428.3473), "idle"], ["battering_ram", (904.6929, 569.3), (911.7211, 571.1267), "idle"], ["bombard", (865.0844, 583.0553), (865.5944, 569.8478), "idle"], ["trebuchet", (874.2996, 521.8609), (863.4863, 522.8674), "idle"]]
+POC_PASS mixed_slots_seed2026092901_sample116 [] buildings=[(875.0, 525.0), (1000.0, 475.0), (925.0, 600.0)]
+POC_PASS mixed_slots_seed2026092901_sample117 [] buildings=[(1000.0, 575.0), (925.0, 425.0), (850.0, 525.0)]
+POC_PASS mixed_slots_seed2026092901_sample118 [] buildings=[(1000.0, 550.0), (900.0, 450.0), (1000.0, 650.0)]
+POC_PASS mixed_slots_seed2026092901_sample119 [] buildings=[(975.0, 425.0), (950.0, 575.0), (875.0, 625.0)]
+POC_PASS mixed_slots_seed2026092901_sample120 [] buildings=[(800.0, 525.0), (950.0, 475.0), (925.0, 400.0)]
+POC_PASS mixed_slots_seed2026092901_sample121 [] buildings=[(1025.0, 575.0), (975.0, 475.0), (1050.0, 475.0)]
+POC_PASS mixed_slots_seed2026092901_sample122 [] buildings=[(825.0, 450.0), (925.0, 525.0), (975.0, 600.0)]
+POC_PASS mixed_slots_seed2026092901_sample123 [] buildings=[(1025.0, 525.0), (1050.0, 425.0), (850.0, 575.0)]
+POC_PASS mixed_slots_seed2026092901_sample124 [] buildings=[(1000.0, 575.0), (850.0, 425.0), (875.0, 625.0)]
+POC_PASS mixed_slots_seed2026092901_sample125 [] buildings=[(1050.0, 450.0), (900.0, 450.0), (825.0, 575.0)]
+POC_PASS mixed_slots_seed2026092901_sample126 [] buildings=[(975.0, 425.0), (850.0, 625.0), (1050.0, 500.0)]
+POC_PASS mixed_slots_seed2026092901_sample127 [] buildings=[(825.0, 425.0), (1025.0, 625.0), (825.0, 500.0)]
+POC_PASS mixed_slots_seed2026092901_sample128 [] buildings=[(1025.0, 425.0), (900.0, 625.0), (950.0, 550.0)]
+POC_PASS mixed_slots_seed2026092901_sample129 [] buildings=[(1000.0, 475.0), (900.0, 500.0), (1050.0, 625.0)]
+POC_PASS mixed_slots_seed2026092901_sample130 [] buildings=[(875.0, 425.0), (850.0, 525.0), (950.0, 400.0)]
+POC_PASS mixed_slots_seed2026092901_sample131 [] buildings=[(800.0, 575.0), (1050.0, 450.0), (925.0, 525.0)]
+POC_PASS mixed_slots_seed2026092901_sample132 [] buildings=[(800.0, 575.0), (1000.0, 400.0), (1050.0, 475.0)]
+POC_PASS mixed_slots_seed2026092901_sample133 [] buildings=[(975.0, 500.0), (1050.0, 550.0), (825.0, 550.0)]
+POC_PASS mixed_slots_seed2026092901_sample134 [] buildings=[(900.0, 625.0), (875.0, 525.0), (1050.0, 575.0)]
+POC_PASS mixed_slots_sample134_eventual_completion 6/6 [["battering_ram", (924.418, 518.5829), (925.0, 525.0), "idle"], ["bombard", (943.1818, 443.9917), (938.2789, 478.8733), "idle"], ["trebuchet", (887.8187, 461.9701), (892.1522, 465.5944), "idle"], ["battering_ram", (917.4266, 572.533), (911.7211, 571.1267), "idle"], ["bombard", (847.848, 574.2878), (854.2249, 574.3018), "idle"], ["trebuchet", (845.7126, 476.9803), (846.0544, 474.7586), "idle"]]
+POC_PASS mixed_134_isolated_recovery_control stalled=0
+POC_PASS mixed_slots_seed2026092901_sample135 [] buildings=[(900.0, 550.0), (850.0, 450.0), (800.0, 525.0)]
+POC_PASS mixed_slots_seed2026092901_sample136 [] buildings=[(800.0, 525.0), (850.0, 600.0), (1050.0, 500.0)]
+POC_PASS mixed_slots_seed2026092901_sample137 [] buildings=[(800.0, 450.0), (875.0, 500.0), (1025.0, 525.0)]
+POC_PASS mixed_slots_seed2026092901_sample138 [] buildings=[(1025.0, 400.0), (1000.0, 575.0), (900.0, 425.0)]
+POC_PASS mixed_slots_seed2026092901_sample139 [] buildings=[(800.0, 525.0), (1025.0, 575.0), (1025.0, 475.0)]
+POC_PASS mixed_slots_seed2026092901_sample140 [] buildings=[(1025.0, 600.0), (800.0, 425.0), (925.0, 525.0)]
+POC_PASS mixed_slots_sample140_eventual_completion 6/6 [["battering_ram", (879.0189, 512.5784), (874.7394, 505.2548), "idle"], ["bombard", (889.5935, 452.4267), (887.6484, 459.0232), "idle"], ["trebuchet", (846.5742, 427.3044), (847.0944, 419.0422), "idle"], ["battering_ram", (857.052, 549.5214), (861.8304, 551.4863), "idle"], ["bombard", (811.7685, 545.8621), (815.5989, 538.5773), "idle"], ["trebuchet", (841.4868, 512.0787), (828.5079, 492.3457), "idle"]]
+POC_PASS mixed_slots_seed2026092901_sample141 [] buildings=[(1050.0, 600.0), (925.0, 500.0), (900.0, 625.0)]
+POC_PASS mixed_slots_seed2026092901_sample142 [] buildings=[(875.0, 400.0), (800.0, 425.0), (950.0, 425.0)]
+POC_PASS mixed_slots_seed2026092901_sample143 [] buildings=[(1000.0, 400.0), (1050.0, 550.0), (850.0, 625.0)]
+POC_PASS mixed_slots_seed2026092901_sample144 [] buildings=[(900.0, 600.0), (950.0, 400.0), (1050.0, 500.0)]
+POC_PASS mixed_slots_seed2026092901_sample145 [] buildings=[(975.0, 400.0), (1025.0, 500.0), (900.0, 425.0)]
+POC_PASS mixed_slots_seed2026092901_sample146 [] buildings=[(1000.0, 550.0), (925.0, 650.0), (875.0, 525.0)]
+POC_PASS mixed_slots_sample146_eventual_completion 6/6 [["battering_ram", (924.7034, 519.8089), (925.0, 525.0), "idle"], ["bombard", (933.4779, 437.6122), (938.2789, 478.8733), "idle"], ["trebuchet", (886.7561, 463.5557), (892.1522, 465.5944), "idle"], ["battering_ram", (917.4266, 572.533), (911.7211, 571.1267), "idle"], ["bombard", (847.9928, 574.4503), (854.2249, 574.3018), "idle"], ["trebuchet", (842.8442, 478.0468), (846.0544, 474.7586), "idle"]]
+POC_PASS mixed_slots_seed2026092901_sample147 [] buildings=[(875.0, 625.0), (975.0, 650.0), (800.0, 450.0)]
+POC_PASS mixed_slots_seed2026092901_sample148 [] buildings=[(975.0, 425.0), (975.0, 625.0), (950.0, 525.0)]
+POC_PASS mixed_slots_seed2026092901_sample149 [] buildings=[(975.0, 450.0), (800.0, 425.0), (950.0, 600.0)]
+POC_PASS mixed_slots_seed2026092901_sample150 [] buildings=[(800.0, 650.0), (875.0, 625.0), (950.0, 450.0)]
+POC_PASS mixed_slots_seed2026092901_sample151 [] buildings=[(850.0, 650.0), (1025.0, 450.0), (825.0, 425.0)]
+POC_PASS mixed_slots_seed2026092901_sample152 [] buildings=[(825.0, 650.0), (950.0, 500.0), (825.0, 575.0)]
+POC_PASS mixed_slots_seed2026092901_sample153 [] buildings=[(1000.0, 525.0), (900.0, 550.0), (975.0, 625.0)]
+POC_PASS mixed_slots_seed2026092901_sample154 [] buildings=[(850.0, 625.0), (950.0, 475.0), (1050.0, 600.0)]
+POC_PASS mixed_slots_seed2026092901_sample155 [] buildings=[(1025.0, 450.0), (925.0, 625.0), (875.0, 450.0)]
+POC_PASS mixed_slots_seed2026092901_sample156 [] buildings=[(825.0, 650.0), (950.0, 450.0), (1050.0, 525.0)]
+POC_PASS mixed_slots_seed2026092901_sample157 [] buildings=[(925.0, 500.0), (1050.0, 625.0), (850.0, 475.0)]
+POC_PASS mixed_slots_seed2026092901_sample158 [] buildings=[(875.0, 475.0), (925.0, 550.0), (925.0, 625.0)]
+POC_PASS mixed_slots_sample158_eventual_completion 6/6 [["battering_ram", (923.9868, 483.0915), (924.3389, 489.0061), "idle"], ["bombard", (958.1758, 462.7394), (935.2567, 442.2642), "idle"], ["trebuchet", (874.1209, 427.547), (872.1881, 421.6284), "idle"], ["battering_ram", (873.2292, 524.45), (879.2339, 524.4679), "idle"], ["bombard", (803.1335, 554.4781), (833.4196, 538.6068), "idle"], ["trebuchet", (789.9949, 468.4915), (820.8881, 472.3353), "idle"]]
+POC_PASS mixed_slots_seed2026092901_sample159 [] buildings=[(1025.0, 475.0), (825.0, 625.0), (800.0, 500.0)]
+POC_PASS resource_slit_r10_margin0.5_mirrorfalse_witness 
+POC_PASS resource_slit_r10_margin0.5_mirrorfalse_route [(225.0, 425.0), (589.95, 510.05), (660.05, 510.05), (1025.0, 625.0)]
+POC_PASS resource_slit_r10_margin0.5_mirrortrue_witness 
+POC_PASS resource_slit_r10_margin0.5_mirrortrue_route [(225.0, 425.0), (589.95, 539.95), (660.05, 539.95), (1025.0, 625.0)]
+POC_PASS resource_slit_r10_margin1.0_mirrorfalse_witness 
+POC_PASS resource_slit_r10_margin1.0_mirrorfalse_route [(225.0, 425.0), (589.95, 510.05), (660.05, 510.05), (1025.0, 625.0)]
+POC_PASS resource_slit_r10_margin1.0_mirrortrue_witness 
+POC_PASS resource_slit_r10_margin1.0_mirrortrue_route [(225.0, 425.0), (589.95, 539.95), (660.05, 539.95), (1025.0, 625.0)]
+POC_PASS resource_slit_r10_margin2.0_mirrorfalse_witness 
+POC_PASS resource_slit_r10_margin2.0_mirrorfalse_route [(225.0, 425.0), (589.95, 510.05), (660.05, 510.05), (1025.0, 625.0)]
+POC_PASS resource_slit_r10_margin2.0_mirrortrue_witness 
+POC_PASS resource_slit_r10_margin2.0_mirrortrue_route [(225.0, 425.0), (589.95, 539.95), (660.05, 539.95), (1025.0, 625.0)]
+POC_PASS resource_slit_r10_margin4.0_mirrorfalse_witness 
+POC_PASS resource_slit_r10_margin4.0_mirrorfalse_route [(225.0, 425.0), (589.95, 510.05), (660.05, 510.05), (1025.0, 625.0)]
+POC_PASS resource_slit_r10_margin4.0_mirrortrue_witness 
+POC_PASS resource_slit_r10_margin4.0_mirrortrue_route [(225.0, 425.0), (589.95, 539.95), (660.05, 539.95), (1025.0, 625.0)]
+POC_PASS resource_slit_r10_margin8.0_mirrorfalse_witness 
+POC_PASS resource_slit_r10_margin8.0_mirrorfalse_route [(225.0, 425.0), (271.4286, 428.5714), (328.5714, 428.5714), (385.7143, 478.5714), (442.8571, 507.1428), (500.0, 507.1428), (557.1429, 507.1428), (614.2857, 514.2857), (671.4286, 514.2857), (728.5714, 514.2857), (785.7143, 514.2857), (842.8572, 542.8571), (900.0, 564.2857), (957.1429, 592.8571), (1014.286, 621.4286), (1025.0, 625.0)]
+POC_PASS resource_slit_r10_margin8.0_mirrortrue_witness 
+POC_PASS resource_slit_r10_margin8.0_mirrortrue_route [(225.0, 425.0), (271.4286, 428.5714), (328.5714, 464.2857), (385.7143, 521.4286), (442.8571, 535.7142), (500.0, 535.7142), (557.1429, 535.7142), (614.2857, 535.7142), (671.4286, 535.7142), (728.5714, 535.7142), (785.7143, 535.7142), (842.8572, 542.8571), (900.0, 564.2857), (957.1429, 592.8571), (1014.286, 621.4286), (1025.0, 625.0)]
+POC_PASS resource_slit_r12_margin0.5_mirrorfalse_witness 
+POC_PASS resource_slit_r12_margin0.5_mirrorfalse_route [(225.0, 425.0), (587.95, 512.05), (662.05, 512.05), (1025.0, 625.0)]
+POC_PASS resource_slit_r12_margin0.5_mirrortrue_witness 
+POC_PASS resource_slit_r12_margin0.5_mirrortrue_route [(225.0, 425.0), (587.95, 537.95), (662.05, 537.95), (1025.0, 625.0)]
+POC_PASS resource_slit_r12_margin1.0_mirrorfalse_witness 
+POC_PASS resource_slit_r12_margin1.0_mirrorfalse_route [(225.0, 425.0), (587.95, 512.05), (662.05, 512.05), (1025.0, 625.0)]
+POC_PASS resource_slit_r12_margin1.0_mirrortrue_witness 
+POC_PASS resource_slit_r12_margin1.0_mirrortrue_route [(225.0, 425.0), (587.95, 537.95), (662.05, 537.95), (1025.0, 625.0)]
+POC_PASS resource_slit_r12_margin2.0_mirrorfalse_witness 
+POC_PASS resource_slit_r12_margin2.0_mirrorfalse_route [(225.0, 425.0), (587.95, 512.05), (662.05, 512.05), (1025.0, 625.0)]
+POC_PASS resource_slit_r12_margin2.0_mirrortrue_witness 
+POC_PASS resource_slit_r12_margin2.0_mirrortrue_route [(225.0, 425.0), (587.95, 537.95), (662.05, 537.95), (1025.0, 625.0)]
+POC_PASS resource_slit_r12_margin4.0_mirrorfalse_witness 
+POC_PASS resource_slit_r12_margin4.0_mirrorfalse_route [(225.0, 425.0), (587.95, 512.05), (662.05, 512.05), (1025.0, 625.0)]
+POC_PASS resource_slit_r12_margin4.0_mirrortrue_witness 
+POC_PASS resource_slit_r12_margin4.0_mirrortrue_route [(225.0, 425.0), (587.95, 537.95), (662.05, 537.95), (1025.0, 625.0)]
+POC_PASS resource_slit_r12_margin8.0_mirrorfalse_witness 
+POC_PASS resource_slit_r12_margin8.0_mirrorfalse_route [(225.0, 425.0), (291.6667, 425.0), (358.3333, 425.0), (425.0, 491.6667), (491.6667, 516.6666), (558.3333, 516.6666), (625.0, 516.6666), (691.6666, 516.6666), (758.3333, 516.6666), (825.0, 533.3333), (891.6666, 566.6666), (958.3333, 591.6666), (1025.0, 625.0)]
+POC_PASS resource_slit_r12_margin8.0_mirrortrue_witness 
+POC_PASS resource_slit_r12_margin8.0_mirrortrue_route [(225.0, 425.0), (291.6667, 425.0), (358.3333, 425.0), (425.0, 491.6667), (491.6667, 516.6666), (558.3333, 516.6666), (625.0, 533.3333), (691.6666, 533.3333), (758.3333, 533.3333), (825.0, 533.3333), (891.6666, 566.6666), (958.3333, 591.6666), (1025.0, 625.0)]
+POC_PASS resource_slit_r18_margin0.5_mirrorfalse_witness 
+POC_PASS resource_slit_r18_margin0.5_mirrorfalse_route [(225.0, 425.0), (581.95, 518.05), (668.05, 518.05), (1025.0, 625.0)]
+POC_PASS resource_slit_r18_margin0.5_mirrortrue_witness 
+POC_PASS resource_slit_r18_margin0.5_mirrortrue_route [(225.0, 425.0), (581.95, 531.95), (668.05, 531.95), (1025.0, 625.0)]
+POC_PASS resource_slit_r18_margin1.0_mirrorfalse_witness 
+POC_PASS resource_slit_r18_margin1.0_mirrorfalse_route [(225.0, 425.0), (581.95, 518.05), (668.05, 518.05), (1025.0, 625.0)]
+POC_PASS resource_slit_r18_margin1.0_mirrortrue_witness 
+POC_PASS resource_slit_r18_margin1.0_mirrortrue_route [(225.0, 425.0), (581.95, 531.95), (668.05, 531.95), (1025.0, 625.0)]
+POC_PASS resource_slit_r18_margin2.0_mirrorfalse_witness 
+POC_PASS resource_slit_r18_margin2.0_mirrorfalse_route [(225.0, 425.0), (290.0, 420.0), (370.0, 420.0), (450.0, 460.0), (530.0, 520.0), (610.0, 520.0), (690.0, 520.0), (770.0, 520.0), (850.0, 540.0), (930.0, 580.0), (1010.0, 620.0), (1025.0, 625.0)]
+POC_PASS resource_slit_r18_margin2.0_mirrortrue_witness 
+POC_PASS resource_slit_r18_margin2.0_mirrortrue_route [(225.0, 425.0), (290.0, 420.0), (370.0, 420.0), (450.0, 490.0), (530.0, 530.0), (610.0, 530.0), (690.0, 530.0), (770.0, 530.0), (850.0, 540.0), (930.0, 580.0), (1010.0, 620.0), (1025.0, 625.0)]
+POC_PASS resource_slit_r18_margin4.0_mirrorfalse_witness 
+POC_PASS resource_slit_r18_margin4.0_mirrorfalse_route [(225.0, 425.0), (290.0, 420.0), (370.0, 420.0), (450.0, 460.0), (530.0, 520.0), (610.0, 520.0), (690.0, 520.0), (770.0, 520.0), (850.0, 540.0), (930.0, 580.0), (1010.0, 620.0), (1025.0, 625.0)]
+POC_PASS resource_slit_r18_margin4.0_mirrortrue_witness 
+POC_PASS resource_slit_r18_margin4.0_mirrortrue_route [(225.0, 425.0), (290.0, 420.0), (370.0, 420.0), (450.0, 490.0), (530.0, 530.0), (610.0, 530.0), (690.0, 530.0), (770.0, 530.0), (850.0, 540.0), (930.0, 580.0), (1010.0, 620.0), (1025.0, 625.0)]
+POC_PASS resource_slit_r18_margin8.0_mirrorfalse_witness 
+POC_PASS resource_slit_r18_margin8.0_mirrorfalse_route [(225.0, 425.0), (1025.0, 625.0)]
+POC_PASS resource_slit_r18_margin8.0_mirrortrue_witness 
+POC_PASS resource_slit_r18_margin8.0_mirrortrue_route [(225.0, 425.0), (1025.0, 625.0)]
+POC_PASS resource_motion_cache_offset-4.0 cold=4 warm=13 fresh=13
+POC_PASS resource_motion_safe_offset-4.0 
+POC_PASS resource_motion_cache_offset-3.5 cold=4 warm=13 fresh=13
+POC_PASS resource_motion_safe_offset-3.5 
+POC_PASS resource_motion_cache_offset-3.0 cold=13 warm=13 fresh=13
+POC_PASS resource_motion_safe_offset-3.0 
+POC_PASS resource_motion_cache_offset-2.5 cold=13 warm=13 fresh=13
+POC_PASS resource_motion_safe_offset-2.5 
+POC_PASS resource_motion_cache_offset-2.0 cold=13 warm=13 fresh=13
+POC_PASS resource_motion_safe_offset-2.0 
+POC_PASS resource_motion_cache_offset0.0 cold=13 warm=13 fresh=13
+POC_PASS resource_motion_safe_offset0.0 
+POC_PASS resource_motion_cache_offset0.5 cold=13 warm=13 fresh=13
+POC_PASS resource_motion_safe_offset0.5 
+POC_PASS resource_motion_cache_offset1.0 cold=13 warm=13 fresh=13
+POC_PASS resource_motion_safe_offset1.0 
+POC_PASS resource_motion_cache_offset1.5 cold=13 warm=13 fresh=13
+POC_PASS resource_motion_safe_offset1.5 
+POC_PASS resource_motion_cache_offset2.0 cold=13 warm=13 fresh=13
+POC_PASS resource_motion_safe_offset2.0 
+POC_PASS resource_motion_cache_offset2.5 cold=13 warm=13 fresh=13
+POC_PASS resource_motion_safe_offset2.5 
+POC_PASS resource_motion_cache_offset3.0 cold=13 warm=13 fresh=13
+POC_PASS resource_motion_safe_offset3.0 
+POC_PASS disconnected_group_r12_reversefalse 4/4 [[(477.9238, 537.0909), (475.0, 542.5), "idle"], [(477.9238, 602.0909), (475.0, 607.5), "idle"], [(1196.783, 566.7043), (1200.0, 567.5), "idle"], [(1196.781, 631.7036), (1200.0, 632.5), "idle"]]
+POC_PASS disconnected_group_reachable_members_r12_reversefalse 
+POC_PASS disconnected_group_r12_reversetrue 4/4 [[(1063.022, 596.4622), (1071.077, 575.3329), "idle"], [(1102.747, 582.9968), (1104.082, 583.4974), "idle"], [(536.6969, 576.9045), (537.9126, 583.3381), "idle"], [(569.4465, 586.9688), (570.9178, 591.5026), "idle"]]
+POC_PASS disconnected_group_reachable_members_r12_reversetrue 
+POC_PASS disconnected_group_r28_reversefalse 4/4 [[(425.8965, 541.6708), (425.0, 542.5), "idle"], [(425.8965, 606.6708), (425.0, 607.5), "idle"], [(1196.781, 566.7039), (1200.0, 567.5), "idle"], [(1196.781, 631.7039), (1200.0, 632.5), "idle"]]
+POC_PASS disconnected_group_reachable_members_r28_reversefalse 
+POC_PASS disconnected_group_r28_reversetrue 4/4 [[(1107.079, 568.8607), (1107.684, 568.9363), "idle"], [(1042.329, 549.8542), (1045.557, 553.5679), "idle"], [(517.4324, 604.6814), (517.3158, 606.0637), "idle"], [(450.5962, 601.7819), (450.5962, 601.7819), "idle"]]
+POC_PASS disconnected_group_reachable_members_r28_reversetrue 
+POC_PASS wall_slots_balanced_nearfalse_reachable 0/6 inaccessible
+POC_PASS wall_slots_balanced_nearfalse_finish [[(964.5172, 436.103), (970.1076, 437.3377), "idle"], [(999.8414, 440.4183), (1003.885, 441.2227), "idle"], [(994.6298, 472.8176), (1000.0, 475.0), "idle"], [(931.3032, 481.8964), (944.0496, 461.9307), "idle"], [(907.036, 484.8661), (911.3497, 486.1479), "idle"], [(962.6524, 487.5613), (966.6089, 485.4175), "idle"]]
+POC_PASS wall_slots_balanced_neartrue_reachable 0/6 inaccessible
+POC_PASS wall_slots_balanced_neartrue_finish [[(1011.098, 443.3121), (1015.038, 444.5064), "idle"], [(991.5785, 408.1063), (984.5443, 429.4684), "idle"], [(998.4729, 474.4874), (1000.0, 475.0), "idle"], [(985.2175, 444.3543), (961.0211, 451.4768), "idle"], [(918.4052, 484.8485), (919.5505, 485.4758), "idle"], [(953.5552, 485.4669), (961.4299, 484.4458), "idle"]]
+POC_PASS wall_slots_line_nearfalse_reachable 0/6 inaccessible
+POC_PASS wall_slots_line_nearfalse_finish [[(1005.994, 407.194), (1007.77, 407.4454), "idle"], [(965.4933, 429.5161), (973.9926, 403.5604), "idle"], [(1035.454, 471.4465), (1036.0, 475.0), "idle"], [(1000.693, 440.5811), (1003.885, 441.2227), "idle"], [(962.465, 485.3694), (966.4462, 485.4564), "idle"], [(1000.012, 485.1979), (1000.0, 475.0), "idle"]]
+POC_PASS wall_slots_line_neartrue_reachable 0/6 inaccessible
+POC_PASS wall_slots_line_neartrue_finish [[(1027.928, 413.5414), (1030.076, 414.0128), "idle"], [(1002.756, 381.1898), (999.5823, 398.9749), "idle"], [(1035.347, 474.7627), (1036.0, 475.0), "idle"], [(1015.99, 440.0836), (1015.038, 444.5064), "idle"], [(958.0997, 485.1606), (959.3967, 485.6951), "idle"], [(992.6145, 486.7634), (1000.0, 475.0), "idle"]]
+POC_PASS wall_slots_compact_nearfalse_reachable 0/6 inaccessible
+POC_PASS wall_slots_compact_nearfalse_finish [[(971.3707, 436.3824), (971.866, 439.5532), "idle"], [(1001.809, 435.5516), (1003.656, 443.2096), "idle"], [(944.0095, 479.3647), (946.0365, 480.528), "idle"], [(1009.142, 473.1805), (1012.0, 475.0), "idle"], [(909.7685, 487.4048), (913.5165, 484.4284), "idle"], [(982.0978, 487.0449), (982.2667, 487.3522), "idle"]]
+POC_PASS wall_compact_isolated_recovery_control stalled=0
+POC_PASS wall_slots_compact_neartrue_reachable 0/6 inaccessible
+POC_PASS wall_slots_compact_neartrue_finish [[(1011.755, 445.3787), (1014.153, 446.3001), "idle"], [(993.1547, 410.9427), (985.4535, 432.1468), "idle"], [(946.9412, 446.9885), (949.127, 451.6622), "idle"], [(1000.0, 475.0), (1000.0, 475.0), "idle"], [(919.3079, 483.1729), (922.1734, 484.6902), "idle"], [(962.4336, 487.0569), (963.0145, 487.3626), "idle"]]
+POC_PASS wall_slots_column_nearfalse_reachable 0/6 inaccessible
+POC_PASS wall_slots_column_nearfalse_finish [[(932.3289, 453.7563), (934.3878, 450.3415), "idle"], [(1000.573, 457.7731), (1001.942, 458.1113), "idle"], [(980.9113, 484.3723), (975.946, 485.4267), "idle"], [(967.2218, 453.9785), (968.1652, 454.2264), "idle"], [(899.7325, 487.5826), (894.5414, 485.0801), "idle"], [(936.1644, 485.0209), (940.3878, 486.4009), "idle"]]
+POC_PASS wall_column_isolated_recovery_control stalled=0
+POC_PASS wall_slots_column_neartrue_reachable 0/6 inaccessible
+POC_PASS wall_slots_column_neartrue_finish [[(940.9747, 430.2053), (946.5317, 429.6773), "idle"], [(1014.888, 449.0496), (1007.519, 459.7532), "idle"], [(978.6901, 484.9357), (982.7824, 483.1801), "idle"], [(1022.447, 476.2405), (977.0254, 444.7152), "idle"], [(943.3717, 477.0512), (950.9009, 479.8011), "idle"], [(992.7158, 465.2487), (920.4073, 464.7631), "idle"]]
+POC_PASS wall_group_followup_queue_finishes 6/6 [[(201.8163, 250.5995), "idle", 0], [(238.6087, 237.0044), "idle", 0], [(206.2319, 286.8318), "idle", 0], [(241.735, 271.2144), "idle", 0], [(201.0756, 320.2322), "idle", 0], [(233.731, 324.3174), "idle", 0]]
+POC_PASS gate_r10_construction 
+POC_PASS gate_r10_completed 
+POC_PASS gate_r10_captured 
+POC_PASS gate_r10_recaptured 
+POC_PASS gate_r10_deleted 
+POC_PASS gate_r18_construction 
+POC_PASS gate_r18_completed 
+POC_PASS gate_r18_captured 
+POC_PASS gate_r18_recaptured 
+POC_PASS gate_r18_deleted 
+POC_PASS fuzz_0_witness 
+POC_PASS fuzz_0_safe_route [(175.0, 434.646), (375.0, 375.0), (775.0, 325.0), (925.0, 175.0), (1325.0, 175.0), (1325.0, 165.4347)]
+POC_PASS fuzz_0_safe_arrival safe=true arrived=true position=(1325.0, 166.0)
+POC_PASS fuzz_1_witness 
+POC_PASS fuzz_1_safe_route [(175.0, 394.4448), (525.0, 225.0), (575.0, 175.0), (975.0, 175.0), (1325.0, 335.2314)]
+POC_PASS fuzz_1_safe_arrival safe=true arrived=true position=(1325.0, 335.2314)
+POC_PASS fuzz_2_witness 
+POC_PASS fuzz_2_safe_route [(175.0, 396.899), (325.0, 275.0), (725.0, 225.0), (725.0, 275.0), (1125.0, 275.0), (1325.0, 408.3451)]
+POC_PASS fuzz_2_safe_arrival safe=true arrived=true position=(1319.695, 404.8082)
+POC_PASS fuzz_3_witness 
+POC_PASS fuzz_3_safe_route [(175.0, 219.7838), (525.0, 225.0), (675.0, 175.0), (1025.0, 175.0), (1325.0, 339.2402)]
+POC_PASS fuzz_3_safe_arrival safe=true arrived=true position=(1324.987, 339.2332)
+POC_PASS fuzz_4_witness 
+POC_PASS fuzz_4_safe_route [(175.0, 370.8867), (525.0, 175.0), (925.0, 225.0), (1175.0, 275.0), (1325.0, 619.9188)]
+POC_PASS fuzz_4_safe_arrival safe=true arrived=true position=(1325.0, 619.9188)
+POC_PASS fuzz_5_witness 
+POC_PASS fuzz_5_safe_route [(175.0, 503.5196), (375.0, 675.0), (775.0, 775.0), (1175.0, 825.0), (1325.0, 835.3867)]
+POC_PASS fuzz_5_safe_arrival safe=true arrived=true position=(1318.656, 834.9475)
+POC_PASS fuzz_6_witness 
+POC_PASS fuzz_6_safe_route [(175.0, 442.9607), (475.0, 375.0), (875.0, 375.0), (1025.0, 425.0), (1075.0, 425.0), (1325.0, 606.5573)]
+POC_PASS fuzz_6_safe_arrival safe=true arrived=true position=(1322.596, 604.8114)
+POC_PASS fuzz_7_witness 
+POC_PASS fuzz_7_safe_route [(175.0, 225.0), (375.0, 175.0), (775.0, 175.0), (925.0, 175.0), (1275.0, 375.0), (1325.0, 507.4168)]
+POC_PASS fuzz_7_safe_arrival safe=true arrived=true position=(1325.0, 507.4168)
+POC_PASS fuzz_8_witness 
+POC_PASS fuzz_8_safe_route [(175.0, 379.1686), (475.0, 175.0), (875.0, 175.0), (1225.0, 275.0), (1325.0, 347.4983)]
+POC_PASS fuzz_8_safe_arrival safe=true arrived=true position=(1325.0, 347.4983)
+POC_PASS fuzz_9_witness 
+POC_PASS fuzz_9_safe_route [(175.0, 313.7375), (525.0, 125.0), (925.0, 125.0), (1275.0, 325.0), (1325.0, 479.9194)]
+POC_PASS fuzz_9_safe_arrival safe=true arrived=true position=(1324.758, 479.1691)
+POC_PASS fuzz_10_witness 
+POC_PASS fuzz_10_safe_route [(175.0, 522.5511), (425.0, 475.0), (825.0, 475.0), (1125.0, 475.0), (1325.0, 237.1559)]
+POC_PASS fuzz_10_safe_arrival safe=true arrived=true position=(1321.938, 240.7973)
+POC_PASS fuzz_11_witness 
+POC_PASS fuzz_11_safe_route [(175.0, 270.1471), (525.0, 425.0), (875.0, 375.0), (925.0, 425.0), (925.0, 525.0), (1175.0, 575.0), (1325.0, 683.364)]
+POC_PASS fuzz_11_safe_arrival safe=true arrived=true position=(1320.908, 680.408)
+POC_PASS fuzz_12_witness 
+POC_PASS fuzz_12_safe_route [(175.0, 482.0513), (375.0, 325.0), (725.0, 325.0), (775.0, 275.0), (1075.0, 225.0), (1125.0, 225.0), (1325.0, 322.2435)]
+POC_PASS fuzz_12_safe_arrival safe=true arrived=true position=(1319.256, 319.4506)
+POC_PASS fuzz_13_witness 
+POC_PASS fuzz_13_safe_route [(175.0, 192.6057), (525.0, 475.0), (775.0, 525.0), (1025.0, 475.0), (1125.0, 475.0), (1325.0, 589.95)]
+POC_PASS fuzz_13_safe_arrival safe=true arrived=true position=(1325.0, 589.95)
+POC_PASS fuzz_14_witness 
+POC_PASS fuzz_14_safe_route [(175.0, 215.0175), (525.0, 175.0), (925.0, 225.0), (1125.0, 225.0), (1325.0, 447.6216)]
+POC_PASS fuzz_14_safe_arrival safe=true arrived=true position=(1323.485, 445.9354)
+POC_PASS fuzz_15_witness 
+POC_PASS fuzz_15_safe_route [(175.0, 248.2812), (525.0, 225.0), (925.0, 225.0), (1125.0, 325.0), (1325.0, 478.9882)]
+POC_PASS fuzz_15_safe_arrival safe=true arrived=true position=(1324.674, 478.7368)
+POC_PASS fuzz_16_witness 
+POC_PASS fuzz_16_safe_route [(175.0, 554.5549), (375.0, 625.0), (675.0, 675.0), (775.0, 725.0), (775.0, 775.0), (1175.0, 775.0), (1325.0, 701.5048)]
+POC_PASS fuzz_16_safe_arrival safe=true arrived=true position=(1320.477, 703.7211)
+POC_PASS fuzz_17_witness 
+POC_PASS fuzz_17_safe_route [(175.0, 243.1041), (525.0, 225.0), (725.0, 225.0), (975.0, 325.0), (1125.0, 425.0), (1275.0, 525.0), (1325.0, 641.6434)]
+POC_PASS fuzz_17_safe_arrival safe=true arrived=true position=(1324.455, 640.3813)
+POC_PASS fuzz_18_witness 
+POC_PASS fuzz_18_safe_route [(175.0, 179.791), (525.0, 175.0), (925.0, 175.0), (1325.0, 275.0), (1325.0, 291.0493)]
+POC_PASS fuzz_18_safe_arrival safe=true arrived=true position=(1325.0, 291.0493)
+POC_PASS fuzz_19_witness 
+POC_PASS fuzz_19_safe_route [(175.0, 725.0), (575.0, 825.0), (975.0, 875.0), (1325.0, 583.8824)]
+POC_PASS fuzz_19_safe_arrival safe=true arrived=true position=(1320.966, 587.238)
+POC_PASS fuzz_20_witness 
+POC_PASS fuzz_20_safe_route [(175.0, 620.8053), (525.0, 625.0), (925.0, 475.0), (1075.0, 425.0), (1325.0, 393.78)]
+POC_PASS fuzz_20_safe_arrival safe=true arrived=true position=(1325.0, 393.78)
+POC_PASS fuzz_21_witness 
+POC_PASS fuzz_21_safe_route [(175.0, 314.0244), (525.0, 275.0), (575.0, 275.0), (725.0, 225.0), (1075.0, 275.0), (1075.0, 325.0), (1175.0, 325.0), (1325.0, 599.9915)]
+POC_PASS fuzz_21_safe_arrival safe=true arrived=true position=(1325.0, 599.9915)
+POC_PASS fuzz_22_witness 
+POC_PASS fuzz_22_safe_route [(175.0, 194.1489), (525.0, 175.0), (925.0, 175.0), (1125.0, 175.0), (1325.0, 278.2127)]
+POC_PASS fuzz_22_safe_arrival safe=true arrived=true position=(1324.945, 278.1844)
+POC_PASS fuzz_23_witness 
+POC_PASS fuzz_23_safe_route [(175.0, 780.447), (525.0, 775.0), (925.0, 775.0), (1025.0, 775.0), (1175.0, 525.0), (1325.0, 182.235)]
+POC_PASS fuzz_23_safe_arrival safe=true arrived=true position=(1322.935, 186.9528)
+POC_PASS fuzz_24_witness 
+POC_PASS fuzz_24_safe_route [(175.0, 658.2172), (525.0, 775.0), (925.0, 775.0), (1175.0, 825.0), (1325.0, 634.369)]
+POC_PASS fuzz_24_safe_arrival safe=true arrived=true position=(1325.0, 634.369)
+POC_PASS fuzz_25_witness 
+POC_PASS fuzz_25_safe_route [(175.0, 534.1593), (525.0, 525.0), (925.0, 525.0), (1025.0, 425.0), (1325.0, 375.0)]
+POC_PASS fuzz_25_safe_arrival safe=true arrived=true position=(1325.0, 375.0)
+POC_PASS fuzz_26_witness 
+POC_PASS fuzz_26_safe_route [(175.0, 847.3341), (525.0, 825.0), (775.0, 775.0), (825.0, 725.0), (975.0, 725.0), (1325.0, 425.0), (1325.0, 358.5835)]
+POC_PASS fuzz_26_safe_arrival safe=true arrived=true position=(1324.896, 363.3002)
+POC_PASS fuzz_27_witness 
+POC_PASS fuzz_27_safe_route [(175.0, 252.1681), (525.0, 275.0), (925.0, 225.0), (975.0, 175.0), (1225.0, 175.0), (1325.0, 302.627)]
+POC_PASS fuzz_27_safe_arrival safe=true arrived=true position=(1324.915, 302.5185)
+POC_PASS fuzz_28_witness 
+POC_PASS fuzz_28_safe_route [(175.0, 734.3174), (325.0, 725.0), (525.0, 725.0), (575.0, 775.0), (975.0, 775.0), (1325.0, 794.909)]
+POC_PASS fuzz_28_safe_arrival safe=true arrived=true position=(1325.0, 794.909)
+POC_PASS fuzz_29_witness 
+POC_PASS fuzz_29_safe_route [(175.0, 201.1168), (525.0, 175.0), (825.0, 125.0), (1225.0, 275.0), (1325.0, 375.0)]
+POC_PASS fuzz_29_safe_arrival safe=true arrived=true position=(1320.459, 370.4595)
+POC_PASS fuzz_30_witness 
+POC_PASS fuzz_30_safe_route [(175.0, 277.1974), (525.0, 225.0), (875.0, 175.0), (1025.0, 325.0), (1325.0, 602.5581)]
+POC_PASS fuzz_30_safe_arrival safe=true arrived=true position=(1322.281, 600.0427)
+POC_PASS fuzz_31_witness 
+POC_PASS fuzz_31_safe_route [(175.0, 179.5075), (525.0, 175.0), (825.0, 175.0), (975.0, 225.0), (1075.0, 375.0), (1075.0, 425.0), (1325.0, 625.0)]
+POC_PASS fuzz_31_safe_arrival safe=true arrived=true position=(1320.974, 621.7794)
+POC_PASS fuzz_32_witness 
+POC_PASS fuzz_32_safe_route [(175.0, 808.5772), (525.0, 825.0), (875.0, 825.0), (1125.0, 725.0), (1325.0, 444.7948)]
+POC_PASS fuzz_32_safe_arrival safe=true arrived=true position=(1323.688, 446.6333)
+POC_PASS fuzz_33_witness 
+POC_PASS fuzz_33_safe_route [(175.0, 665.3511), (375.0, 525.0), (625.0, 375.0), (725.0, 325.0), (775.0, 225.0), (1175.0, 225.0), (1325.0, 207.8255)]
+POC_PASS fuzz_33_safe_arrival safe=true arrived=true position=(1325.0, 207.8255)
+POC_PASS fuzz_34_witness 
+POC_PASS fuzz_34_safe_route [(175.0, 658.5145), (475.0, 875.0), (875.0, 875.0), (1275.0, 825.0), (1325.0, 803.6859)]
+POC_PASS fuzz_34_safe_arrival safe=true arrived=true position=(1324.675, 803.8245)
+POC_PASS fuzz_35_witness 
+POC_PASS fuzz_35_safe_route [(175.0, 187.8015), (525.0, 375.0), (875.0, 575.0), (925.0, 575.0), (975.0, 625.0), (1325.0, 620.4977)]
+POC_PASS fuzz_35_safe_arrival safe=true arrived=true position=(1325.0, 620.4977)
+POC_PASS fuzz_36_witness 
+POC_PASS fuzz_36_safe_route [(175.0, 722.4488), (525.0, 575.0), (925.0, 575.0), (1225.0, 375.0), (1325.0, 251.2353)]
+POC_PASS fuzz_36_safe_arrival safe=true arrived=true position=(1325.0, 251.2353)
+POC_PASS fuzz_37_witness 
+POC_PASS fuzz_37_safe_route [(175.0, 325.0), (425.0, 175.0), (825.0, 175.0), (1125.0, 275.0), (1325.0, 422.2223)]
+POC_PASS fuzz_37_safe_arrival safe=true arrived=true position=(1325.0, 422.2223)
+POC_PASS fuzz_38_witness 
+POC_PASS fuzz_38_safe_route [(175.0, 837.6909), (525.0, 825.0), (925.0, 825.0), (1125.0, 825.0), (1325.0, 695.3797)]
+POC_PASS fuzz_38_safe_arrival safe=true arrived=true position=(1321.365, 697.7356)
+POC_PASS fuzz_39_witness 
+POC_PASS fuzz_39_safe_route [(175.0, 511.3689), (525.0, 575.0), (675.0, 775.0), (925.0, 875.0), (1325.0, 675.0), (1325.0, 697.9788)]
+POC_PASS fuzz_39_safe_arrival safe=true arrived=true position=(1325.0, 693.0)
+POC_PASS fuzz_40_witness 
+POC_PASS fuzz_40_safe_route [(175.0, 608.7338), (525.0, 775.0), (825.0, 775.0), (1175.0, 725.0), (1325.0, 536.7144)]
+POC_PASS fuzz_40_safe_arrival safe=true arrived=true position=(1325.0, 536.7144)
+POC_PASS fuzz_41_witness 
+POC_PASS fuzz_41_safe_route [(175.0, 729.3477), (475.0, 775.0), (875.0, 675.0), (925.0, 625.0), (1175.0, 575.0), (1325.0, 435.9444)]
+POC_PASS fuzz_41_safe_arrival safe=true arrived=true position=(1325.0, 435.9444)
+POC_PASS fuzz_42_witness 
+POC_PASS fuzz_42_safe_route [(175.0, 829.2748), (525.0, 825.0), (925.0, 725.0), (1075.0, 725.0), (1325.0, 525.0), (1325.0, 507.2918)]
+POC_PASS fuzz_42_safe_arrival safe=true arrived=true position=(1325.0, 507.2918)
+POC_PASS fuzz_43_witness 
+POC_PASS fuzz_43_safe_route [(175.0, 730.0593), (425.0, 525.0), (525.0, 525.0), (725.0, 575.0), (1125.0, 525.0), (1325.0, 245.0204)]
+POC_PASS fuzz_43_safe_arrival safe=true arrived=true position=(1323.793, 246.7098)
+POC_PASS fuzz_44_witness 
+POC_PASS fuzz_44_safe_route [(175.0, 751.9984), (525.0, 825.0), (925.0, 875.0), (1125.0, 825.0), (1275.0, 425.0), (1325.0, 314.4742)]
+POC_PASS fuzz_44_safe_arrival safe=true arrived=true position=(1323.224, 318.4006)
+POC_PASS fuzz_45_witness 
+POC_PASS fuzz_45_safe_route [(175.0, 619.6425), (525.0, 575.0), (625.0, 625.0), (725.0, 625.0), (875.0, 575.0), (1075.0, 425.0), (1325.0, 344.2018)]
+POC_PASS fuzz_45_safe_arrival safe=true arrived=true position=(1323.355, 344.7335)
+POC_PASS fuzz_46_witness 
+POC_PASS fuzz_46_safe_route [(175.0, 660.1637), (325.0, 825.0), (725.0, 825.0), (1125.0, 775.0), (1175.0, 775.0), (1325.0, 689.7933)]
+POC_PASS fuzz_46_safe_arrival safe=true arrived=true position=(1323.687, 690.5391)
+POC_PASS fuzz_47_witness 
+POC_PASS fuzz_47_safe_route [(175.0, 287.8493), (475.0, 225.0), (675.0, 175.0), (975.0, 275.0), (1325.0, 455.1508)]
+POC_PASS fuzz_47_safe_arrival safe=true arrived=true position=(1325.0, 455.1508)
+POC_PASS fuzz_48_witness 
+POC_PASS fuzz_48_safe_route [(175.0, 526.141), (425.0, 725.0), (525.0, 775.0), (875.0, 825.0), (1225.0, 825.0), (1325.0, 778.5535)]
+POC_PASS fuzz_48_safe_arrival safe=true arrived=true position=(1322.95, 779.5057)
+POC_PASS fuzz_49_witness 
+POC_PASS fuzz_49_safe_route [(175.0, 322.8732), (475.0, 225.0), (875.0, 125.0), (1275.0, 325.0), (1325.0, 340.3074)]
+POC_PASS fuzz_49_safe_arrival safe=true arrived=true position=(1325.0, 340.3074)
+POC_PASS fuzz_50_witness 
+POC_PASS fuzz_50_safe_route [(175.0, 762.1426), (525.0, 775.0), (625.0, 775.0), (625.0, 725.0), (725.0, 675.0), (775.0, 575.0), (875.0, 575.0), (1275.0, 275.0), (1325.0, 257.0598)]
+POC_PASS fuzz_50_safe_arrival safe=true arrived=true position=(1325.0, 257.0598)
+POC_PASS fuzz_51_witness 
+POC_PASS fuzz_51_safe_route [(175.0, 170.0087), (525.0, 175.0), (925.0, 175.0), (1225.0, 225.0), (1325.0, 252.0236)]
+POC_PASS fuzz_51_safe_arrival safe=true arrived=true position=(1320.573, 250.8272)
+POC_PASS fuzz_52_witness 
+POC_PASS fuzz_52_safe_route [(175.0, 404.558), (325.0, 225.0), (725.0, 175.0), (1125.0, 175.0), (1325.0, 208.5326)]
+POC_PASS fuzz_52_safe_arrival safe=true arrived=true position=(1320.274, 207.7403)
+POC_PASS fuzz_53_witness 
+POC_PASS fuzz_53_safe_route [(175.0, 644.2614), (525.0, 725.0), (575.0, 775.0), (825.0, 775.0), (1125.0, 625.0), (1325.0, 579.3958)]
+POC_PASS fuzz_53_safe_arrival safe=true arrived=true position=(1325.0, 579.3958)
+POC_PASS fuzz_54_witness 
+POC_PASS fuzz_54_safe_route [(175.0, 231.9015), (475.0, 125.0), (875.0, 125.0), (1225.0, 375.0), (1325.0, 600.5807)]
+POC_PASS fuzz_54_safe_arrival safe=true arrived=true position=(1323.479, 597.1501)
+POC_PASS fuzz_55_witness 
+POC_PASS fuzz_55_safe_route [(175.0, 757.0687), (525.0, 775.0), (625.0, 825.0), (725.0, 775.0), (925.0, 625.0), (1225.0, 575.0), (1325.0, 510.4869)]
+POC_PASS fuzz_55_safe_arrival safe=true arrived=true position=(1323.316, 511.5735)
+POC_PASS fuzz_56_witness 
+POC_PASS fuzz_56_safe_route [(175.0, 398.4305), (475.0, 425.0), (625.0, 525.0), (1025.0, 525.0), (1125.0, 525.0), (1325.0, 740.0769)]
+POC_PASS fuzz_56_safe_arrival safe=true arrived=true position=(1320.642, 735.4141)
+POC_PASS fuzz_57_witness 
+POC_PASS fuzz_57_safe_route [(175.0, 634.4601), (375.0, 375.0), (525.0, 275.0), (775.0, 225.0), (1175.0, 275.0), (1325.0, 341.2618)]
+POC_PASS fuzz_57_safe_arrival safe=true arrived=true position=(1323.186, 340.4604)
+POC_PASS fuzz_58_witness 
+POC_PASS fuzz_58_safe_route [(175.0, 280.521), (525.0, 275.0), (575.0, 225.0), (975.0, 225.0), (1075.0, 175.0), (1175.0, 175.0), (1325.0, 349.4624)]
+POC_PASS fuzz_58_safe_arrival safe=true arrived=true position=(1321.247, 345.1267)
+POC_PASS fuzz_59_witness 
+POC_PASS fuzz_59_safe_route [(175.0, 219.7608), (525.0, 225.0), (725.0, 175.0), (1125.0, 225.0), (1325.0, 518.5261)]
+POC_PASS fuzz_59_safe_arrival safe=true arrived=true position=(1322.642, 515.066)
+POC_PASS fuzz_60_witness 
+POC_PASS fuzz_60_safe_route [(175.0, 515.1236), (325.0, 375.0), (575.0, 275.0), (875.0, 225.0), (1025.0, 175.0), (1325.0, 240.9144)]
+POC_PASS fuzz_60_safe_arrival safe=true arrived=true position=(1323.87, 240.6661)
+POC_PASS fuzz_61_witness 
+POC_PASS fuzz_61_safe_route [(175.0, 508.1004), (1325.0, 373.3362)]
+POC_PASS fuzz_61_safe_arrival safe=true arrived=true position=(1319.176, 374.0188)
+POC_PASS fuzz_62_witness 
+POC_PASS fuzz_62_safe_route [(175.0, 216.986), (525.0, 225.0), (925.0, 275.0), (1175.0, 325.0), (1325.0, 473.272)]
+POC_PASS fuzz_62_safe_arrival safe=true arrived=true position=(1322.217, 470.521)
+POC_PASS fuzz_63_witness 
+POC_PASS fuzz_63_safe_route [(175.0, 629.2828), (425.0, 625.0), (475.0, 575.0), (625.0, 525.0), (825.0, 225.0), (1225.0, 225.0), (1325.0, 175.0)]
+POC_PASS fuzz_63_safe_arrival safe=true arrived=true position=(1321.598, 176.7011)
+POC_PASS fuzz_64_witness 
+POC_PASS fuzz_64_safe_route [(175.0, 808.0184), (525.0, 875.0), (925.0, 875.0), (1325.0, 825.0), (1325.0, 822.8135)]
+POC_PASS fuzz_64_safe_arrival safe=true arrived=true position=(1325.0, 825.0)
+POC_PASS fuzz_65_witness 
+POC_PASS fuzz_65_safe_route [(175.0, 676.2794), (525.0, 725.0), (925.0, 725.0), (1125.0, 675.0), (1325.0, 522.7487)]
+POC_PASS fuzz_65_safe_arrival safe=true arrived=true position=(1325.0, 522.7488)
+POC_PASS fuzz_66_witness 
+POC_PASS fuzz_66_safe_route [(175.0, 495.9032), (425.0, 825.0), (825.0, 825.0), (1225.0, 825.0), (1325.0, 782.9846)]
+POC_PASS fuzz_66_safe_arrival safe=true arrived=true position=(1324.568, 783.1659)
+POC_PASS fuzz_67_witness 
+POC_PASS fuzz_67_safe_route [(175.0, 698.7202), (475.0, 725.0), (875.0, 825.0), (1275.0, 825.0), (1325.0, 823.3018)]
+POC_PASS fuzz_67_safe_arrival safe=true arrived=true position=(1319.974, 823.4725)
+POC_PASS fuzz_68_witness 
+POC_PASS fuzz_68_safe_route [(175.0, 657.8551), (475.0, 675.0), (625.0, 775.0), (1025.0, 775.0), (1075.0, 775.0), (1175.0, 675.0), (1325.0, 302.0148)]
+POC_PASS fuzz_68_safe_arrival safe=true arrived=true position=(1322.755, 307.5984)
+POC_PASS fuzz_69_witness 
+POC_PASS fuzz_69_safe_route [(175.0, 536.108), (525.0, 725.0), (675.0, 775.0), (1075.0, 825.0), (1325.0, 756.4169)]
+POC_PASS fuzz_69_safe_arrival safe=true arrived=true position=(1325.0, 756.4169)
+POC_PASS fuzz_70_witness 
+POC_PASS fuzz_70_safe_route [(175.0, 675.0), (425.0, 625.0), (625.0, 525.0), (725.0, 525.0), (725.0, 475.0), (875.0, 475.0), (875.0, 425.0), (1275.0, 375.0), (1325.0, 358.5643)]
+POC_PASS fuzz_70_safe_arrival safe=true arrived=true position=(1325.0, 358.5643)
+POC_PASS fuzz_71_witness 
+POC_PASS fuzz_71_safe_route [(175.0, 167.2445), (525.0, 175.0), (575.0, 175.0), (925.0, 375.0), (1325.0, 575.0), (1325.0, 596.429)]
+POC_PASS fuzz_71_safe_arrival safe=true arrived=true position=(1325.0, 593.0)
+POC_PASS fuzz_72_witness 
+POC_PASS fuzz_72_safe_route [(175.0, 573.1582), (475.0, 375.0), (475.0, 275.0), (675.0, 225.0), (775.0, 225.0), (825.0, 275.0), (1225.0, 275.0), (1325.0, 269.8448)]
+POC_PASS fuzz_72_safe_arrival safe=true arrived=true position=(1323.868, 269.9031)
+POC_PASS fuzz_73_witness 
+POC_PASS fuzz_73_safe_route [(175.0, 606.6765), (375.0, 275.0), (775.0, 275.0), (975.0, 175.0), (1325.0, 175.0), (1325.0, 183.2858)]
+POC_PASS fuzz_73_safe_arrival safe=true arrived=true position=(1325.0, 183.2858)
+POC_PASS fuzz_74_witness 
+POC_PASS fuzz_74_safe_route [(175.0, 400.2039), (375.0, 775.0), (775.0, 775.0), (1175.0, 875.0), (1275.0, 775.0), (1325.0, 612.1597)]
+POC_PASS fuzz_74_safe_arrival safe=true arrived=true position=(1325.0, 612.1597)
+POC_PASS fuzz_75_witness 
+POC_PASS fuzz_75_safe_route [(175.0, 794.1783), (1325.0, 847.5265)]
+POC_PASS fuzz_75_safe_arrival safe=true arrived=true position=(1325.0, 847.5265)
+POC_PASS fuzz_76_witness 
+POC_PASS fuzz_76_safe_route [(175.0, 575.0), (425.0, 775.0), (575.0, 725.0), (725.0, 625.0), (1125.0, 575.0), (1225.0, 575.0), (1325.0, 645.5239)]
+POC_PASS fuzz_76_safe_arrival safe=true arrived=true position=(1319.929, 641.983)
+POC_PASS fuzz_77_witness 
+POC_PASS fuzz_77_safe_route [(175.0, 642.8652), (525.0, 625.0), (575.0, 575.0), (775.0, 575.0), (825.0, 625.0), (1075.0, 725.0), (1325.0, 406.688)]
+POC_PASS fuzz_77_safe_arrival safe=true arrived=true position=(1325.0, 406.688)
+POC_PASS fuzz_78_witness 
+POC_PASS fuzz_78_safe_route [(175.0, 172.5038), (525.0, 175.0), (825.0, 175.0), (975.0, 275.0), (1125.0, 325.0), (1325.0, 442.8891)]
+POC_PASS fuzz_78_safe_arrival safe=true arrived=true position=(1325.0, 442.8891)
+POC_PASS fuzz_79_witness 
+POC_PASS fuzz_79_safe_route [(175.0, 625.0), (375.0, 775.0), (775.0, 875.0), (1175.0, 875.0), (1325.0, 788.9232)]
+POC_PASS fuzz_79_safe_arrival safe=true arrived=true position=(1323.315, 789.8904)
+POC_PASS fuzz_80_witness 
+POC_PASS fuzz_80_safe_route [(175.0, 731.9235), (525.0, 725.0), (925.0, 725.0), (1225.0, 725.0), (1325.0, 775.0)]
+POC_PASS fuzz_80_safe_arrival safe=true arrived=true position=(1321.598, 773.2988)
+POC_PASS fuzz_81_witness 
+POC_PASS fuzz_81_safe_route [(175.0, 640.7705), (375.0, 575.0), (775.0, 425.0), (825.0, 375.0), (825.0, 275.0), (1125.0, 225.0), (1225.0, 225.0), (1325.0, 268.1645)]
+POC_PASS fuzz_81_safe_arrival safe=true arrived=true position=(1323.311, 267.4424)
+POC_PASS fuzz_82_witness 
+POC_PASS fuzz_82_safe_route [(175.0, 689.6631), (325.0, 775.0), (625.0, 825.0), (825.0, 825.0), (1125.0, 625.0), (1325.0, 510.1922)]
+POC_PASS fuzz_82_safe_arrival safe=true arrived=true position=(1319.656, 513.2613)
+POC_PASS fuzz_83_witness 
+POC_PASS fuzz_83_safe_route [(175.0, 295.6838), (525.0, 275.0), (775.0, 275.0), (825.0, 225.0), (925.0, 175.0), (1225.0, 175.0), (1325.0, 218.6299)]
+POC_PASS fuzz_83_safe_arrival safe=true arrived=true position=(1323.988, 218.1885)
+POC_PASS fuzz_84_witness 
+POC_PASS fuzz_84_safe_route [(175.0, 488.5021), (375.0, 725.0), (775.0, 775.0), (1175.0, 825.0), (1325.0, 784.55)]
+POC_PASS fuzz_84_safe_arrival safe=true arrived=true position=(1322.723, 785.1641)
+POC_PASS fuzz_85_witness 
+POC_PASS fuzz_85_safe_route [(175.0, 803.4763), (375.0, 725.0), (475.0, 725.0), (775.0, 525.0), (1025.0, 475.0), (1325.0, 238.3304)]
+POC_PASS fuzz_85_safe_arrival safe=true arrived=true position=(1321.769, 240.8797)
+POC_PASS fuzz_86_witness 
+POC_PASS fuzz_86_safe_route [(175.0, 232.9881), (525.0, 175.0), (925.0, 225.0), (1275.0, 525.0), (1325.0, 605.0405)]
+POC_PASS fuzz_86_safe_arrival safe=true arrived=true position=(1321.649, 599.7487)
+POC_PASS fuzz_87_witness 
+POC_PASS fuzz_87_safe_route [(175.0, 835.8436), (525.0, 775.0), (875.0, 675.0), (875.0, 575.0), (1225.0, 425.0), (1325.0, 265.0357)]
+POC_PASS fuzz_87_safe_arrival safe=true arrived=true position=(1325.0, 265.0357)
+POC_PASS fuzz_88_witness 
+POC_PASS fuzz_88_safe_route [(175.0, 754.9283), (325.0, 475.0), (475.0, 325.0), (475.0, 275.0), (875.0, 225.0), (1275.0, 275.0), (1325.0, 297.5555)]
+POC_PASS fuzz_88_safe_arrival safe=true arrived=true position=(1324.223, 297.205)
+POC_PASS fuzz_89_witness 
+POC_PASS fuzz_89_safe_route [(175.0, 226.2048), (325.0, 575.0), (425.0, 775.0), (825.0, 875.0), (1225.0, 775.0), (1325.0, 720.5157)]
+POC_PASS fuzz_89_safe_arrival safe=true arrived=true position=(1319.837, 723.3287)
+POC_PASS fuzz_90_witness 
+POC_PASS fuzz_90_safe_route [(175.0, 459.2952), (325.0, 275.0), (725.0, 175.0), (1125.0, 175.0), (1325.0, 206.0388)]
+POC_PASS fuzz_90_safe_arrival safe=true arrived=true position=(1320.658, 205.365)
+POC_PASS fuzz_91_witness 
+POC_PASS fuzz_91_safe_route [(175.0, 611.9528), (475.0, 325.0), (775.0, 325.0), (825.0, 375.0), (1125.0, 375.0), (1125.0, 325.0), (1325.0, 346.0104)]
+POC_PASS fuzz_91_safe_arrival safe=true arrived=true position=(1321.915, 345.6863)
+POC_PASS fuzz_92_witness 
+POC_PASS fuzz_92_safe_route [(175.0, 631.8689), (325.0, 725.0), (725.0, 775.0), (925.0, 725.0), (1325.0, 575.0)]
+POC_PASS fuzz_92_safe_arrival safe=true arrived=true position=(1321.068, 576.4744)
+POC_PASS fuzz_93_witness 
+POC_PASS fuzz_93_safe_route [(175.0, 745.8364), (425.0, 825.0), (825.0, 825.0), (1125.0, 825.0), (1325.0, 726.413)]
+POC_PASS fuzz_93_safe_arrival safe=true arrived=true position=(1325.0, 726.413)
+POC_PASS fuzz_94_witness 
+POC_PASS fuzz_94_safe_route [(175.0, 711.5254), (475.0, 875.0), (875.0, 875.0), (1125.0, 825.0), (1275.0, 675.0), (1325.0, 463.5357)]
+POC_PASS fuzz_94_safe_arrival safe=true arrived=true position=(1324.702, 464.7962)
+POC_PASS fuzz_95_witness 
+POC_PASS fuzz_95_safe_route [(175.0, 466.5786), (525.0, 425.0), (925.0, 625.0), (1125.0, 625.0), (1325.0, 527.2938)]
+POC_PASS fuzz_95_safe_arrival safe=true arrived=true position=(1325.0, 527.2937)
+POC_PASS fuzz_96_witness 
+POC_PASS fuzz_96_safe_route [(175.0, 599.458), (525.0, 475.0), (775.0, 575.0), (1175.0, 575.0), (1325.0, 508.2026)]
+POC_PASS fuzz_96_safe_arrival safe=true arrived=true position=(1322.99, 509.0977)
+POC_PASS fuzz_97_witness 
+POC_PASS fuzz_97_safe_route [(175.0, 636.6205), (475.0, 325.0), (625.0, 325.0), (775.0, 175.0), (1175.0, 175.0), (1325.0, 195.1696)]
+POC_PASS fuzz_97_safe_arrival safe=true arrived=true position=(1325.0, 195.1696)
+POC_PASS fuzz_98_witness 
+POC_PASS fuzz_98_safe_route [(175.0, 434.6501), (425.0, 725.0), (825.0, 775.0), (1225.0, 775.0), (1325.0, 787.5778)]
+POC_PASS fuzz_98_safe_arrival safe=true arrived=true position=(1323.227, 787.3547)
+POC_PASS fuzz_99_witness 
+POC_PASS fuzz_99_safe_route [(175.0, 525.0), (425.0, 275.0), (725.0, 175.0), (925.0, 125.0), (1325.0, 325.0)]
+POC_PASS fuzz_99_safe_arrival safe=true arrived=true position=(1325.0, 325.0)
+NAVIGATION_CORNER_POC checks=818 failures=0

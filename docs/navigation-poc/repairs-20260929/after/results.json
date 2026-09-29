@@ -1,0 +1,154 @@
+[
+  {
+    "test": "navigation_grid_raster",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 1.334,
+    "log": "docs/navigation-poc/repairs-20260929/after/navigation_grid_raster.log"
+  },
+  {
+    "test": "navigation_dense_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 1.991,
+    "log": "docs/navigation-poc/repairs-20260929/after/navigation_dense_poc.log"
+  },
+  {
+    "test": "navigation_tasks_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 20.597,
+    "log": "docs/navigation-poc/repairs-20260929/after/navigation_tasks_poc.log"
+  },
+  {
+    "test": "navigation_corner_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 23.629,
+    "log": "docs/navigation-poc/repairs-20260929/after/navigation_corner_poc.log"
+  },
+  {
+    "test": "navigation_state_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 19.8,
+    "log": "docs/navigation-poc/repairs-20260929/after/navigation_state_poc.log"
+  },
+  {
+    "test": "navigation_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.934,
+    "log": "docs/navigation-poc/repairs-20260929/after/navigation_poc.log"
+  },
+  {
+    "test": "navigation_poc_matrix",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 6.989,
+    "log": "docs/navigation-poc/repairs-20260929/after/navigation_poc_matrix.log"
+  },
+  {
+    "test": "navigation_construction_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 1.883,
+    "log": "docs/navigation-poc/repairs-20260929/after/navigation_construction_poc.log"
+  },
+  {
+    "test": "navigation",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 1.916,
+    "log": "docs/navigation-poc/repairs-20260929/after/navigation.log"
+  },
+  {
+    "test": "navigation_routes",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.519,
+    "log": "docs/navigation-poc/repairs-20260929/after/navigation_routes.log"
+  },
+  {
+    "test": "navigation_replanning",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.56,
+    "log": "docs/navigation-poc/repairs-20260929/after/navigation_replanning.log"
+  },
+  {
+    "test": "group_replanning",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.447,
+    "log": "docs/navigation-poc/repairs-20260929/after/group_replanning.log"
+  },
+  {
+    "test": "group_chokepoint",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 1.908,
+    "log": "docs/navigation-poc/repairs-20260929/after/group_chokepoint.log"
+  },
+  {
+    "test": "group_mass_chokepoint",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 3.808,
+    "log": "docs/navigation-poc/repairs-20260929/after/group_mass_chokepoint.log"
+  },
+  {
+    "test": "group_multiplayer",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 3.908,
+    "log": "docs/navigation-poc/repairs-20260929/after/group_multiplayer.log"
+  },
+  {
+    "test": "terrain_selection_follow",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 1.617,
+    "log": "docs/navigation-poc/repairs-20260929/after/terrain_selection_follow.log"
+  },
+  {
+    "test": "extended_systems",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 2.636,
+    "log": "docs/navigation-poc/repairs-20260929/after/extended_systems.log"
+  },
+  {
+    "test": "economy_siege_controls",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 1.347,
+    "log": "docs/navigation-poc/repairs-20260929/after/economy_siege_controls.log"
+  },
+  {
+    "test": "smoke",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 2.273,
+    "log": "docs/navigation-poc/repairs-20260929/after/smoke.log"
+  }
+]

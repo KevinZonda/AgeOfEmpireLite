@@ -1,0 +1,42 @@
+[
+  {
+    "test": "navigation_corner_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 25.211,
+    "log": "docs/navigation-poc/repairs-20260929/group-final/navigation_corner_poc.log"
+  },
+  {
+    "test": "group_replanning",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.455,
+    "log": "docs/navigation-poc/repairs-20260929/group-final/group_replanning.log"
+  },
+  {
+    "test": "group_mass_chokepoint",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 4.351,
+    "log": "docs/navigation-poc/repairs-20260929/group-final/group_mass_chokepoint.log"
+  },
+  {
+    "test": "group_multiplayer",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 4.28,
+    "log": "docs/navigation-poc/repairs-20260929/group-final/group_multiplayer.log"
+  },
+  {
+    "test": "navigation_tasks_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 21.322,
+    "log": "docs/navigation-poc/repairs-20260929/group-final/navigation_tasks_poc.log"
+  }
+]

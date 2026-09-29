@@ -1,0 +1,58 @@
+[
+  {
+    "test": "navigation_state_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 21.956,
+    "log": "docs/navigation-poc/repairs-20260929/extra/navigation_state_poc.log"
+  },
+  {
+    "test": "combat_rules",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.34,
+    "log": "docs/navigation-poc/repairs-20260929/extra/combat_rules.log"
+  },
+  {
+    "test": "siege_rules",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.34,
+    "log": "docs/navigation-poc/repairs-20260929/extra/siege_rules.log"
+  },
+  {
+    "test": "villager_boar_escape",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 1.808,
+    "log": "docs/navigation-poc/repairs-20260929/extra/villager_boar_escape.log"
+  },
+  {
+    "test": "aoe4_requested_systems",
+    "passed": false,
+    "exit_code": -1,
+    "timeout": true,
+    "seconds": 90.009,
+    "log": "docs/navigation-poc/repairs-20260929/extra/aoe4_requested_systems.log"
+  },
+  {
+    "test": "battle_experience",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 1.626,
+    "log": "docs/navigation-poc/repairs-20260929/extra/battle_experience.log"
+  },
+  {
+    "test": "rally_landmarks",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 5.254,
+    "log": "docs/navigation-poc/repairs-20260929/extra/rally_landmarks.log"
+  }
+]

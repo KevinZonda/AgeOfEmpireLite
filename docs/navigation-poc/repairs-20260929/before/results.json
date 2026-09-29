@@ -1,0 +1,18 @@
+[
+  {
+    "test": "navigation_corner_poc",
+    "passed": false,
+    "exit_code": 1,
+    "timeout": false,
+    "seconds": 12.394,
+    "log": "docs/navigation-poc/repairs-20260929/before/navigation_corner_poc.log"
+  },
+  {
+    "test": "navigation_state_poc",
+    "passed": false,
+    "exit_code": 1,
+    "timeout": false,
+    "seconds": 7.32,
+    "log": "docs/navigation-poc/repairs-20260929/before/navigation_state_poc.log"
+  }
+]

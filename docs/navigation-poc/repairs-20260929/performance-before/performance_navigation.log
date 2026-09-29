@@ -1,0 +1,4 @@
+Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
+
+PERFORMANCE_NAVIGATION units=400 steps=180 avg_ms=4.64 p95_ms=6.29 p99_ms=18.27 first_step_ms=72.12 steady_peak_ms=18.27
+NAV_PROFILE {}

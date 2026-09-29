@@ -1,0 +1,24 @@
+Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
+
+POC_PASS large_unit_safe_route [(225.0, 275.0), (475.0, 675.0), (575.0, 925.0), (775.0, 825.0), (975.0, 425.0), (1025.0, 275.0)]
+POC_PASS large_unit_uses_wide_detour (1023.067, 280.7999)
+POC_PASS range_interior_witness 
+POC_PASS range_search_includes_interior [(125.0, 525.0), (536.4841, 527.3931)]
+POC_PASS range_target_arrival (536.4841, 527.3931)
+POC_PASS group_replan_destination_sync 
+POC_PASS group_replan_finishes [[(983.2491, 292.958), (989.557, 292.507), "idle"], [(1020.217, 291.246), (1023.525, 291.032), "idle"], [(1020.228, 324.3846), (1025.0, 325.0), "idle"], [(981.9931, 346.7977), (991.032, 326.475), "idle"], [(1000.019, 364.2627), (992.507, 360.443), "idle"], [(1023.431, 358.9324), (1026.475, 358.968), "idle"]]
+POC_PASS short_move_balanced [5.1, 5.1, 5.1, 5.1, 5.1, 5.1, 5.1, 5.1, 5.1, 5.1, 5.1, 5.1]
+POC_PASS short_move_column [5.6, 6.6, 5.1, 7.3, 5.9, 8.7, 8.5, 4.3, 7.7, 3.6, 5.2, 3.1]
+POC_PASS short_move_compact [17.6, 3.7, 5.9, 6.5, 16.0, 4.1, 4.8, 4.3, 6.3, 5.0, 4.2, 4.6]
+POC_PASS off_grid_start_witness 
+POC_PASS off_grid_start_safe_route [(257.0, 275.0), (275.0, 225.0), (525.0, 275.0)]
+POC_PASS off_grid_start_arrival (521.9358, 274.4012)
+POC_PASS resource_clearance_matrix 0/30 unsafe []
+POC_PASS speed_independent_of_frame_rate [259.999694824219, 260.000152587891, 259.999694824219, 260.0]
+POC_PASS resource_motion_within_cell_invalidates 
+POC_PASS moved_resource_safe_route 
+POC_PASS group_gap_1_cells [[(1021.239, 424.3952), "idle"], [(952.3554, 421.2935), "idle"], [(996.3615, 400.8935), "idle"], [(973.0783, 450.0106), "idle"], [(1020.584, 458.3696), "idle"], [(948.4675, 445.8733), "idle"], [(986.0565, 491.5906), "idle"], [(1021.279, 492.3477), "idle"], [(994.6481, 465.6094), "idle"], [(987.897, 525.4438), "idle"], [(952.066, 522.1334), "idle"], [(1020.077, 525.0699), "idle"]]
+POC_PASS group_gap_2_cells [[(1021.164, 424.5744), "idle"], [(963.0148, 424.4047), "idle"], [(986.3188, 401.9642), "idle"], [(985.5069, 457.9601), "idle"], [(1021.624, 457.8271), "idle"], [(1038.495, 476.9941), "idle"], [(987.5301, 491.6809), "idle"], [(1016.333, 491.325), "idle"], [(975.0111, 514.633), "idle"], [(996.7665, 526.1115), "idle"], [(953.8571, 545.7224), "idle"], [(1020.92, 521.8417), "idle"]]
+POC_PASS group_gap_3_cells [[(1021.164, 424.5744), "idle"], [(952.6527, 419.9737), "idle"], [(983.8393, 405.103), "idle"], [(985.5069, 457.9601), "idle"], [(1021.624, 457.8271), "idle"], [(1038.495, 476.9941), "idle"], [(987.5301, 491.6809), "idle"], [(1016.333, 491.325), "idle"], [(975.0111, 514.633), "idle"], [(996.7665, 526.1115), "idle"], [(953.8571, 545.7224), "idle"], [(1020.92, 521.8417), "idle"]]
+POC_PASS friendly_idle_units_yield (620.5412, 523.8146)
+NAVIGATION_POC checks=21 failures=0

@@ -1,0 +1,26 @@
+[
+  {
+    "test": "performance_navigation",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 1.304,
+    "log": "docs/navigation-poc/repairs-20260929/performance-after/performance_navigation.log"
+  },
+  {
+    "test": "performance_400",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 13.376,
+    "log": "docs/navigation-poc/repairs-20260929/performance-after/performance_400.log"
+  },
+  {
+    "test": "performance_combat",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 3.992,
+    "log": "docs/navigation-poc/repairs-20260929/performance-after/performance_combat.log"
+  }
+]
