@@ -19,8 +19,15 @@ var game: Node2D
 var owner_id := 0
 var kind: String
 var stats: Dictionary = {}
-var hp := 1.0
+var hp := 1.0:
+	set(value):
+		if health_bar_initialized and not is_equal_approx(hp, value):
+			health_bar_timer = game.HEALTH_BAR_CHANGE_DURATION
+			if is_inside_tree(): queue_redraw()
+		hp = value
 var max_hp := 1.0
+var health_bar_timer := 0.0
+var health_bar_initialized := false
 var order := "idle"
 var destination := Vector2.ZERO
 var target: Node2D
@@ -112,6 +119,7 @@ func setup(game_ref: Node2D, player_id: int, unit_kind: String) -> void:
 	kind = unit_kind
 	awareness_timer = float(get_instance_id() % 7) * 0.035
 	refresh_stats(false)
+	health_bar_initialized = true
 	queue_redraw()
 
 func refresh_stats(preserve_damage := true) -> void:
@@ -509,7 +517,11 @@ func _reset_route() -> void:
 	route_stalled_time = 0.0
 
 func _process(delta: float) -> void:
-	if not game.started or game.paused or game.game_over or garrisoned_in != null: return
+	if not game.started or game.paused or game.game_over: return
+	if health_bar_timer > 0.0:
+		health_bar_timer = maxf(0.0, health_bar_timer - delta)
+		if health_bar_timer == 0.0: queue_redraw()
+	if garrisoned_in != null: return
 	_tick_visual(delta)
 	if hit_flash_timer > 0.0:
 		hit_flash_timer = maxf(0.0, hit_flash_timer - delta)
@@ -1036,7 +1048,7 @@ func _draw() -> void:
 	draw_set_transform_matrix(Transform2D.IDENTITY)
 	if hit_flash_timer > 0.0:
 		draw_arc(Vector2.ZERO, r + 4.0, 0.0, TAU, 24, Color("ffe5ac", hit_flash_timer / 0.18), 2.0)
-	if hp < max_hp:
+	if game.should_show_health_bar(hp, max_hp, health_bar_timer):
 		draw_rect(Rect2(-r, -r - 8, r * 2.0, 3), Color("422f2d"))
 		draw_rect(Rect2(-r, -r - 8, r * 2.0 * clampf(hp / max_hp, 0.0, 1.0), 3), Color("82dd8b"))
 
@@ -1107,7 +1119,7 @@ func _draw_isometric() -> void:
 	draw_set_transform_matrix(RtsIsoProjection.upright(canvas, ground_lift))
 	if hit_flash_timer > 0.0:
 		draw_arc(Vector2(0, -16), radius() + 7.0, 0.0, TAU, 24, Color("ffe5ac", hit_flash_timer / 0.18), 2.0)
-	if hp < max_hp:
+	if game.should_show_health_bar(hp, max_hp, health_bar_timer):
 		var bar_width := maxf(18.0, radius() * 2.0)
 		var bar_y := SiegeVisual25D.overlay_y(kind) if stats.get("tags", []).has("siege") else -38.0
 		draw_rect(Rect2(-bar_width * 0.5, bar_y, bar_width, 4), Color("422f2d"))

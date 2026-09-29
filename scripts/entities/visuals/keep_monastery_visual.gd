@@ -190,10 +190,11 @@ static func _monastery_iso(c: CanvasItem, nw: Vector2, ne: Vector2, sw: Vector2,
 	# Offset bell tower keeps the roof ridge and the entrance visible.
 	var tower_up := _up(canvas, zoom, 43.0)
 	var tower := _block(c, nw, ne, sw, floor, tower_up, 0.73, 0.12, 0.2, 0.23, wall, trim)
-	for v in [0.12, 0.35]:
-		var opening := _pt(nw, ne, sw, 0.83, v) + floor + tower_up * 0.77
-		c.draw_line(opening, opening + tower_up * 0.14, trim, 5.0)
-		c.draw_line(opening + tower_up * 0.02, opening + tower_up * 0.12, Color("34454a"), 2.9)
+	# One window on each visible face, inset from the edges and below the eave.
+	for face in [Vector2(0.83, 0.35), Vector2(0.93, 0.235)]:
+		var opening := _pt(nw, ne, sw, face.x, face.y) + floor + tower_up * 0.59
+		c.draw_line(opening, opening + tower_up * 0.15, trim, 5.0)
+		c.draw_line(opening + tower_up * 0.02, opening + tower_up * 0.13, Color("34454a"), 2.9)
 	var peak := (tower[0] + tower[1] + tower[2] + tower[3]) * 0.25 + _up(canvas, zoom, 21.0)
 	c.draw_colored_polygon(PackedVector2Array([tower[0], tower[3], peak]), roof.lightened(0.09))
 	c.draw_colored_polygon(PackedVector2Array([tower[1], tower[2], peak]), roof)

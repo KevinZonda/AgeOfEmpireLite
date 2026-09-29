@@ -18,8 +18,15 @@ var owner_id := 0
 var kind: String
 var landmark_id := ""
 var stats: Dictionary = {}
-var hp := 1.0
+var hp := 1.0:
+	set(value):
+		if health_bar_initialized and not is_equal_approx(hp, value):
+			health_bar_timer = game.HEALTH_BAR_CHANGE_DURATION
+			if is_inside_tree(): queue_redraw()
+		hp = value
 var max_hp := 1.0
+var health_bar_timer := 0.0
+var health_bar_initialized := false
 var build_remaining := 0.0
 var build_total := 0.0
 var farm_stage := "sowing"
@@ -62,6 +69,7 @@ func setup(game_ref: Node2D, player_id: int, building_kind: String, under_constr
 	build_total = definition["time"]
 	build_remaining = build_total if under_construction else 0.0
 	rally_point = position + Vector2(95 if game.spawn_point_for(owner_id).x < game.world_size.x * 0.5 else -95, 0)
+	health_bar_initialized = true
 	queue_redraw()
 
 func definition() -> Dictionary:
@@ -408,6 +416,9 @@ func activate_landmark_ability() -> bool:
 
 func _process(delta: float) -> void:
 	if not game.started or game.paused or game.game_over: return
+	if health_bar_timer > 0.0:
+		health_bar_timer = maxf(0.0, health_bar_timer - delta)
+		if health_bar_timer == 0.0: queue_redraw()
 	if damage_flash_timer > 0.0:
 		damage_flash_timer = maxf(0.0, damage_flash_timer - delta)
 		queue_redraw()
@@ -499,8 +510,9 @@ func _draw() -> void:
 		draw_string(font, label_anchor + Vector2(0, font_size + 2), display_label(), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color.WHITE)
 		draw_set_transform_matrix(Transform2D.IDENTITY)
 	var bar_y := -size().y * 0.5 - side - 18.0
-	draw_rect(Rect2(-size().x * 0.5, bar_y, size().x, 5), Color("432e2b"))
-	draw_rect(Rect2(-size().x * 0.5, bar_y, size().x * clampf(hp / max_hp, 0.0, 1.0), 5), Color("7fd47a"))
+	if game.should_show_health_bar(hp, max_hp, health_bar_timer):
+		draw_rect(Rect2(-size().x * 0.5, bar_y, size().x, 5), Color("432e2b"))
+		draw_rect(Rect2(-size().x * 0.5, bar_y, size().x * clampf(hp / max_hp, 0.0, 1.0), 5), Color("7fd47a"))
 	if not is_complete():
 		draw_arc(Vector2.ZERO, 14, 0, TAU * (1.0 - build_remaining / maxf(build_total, 0.1)), 20, Color.WHITE, 3)
 	if not production_queue.is_empty():
@@ -568,8 +580,9 @@ func _draw_isometric() -> void:
 		draw_string(font, Vector2(-label_width * 0.5, canvas.basis_xform(se).y + font_size + 5.0), label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color.WHITE)
 	var bar_width := minf(72.0, size().x * 0.8)
 	var bar_y: float = minf(-icon_height * game.camera.zoom.x - size().y * 0.25 - 16.0, -icon_height * game.camera.zoom.x - side - 20.0)
-	draw_rect(Rect2(-bar_width * 0.5, bar_y, bar_width, 5), Color("422f2d"))
-	draw_rect(Rect2(-bar_width * 0.5, bar_y, bar_width * clampf(hp / max_hp, 0.0, 1.0), 5), Color("7fd47a"))
+	if game.should_show_health_bar(hp, max_hp, health_bar_timer):
+		draw_rect(Rect2(-bar_width * 0.5, bar_y, bar_width, 5), Color("422f2d"))
+		draw_rect(Rect2(-bar_width * 0.5, bar_y, bar_width * clampf(hp / max_hp, 0.0, 1.0), 5), Color("7fd47a"))
 	if not is_complete(): draw_arc(Vector2.ZERO, 14, 0, TAU * (1.0 - build_remaining / maxf(build_total, 0.1)), 20, Color.WHITE, 3)
 	if not production_queue.is_empty(): draw_circle(Vector2(bar_width * 0.5 + 5, bar_y + 2), 6, Color("e5c45d"))
 	draw_set_transform_matrix(Transform2D.IDENTITY)

@@ -47,10 +47,16 @@ func _run() -> void:
 	assert(game.text_scale_choice.item_count == 6 and game.text_scale_choice.selected == 1)
 	assert(game.text_scale_choice.get_item_text(4) == "175%" and game.text_scale_choice.get_item_text(5) == "200%")
 	assert(game.minimap_size_choice.item_count == 3 and game.minimap_size_choice.selected == 1)
+	assert(game.health_bar_mode == "damaged" and game.health_bar_choice.selected == 1)
+	assert(game.health_bar_choice.item_count == 3)
+	assert(game.health_bar_choice.get_item_text(0) == "总是")
+	assert(game.health_bar_choice.get_item_text(1) == "非满血时显示")
+	assert(game.health_bar_choice.get_item_text(2) == "变动时显示")
 	for setting in [
 		[game.window_mode_choice, "显示模式"],
 		[game.resolution_choice, "窗口分辨率"],
 		[game.projection_choice, "视角"],
+		[game.health_bar_choice, "血量显示"],
 		[game.minimap_size_choice, "小地图大小"],
 		[game.ui_scale_choice, "界面缩放"],
 		[game.text_scale_choice, "文字缩放"],
@@ -74,6 +80,7 @@ func _run() -> void:
 	assert(game.building_icons_toggle.button_pressed and game.building_names_toggle.button_pressed)
 	game.building_icons_toggle.button_pressed = false
 	game.building_names_toggle.button_pressed = false
+	game.health_bar_choice.select(0)
 	game.projection_choice.select(1)
 	game.window_mode_choice.select(1)
 	game.resolution_choice.select(game.resolution_values.find(Vector2i(1280, 720)))
@@ -86,6 +93,7 @@ func _run() -> void:
 	game._close_settings()
 	assert(game.edge_scroll_enabled, "return should discard unsaved control changes")
 	assert(game.show_building_icons and game.show_building_names, "return should discard unsaved building display changes")
+	assert(game.health_bar_mode == "damaged", "return should discard unsaved health bar changes")
 	assert(game.zoom_gesture_enabled and not game.selected_view_mode_25d, "return should discard unsaved view and gesture changes")
 	assert(game.ui_scale == 1.0 and game.text_scale == 1.0 and game.minimap_size == 216, "return should discard unsaved scale changes")
 	assert(not game._window_is_fullscreen(), "return should discard unsaved window mode")
@@ -95,8 +103,10 @@ func _run() -> void:
 	assert(game.edge_scroll_toggle.button_pressed)
 	assert(game.zoom_gesture_toggle.button_pressed and game.projection_choice.selected == 0)
 	assert(game.building_icons_toggle.button_pressed and game.building_names_toggle.button_pressed)
+	assert(game.health_bar_choice.selected == 1)
 	game.building_icons_toggle.button_pressed = false
 	game.building_names_toggle.button_pressed = false
+	game.health_bar_choice.select(2)
 	game.projection_choice.select(1)
 	game.window_mode_choice.select(1)
 	game.resolution_choice.select(game.resolution_values.find(Vector2i(1280, 720)))
@@ -122,6 +132,7 @@ func _run() -> void:
 	var saved_ui_scale: Variant = saved.get_value("display", "ui_scale", null) if save_result == OK else null
 	var saved_text_scale: Variant = saved.get_value("display", "text_scale", null) if save_result == OK else null
 	var saved_minimap_size: Variant = saved.get_value("display", "minimap_size", null) if save_result == OK else null
+	var saved_health_bar_mode: Variant = saved.get_value("display", "health_bar_mode", null) if save_result == OK else null
 	var saved_fullscreen: Variant = saved.get_value("display", "fullscreen", null) if save_result == OK else null
 	var saved_window_size: Variant = saved.get_value("display", "window_size", null) if save_result == OK else null
 	if had_settings:
@@ -131,6 +142,7 @@ func _run() -> void:
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(settings_path))
 	assert(save_result == OK and saved_edge_scroll == false and saved_zoom_gesture == false and saved_view == true)
 	assert(saved_ui_scale == 0.75 and saved_text_scale == 2.0 and saved_minimap_size == 264)
+	assert(saved_health_bar_mode == "changed" and game.health_bar_mode == "changed")
 	assert(saved.get_value("display", "show_building_icons", null) == false)
 	assert(saved.get_value("display", "show_building_names", null) == false)
 	assert(not game.show_building_icons and not game.show_building_names)

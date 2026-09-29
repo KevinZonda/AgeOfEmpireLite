@@ -13,6 +13,7 @@ class PreviewContext extends Node2D:
 	var started := false
 	func spawn_point_for(_owner: int) -> Vector2: return Vector2.ZERO
 	func player_color(_owner: int) -> Color: return Color("4e9bea")
+	func should_show_health_bar(_current_hp: float, _maximum_hp: float, _change_timer: float) -> bool: return true
 
 func _initialize() -> void:
 	call_deferred("_run")
