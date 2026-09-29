@@ -19,7 +19,10 @@ def main():
     parser.add_argument("--buildings", nargs="+", type=int, choices=[1, 6], default=[1, 6])
     parser.add_argument("--rounds", type=int, default=2)
     parser.add_argument("--frames", type=int, default=360)
+    parser.add_argument("--seconds", type=float, default=0,
+                        help="Use equal wall time after 2 seconds of warmup, instead of equal frame counts")
     parser.add_argument("--focus", action="store_true", help="All attackers target one building in the cluster")
+    parser.add_argument("--timeout", type=float, default=60)
     parser.add_argument("--output", type=Path, default=ROOT / ".godot/live-battle-profile")
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
@@ -33,11 +36,19 @@ def main():
                 env = {k: v for k, v in os.environ.items() if not k.startswith("RTS_POC_")}
                 env.update(RTS_POC_FRAMES=str(args.frames), RTS_POC_BUILDINGS=str(buildings), RTS_NAV_PROFILE="0")
                 env["RTS_POC_FOCUS"] = "1" if args.focus else "0"
+                env["RTS_POC_SECONDS"] = str(args.seconds)
                 command = [str(engine), "--path", str(project), "--script", "res://tools/battle_deer_poc.gd",
                            "--windowed", "--resolution", "1280x800"]
-                result = subprocess.run(command, env=env, stdout=subprocess.PIPE,
-                                        stderr=subprocess.STDOUT, text=True, timeout=180, check=False)
                 name = f"{repeat + 1}-{buildings}-{version}"
+                try:
+                    result = subprocess.run(command, env=env, stdout=subprocess.PIPE,
+                                            stderr=subprocess.STDOUT, text=True, timeout=args.timeout, check=False)
+                except subprocess.TimeoutExpired as exc:
+                    output = exc.stdout or b""
+                    if isinstance(output, bytes):
+                        output = output.decode(errors="replace")
+                    (args.output / f"{name}.log").write_text(output + "\nBENCHMARK_TIMEOUT\n")
+                    raise RuntimeError(f"Timed out: {name}; see saved log") from exc
                 (args.output / f"{name}.log").write_text(result.stdout)
                 rows = [json.loads(line.removeprefix("LIVE_PROFILE "))
                         for line in result.stdout.splitlines() if line.startswith("LIVE_PROFILE ")]

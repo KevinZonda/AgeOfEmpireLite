@@ -1,5 +1,7 @@
 # 战斗长帧 PoC
 
+后续完整帧分解、macOS 等待问题和 6 建筑场景见 [低利用率与 6 建筑围攻分析](six-building-analysis.md)。
+
 2026-09-29，Apple M2，项目自带 Godot 4.7.2 template_debug。用户报告场景为 2.5D 建筑被围攻。
 
 ## PoC 1：包围中的恢复搜索扫描不可达区域

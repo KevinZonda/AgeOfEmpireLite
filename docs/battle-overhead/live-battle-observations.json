@@ -1,0 +1,446 @@
+{
+  "status": "provisional_not_final_fps_claim",
+  "reason": "Environment permission transition interrupted the runner; one run includes a 25-second gap, a restarted runner timed out in macOS XPC initialization. Clean equal-wall-time repeat could not run.",
+  "runs": [
+    {
+      "buildings": 1,
+      "damage": 8160.0,
+      "navigation": {},
+      "samples": 300,
+      "timings": {
+        "between_ms": {
+          "max": 25363.732,
+          "mean": 128.077903333333,
+          "p50": 9.358,
+          "p95": 9.685
+        },
+        "draw_calls": {
+          "max": 3012.0,
+          "mean": 2932.41666666667,
+          "p50": 2952.0,
+          "p95": 2998.0
+        },
+        "frame_ms": {
+          "max": 25436.713,
+          "mean": 196.42905,
+          "p50": 66.92,
+          "p95": 153.247
+        },
+        "render_ms": {
+          "max": 44.556,
+          "mean": 12.7018833333333,
+          "p50": 12.367,
+          "p95": 14.641
+        },
+        "scene_ms": {
+          "max": 224.545,
+          "mean": 55.6492633333333,
+          "p50": 44.261,
+          "p95": 128.337
+        },
+        "viewport_cpu_ms": {
+          "max": 37.9189987182617,
+          "mean": 11.4602466233571,
+          "p50": 11.3039999008179,
+          "p95": 13.2600002288818
+        },
+        "viewport_gpu_ms": {
+          "max": 0.0,
+          "mean": 0.0,
+          "p50": 0.0,
+          "p95": 0.0
+        }
+      },
+      "viewport": "(1280, 800)",
+      "version": "baseline",
+      "round": 1,
+      "project": "/private/tmp/aoe-six-before",
+      "engine": "/private/tmp/godot-before-frame-budget"
+    },
+    {
+      "buildings": 1,
+      "damage": 1760.0,
+      "navigation": {},
+      "samples": 300,
+      "timings": {
+        "between_ms": {
+          "max": 0.395,
+          "mean": 0.20242,
+          "p50": 0.199,
+          "p95": 0.241
+        },
+        "draw_calls": {
+          "max": 2842.0,
+          "mean": 2802.85666666667,
+          "p50": 2799.0,
+          "p95": 2833.0
+        },
+        "frame_ms": {
+          "max": 142.309,
+          "mean": 37.86159,
+          "p50": 30.929,
+          "p95": 84.204
+        },
+        "render_ms": {
+          "max": 13.279,
+          "mean": 10.4849466666667,
+          "p50": 10.27,
+          "p95": 11.972
+        },
+        "scene_ms": {
+          "max": 130.549,
+          "mean": 27.1742233333333,
+          "p50": 19.777,
+          "p95": 73.197
+        },
+        "viewport_cpu_ms": {
+          "max": 12.3020000457764,
+          "mean": 9.52322667439779,
+          "p50": 9.29300022125244,
+          "p95": 10.9949998855591
+        },
+        "viewport_gpu_ms": {
+          "max": 0.0,
+          "mean": 0.0,
+          "p50": 0.0,
+          "p95": 0.0
+        }
+      },
+      "viewport": "(1280, 800)",
+      "version": "candidate",
+      "round": 1,
+      "project": "/private/tmp/aoe-six-after",
+      "engine": "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64"
+    },
+    {
+      "buildings": 6,
+      "damage": 6796.0,
+      "navigation": {},
+      "samples": 300,
+      "timings": {
+        "between_ms": {
+          "max": 9.753,
+          "mean": 9.27621,
+          "p50": 9.369,
+          "p95": 9.646
+        },
+        "draw_calls": {
+          "max": 3297.0,
+          "mean": 3245.64666666667,
+          "p50": 3241.0,
+          "p95": 3281.0
+        },
+        "frame_ms": {
+          "max": 118.109,
+          "mean": 55.2103266666666,
+          "p50": 53.331,
+          "p95": 84.273
+        },
+        "render_ms": {
+          "max": 25.667,
+          "mean": 14.2492333333333,
+          "p50": 14.03,
+          "p95": 16.261
+        },
+        "scene_ms": {
+          "max": 93.611,
+          "mean": 31.6848833333333,
+          "p50": 29.765,
+          "p95": 60.411
+        },
+        "viewport_cpu_ms": {
+          "max": 17.4990005493164,
+          "mean": 13.13265666008,
+          "p50": 13.0,
+          "p95": 15.0909996032715
+        },
+        "viewport_gpu_ms": {
+          "max": 0.0,
+          "mean": 0.0,
+          "p50": 0.0,
+          "p95": 0.0
+        }
+      },
+      "viewport": "(1280, 800)",
+      "version": "baseline",
+      "round": 1,
+      "project": "/private/tmp/aoe-six-before",
+      "engine": "/private/tmp/godot-before-frame-budget"
+    },
+    {
+      "buildings": 6,
+      "damage": 2846.0,
+      "navigation": {},
+      "samples": 300,
+      "timings": {
+        "between_ms": {
+          "max": 0.283,
+          "mean": 0.20326,
+          "p50": 0.199,
+          "p95": 0.246
+        },
+        "draw_calls": {
+          "max": 2976.0,
+          "mean": 2932.08,
+          "p50": 2930.0,
+          "p95": 2959.0
+        },
+        "frame_ms": {
+          "max": 80.294,
+          "mean": 29.53967,
+          "p50": 27.465,
+          "p95": 43.338
+        },
+        "render_ms": {
+          "max": 15.137,
+          "mean": 11.0313466666667,
+          "p50": 10.885,
+          "p95": 12.92
+        },
+        "scene_ms": {
+          "max": 69.174,
+          "mean": 18.3050633333334,
+          "p50": 15.801,
+          "p95": 30.442
+        },
+        "viewport_cpu_ms": {
+          "max": 13.2410001754761,
+          "mean": 10.0018833478292,
+          "p50": 9.86200046539307,
+          "p95": 11.875
+        },
+        "viewport_gpu_ms": {
+          "max": 0.0,
+          "mean": 0.0,
+          "p50": 0.0,
+          "p95": 0.0
+        }
+      },
+      "viewport": "(1280, 800)",
+      "version": "candidate",
+      "round": 1,
+      "project": "/private/tmp/aoe-six-after",
+      "engine": "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64"
+    },
+    {
+      "buildings": 1,
+      "damage": 1690.0,
+      "navigation": {},
+      "samples": 300,
+      "timings": {
+        "between_ms": {
+          "max": 0.731,
+          "mean": 0.22013,
+          "p50": 0.189,
+          "p95": 0.412
+        },
+        "draw_calls": {
+          "max": 2841.0,
+          "mean": 2548.66333333333,
+          "p50": 2788.0,
+          "p95": 2826.0
+        },
+        "frame_ms": {
+          "max": 127.586,
+          "mean": 37.1906333333333,
+          "p50": 30.086,
+          "p95": 81.19
+        },
+        "render_ms": {
+          "max": 28.653,
+          "mean": 10.07257,
+          "p50": 9.94,
+          "p95": 11.991
+        },
+        "scene_ms": {
+          "max": 117.127,
+          "mean": 26.8979333333333,
+          "p50": 19.472,
+          "p95": 70.945
+        },
+        "viewport_cpu_ms": {
+          "max": 11.8590002059937,
+          "mean": 8.7688866408666,
+          "p50": 8.92800045013428,
+          "p95": 10.6770000457764
+        },
+        "viewport_gpu_ms": {
+          "max": 0.0,
+          "mean": 0.0,
+          "p50": 0.0,
+          "p95": 0.0
+        }
+      },
+      "viewport": "(1280, 800)",
+      "version": "candidate",
+      "round": 2,
+      "project": "/private/tmp/aoe-six-after",
+      "engine": "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64"
+    },
+    {
+      "buildings": 1,
+      "damage": 3040.0,
+      "navigation": {},
+      "samples": 300,
+      "timings": {
+        "between_ms": {
+          "max": 13.717,
+          "mean": 9.31198666666666,
+          "p50": 9.39,
+          "p95": 9.647
+        },
+        "draw_calls": {
+          "max": 3038.0,
+          "mean": 2977.84,
+          "p50": 2974.0,
+          "p95": 3010.0
+        },
+        "frame_ms": {
+          "max": 213.028,
+          "mean": 70.96832,
+          "p50": 60.912,
+          "p95": 139.129
+        },
+        "render_ms": {
+          "max": 19.545,
+          "mean": 12.6027366666667,
+          "p50": 12.489,
+          "p95": 14.427
+        },
+        "scene_ms": {
+          "max": 191.262,
+          "mean": 49.0535966666667,
+          "p50": 39.504,
+          "p95": 117.604
+        },
+        "viewport_cpu_ms": {
+          "max": 14.4209995269775,
+          "mean": 11.5399099826813,
+          "p50": 11.4139995574951,
+          "p95": 13.2519998550415
+        },
+        "viewport_gpu_ms": {
+          "max": 0.0,
+          "mean": 0.0,
+          "p50": 0.0,
+          "p95": 0.0
+        }
+      },
+      "viewport": "(1280, 800)",
+      "version": "baseline",
+      "round": 2,
+      "project": "/private/tmp/aoe-six-before",
+      "engine": "/private/tmp/godot-before-frame-budget"
+    },
+    {
+      "buildings": 6,
+      "damage": 2683.0,
+      "navigation": {},
+      "samples": 300,
+      "timings": {
+        "between_ms": {
+          "max": 0.298,
+          "mean": 0.20149,
+          "p50": 0.199,
+          "p95": 0.239
+        },
+        "draw_calls": {
+          "max": 2960.0,
+          "mean": 2923.88666666667,
+          "p50": 2923.0,
+          "p95": 2947.0
+        },
+        "frame_ms": {
+          "max": 84.34,
+          "mean": 28.7276166666667,
+          "p50": 26.457,
+          "p95": 42.414
+        },
+        "render_ms": {
+          "max": 14.994,
+          "mean": 10.9240066666667,
+          "p50": 10.67,
+          "p95": 12.301
+        },
+        "scene_ms": {
+          "max": 73.528,
+          "mean": 17.60212,
+          "p50": 15.257,
+          "p95": 30.974
+        },
+        "viewport_cpu_ms": {
+          "max": 13.1999998092651,
+          "mean": 9.87851001421611,
+          "p50": 9.63700008392334,
+          "p95": 11.2869997024536
+        },
+        "viewport_gpu_ms": {
+          "max": 0.0,
+          "mean": 0.0,
+          "p50": 0.0,
+          "p95": 0.0
+        }
+      },
+      "viewport": "(1280, 800)",
+      "version": "candidate",
+      "round": 2,
+      "project": "/private/tmp/aoe-six-after",
+      "engine": "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64"
+    },
+    {
+      "buildings": 6,
+      "damage": 6661.0,
+      "navigation": {},
+      "samples": 300,
+      "timings": {
+        "between_ms": {
+          "max": 9.74,
+          "mean": 9.27684333333332,
+          "p50": 9.319,
+          "p95": 9.658
+        },
+        "draw_calls": {
+          "max": 3279.0,
+          "mean": 3237.74666666667,
+          "p50": 3238.0,
+          "p95": 3265.0
+        },
+        "frame_ms": {
+          "max": 152.132,
+          "mean": 56.2039233333333,
+          "p50": 50.897,
+          "p95": 91.593
+        },
+        "render_ms": {
+          "max": 18.709,
+          "mean": 14.2184333333333,
+          "p50": 14.043,
+          "p95": 16.358
+        },
+        "scene_ms": {
+          "max": 128.38,
+          "mean": 32.7086466666667,
+          "p50": 26.541,
+          "p95": 67.898
+        },
+        "viewport_cpu_ms": {
+          "max": 19.2350006103516,
+          "mean": 13.1635166486104,
+          "p50": 12.9700002670288,
+          "p95": 15.4729995727539
+        },
+        "viewport_gpu_ms": {
+          "max": 0.0,
+          "mean": 0.0,
+          "p50": 0.0,
+          "p95": 0.0
+        }
+      },
+      "viewport": "(1280, 800)",
+      "version": "baseline",
+      "round": 2,
+      "project": "/private/tmp/aoe-six-before",
+      "engine": "/private/tmp/godot-before-frame-budget"
+    }
+  ]
+}
