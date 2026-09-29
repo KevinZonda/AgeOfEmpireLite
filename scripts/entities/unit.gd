@@ -1,5 +1,6 @@
 class_name RtsUnit
 extends Node2D
+const FilledPolygon = preload("res://scripts/entities/visuals/filled_polygon.gd")
 
 const AUTO_GATHER_RADIUS := 180.0
 const ROUTE_STALL_SECONDS := 0.9
@@ -1008,12 +1009,12 @@ func _draw() -> void:
 		SupportVisual.draw_2d(self, kind, color, gait, swing, gather_kind, carried_relic != null, is_braced() if kind == "spearman" else false)
 	elif stats.get("tags", []).has("cavalry"):
 		var horse := PackedVector2Array([Vector2(-r + 2, -5), Vector2(r - 5, -8), Vector2(r + 3, -2), Vector2(r - 3, 8), Vector2(-r + 1, 7)])
-		draw_colored_polygon(horse, Color("95734e"))
+		FilledPolygon.draw(self, horse, Color("95734e"))
 		draw_polyline(horse + PackedVector2Array([horse[0]]), outline, 2.0)
 		draw_circle(Vector2(r - 1, -7), 6.5, outline)
 		draw_circle(Vector2(r - 1, -7), 5.0, Color("a28058"))
 		var rider := PackedVector2Array([Vector2(-8, -7), Vector2(5, -9), Vector2(8, 4), Vector2(-5, 6)])
-		draw_colored_polygon(rider, color.darkened(0.08))
+		FilledPolygon.draw(self, rider, color.darkened(0.08))
 		draw_polyline(rider + PackedVector2Array([rider[0]]), outline, 1.8)
 		draw_circle(Vector2(0, -3), 4.5, Color("d9bf96"))
 		draw_line(Vector2(-r + 3, 3), Vector2(-r - 5, 8), Color("594233"), 2.0)
@@ -1026,12 +1027,12 @@ func _draw() -> void:
 		draw_line(Vector2(-4, 5), Vector2(-5 + gait, r + 2), Color("3e342c"), 3.0)
 		draw_line(Vector2(4, 5), Vector2(5 - gait, r + 2), Color("3e342c"), 3.0)
 		var body := PackedVector2Array([Vector2(-8, -7), Vector2(8, -7), Vector2(9, 8), Vector2(-9, 8)])
-		draw_colored_polygon(body, color.darkened(0.10))
+		FilledPolygon.draw(self, body, color.darkened(0.10))
 		draw_polyline(body + PackedVector2Array([body[0]]), outline, 2.0)
 		draw_circle(Vector2(0, -10), 7.0, outline)
 		draw_circle(Vector2(0, -10), 5.5, Color("ddc59f"))
 		if kind == "villager" or kind == "imperial_official":
-			draw_colored_polygon(PackedVector2Array([Vector2(-7, -13), Vector2(7, -13), Vector2(4, -19), Vector2(-4, -19)]), Color("95744b"))
+			FilledPolygon.draw(self, PackedVector2Array([Vector2(-7, -13), Vector2(7, -13), Vector2(4, -19), Vector2(-4, -19)]), Color("95744b"))
 			draw_line(Vector2(10, 5), Vector2(14 - swing * 6, -13 - swing * 6), Color("c8a777"), 2.5)
 		elif kind == "monk":
 			draw_circle(Vector2(0, -11), 6.5, color.darkened(0.27))
@@ -1044,11 +1045,11 @@ func _draw() -> void:
 		elif kind == "spearman":
 			draw_line(Vector2(11, 8), Vector2(12, -25), outline, 4.5)
 			draw_line(Vector2(11, 8), Vector2(12, -25), Color("d6c59e"), 2.0)
-			draw_colored_polygon(PackedVector2Array([Vector2(9, -24), Vector2(12, -33), Vector2(15, -24)]), Color("c9d1ce"))
+			FilledPolygon.draw(self, PackedVector2Array([Vector2(9, -24), Vector2(12, -33), Vector2(15, -24)]), Color("c9d1ce"))
 		else:
 			draw_line(Vector2(11, 8), Vector2(12 + swing * 12, -20 + swing * 13), Color("d6d5bd"), 2.5)
 			if stats.get("tags", []).has("heavy"):
-				draw_colored_polygon(PackedVector2Array([Vector2(-11, -4), Vector2(-5, -8), Vector2(0, -4), Vector2(-1, 8), Vector2(-8, 9)]), Color("bbc0b8"))
+				FilledPolygon.draw(self, PackedVector2Array([Vector2(-11, -4), Vector2(-5, -8), Vector2(0, -4), Vector2(-1, 8), Vector2(-8, 9)]), Color("bbc0b8"))
 	draw_set_transform_matrix(Transform2D.IDENTITY)
 	if hit_flash_timer > 0.0:
 		draw_arc(Vector2.ZERO, r + 4.0, 0.0, TAU, 24, Color("ffe5ac", hit_flash_timer / 0.18), 2.0)
@@ -1084,13 +1085,13 @@ func _draw_isometric() -> void:
 		var cavalry: bool = stats.get("tags", []).has("cavalry")
 		if cavalry:
 			var horse := PackedVector2Array([Vector2(-16, -7), Vector2(11, -8), Vector2(17, -15), Vector2(19, -12), Vector2(16, -3), Vector2(-14, -2)])
-			draw_colored_polygon(horse, Color("a1835c"))
+			FilledPolygon.draw(self, horse, Color("a1835c"))
 			draw_polyline(horse + PackedVector2Array([horse[0]]), outline, 2.0)
 		var body_half := 7.0 if cavalry else 5.5
 		var body_bottom := -3.0
 		var body_top := -17.0 if cavalry else -15.0
 		var body := PackedVector2Array([Vector2(-body_half, body_top), Vector2(body_half, body_top), Vector2(body_half + 2, body_bottom), Vector2(-body_half - 2, body_bottom)])
-		draw_colored_polygon(body, color.darkened(0.18))
+		FilledPolygon.draw(self, body, color.darkened(0.18))
 		draw_polyline(body + PackedVector2Array([body[0]]), outline, 2.0)
 		draw_line(Vector2(-4, body_bottom), Vector2(-5 + gait, 2), outline, 4.5)
 		draw_line(Vector2(4, body_bottom), Vector2(5 - gait, 2), outline, 4.5)
@@ -1114,11 +1115,11 @@ func _draw_isometric() -> void:
 		elif kind == "spearman":
 			draw_line(Vector2(9, -1), Vector2(9, -31), outline, 4.5)
 			draw_line(Vector2(9, -1), Vector2(9, -31), Color("d6c59e"), 2.0)
-			draw_colored_polygon(PackedVector2Array([Vector2(6, -30), Vector2(9, -38), Vector2(12, -30)]), Color("c9d1ce"))
+			FilledPolygon.draw(self, PackedVector2Array([Vector2(6, -30), Vector2(9, -38), Vector2(12, -30)]), Color("c9d1ce"))
 		elif visual_action == "attack" and swing > 0.0:
 			draw_line(Vector2(6, -8), Vector2(14 + swing * 12, -23 + swing * 12), Color("e2e0ca"), 2.4)
 		if stats.get("tags", []).has("heavy") and not cavalry:
-			draw_colored_polygon(PackedVector2Array([Vector2(-11, -16), Vector2(-4, -19), Vector2(-2, -6), Vector2(-10, -5)]), Color("9eaaa9"))
+			FilledPolygon.draw(self, PackedVector2Array([Vector2(-11, -16), Vector2(-4, -19), Vector2(-2, -6), Vector2(-10, -5)]), Color("9eaaa9"))
 			draw_polyline(PackedVector2Array([Vector2(-11, -16), Vector2(-4, -19), Vector2(-2, -6), Vector2(-10, -5), Vector2(-11, -16)]), outline, 1.8)
 	draw_set_transform_matrix(RtsIsoProjection.upright(canvas, ground_lift))
 	if hit_flash_timer > 0.0:

@@ -1,5 +1,6 @@
 extends RefCounted
 class_name RtsSiegeVisual2D
+const FilledPolygon = preload("res://scripts/entities/visuals/filled_polygon.gd")
 
 # Called from RtsUnit._draw() after its motion transform has been set. The
 # machines face toward the top of the screen, matching the other 2D units.
@@ -30,7 +31,7 @@ static func draw(unit: Node2D, kind: String, radius: float, team_color: Color, s
 			_siege_tower(unit, radius, team_color)
 
 static func _poly(unit: Node2D, points: Array, color: Color) -> void:
-	unit.draw_colored_polygon(PackedVector2Array(points), color)
+	FilledPolygon.draw(unit, PackedVector2Array(points), color)
 
 static func _wheel(unit: Node2D, center: Vector2, size: float = 4.0) -> void:
 	unit.draw_circle(center, size + 0.8, WOOD_DARK)

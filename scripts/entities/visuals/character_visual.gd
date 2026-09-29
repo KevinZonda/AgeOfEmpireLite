@@ -1,5 +1,6 @@
 class_name RtsCharacterVisual
 extends RefCounted
+const FilledPolygon = preload("res://scripts/entities/visuals/filled_polygon.gd")
 
 # Small battlefield silhouettes. The 2D and 2.5D versions share the same
 # equipment so a unit remains recognizable when the camera mode changes.
@@ -28,7 +29,7 @@ static func draw_25d(unit: CanvasItem, kind: String, team: Color, gait: float, s
 
 static func _poly(unit: CanvasItem, points: Array, fill: Color, stroke: Color = OUTLINE, width: float = 1.5) -> void:
 	var shape := PackedVector2Array(points)
-	unit.draw_colored_polygon(shape, fill)
+	FilledPolygon.draw(unit, shape, fill)
 	if width > 0.0:
 		unit.draw_polyline(shape + PackedVector2Array([shape[0]]), stroke, width)
 

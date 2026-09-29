@@ -1,5 +1,6 @@
 class_name RtsBuilding
 extends Node2D
+const FilledPolygon = preload("res://scripts/entities/visuals/filled_polygon.gd")
 const RtsUiTypography = preload("res://scripts/ui/typography.gd")
 
 const LandmarkVisual = preload("res://scripts/entities/visuals/landmark_visual.gd")
@@ -541,21 +542,21 @@ func _draw_isometric() -> void:
 	var sw_ground := RtsIsoProjection.ground_lift(game, position + sw) - terrain_lift
 	draw_set_transform_matrix(Transform2D(0.0, terrain_lift))
 	if ne_ground.length() + se_ground.length() + sw_ground.length() > 0.5:
-		draw_colored_polygon(PackedVector2Array([ne, se, se + se_ground, ne + ne_ground]), Color("625d4e"))
-		draw_colored_polygon(PackedVector2Array([sw, se, se + se_ground, sw + sw_ground]), Color("817866"))
+		FilledPolygon.draw(self, PackedVector2Array([ne, se, se + se_ground, ne + ne_ground]), Color("625d4e"))
+		FilledPolygon.draw(self, PackedVector2Array([sw, se, se + se_ground, sw + sw_ground]), Color("817866"))
 		draw_line(sw + sw_ground, se + se_ground, Color("3a3c32", 0.75), 1.4)
 	if not fortification:
-		draw_colored_polygon(PackedVector2Array([nw, ne, se, sw]), Color("273a30", 0.65))
+		FilledPolygon.draw(self, PackedVector2Array([nw, ne, se, sw]), Color("273a30", 0.65))
 	if height > 0.0 and not fortification:
-		draw_colored_polygon(PackedVector2Array([ne + wall_lift, se + wall_lift, se, ne]), color.darkened(0.26))
-		draw_colored_polygon(PackedVector2Array([sw + wall_lift, se + wall_lift, se, sw]), color)
+		FilledPolygon.draw(self, PackedVector2Array([ne + wall_lift, se + wall_lift, se, ne]), color.darkened(0.26))
+		FilledPolygon.draw(self, PackedVector2Array([sw + wall_lift, se + wall_lift, se, sw]), color)
 		draw_polyline(PackedVector2Array([ne + wall_lift, se + wall_lift, se, ne, ne + wall_lift]), Color("1c2829"), 2.0)
 		draw_polyline(PackedVector2Array([sw + wall_lift, se + wall_lift, se, sw, sw + wall_lift]), Color("1c2829"), 2.0)
 	var roof_color: Color = palette["roof"]
 	if art_kind == "farm": roof_color = Color("735035")
 	if construction_ratio >= 0.65:
 		if not fortification:
-			draw_colored_polygon(PackedVector2Array([nw + wall_lift, ne + wall_lift, se + wall_lift, sw + wall_lift]), roof_color if not open_yard else palette["timber"])
+			FilledPolygon.draw(self, PackedVector2Array([nw + wall_lift, ne + wall_lift, se + wall_lift, sw + wall_lift]), roof_color if not open_yard else palette["timber"])
 			draw_polyline(PackedVector2Array([nw + wall_lift, ne + wall_lift, se + wall_lift, sw + wall_lift, nw + wall_lift]), Color("1f2929"), 2.0)
 		_draw_iso_architecture(art_kind, nw, ne, se, sw, lift, palette, canvas)
 		if kind == "landmark" or kind == "wonder": _draw_iso_landmark_architecture(lift, canvas)
@@ -657,8 +658,8 @@ func _draw_topdown_architecture(bounds: Rect2, palette: Dictionary) -> void:
 	var bottom_right := roof_bounds.end
 	var ridge_left := Vector2(roof_bounds.position.x + 5, roof_bounds.get_center().y)
 	var ridge_right := Vector2(roof_bounds.end.x - 5, roof_bounds.get_center().y)
-	draw_colored_polygon(PackedVector2Array([top_left, top_right, ridge_right, ridge_left]), roof.lightened(0.11))
-	draw_colored_polygon(PackedVector2Array([ridge_left, ridge_right, bottom_right, bottom_left]), roof)
+	FilledPolygon.draw(self, PackedVector2Array([top_left, top_right, ridge_right, ridge_left]), roof.lightened(0.11))
+	FilledPolygon.draw(self, PackedVector2Array([ridge_left, ridge_right, bottom_right, bottom_left]), roof)
 	draw_line(ridge_left, ridge_right, trim, 2.0)
 	draw_polyline(PackedVector2Array([top_left, top_right, bottom_right, bottom_left, top_left]), dark, 1.7)
 	for portion in [0.28, 0.55, 0.8]:
@@ -695,7 +696,7 @@ func _draw_topdown_open_structure(art_kind: String, roof_bounds: Rect2, palette:
 	match art_kind:
 		"scout_camp":
 			var center := roof_bounds.get_center()
-			draw_colored_polygon(PackedVector2Array([center + Vector2(-13, 7), center + Vector2(0, -12), center + Vector2(13, 7)]), Color("a98458"))
+			FilledPolygon.draw(self, PackedVector2Array([center + Vector2(-13, 7), center + Vector2(0, -12), center + Vector2(13, 7)]), Color("a98458"))
 			draw_circle(center + Vector2(0, 14), 3.0, Color("d88a47"))
 
 func _draw_topdown_market(bounds: Rect2, palette: Dictionary) -> void:
@@ -805,7 +806,7 @@ func _draw_topdown_military_structure(art_kind: String, bounds: Rect2, palette: 
 				var stall := bounds.position + bounds.size * Vector2(u, 0.47)
 				draw_line(stall, stall + Vector2(0, 11), timber, 1.5)
 			var horse := bounds.position + bounds.size * Vector2(0.59, 0.66)
-			draw_colored_polygon(PackedVector2Array([horse + Vector2(-7, -3), horse + Vector2(5, -3), horse + Vector2(8, 1), horse + Vector2(-5, 4)]), Color("765039"))
+			FilledPolygon.draw(self, PackedVector2Array([horse + Vector2(-7, -3), horse + Vector2(5, -3), horse + Vector2(8, 1), horse + Vector2(-5, 4)]), Color("765039"))
 			draw_circle(horse + Vector2(9, 0), 2.5, Color("765039"))
 
 func _draw_topdown_landmark(bounds: Rect2, palette: Dictionary) -> void:
@@ -890,7 +891,7 @@ func _draw_iso_architecture(art_kind: String, nw: Vector2, ne: Vector2, se: Vect
 	var door_half := (se - sw) * (0.11 if art_kind in ["house", "outpost"] else 0.16)
 	var door_top := front_mid + lift * 0.72
 	var door := PackedVector2Array([door_top - door_half, door_top + door_half, front_mid + door_half, front_mid - door_half])
-	draw_colored_polygon(door, Color("322f2a"))
+	FilledPolygon.draw(self, door, Color("322f2a"))
 	draw_polyline(PackedVector2Array([door_top - door_half, door_top + door_half, front_mid + door_half]), trim, 1.5)
 	draw_line(front_mid + lift * 0.3, front_mid + lift * 0.57, timber.lightened(0.24), 1.5)
 	for portion in [0.08, 0.92]:
@@ -902,7 +903,7 @@ func _draw_iso_architecture(art_kind: String, nw: Vector2, ne: Vector2, se: Vect
 		var window_base := sw.lerp(se, portion) + lift * 0.38
 		var window_top := window_base + lift * 0.24
 		var half_width := (se - sw) * 0.045
-		draw_colored_polygon(PackedVector2Array([window_top - half_width, window_top + half_width, window_base + half_width, window_base - half_width]), Color("3c4e4c"))
+		FilledPolygon.draw(self, PackedVector2Array([window_top - half_width, window_top + half_width, window_base + half_width, window_base - half_width]), Color("3c4e4c"))
 		draw_line(window_base - half_width, window_base + half_width, trim, 1.6)
 	# The faction color is an accent; the wall and roof retain their material colors.
 	draw_line(sw.lerp(se, 0.08) + lift * 0.88, sw.lerp(se, 0.92) + lift * 0.88, game.player_color(owner_id), 3.0)
@@ -919,14 +920,14 @@ func _draw_iso_open_structure(art_kind: String, nw: Vector2, ne: Vector2, se: Ve
 	var floor_lift := lift * 0.18
 	var timber: Color = palette["timber"]
 	var trim: Color = palette["trim"]
-	draw_colored_polygon(PackedVector2Array([nw + floor_lift, ne + floor_lift, se + floor_lift, sw + floor_lift]), Color("a69a74"))
+	FilledPolygon.draw(self, PackedVector2Array([nw + floor_lift, ne + floor_lift, se + floor_lift, sw + floor_lift]), Color("a69a74"))
 	for portion in [0.16, 0.34, 0.52, 0.7, 0.88]:
 		draw_line(nw.lerp(sw, portion) + floor_lift, ne.lerp(se, portion) + floor_lift, Color(timber, 0.32), 1.0)
 	if art_kind == "scout_camp":
 		var base_left := nw.lerp(sw, 0.36).lerp(ne.lerp(se, 0.36), 0.25) + floor_lift
 		var base_right := nw.lerp(sw, 0.75).lerp(ne.lerp(se, 0.75), 0.76) + floor_lift
 		var peak := (base_left + base_right) * 0.5 + RtsIsoProjection.world_delta(canvas, Vector2(0, -15.0 * game.camera.zoom.x))
-		draw_colored_polygon(PackedVector2Array([base_left, peak, base_right]), Color("a98458"))
+		FilledPolygon.draw(self, PackedVector2Array([base_left, peak, base_right]), Color("a98458"))
 		draw_line(base_left, peak, trim, 1.4)
 		draw_line(peak, base_right, timber, 1.4)
 		draw_circle(sw.lerp(se, 0.22) + floor_lift, 3.2, Color("dd9251"))
@@ -942,18 +943,18 @@ func _draw_iso_market(nw: Vector2, ne: Vector2, sw: Vector2, lift: Vector2, pale
 	var deck_b := _military_point(nw, ne, sw, 0.97, 0.03) + floor_lift
 	var deck_c := _military_point(nw, ne, sw, 0.97, 0.97) + floor_lift
 	var deck_d := _military_point(nw, ne, sw, 0.03, 0.97) + floor_lift
-	draw_colored_polygon(PackedVector2Array([deck_a, deck_b, deck_c, deck_d]), Color("a99b7c"))
+	FilledPolygon.draw(self, PackedVector2Array([deck_a, deck_b, deck_c, deck_d]), Color("a99b7c"))
 	var a := _military_point(nw, ne, sw, 0.06, 0.07) + floor_lift
 	var b := _military_point(nw, ne, sw, 0.59, 0.07) + floor_lift
 	var c := _military_point(nw, ne, sw, 0.59, 0.42) + floor_lift
 	var d := _military_point(nw, ne, sw, 0.06, 0.42) + floor_lift
-	draw_colored_polygon(PackedVector2Array([b + up, c + up, c, b]), wall.darkened(0.19))
-	draw_colored_polygon(PackedVector2Array([d + up, c + up, c, d]), wall.lightened(0.04))
+	FilledPolygon.draw(self, PackedVector2Array([b + up, c + up, c, b]), wall.darkened(0.19))
+	FilledPolygon.draw(self, PackedVector2Array([d + up, c + up, c, d]), wall.lightened(0.04))
 	var ridge_left := (a + d) * 0.5 + up + rise
 	var ridge_right := (b + c) * 0.5 + up + rise
 	var hall_roof: Color = Color("59656a") if game.civilizations[owner_id] == "English" else palette["roof"]
-	draw_colored_polygon(PackedVector2Array([a + up, b + up, ridge_right, ridge_left]), hall_roof.darkened(0.2))
-	draw_colored_polygon(PackedVector2Array([ridge_left, ridge_right, c + up, d + up]), hall_roof)
+	FilledPolygon.draw(self, PackedVector2Array([a + up, b + up, ridge_right, ridge_left]), hall_roof.darkened(0.2))
+	FilledPolygon.draw(self, PackedVector2Array([ridge_left, ridge_right, c + up, d + up]), hall_roof)
 	draw_line(ridge_left, ridge_right, palette["trim"], 1.8)
 	for u in [0.13, 0.32, 0.51]:
 		var foot := _military_point(nw, ne, sw, u, 0.42) + floor_lift
@@ -971,7 +972,7 @@ func _draw_iso_market(nw: Vector2, ne: Vector2, sw: Vector2, lift: Vector2, pale
 	var cross := _military_point(nw, ne, sw, 0.87, 0.37) + floor_lift
 	var cross_u := (ne - nw) * 0.075
 	var cross_v := (sw - nw) * 0.075
-	draw_colored_polygon(PackedVector2Array([cross - cross_u - cross_v, cross + cross_u - cross_v, cross + cross_u + cross_v, cross - cross_u + cross_v]), wall.darkened(0.2))
+	FilledPolygon.draw(self, PackedVector2Array([cross - cross_u - cross_v, cross + cross_u - cross_v, cross + cross_u + cross_v, cross - cross_u + cross_v]), wall.darkened(0.2))
 	var cross_top := cross + RtsIsoProjection.world_delta(canvas, Vector2(0, -19.0 * game.camera.zoom.x))
 	draw_line(cross, cross_top, wall.lightened(0.1), 4.0)
 	draw_circle(cross_top, 2.4, palette["trim"])
@@ -990,7 +991,7 @@ func _draw_iso_market_stall(nw: Vector2, ne: Vector2, sw: Vector2, floor_lift: V
 	for stripe in 5:
 		var left := float(stripe) / 5.0
 		var right := float(stripe + 1) / 5.0
-		draw_colored_polygon(PackedVector2Array([a.lerp(b, left) + high, a.lerp(b, right) + high, d.lerp(c, right) + low, d.lerp(c, left) + low]), game.player_color(owner_id) if stripe % 2 == 0 else palette["trim"])
+		FilledPolygon.draw(self, PackedVector2Array([a.lerp(b, left) + high, a.lerp(b, right) + high, d.lerp(c, right) + low, d.lerp(c, left) + low]), game.player_color(owner_id) if stripe % 2 == 0 else palette["trim"])
 	draw_line(d + low, c + low, palette["timber"], 1.4)
 	for corner in [d, c]:
 		draw_line(corner, corner + low, palette["timber"], 2.0)
@@ -1002,12 +1003,12 @@ func _draw_iso_university(nw: Vector2, ne: Vector2, sw: Vector2, lift: Vector2, 
 	var deck_b := _military_point(nw, ne, sw, 0.96, 0.04) + floor_lift
 	var deck_c := _military_point(nw, ne, sw, 0.96, 0.95) + floor_lift
 	var deck_d := _military_point(nw, ne, sw, 0.04, 0.95) + floor_lift
-	draw_colored_polygon(PackedVector2Array([deck_a, deck_b, deck_c, deck_d]), Color("a49b85"))
+	FilledPolygon.draw(self, PackedVector2Array([deck_a, deck_b, deck_c, deck_d]), Color("a49b85"))
 	var court_a := _military_point(nw, ne, sw, 0.3, 0.37) + floor_lift
 	var court_b := _military_point(nw, ne, sw, 0.7, 0.37) + floor_lift
 	var court_c := _military_point(nw, ne, sw, 0.7, 0.91) + floor_lift
 	var court_d := _military_point(nw, ne, sw, 0.3, 0.91) + floor_lift
-	draw_colored_polygon(PackedVector2Array([court_a, court_b, court_c, court_d]), Color("b9ae94"))
+	FilledPolygon.draw(self, PackedVector2Array([court_a, court_b, court_c, court_d]), Color("b9ae94"))
 	_draw_iso_military_block(nw, ne, sw, floor_lift, canvas, college, 0.07, 0.07, 0.86, 0.3, 27.0, "gable_u", false)
 	_draw_iso_university_tower(nw, ne, sw, floor_lift, canvas, college)
 	_draw_iso_military_block(nw, ne, sw, floor_lift, canvas, college, 0.07, 0.32, 0.23, 0.51, 26.0, "gable_v", false)
@@ -1020,12 +1021,12 @@ func _draw_iso_university_tower(nw: Vector2, ne: Vector2, sw: Vector2, floor_lif
 	var d := _military_point(nw, ne, sw, 0.41, 0.38) + floor_lift
 	var up := RtsIsoProjection.world_delta(canvas, Vector2(0, -44.0 * game.camera.zoom.x))
 	var rise := RtsIsoProjection.world_delta(canvas, Vector2(0, -7.0 * game.camera.zoom.x))
-	draw_colored_polygon(PackedVector2Array([b + up, c + up, c, b]), palette["wall"].darkened(0.18))
-	draw_colored_polygon(PackedVector2Array([d + up, c + up, c, d]), palette["wall"])
+	FilledPolygon.draw(self, PackedVector2Array([b + up, c + up, c, b]), palette["wall"].darkened(0.18))
+	FilledPolygon.draw(self, PackedVector2Array([d + up, c + up, c, d]), palette["wall"])
 	var peak := (a + b + c + d) * 0.25 + up + rise
-	draw_colored_polygon(PackedVector2Array([a + up, b + up, peak, d + up]), palette["roof_dark"])
-	draw_colored_polygon(PackedVector2Array([b + up, c + up, peak]), palette["roof"])
-	draw_colored_polygon(PackedVector2Array([d + up, c + up, peak]), palette["roof"])
+	FilledPolygon.draw(self, PackedVector2Array([a + up, b + up, peak, d + up]), palette["roof_dark"])
+	FilledPolygon.draw(self, PackedVector2Array([b + up, c + up, peak]), palette["roof"])
+	FilledPolygon.draw(self, PackedVector2Array([d + up, c + up, peak]), palette["roof"])
 	var window := (d + c) * 0.5
 	draw_line(window + up * 0.7, window + up * 0.84, palette["trim"], 4.0)
 	draw_line(window + up * 0.72, window + up * 0.82, Color("37403e"), 2.3)
@@ -1041,7 +1042,7 @@ func _draw_iso_upright_disc(center: Vector2, radius: float, color: Color, canvas
 	for step in 24:
 		var angle := TAU * float(step) / 24.0
 		outline.append(center + horizontal * cos(angle) + vertical * sin(angle))
-	draw_colored_polygon(outline, color)
+	FilledPolygon.draw(self, outline, color)
 
 func _draw_iso_military_block(nw: Vector2, ne: Vector2, sw: Vector2, floor_lift: Vector2, canvas: Transform2D, palette: Dictionary, u: float, v: float, width: float, depth: float, height: float, style: String, draw_door := true) -> void:
 	var a := _military_point(nw, ne, sw, u, v) + floor_lift
@@ -1054,48 +1055,48 @@ func _draw_iso_military_block(nw: Vector2, ne: Vector2, sw: Vector2, floor_lift:
 	var roof: Color = palette["roof"]
 	var dark: Color = palette["roof_dark"]
 	var trim: Color = palette["trim"]
-	draw_colored_polygon(PackedVector2Array([a + up, b + up, b, a]), wall.darkened(0.1))
-	draw_colored_polygon(PackedVector2Array([a + up, d + up, d, a]), wall.darkened(0.12))
-	draw_colored_polygon(PackedVector2Array([b + up, c + up, c, b]), wall.darkened(0.2))
-	draw_colored_polygon(PackedVector2Array([d + up, c + up, c, d]), wall)
-	draw_colored_polygon(PackedVector2Array([a + up, b + up, c + up, d + up]), dark)
+	FilledPolygon.draw(self, PackedVector2Array([a + up, b + up, b, a]), wall.darkened(0.1))
+	FilledPolygon.draw(self, PackedVector2Array([a + up, d + up, d, a]), wall.darkened(0.12))
+	FilledPolygon.draw(self, PackedVector2Array([b + up, c + up, c, b]), wall.darkened(0.2))
+	FilledPolygon.draw(self, PackedVector2Array([d + up, c + up, c, d]), wall)
+	FilledPolygon.draw(self, PackedVector2Array([a + up, b + up, c + up, d + up]), dark)
 	draw_line(d + up, c + up, trim.darkened(0.18), 2.0)
 	if style == "tower":
 		match game.civilizations[owner_id]:
 			"English":
-				draw_colored_polygon(PackedVector2Array([a + up, b + up, c + up, d + up]), dark)
+				FilledPolygon.draw(self, PackedVector2Array([a + up, b + up, c + up, d + up]), dark)
 				for p in [a + up, b + up, c + up, d + up]: draw_line(p, p + up * 0.16, trim, 3.5)
 			"Chinese":
 				var peak := (a + c) * 0.5 + up + rise * 1.3
-				draw_colored_polygon(PackedVector2Array([a + up, b + up, peak]), roof.lightened(0.12))
-				draw_colored_polygon(PackedVector2Array([b + up, c + up, peak]), roof)
-				draw_colored_polygon(PackedVector2Array([c + up, d + up, peak]), dark)
+				FilledPolygon.draw(self, PackedVector2Array([a + up, b + up, peak]), roof.lightened(0.12))
+				FilledPolygon.draw(self, PackedVector2Array([b + up, c + up, peak]), roof)
+				FilledPolygon.draw(self, PackedVector2Array([c + up, d + up, peak]), dark)
 				draw_line(d + up, c + up, trim, 2.6)
 				var upper := (a + c) * 0.5 + up + rise * 0.85
 				draw_line(upper - (b - a) * 0.3, upper + (b - a) * 0.3, trim, 2.0)
 			_:
 				var peak := (a + c) * 0.5 + up + rise * 1.8
-				draw_colored_polygon(PackedVector2Array([a + up, b + up, peak]), roof.lightened(0.1))
-				draw_colored_polygon(PackedVector2Array([b + up, c + up, peak]), roof)
-				draw_colored_polygon(PackedVector2Array([c + up, d + up, peak]), dark)
+				FilledPolygon.draw(self, PackedVector2Array([a + up, b + up, peak]), roof.lightened(0.1))
+				FilledPolygon.draw(self, PackedVector2Array([b + up, c + up, peak]), roof)
+				FilledPolygon.draw(self, PackedVector2Array([c + up, d + up, peak]), dark)
 		var slit := (d + c) * 0.5 + up * 0.6
 		draw_line(slit, slit + up * 0.16, Color("344343"), 3.0)
 	else:
 		if style == "gable_v":
 			var ridge_back := (a + b) * 0.5 + up + rise
 			var ridge_front := (d + c) * 0.5 + up + rise
-			draw_colored_polygon(PackedVector2Array([a + up, b + up, ridge_back]), wall.darkened(0.1))
-			draw_colored_polygon(PackedVector2Array([d + up, c + up, ridge_front]), wall)
-			draw_colored_polygon(PackedVector2Array([a + up, ridge_back, ridge_front, d + up]), roof.lightened(0.13))
-			draw_colored_polygon(PackedVector2Array([ridge_back, b + up, c + up, ridge_front]), roof)
+			FilledPolygon.draw(self, PackedVector2Array([a + up, b + up, ridge_back]), wall.darkened(0.1))
+			FilledPolygon.draw(self, PackedVector2Array([d + up, c + up, ridge_front]), wall)
+			FilledPolygon.draw(self, PackedVector2Array([a + up, ridge_back, ridge_front, d + up]), roof.lightened(0.13))
+			FilledPolygon.draw(self, PackedVector2Array([ridge_back, b + up, c + up, ridge_front]), roof)
 			draw_line(ridge_back, ridge_front, trim, 2.0)
 		else:
 			var ridge_left := (a + d) * 0.5 + up + rise
 			var ridge_right := (b + c) * 0.5 + up + rise
-			draw_colored_polygon(PackedVector2Array([a + up, d + up, ridge_left]), wall.darkened(0.12))
-			draw_colored_polygon(PackedVector2Array([b + up, c + up, ridge_right]), wall.darkened(0.2))
-			draw_colored_polygon(PackedVector2Array([a + up, b + up, ridge_right, ridge_left]), roof.lightened(0.13))
-			draw_colored_polygon(PackedVector2Array([ridge_left, ridge_right, c + up, d + up]), roof)
+			FilledPolygon.draw(self, PackedVector2Array([a + up, d + up, ridge_left]), wall.darkened(0.12))
+			FilledPolygon.draw(self, PackedVector2Array([b + up, c + up, ridge_right]), wall.darkened(0.2))
+			FilledPolygon.draw(self, PackedVector2Array([a + up, b + up, ridge_right, ridge_left]), roof.lightened(0.13))
+			FilledPolygon.draw(self, PackedVector2Array([ridge_left, ridge_right, c + up, d + up]), roof)
 			draw_line(ridge_left, ridge_right, trim, 2.0)
 		if game.civilizations[owner_id] == "Chinese":
 			for corner in [a + up, b + up, c + up, d + up]: draw_circle(corner + rise * 0.2, 2.2, trim)
@@ -1111,7 +1112,7 @@ func _draw_iso_military_structure(art_kind: String, nw: Vector2, ne: Vector2, sw
 	var timber: Color = palette["timber"]
 	var trim: Color = palette["trim"]
 	var deck := PackedVector2Array([nw + floor_lift, ne + floor_lift, ne + sw - nw + floor_lift, sw + floor_lift])
-	draw_colored_polygon(deck, Color("a69a74"))
+	FilledPolygon.draw(self, deck, Color("a69a74"))
 	for portion in [0.17, 0.37, 0.57, 0.77]:
 		draw_line(_military_point(nw, ne, sw, 0.05, portion) + floor_lift, _military_point(nw, ne, sw, 0.95, portion) + floor_lift, Color(timber, 0.32), 1.0)
 	match art_kind:
@@ -1152,7 +1153,7 @@ func _draw_iso_military_structure(art_kind: String, nw: Vector2, ne: Vector2, sw
 			var horse_up := RtsIsoProjection.world_delta(canvas, Vector2(0, -10.0 * game.camera.zoom.x))
 			var horse_right := RtsIsoProjection.world_delta(canvas, Vector2(8.0 * game.camera.zoom.x, 0))
 			var horse_body := horse + horse_up
-			draw_colored_polygon(PackedVector2Array([horse_body - horse_right - horse_up * 0.35, horse_body + horse_right - horse_up * 0.35, horse_body + horse_right + horse_up * 0.35, horse_body - horse_right + horse_up * 0.35]), Color("765039"))
+			FilledPolygon.draw(self, PackedVector2Array([horse_body - horse_right - horse_up * 0.35, horse_body + horse_right - horse_up * 0.35, horse_body + horse_right + horse_up * 0.35, horse_body - horse_right + horse_up * 0.35]), Color("765039"))
 			for side in [-1.0, 1.0]: draw_line(horse_body + horse_right * side - horse_up * 0.3, horse + horse_right * side * 0.82, Color("66432f"), 2.0)
 			draw_line(horse_body + horse_right * 0.8, horse_body + horse_right * 1.35 + horse_up * 0.45, Color("765039"), 3.4)
 			draw_circle(horse_body + horse_right * 1.48 + horse_up * 0.45, 3.8, Color("765039"))
@@ -1170,7 +1171,7 @@ func _draw_iso_roof(art_kind: String, nw: Vector2, ne: Vector2, se: Vector2, sw:
 	if art_kind in ["keep", "outpost"]:
 		var parapet: Color = palette["wall"]
 		var masonry: Color = palette["trim"]
-		draw_colored_polygon(PackedVector2Array([nw + lift, ne + lift, se + lift, sw + lift]), parapet.darkened(0.32))
+		FilledPolygon.draw(self, PackedVector2Array([nw + lift, ne + lift, se + lift, sw + lift]), parapet.darkened(0.32))
 		for edge in [[nw, ne], [ne, se], [se, sw], [sw, nw]]:
 			var start: Vector2 = edge[0] + lift
 			var finish: Vector2 = edge[1] + lift
@@ -1194,11 +1195,11 @@ func _draw_iso_roof(art_kind: String, nw: Vector2, ne: Vector2, se: Vector2, sw:
 		b += upturn
 		c += upturn
 		d += upturn
-	draw_colored_polygon(PackedVector2Array([a, b, c, d]), dark)
-	draw_colored_polygon(PackedVector2Array([a, b, ridge_back]), palette["wall"].darkened(0.1))
-	draw_colored_polygon(PackedVector2Array([d, c, ridge_front]), palette["wall"])
-	draw_colored_polygon(PackedVector2Array([a, ridge_back, ridge_front, d]), roof.lightened(0.09))
-	draw_colored_polygon(PackedVector2Array([ridge_back, b, c, ridge_front]), roof)
+	FilledPolygon.draw(self, PackedVector2Array([a, b, c, d]), dark)
+	FilledPolygon.draw(self, PackedVector2Array([a, b, ridge_back]), palette["wall"].darkened(0.1))
+	FilledPolygon.draw(self, PackedVector2Array([d, c, ridge_front]), palette["wall"])
+	FilledPolygon.draw(self, PackedVector2Array([a, ridge_back, ridge_front, d]), roof.lightened(0.09))
+	FilledPolygon.draw(self, PackedVector2Array([ridge_back, b, c, ridge_front]), roof)
 	draw_polyline(PackedVector2Array([a, ridge_back, b]), dark, 2.0)
 	draw_polyline(PackedVector2Array([d, ridge_front, c]), dark, 2.0)
 	draw_line(ridge_back, ridge_front, palette["trim"], 2.0)
@@ -1224,7 +1225,7 @@ func _draw_iso_building_feature(art_kind: String, nw: Vector2, ne: Vector2, se: 
 	if art_kind == "outpost":
 		var mast := roof_middle + RtsIsoProjection.world_delta(canvas, Vector2(0, -16.0 * game.camera.zoom.x))
 		draw_line(roof_middle, mast, timber, 2.0)
-		draw_colored_polygon(PackedVector2Array([mast, mast + Vector2(9, 3), mast + Vector2(0, 6)]), game.player_color(owner_id))
+		FilledPolygon.draw(self, PackedVector2Array([mast, mast + Vector2(9, 3), mast + Vector2(0, 6)]), game.player_color(owner_id))
 
 func _draw_iso_tower(art_kind: String, nw: Vector2, ne: Vector2, se: Vector2, sw: Vector2, lift: Vector2, palette: Dictionary, canvas: Transform2D) -> void:
 	var center := (nw + ne + se + sw) * 0.25 + lift
@@ -1235,9 +1236,9 @@ func _draw_iso_tower(art_kind: String, nw: Vector2, ne: Vector2, se: Vector2, sw
 	var d := center + (sw - center + lift) * tower_scale
 	var rise := RtsIsoProjection.world_delta(canvas, Vector2(0, -(26.0 if art_kind in ["palace", "wonder", "monastery"] else 19.0) * game.camera.zoom.x))
 	var wall: Color = palette["wall"]
-	draw_colored_polygon(PackedVector2Array([b + rise, c + rise, c, b]), wall.darkened(0.25))
-	draw_colored_polygon(PackedVector2Array([d + rise, c + rise, c, d]), wall)
-	draw_colored_polygon(PackedVector2Array([a + rise, b + rise, c + rise, d + rise]), palette["roof_dark"])
+	FilledPolygon.draw(self, PackedVector2Array([b + rise, c + rise, c, b]), wall.darkened(0.25))
+	FilledPolygon.draw(self, PackedVector2Array([d + rise, c + rise, c, d]), wall)
+	FilledPolygon.draw(self, PackedVector2Array([a + rise, b + rise, c + rise, d + rise]), palette["roof_dark"])
 	draw_polyline(PackedVector2Array([a + rise, b + rise, c + rise, d + rise, a + rise]), palette["trim"], 1.6)
 	if art_kind == "keep":
 		_draw_iso_battlements([a + rise, b + rise, c + rise, d + rise], rise * 0.2, palette["trim"], 3.0)
@@ -1248,12 +1249,12 @@ func _draw_iso_tower(art_kind: String, nw: Vector2, ne: Vector2, se: Vector2, sw
 		var upper_c := upper_center + (c + rise - upper_center) * 0.64
 		var upper_d := upper_center + (d + rise - upper_center) * 0.64
 		var upper_rise := RtsIsoProjection.world_delta(canvas, Vector2(0, -(17.0 if art_kind == "wonder" else 12.0) * game.camera.zoom.x))
-		draw_colored_polygon(PackedVector2Array([upper_b + upper_rise, upper_c + upper_rise, upper_c, upper_b]), wall.darkened(0.25))
-		draw_colored_polygon(PackedVector2Array([upper_d + upper_rise, upper_c + upper_rise, upper_c, upper_d]), wall)
+		FilledPolygon.draw(self, PackedVector2Array([upper_b + upper_rise, upper_c + upper_rise, upper_c, upper_b]), wall.darkened(0.25))
+		FilledPolygon.draw(self, PackedVector2Array([upper_d + upper_rise, upper_c + upper_rise, upper_c, upper_d]), wall)
 		var cap_rise := RtsIsoProjection.world_delta(canvas, Vector2(0, -8.0 * game.camera.zoom.x))
 		var peak := (upper_a + upper_b + upper_c + upper_d) * 0.25 + upper_rise + cap_rise
-		draw_colored_polygon(PackedVector2Array([upper_a + upper_rise, peak, upper_d + upper_rise]), palette["roof"])
-		draw_colored_polygon(PackedVector2Array([upper_b + upper_rise, upper_c + upper_rise, peak]), palette["roof_dark"])
+		FilledPolygon.draw(self, PackedVector2Array([upper_a + upper_rise, peak, upper_d + upper_rise]), palette["roof"])
+		FilledPolygon.draw(self, PackedVector2Array([upper_b + upper_rise, upper_c + upper_rise, peak]), palette["roof_dark"])
 		draw_line(upper_d + upper_rise, upper_c + upper_rise, palette["trim"], 2.0)
 		_draw_iso_landmark_crown(peak, palette, canvas)
 	elif art_kind == "monastery":
@@ -1278,7 +1279,7 @@ func _draw_iso_landmark_crown(base: Vector2, palette: Dictionary, canvas: Transf
 		draw_line(top + Vector2(-5, 4), top + Vector2(5, 4), palette["trim"], 2.2)
 	else:
 		var accent: Color = Color("c99657") if kind == "landmark" else game.player_color(owner_id)
-		draw_colored_polygon(PackedVector2Array([top, top + Vector2(10, 3), top + Vector2(0, 7)]), accent)
+		FilledPolygon.draw(self, PackedVector2Array([top, top + Vector2(10, 3), top + Vector2(0, 7)]), accent)
 
 func _landmark_geometry():
 	var key := str([kind, landmark_id, size(), game.civilizations[owner_id], game.player_color(owner_id)])
@@ -1293,7 +1294,7 @@ func _landmark_geometry():
 
 func _draw_iso_landmark_architecture(lift: Vector2, canvas: Transform2D) -> void:
 	for polygon in _landmark_geometry().projected_faces(canvas, game.camera.zoom.x, lift):
-		draw_colored_polygon(polygon["points"], polygon["color"])
+		FilledPolygon.draw(self, polygon["points"], polygon["color"])
 
 func _draw_iso_battlements(corners: Array, rise: Vector2, color: Color, width: float) -> void:
 	var teeth: Array[Vector2] = []
@@ -1331,7 +1332,7 @@ func _draw_building_icon(center: Vector2, icon_size: float) -> void:
 	else:
 		draw_rect(badge, Color("24313a"))
 		# Wonders have no command icon asset yet; a small column marks them on the map.
-		draw_colored_polygon(PackedVector2Array([center + Vector2(-9, -5), center + Vector2(0, -11), center + Vector2(9, -5)]), Color("e8d5a1"))
+		FilledPolygon.draw(self, PackedVector2Array([center + Vector2(-9, -5), center + Vector2(0, -11), center + Vector2(9, -5)]), Color("e8d5a1"))
 		for offset in [-6.0, 0.0, 6.0]:
 			draw_rect(Rect2(center + Vector2(offset - 1.5, -4), Vector2(3, 11)), Color("e8d5a1"))
 		draw_rect(Rect2(center + Vector2(-10, 7), Vector2(20, 3)), Color("e8d5a1"))

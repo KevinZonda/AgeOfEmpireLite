@@ -1,4 +1,5 @@
 extends RefCounted
+const FilledPolygon = preload("res://scripts/entities/visuals/filled_polygon.gd")
 
 # Drawn inside RtsUnit._draw_isometric() after its upright transform is set.
 # Coordinates are screen-facing pixels with the unit's ground point at (0, 0).
@@ -37,7 +38,7 @@ static func _wheel(unit: Node2D, center: Vector2, size: float) -> void:
 
 static func _chassis(unit: Node2D, radius: float, owner_color: Color, wheel_size := 5.0) -> void:
 	var half_width := radius * 0.78
-	unit.draw_colored_polygon(PackedVector2Array([
+	FilledPolygon.draw(unit, PackedVector2Array([
 		Vector2(-half_width, -9), Vector2(half_width - 2.0, -9),
 		Vector2(half_width + 2.0, -4), Vector2(-half_width + 2.0, -4)
 	]), Color("49392a"))
@@ -50,15 +51,15 @@ static func _draw_ram(unit: Node2D, radius: float, owner_color: Color, swing: fl
 	# A low roof shields the crew; the iron-capped beam extends past it.
 	_chassis(unit, radius, owner_color, 4.6)
 	_beam(unit, Vector2(-14.0, -13.0), Vector2(22.0 + swing * 3.0, -13.0), 5.0, Color("916541"))
-	unit.draw_colored_polygon(PackedVector2Array([
+	FilledPolygon.draw(unit, PackedVector2Array([
 		Vector2(21.0 + swing * 3.0, -17.0), Vector2(29.0 + swing * 3.0, -14.0),
 		Vector2(27.0 + swing * 3.0, -10.0), Vector2(21.0 + swing * 3.0, -9.0)
 	]), Color("657073"))
-	unit.draw_colored_polygon(PackedVector2Array([
+	FilledPolygon.draw(unit, PackedVector2Array([
 		Vector2(-16.0, -17.0), Vector2(-6.0, -25.0), Vector2(12.0, -25.0),
 		Vector2(17.0, -18.0), Vector2(15.0, -7.0), Vector2(-16.0, -7.0)
 	]), Color("765638"))
-	unit.draw_colored_polygon(PackedVector2Array([
+	FilledPolygon.draw(unit, PackedVector2Array([
 		Vector2(-18.0, -18.0), Vector2(-7.0, -28.0), Vector2(13.0, -28.0),
 		Vector2(18.0, -19.0), Vector2(13.0, -22.0), Vector2(-7.0, -22.0)
 	]), owner_color.darkened(0.27))
@@ -79,7 +80,7 @@ static func _draw_trebuchet(unit: Node2D, radius: float, owner_color: Color, swi
 	_beam(unit, Vector2(-8.0, -24.0), tip, 3.7, Color("bf9561"))
 	unit.draw_circle(Vector2(0.0, -33.0), 2.6, Color("44413a"))
 	unit.draw_line(Vector2(-8.0, -24.0), Vector2(-8.0, -35.0), Color("ded0a5"), 1.4)
-	unit.draw_colored_polygon(PackedVector2Array([
+	FilledPolygon.draw(unit, PackedVector2Array([
 		Vector2(-13.0, -24.0), Vector2(-3.0, -24.0),
 		Vector2(-5.0, -14.0), Vector2(-12.0, -14.0)
 	]), owner_color.darkened(0.26))
@@ -114,7 +115,7 @@ static func _draw_springald(unit: Node2D, radius: float, owner_color: Color, swi
 	unit.draw_line(Vector2(-21.0, -26.0), Vector2(0.0, -20.0 + swing * 4.0), Color("e2d3a9"), 1.4, true)
 	unit.draw_line(Vector2(21.0, -26.0), Vector2(0.0, -20.0 + swing * 4.0), Color("e2d3a9"), 1.4, true)
 	unit.draw_line(Vector2(0.0, -12.0), Vector2(0.0, -33.0), Color("676c65"), 2.2)
-	unit.draw_colored_polygon(PackedVector2Array([
+	FilledPolygon.draw(unit, PackedVector2Array([
 		Vector2(-3.0, -29.0), Vector2(0.0, -35.0), Vector2(3.0, -29.0)
 	]), Color("c6cac2"))
 	unit.draw_rect(Rect2(-8.0, -13.0, 16.0, 3.5), owner_color.darkened(0.13))
@@ -124,11 +125,11 @@ static func _draw_bombard(unit: Node2D, radius: float, owner_color: Color, swing
 	_chassis(unit, radius, owner_color, 4.0)
 	_beam(unit, Vector2(-19.0, -9.0), Vector2(-26.0, -15.0), 2.1)
 	_beam(unit, Vector2(-15.0, -6.0), Vector2(-24.0, -9.0), 2.1)
-	unit.draw_colored_polygon(PackedVector2Array([
+	FilledPolygon.draw(unit, PackedVector2Array([
 		Vector2(-11.0, -17.0), Vector2(11.0, -20.0),
 		Vector2(16.0, -15.0), Vector2(-8.0, -12.0)
 	]), Color("886b42"))
-	unit.draw_colored_polygon(PackedVector2Array([
+	FilledPolygon.draw(unit, PackedVector2Array([
 		Vector2(-8.0, -23.0), Vector2(9.0, -24.0),
 		Vector2(16.0 + swing * 2.0, -20.0), Vector2(16.0 + swing * 2.0, -14.0),
 		Vector2(-7.0, -15.0)
@@ -141,12 +142,12 @@ static func _draw_bombard(unit: Node2D, radius: float, owner_color: Color, swing
 static func _draw_cannon(unit: Node2D, radius: float, owner_color: Color, swing: float) -> void:
 	# Long iron barrel, large spoked wheels and rear trail, unlike the bombard.
 	_beam(unit, Vector2(-22.0, -3.0), Vector2(7.0, -12.0), 3.8)
-	unit.draw_colored_polygon(PackedVector2Array([
+	FilledPolygon.draw(unit, PackedVector2Array([
 		Vector2(-14.0, -15.0), Vector2(12.0, -19.0),
 		Vector2(17.0, -12.0), Vector2(-10.0, -9.0)
 	]), Color("966e43"))
 	unit.draw_line(Vector2(-13.0, -12.0), Vector2(12.0, -15.0), owner_color.darkened(0.22), 3.6)
-	unit.draw_colored_polygon(PackedVector2Array([
+	FilledPolygon.draw(unit, PackedVector2Array([
 		Vector2(-10.0, -24.0), Vector2(20.0 + swing * 2.0, -28.0),
 		Vector2(22.0 + swing * 2.0, -20.0), Vector2(-10.0, -16.0)
 	]), Color("444a49"))
@@ -161,11 +162,11 @@ static func _draw_nest_of_bees(unit: Node2D, radius: float, owner_color: Color, 
 	_chassis(unit, radius, owner_color, 4.5)
 	_beam(unit, Vector2(-11.0, -8.0), Vector2(-4.0, -21.0), 3.0)
 	_beam(unit, Vector2(11.0, -8.0), Vector2(4.0, -21.0), 3.0)
-	unit.draw_colored_polygon(PackedVector2Array([
+	FilledPolygon.draw(unit, PackedVector2Array([
 		Vector2(-12.0, -35.0), Vector2(11.0, -39.0),
 		Vector2(14.0, -18.0), Vector2(-9.0, -15.0)
 	]), Color("49382c"))
-	unit.draw_colored_polygon(PackedVector2Array([
+	FilledPolygon.draw(unit, PackedVector2Array([
 		Vector2(-10.0, -33.0), Vector2(9.0, -36.0),
 		Vector2(11.0, -20.0), Vector2(-7.0, -18.0)
 	]), owner_color.darkened(0.35))
@@ -181,11 +182,11 @@ static func _draw_nest_of_bees(unit: Node2D, radius: float, owner_color: Color, 
 static func _draw_siege_tower(unit: Node2D, radius: float, owner_color: Color, swing: float) -> void:
 	# A tall boarded tower with battlements, ladder and lowered assault ramp.
 	var half_width := radius * 0.72
-	unit.draw_colored_polygon(PackedVector2Array([
+	FilledPolygon.draw(unit, PackedVector2Array([
 		Vector2(-half_width, -52.0), Vector2(half_width - 2.0, -52.0),
 		Vector2(half_width + 2.0, -9.0), Vector2(-half_width, -9.0)
 	]), Color("765639"))
-	unit.draw_colored_polygon(PackedVector2Array([
+	FilledPolygon.draw(unit, PackedVector2Array([
 		Vector2(half_width - 2.0, -52.0), Vector2(half_width + 4.0, -47.0),
 		Vector2(half_width + 6.0, -8.0), Vector2(half_width + 2.0, -9.0)
 	]), Color("4b3628"))
@@ -196,7 +197,7 @@ static func _draw_siege_tower(unit: Node2D, radius: float, owner_color: Color, s
 	unit.draw_rect(Rect2(-half_width - 1.0, -58.0, half_width * 2.0 + 2.0, 6.0), Color("4a3829"))
 	for x in [-12.0, -3.0, 6.0]:
 		unit.draw_rect(Rect2(x, -62.0, 6.0, 7.0), Color("6e5338"))
-	unit.draw_colored_polygon(PackedVector2Array([
+	FilledPolygon.draw(unit, PackedVector2Array([
 		Vector2(half_width - 1.0, -44.0), Vector2(half_width + 16.0 + swing * 2.0, -38.0),
 		Vector2(half_width + 17.0 + swing * 2.0, -34.0), Vector2(half_width, -39.0)
 	]), Color("a77a4b"))
@@ -206,7 +207,7 @@ static func _draw_siege_tower(unit: Node2D, radius: float, owner_color: Color, s
 		unit.draw_line(Vector2(-7.0, y), Vector2(5.0, y), Color("d4b27c"), 1.6)
 	unit.draw_rect(Rect2(-half_width + 2.0, -53.0, half_width * 1.35, 3.0), owner_color)
 	unit.draw_line(Vector2(0.0, -61.0), Vector2(0.0, -69.0), Color("d9c79e"), 1.5)
-	unit.draw_colored_polygon(PackedVector2Array([
+	FilledPolygon.draw(unit, PackedVector2Array([
 		Vector2(0.0, -69.0), Vector2(10.0, -66.0), Vector2(0.0, -63.0)
 	]), owner_color)
 	_wheel(unit, Vector2(-half_width + 3.0, -4.0), 4.7)

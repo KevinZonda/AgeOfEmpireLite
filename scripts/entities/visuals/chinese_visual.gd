@@ -1,5 +1,6 @@
 class_name RtsChineseVisual
 extends RefCounted
+const FilledPolygon = preload("res://scripts/entities/visuals/filled_polygon.gd")
 
 # Distinct equipment silhouettes for the Chinese unique units. RtsUnit has
 # already applied its idle/movement transform before calling these methods.
@@ -30,7 +31,7 @@ static func draw_25d(canvas: CanvasItem, kind: String, team: Color, gait: float,
 
 static func _poly(canvas: CanvasItem, points: Array, fill: Color, stroke: Color = OUTLINE, width: float = 1.4) -> void:
 	var shape := PackedVector2Array(points)
-	canvas.draw_colored_polygon(shape, fill)
+	FilledPolygon.draw(canvas, shape, fill)
 	if width > 0.0:
 		canvas.draw_polyline(shape + PackedVector2Array([shape[0]]), stroke, width)
 

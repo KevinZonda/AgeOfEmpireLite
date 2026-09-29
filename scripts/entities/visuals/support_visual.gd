@@ -1,5 +1,6 @@
 class_name RtsSupportVisual
 extends RefCounted
+const FilledPolygon = preload("res://scripts/entities/visuals/filled_polygon.gd")
 
 const EDGE := Color("222b2b")
 const SKIN := Color("dfc49a")
@@ -18,7 +19,7 @@ static func draw_25d(canvas: CanvasItem, kind: String, team: Color, gait: float,
 
 static func _poly(canvas: CanvasItem, points: Array, fill: Color) -> void:
 	var shape := PackedVector2Array(points)
-	canvas.draw_colored_polygon(shape, fill)
+	FilledPolygon.draw(canvas, shape, fill)
 	canvas.draw_polyline(shape + PackedVector2Array([shape[0]]), EDGE, 1.5)
 
 static func _boots(canvas: CanvasItem, left: Vector2, right: Vector2, gait: float) -> void:

@@ -1,5 +1,6 @@
 class_name RtsOreVisual
 extends RefCounted
+const FilledPolygon = preload("res://scripts/entities/visuals/filled_polygon.gd")
 
 const EDGE := Color("26302f")
 const GOLD_ROCK := Color("66513d")
@@ -21,7 +22,7 @@ static func draw_25d(canvas: CanvasItem, kind: String, fraction: float = 1.0) ->
 
 static func _poly(canvas: CanvasItem, points: Array, fill: Color, border: bool = false) -> void:
 	var shape := PackedVector2Array(points)
-	canvas.draw_colored_polygon(shape, fill)
+	FilledPolygon.draw(canvas, shape, fill)
 	if border: canvas.draw_polyline(shape + PackedVector2Array([shape[0]]), EDGE, 1.6)
 
 static func _gold_2d(canvas: CanvasItem, fraction: float) -> void:

@@ -1,0 +1,19 @@
+{
+  "attackers": 80,
+  "buildings": 6,
+  "channels_differing_over_one": 0,
+  "max_channel_difference": 1,
+  "results": [
+    {
+      "draw_calls": 3153.0,
+      "legacy": true,
+      "viewport_cpu_ms": 8.21867036295461
+    },
+    {
+      "draw_calls": 2851.0,
+      "legacy": false,
+      "viewport_cpu_ms": 7.50140495930821
+    }
+  ],
+  "total_channels": 4096000
+}
