@@ -882,24 +882,41 @@ func _local_unit_grid(unit: RtsUnit, step: float, half: int) -> AStarGrid2D:
 				if distance < reach * reach and distance <= current: grid.set_point_solid(cell)
 	return grid
 
+func _local_reachable_cells(grid: AStarGrid2D, start: Vector2i) -> Array[Vector2i]:
+	# Recovery needs only the mover's component. Labeling every disconnected
+	# island scanned up to 37,249 cells even when the mover was boxed into one.
+	# Four-neighbor connectivity is equivalent for no-corner-cutting A*.
+	var size := grid.region.size
+	var visited := PackedByteArray()
+	visited.resize(size.x * size.y)
+	var cells: Array[Vector2i] = [start]
+	visited[start.y * size.x + start.x] = 1
+	var head := 0
+	while head < cells.size():
+		var cell := cells[head]
+		head += 1
+		for offset in [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]:
+			var next: Vector2i = cell + offset
+			if not grid.region.has_point(next): continue
+			var index := next.y * size.x + next.x
+			if visited[index]: continue
+			visited[index] = 1
+			if not grid.is_point_solid(next): cells.append(next)
+	return cells
+
 func _local_unit_path(unit: RtsUnit, target: Vector2, step: float, half: int) -> PackedVector2Array:
 	var grid := _local_unit_grid(unit, step, half)
 	var start := Vector2i(half, half)
 	grid.set_point_solid(start, false)
-	var components := _components_for(grid, false)
-	var start_component := components[start.y * grid.region.size.x + start.x]
+	var reachable := _local_reachable_cells(grid, start)
 	var local_target := Vector2i(((target - grid.offset) / step).round()).clamp(Vector2i.ZERO, grid.region.size - Vector2i.ONE)
-	var candidates: Array[Vector2i] = [local_target]
-	for y in grid.region.size.y:
-		for x in grid.region.size.x:
-			var cell := Vector2i(x, y)
-			if cell == local_target or grid.is_point_solid(cell): continue
-			if x == 0 or y == 0 or x == grid.region.size.x - 1 or y == grid.region.size.y - 1 or cell.distance_squared_to(local_target) <= 9:
-				candidates.append(cell)
+	var candidates: Array[Vector2i] = []
+	for cell in reachable:
+		if cell == local_target or cell.x == 0 or cell.y == 0 or cell.x == grid.region.size.x - 1 or cell.y == grid.region.size.y - 1 or cell.distance_squared_to(local_target) <= 9:
+			candidates.append(cell)
 	candidates.sort_custom(func(a: Vector2i, b: Vector2i) -> bool: return grid.get_point_position(a).distance_squared_to(target) < grid.get_point_position(b).distance_squared_to(target))
 	for cell in candidates:
 		if grid.is_point_solid(cell): continue
-		if components[cell.y * grid.region.size.x + cell.x] != start_component: continue
 		# Reject geometrically useless exits before A*. In crowded work sites
 		# hundreds of boundary candidates can be farther from the waypoint.
 		if grid.get_point_position(cell).distance_to(target) >= unit.position.distance_to(target) - 4.0: continue

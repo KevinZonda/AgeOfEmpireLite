@@ -1,0 +1,142 @@
+[
+  {
+    "test": "navigation_search_work",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.756
+  },
+  {
+    "test": "navigation_grid_raster",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 1.513
+  },
+  {
+    "test": "navigation_dense_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 1.987
+  },
+  {
+    "test": "navigation_tasks_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 22.672
+  },
+  {
+    "test": "navigation_corner_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 25.127
+  },
+  {
+    "test": "navigation_state_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 20.378
+  },
+  {
+    "test": "navigation_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.934
+  },
+  {
+    "test": "navigation_poc_matrix",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 6.708
+  },
+  {
+    "test": "navigation_construction_poc",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 1.819
+  },
+  {
+    "test": "navigation",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 1.812
+  },
+  {
+    "test": "navigation_routes",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.341
+  },
+  {
+    "test": "navigation_replanning",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.651
+  },
+  {
+    "test": "group_replanning",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 0.445
+  },
+  {
+    "test": "group_chokepoint",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 2.235
+  },
+  {
+    "test": "group_mass_chokepoint",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 3.811
+  },
+  {
+    "test": "group_multiplayer",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 4.332
+  },
+  {
+    "test": "terrain_selection_follow",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 1.888
+  },
+  {
+    "test": "extended_systems",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 2.773
+  },
+  {
+    "test": "economy_siege_controls",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "seconds": 1.442
+  },
+  {
+    "test": "smoke",
+    "passed": false,
+    "exit_code": -15,
+    "timeout": false,
+    "seconds": 73.888
+  }
+]
