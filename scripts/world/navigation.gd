@@ -273,10 +273,7 @@ func _grid_for(unit: RtsUnit) -> AStarGrid2D:
 	grid.offset = Vector2.ONE * RtsWorldMap.CELL_SIZE * 0.5
 	grid.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES
 	grid.update()
-	for y in world_map.grid_size.y:
-		for x in world_map.grid_size.x:
-			var cell := Vector2i(x, y)
-			if not can_occupy(world_map.cell_center(cell), unit.radius(), unit, false, false): grid.set_point_solid(cell)
+	_rasterize_static_grid(unit, grid)
 	clearance_grids[key] = grid
 	return grid
 
@@ -564,8 +561,13 @@ func _rasterize_static_grid(unit: RtsUnit, grid: AStarGrid2D, allow_resource_esc
 	grid.fill_solid_region(Rect2i(0, 0, size.x, first.y))
 	grid.fill_solid_region(Rect2i(0, last.y + 1, size.x, size.y - last.y - 1))
 	var naval: bool = unit.stats.get("tags", []).has("naval")
-	for y in world_map.grid_size.y:
-		for x in world_map.grid_size.x:
+	# Only tiles whose expanded footprint can reach this grid may block it.
+	# Local crowd recovery used to scan the whole map for every small grid.
+	var map_first := Vector2i(((origin - Vector2.ONE * radius) / RtsWorldMap.CELL_SIZE).floor()).clamp(Vector2i.ZERO, world_map.grid_size)
+	var map_end := Vector2i(((origin + Vector2(size - Vector2i.ONE) * step + Vector2.ONE * radius) / RtsWorldMap.CELL_SIZE).floor()) + Vector2i.ONE
+	map_end = map_end.clamp(Vector2i.ZERO, world_map.grid_size)
+	for y in range(map_first.y, map_end.y):
+		for x in range(map_first.x, map_end.x):
 			var terrain: int = world_map.cells[y * world_map.grid_size.x + x]
 			if _terrain_passable(terrain, naval): continue
 			var tile := Rect2(Vector2(x, y) * RtsWorldMap.CELL_SIZE, Vector2.ONE * RtsWorldMap.CELL_SIZE)
