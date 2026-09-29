@@ -117,6 +117,9 @@ func can_show_unit(owner_id: int, unit: RtsUnit) -> bool:
 func update_unit_display(unit: RtsUnit) -> void:
 	unit.visible = unit.garrisoned_in == null and (unit.owner_id == 0 or can_show_unit(0, unit))
 
+func update_building_display(building: RtsBuilding) -> void:
+	building.visible = building.owner_id == 0 or can_see(0, building.position)
+
 func _update_enemy_unit_display() -> void:
 	var selection_may_change := false
 	for unit in game.units:
@@ -281,7 +284,7 @@ func _update_entity_visibility() -> void:
 		update_unit_display(unit)
 	for building in game.buildings:
 		if not is_instance_valid(building) or building.is_queued_for_deletion(): continue
-		building.visible = building.owner_id == 0 or can_see(0, building.position)
+		update_building_display(building)
 	for resource in game.resources:
 		if not is_instance_valid(resource) or resource.is_queued_for_deletion(): continue
 		resource.visible = can_show_resource(0, resource)

@@ -834,6 +834,7 @@ func spawn_building(owner_id: int, kind: String, world_point: Vector2, under_con
 	add_child(building)
 	building.setup(self, owner_id, kind, under_construction, landmark_id)
 	buildings.append(building)
+	if fog.active: fog.update_building_display(building)
 	navigation.invalidate_obstacles()
 	_update_hud()
 	return building
