@@ -7,6 +7,7 @@ const SPATIAL_CELL_SIZE := 64.0
 const SMOOTH_LOOKAHEAD := 8
 const MAX_FINE_GRIDS := 4
 const MAX_CORNER_ATTACHMENTS := 64
+const MAX_RANGE_SEGMENTS := 8192
 const RecoveryKernel = preload("res://scripts/world/navigation_recovery.gd")
 const BackgroundJobs = preload("res://scripts/world/navigation_jobs.gd")
 var background_jobs = BackgroundJobs.new()
@@ -26,6 +27,12 @@ var fine_grids: Dictionary = {}
 var local_fine_grids: Array[Dictionary] = []
 var grid_components: Dictionary = {}
 var corner_graphs: Dictionary = {}
+# Valid only within a single synchronous range query. It avoids repeating
+# identical geometry sweeps while comparing candidate approaches, and is
+# discarded before returning so moving deer never reuse stale segment results.
+var range_query_unit: RtsUnit
+var range_query_radius := 0.0
+var range_query_segments: Array[Dictionary] = []
 var obstacle_signature := -1
 var obstacle_revision := 0
 # Resource motion changes collision geometry, but must not wake every failed
@@ -660,6 +667,16 @@ func _simplify_path(raw: PackedVector2Array, from: Vector2, to: Vector2, unit: R
 	return result
 
 func _static_segment_clear(from: Vector2, to: Vector2, radius: float, unit: RtsUnit, allow_resource_escape := true, boarding := false) -> bool:
+	if unit != null and unit == range_query_unit and radius == range_query_radius:
+		var cache: Dictionary = range_query_segments[int(allow_resource_escape) + 2 * int(boarding)]
+		var key := Vector4(from.x, from.y, to.x, to.y)
+		if cache.has(key): return cache[key]
+		var clear := _compute_static_segment_clear(from, to, radius, unit, allow_resource_escape, boarding)
+		if cache.size() < MAX_RANGE_SEGMENTS: cache[key] = clear
+		return clear
+	return _compute_static_segment_clear(from, to, radius, unit, allow_resource_escape, boarding)
+
+func _compute_static_segment_clear(from: Vector2, to: Vector2, radius: float, unit: RtsUnit, allow_resource_escape: bool, boarding: bool) -> bool:
 	# Point samples alone can jump over the very short chord where a segment
 	# grazes a circle or a building corner, especially inside narrow passages.
 	var center := (from + to) * 0.5
@@ -722,6 +739,19 @@ func path_to_range(from: Vector2, target: Vector2, reach: float, unit: RtsUnit) 
 	return result
 
 func _path_to_range(from: Vector2, target: Vector2, reach: float, unit: RtsUnit) -> PackedVector2Array:
+	var previous_unit := range_query_unit
+	var previous_radius := range_query_radius
+	var previous_segments := range_query_segments
+	range_query_unit = unit
+	range_query_radius = unit.radius()
+	range_query_segments = [{}, {}, {}, {}]
+	var result := _search_path_to_range(from, target, reach, unit)
+	range_query_unit = previous_unit
+	range_query_radius = previous_radius
+	range_query_segments = previous_segments
+	return result
+
+func _search_path_to_range(from: Vector2, target: Vector2, reach: float, unit: RtsUnit) -> PackedVector2Array:
 	_ensure_current()
 	var boarding := unit.order == "board_transport"
 	if from.distance_to(target) <= reach + 0.5 and (not boarding or boarding_clear(from, target, unit)): return PackedVector2Array([from])
