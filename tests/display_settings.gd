@@ -101,7 +101,7 @@ func _run() -> void:
 	game.window_mode_choice.select(1)
 	game.resolution_choice.select(game.resolution_values.find(Vector2i(1280, 720)))
 	game.ui_scale_choice.select(game.ui_scale_values.find(0.75))
-	game.text_scale_choice.select(game.TEXT_SCALE_OPTIONS.find(1.25))
+	game.text_scale_choice.select(game.TEXT_SCALE_OPTIONS.find(2.0))
 	game.minimap_size_choice.select(game.MINIMAP_SIZE_OPTIONS.find(264))
 	game.settings_tabs.current_tab = 1
 	game.edge_scroll_toggle.button_pressed = false
@@ -130,14 +130,14 @@ func _run() -> void:
 	else:
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(settings_path))
 	assert(save_result == OK and saved_edge_scroll == false and saved_zoom_gesture == false and saved_view == true)
-	assert(saved_ui_scale == 0.75 and saved_text_scale == 1.25 and saved_minimap_size == 264)
+	assert(saved_ui_scale == 0.75 and saved_text_scale == 2.0 and saved_minimap_size == 264)
 	assert(saved.get_value("display", "show_building_icons", null) == false)
 	assert(saved.get_value("display", "show_building_names", null) == false)
 	assert(not game.show_building_icons and not game.show_building_names)
 	assert(is_equal_approx(game.hud_ui.transform.get_scale().x, 0.75))
 	assert(is_equal_approx(game.ui_root.size.x, game.get_viewport_rect().size.x / 0.75))
 	var top_base_font: int = game.top_label.get_meta("base_ui_font_size")
-	assert(absf(game.top_label.get_theme_font_size("font_size") * 0.75 - top_base_font * 1.25) < 1.0)
+	assert(absf(game.top_label.get_theme_font_size("font_size") * 0.75 - top_base_font * 2.0) < 1.0)
 	assert(saved_fullscreen == true and saved_window_size == Vector2i(1280, 720))
 	assert(game._window_is_fullscreen())
 	game._apply_window_mode(false, false)
