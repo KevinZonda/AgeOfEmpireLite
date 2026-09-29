@@ -3,6 +3,8 @@ extends Node2D
 const RtsUiTypography = preload("res://scripts/ui/typography.gd")
 
 const LandmarkVisual = preload("res://scripts/entities/visuals/landmark_visual.gd")
+const FARM_SOW_WORK := 2.2
+const FARM_HARVEST_WORK := 4.4
 var landmark_geometry
 var landmark_geometry_key := ""
 
@@ -15,6 +17,9 @@ var hp := 1.0
 var max_hp := 1.0
 var build_remaining := 0.0
 var build_total := 0.0
+var farm_stage := "sowing"
+var farm_stage_progress := 0.0
+var farm_food_buffer := 0.0
 var training_queue: Array[String] = []
 var training_remaining := 0.0
 var research_queue: Array[String] = []
@@ -214,6 +219,28 @@ func contains_isometric_visual(world_point: Vector2, canvas: Transform2D) -> boo
 
 func is_complete() -> bool:
 	return build_remaining <= 0.0
+
+func farm_stage_work() -> float:
+	return FARM_SOW_WORK if farm_stage == "sowing" else FARM_HARVEST_WORK
+
+func farm_crop_fraction() -> float:
+	return clampf(farm_stage_progress / FARM_SOW_WORK, 0.0, 1.0) if farm_stage == "sowing" else clampf(1.0 - farm_stage_progress / FARM_HARVEST_WORK, 0.0, 1.0)
+
+func work_farm(delta: float, speed: float, harvest_yield: int) -> int:
+	if kind != "farm" or not is_complete() or delta <= 0.0 or speed <= 0.0: return 0
+	var remaining_work := delta * speed
+	while remaining_work > 0.000001:
+		var work := minf(remaining_work, farm_stage_work() - farm_stage_progress)
+		if farm_stage == "harvesting": farm_food_buffer += float(harvest_yield) * work / FARM_HARVEST_WORK
+		farm_stage_progress += work
+		remaining_work -= work
+		if farm_stage_progress >= farm_stage_work() - 0.000001:
+			farm_stage = "harvesting" if farm_stage == "sowing" else "sowing"
+			farm_stage_progress = 0.0
+	queue_redraw()
+	var food := floori(farm_food_buffer + 0.00001)
+	farm_food_buffer = maxf(0.0, farm_food_buffer - food)
+	return food
 
 func advance_construction(delta: float) -> void:
 	if is_complete(): return
@@ -516,7 +543,7 @@ func _draw_isometric() -> void:
 		draw_polyline(PackedVector2Array([ne + wall_lift, se + wall_lift, se, ne, ne + wall_lift]), Color("1c2829"), 2.0)
 		draw_polyline(PackedVector2Array([sw + wall_lift, se + wall_lift, se, sw, sw + wall_lift]), Color("1c2829"), 2.0)
 	var roof_color: Color = palette["roof"]
-	if art_kind == "farm": roof_color = Color("9d874e")
+	if art_kind == "farm": roof_color = Color("735035")
 	if art_kind.ends_with("_wall") or art_kind.ends_with("_gate"): roof_color = color.lightened(0.08)
 	if construction_ratio >= 0.65:
 		draw_colored_polygon(PackedVector2Array([nw + wall_lift, ne + wall_lift, se + wall_lift, sw + wall_lift]), roof_color if not open_yard else palette["timber"])
@@ -567,10 +594,15 @@ func _draw_topdown_architecture(bounds: Rect2, palette: Dictionary) -> void:
 	var trim: Color = palette["trim"]
 	var wall: Color = palette["wall"]
 	if art_kind == "farm":
-		draw_rect(roof_bounds, Color("8f7747"))
-		for portion in [0.17, 0.38, 0.59, 0.8]:
+		draw_rect(roof_bounds, Color("735035"))
+		for portion in [0.1, 0.3, 0.5, 0.7, 0.9]:
 			var y := lerpf(roof_bounds.position.y, roof_bounds.end.y, portion)
-			draw_line(Vector2(roof_bounds.position.x + 3, y), Vector2(roof_bounds.end.x - 3, y), Color("c9aa60"), 2.2)
+			draw_line(Vector2(roof_bounds.position.x + 3, y), Vector2(roof_bounds.end.x - 3, y), Color("a2784a"), 2.2)
+			if is_complete() and farm_crop_fraction() >= portion:
+				for x_portion in [0.2, 0.4, 0.6, 0.8]:
+					var x := lerpf(roof_bounds.position.x, roof_bounds.end.x, x_portion)
+					draw_line(Vector2(x, y + 2), Vector2(x, y - 5), Color("a9c468"), 2.0)
+					draw_circle(Vector2(x + 2, y - 5), 2.0, Color("d9c875"))
 		return
 	if art_kind.ends_with("_wall") or art_kind.ends_with("_gate"):
 		draw_rect(roof_bounds, trim if art_kind.begins_with("stone") else palette["timber"])
@@ -1254,14 +1286,16 @@ func _draw_iso_fortification(nw: Vector2, ne: Vector2, se: Vector2, sw: Vector2,
 		draw_line(mid - half_width + lift * 0.84, mid + half_width + lift * 0.84, material, 2.0)
 
 func _draw_iso_farm(nw: Vector2, ne: Vector2, se: Vector2, sw: Vector2, lift: Vector2) -> void:
-	for portion in [0.12, 0.32, 0.52, 0.72, 0.9]:
+	for portion in [0.1, 0.3, 0.5, 0.7, 0.9]:
 		var start := nw.lerp(sw, portion) + lift
 		var finish := ne.lerp(se, portion) + lift
 		draw_line(start, finish, Color("6f5838"), 3.0)
-		draw_line(start + (se - ne) * 0.045, finish + (se - ne) * 0.045, Color("d8bf70"), 2.2)
-	for portion in [0.2, 0.48, 0.76]:
-		var crop := nw.lerp(sw, portion).lerp(ne.lerp(se, portion), 0.5) + lift
-		draw_line(crop, crop + Vector2(0, -4), Color("91a760"), 1.5)
+		draw_line(start + (se - ne) * 0.045, finish + (se - ne) * 0.045, Color("a9814e"), 2.2)
+		if not is_complete() or farm_crop_fraction() < portion: continue
+		for across in [0.2, 0.4, 0.6, 0.8]:
+			var crop := start.lerp(finish, across)
+			draw_line(crop, crop + Vector2(0, -7), Color("91ae5a"), 2.0)
+			draw_circle(crop + Vector2(2, -7), 2.0, Color("d9c875"))
 
 func _draw_building_icon(center: Vector2, icon_size: float) -> void:
 	if game.get("show_building_icons") == false: return

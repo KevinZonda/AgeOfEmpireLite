@@ -4,6 +4,7 @@ extends RefCounted
 # existing methods; these helpers operate on that state without owning it.
 static func gathering_amount(unit) -> int:
 	if unit.order != "gather" or not is_instance_valid(unit.target): return 0
+	if unit.target is RtsBuilding and unit.target.kind == "farm": return farm_yield(unit)
 	var resource_kind: String = "food" if unit.target is RtsBuilding else unit.target.kind
 	var amount := 12 if unit.kind == "fishing_boat" else GameData.gathered_amount(unit.game.civilizations[unit.owner_id], resource_kind, unit.target is RtsBuilding)
 	amount = maxi(1, roundi(amount * RtsLandmarkCatalog.gather_multiplier(unit.game.civilizations[unit.owner_id], unit.game.players[unit.owner_id].get("landmarks", []), resource_kind, unit.target is RtsBuilding) * RtsCivilizationRules.economic_gather_multiplier(unit.game, unit.owner_id, resource_kind) * RtsCivilizationRules.economic_site_multiplier(unit.game, unit.owner_id, resource_kind, unit.target)))
@@ -13,6 +14,12 @@ static func gathering_amount(unit) -> int:
 				amount = maxi(1, roundi(amount * 1.1))
 				break
 	return amount
+
+static func farm_work_speed(unit) -> float:
+	return RtsLandmarkCatalog.gather_multiplier(unit.game.civilizations[unit.owner_id], unit.game.players[unit.owner_id].get("landmarks", []), "food", true) * RtsCivilizationRules.economic_gather_multiplier(unit.game, unit.owner_id, "food") * RtsCivilizationRules.economic_site_multiplier(unit.game, unit.owner_id, "food", unit.target)
+
+static func farm_yield(unit) -> int:
+	return GameData.gathered_amount(unit.game.civilizations[unit.owner_id], "food", true) * 6
 
 static func remember_work(unit) -> void:
 	if unit.order in ["gather", "build", "trade", "supervise"]:
@@ -75,13 +82,27 @@ static func process_trade_order(unit, delta: float) -> void:
 static func process_gather_order(unit, delta: float) -> void:
 	var gathering_distance: float = unit.target.radius + unit.radius() + 2.0 if unit.target is RtsResource else unit.target.size().x * 0.5 + unit.radius() + 2.0
 	if not unit._move_toward(unit.target.position, delta, gathering_distance): return
-	if unit.kind == "villager" and unit.target is RtsBuilding and unit.target.kind == "farm" and unit.game.civilizations[unit.owner_id] == "English" and unit.game.players[unit.owner_id]["researched"].has("enclosures"):
-		unit.enclosure_timer -= delta
-		if unit.enclosure_timer <= 0.0:
-			unit.game.credit_resource(unit.owner_id, "gold", 2)
-			unit.enclosure_timer += 5.0
-	else:
-		unit.enclosure_timer = 5.0
+	if unit.target is RtsBuilding and unit.target.kind == "farm":
+		if not unit.target.is_complete(): return
+		if unit.game.civilizations[unit.owner_id] == "English" and unit.game.players[unit.owner_id]["researched"].has("enclosures"):
+			unit.enclosure_timer -= delta
+			while unit.enclosure_timer <= 0.0:
+				unit.game.credit_resource(unit.owner_id, "gold", 2)
+				unit.enclosure_timer += 5.0
+		else:
+			unit.enclosure_timer = 5.0
+		var food: int = unit.target.work_farm(delta, farm_work_speed(unit), farm_yield(unit))
+		if food > 0:
+			unit.game.credit_resource(unit.owner_id, "food", food)
+			unit.farm_gain_display_amount += food
+		if unit.work_timer <= 0.0:
+			if unit.farm_gain_display_amount > 0 and unit.owner_id == 0 and unit.game.has_method("show_resource_gain"):
+				unit.game.show_resource_gain(unit.position, "food", unit.farm_gain_display_amount)
+			unit.farm_gain_display_amount = 0
+			unit._start_visual_action("gather", 0.42)
+			unit.work_timer = 1.1
+		return
+	unit.enclosure_timer = 5.0
 	if unit.work_timer <= 0.0:
 		var resource_kind: String = "food" if unit.target is RtsBuilding else unit.target.kind
 		var amount := gathering_amount(unit)

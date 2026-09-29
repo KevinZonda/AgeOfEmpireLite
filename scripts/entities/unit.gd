@@ -27,6 +27,7 @@ var target: Node2D
 var attack_timer := 0.0
 var hit_flash_timer := 0.0
 var work_timer := 0.0
+var farm_gain_display_amount := 0
 var enclosure_timer := 5.0
 var charging := false
 var charge_distance := 0.0
@@ -134,7 +135,12 @@ func effective_speed() -> float:
 func gathering_amount() -> int:
 	return UnitWork.gathering_amount(self)
 
+func farm_work_speed() -> float:
+	return UnitWork.farm_work_speed(self)
+
 func gathering_per_second() -> float:
+	if order == "gather" and target is RtsBuilding and target.kind == "farm":
+		return float(gathering_amount()) * farm_work_speed() / (RtsBuilding.FARM_SOW_WORK + RtsBuilding.FARM_HARVEST_WORK)
 	return float(gathering_amount()) / 1.1
 
 func order_move(world_point: Vector2) -> void:
@@ -462,6 +468,7 @@ func _try_order_gather(resource: Node2D) -> bool:
 			return false
 	order = "gather"
 	target = resource
+	farm_gain_display_amount = 0
 	resume_destination = Vector2.INF
 	charging = false
 	gather_kind = resource.kind if resource is RtsResource else ""

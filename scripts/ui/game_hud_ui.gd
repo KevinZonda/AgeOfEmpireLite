@@ -6,7 +6,7 @@ const RtsUiTypography = preload("res://scripts/ui/typography.gd")
 const BUILD_HELP := {
 	"town_center": "训练村民并提供人口上限，也可驻军防守。",
 	"house": "提高人口上限，让你能训练更多单位。",
-	"farm": "供村民持续采集食物。",
+	"farm": "供一位村民循环播种和收获食物；离开时进度暂停。",
 	"mill": "存放食物，并研究食物采集科技。",
 	"lumber_camp": "存放木材，并研究伐木科技。",
 	"mining_camp": "存放黄金和石料，并研究采矿科技。",
@@ -522,6 +522,7 @@ func _update_selection_hud() -> void:
 		if item.kind == "fishing_boat": game.detail_label.text += "   右键鱼群捕鱼"
 	else:
 		game.detail_label.text = "生命 %.0f/%.0f   %s" % [item.hp, item.max_hp, "建造中" if not item.is_complete() else "已建成"]
+		if item.kind == "farm" and item.is_complete(): game.detail_label.text += "\n播种 %.1f 工作量 · 收获 %.1f 工作量" % [RtsBuilding.FARM_SOW_WORK, RtsBuilding.FARM_HARVEST_WORK]
 		if item.kind == "monastery": game.detail_label.text += "   圣物 %d（每 4 秒每件 +12 黄金）" % item.relics.size()
 		if not item.garrisoned_units.is_empty(): game.detail_label.text += "   驻军 %d/%d" % [item.garrisoned_units.size(), item.garrison_capacity()]
 		if item.can_set_rally(0):
@@ -601,6 +602,14 @@ func _update_building_progress(building: RtsBuilding) -> void:
 		game.selection_progress.value = building.build_total - building.build_remaining
 		game.selection_progress.show()
 		game.queue_label.text = "施工 %d%% · 村民 %d · 选村民右键继续" % [int(100.0 * game.selection_progress.value / game.selection_progress.max_value), game.count_builders(building)]
+	elif building.kind == "farm":
+		game.selection_progress.max_value = building.farm_stage_work()
+		game.selection_progress.value = building.farm_stage_progress
+		game.selection_progress.show()
+		var farmer: RtsUnit = game.farm_worker(building)
+		var stage_label := "播种" if building.farm_stage == "sowing" else "收获"
+		var remaining := (building.farm_stage_work() - building.farm_stage_progress) / farmer.farm_work_speed() if farmer != null else 0.0
+		game.queue_label.text = "%s %d%% · 速度 %.2f 工作量/秒 · 剩余 %.1f 秒" % [stage_label, roundi(100.0 * building.farm_stage_progress / building.farm_stage_work()), farmer.farm_work_speed(), remaining] if farmer != null else "%s %d%% · 暂停，派村民耕作" % [stage_label, roundi(100.0 * building.farm_stage_progress / building.farm_stage_work())]
 	elif not building.production_queue.is_empty():
 		var job: Dictionary = building.current_job()
 		game.selection_progress.max_value = job["time"]
@@ -637,7 +646,10 @@ func _unit_stats_text(unit: RtsUnit) -> String:
 				source_label = "农田"
 			elif resource_kind == "food":
 				source_label = {"berry": "浆果", "deer": "鹿肉", "sheep": "羊肉", "boar": "野猪肉", "fish": "鱼群"}.get(unit.target.appearance, source_label)
-			lines.insert(0, "采集%s  ·  工作速度 %.2f/秒" % [source_label, unit.gathering_per_second()])
+			var work_text := "采集%s  ·  工作速度 %.2f/秒" % [source_label, unit.gathering_per_second()]
+			if unit.target is RtsBuilding and unit.target.kind == "farm":
+				work_text += "  ·  %s %d%%  ·  耕作 %.2f 工作量/秒" % ["播种" if unit.target.farm_stage == "sowing" else "收获", roundi(100.0 * unit.target.farm_stage_progress / unit.target.farm_stage_work()), unit.farm_work_speed()]
+			lines.insert(0, work_text)
 		else:
 			lines.insert(0, "未采集资源  ·  工作速度 0.00/秒")
 	if unit.kind == "trader" and game.civilizations[unit.owner_id] == "French": lines.append("贸易运回：%s" % GameData.RESOURCE_LABELS[unit.trade_resource_kind])
