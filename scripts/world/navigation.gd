@@ -1103,18 +1103,28 @@ func _valid_destination(point: Vector2, radius: float, self_unit: RtsUnit, requi
 	return not require_path or not _path_between(self_unit.position, point, self_unit, true).is_empty()
 
 func _segment_clear(from: Vector2, to: Vector2, radius: float, self_unit: RtsUnit) -> bool:
-	if not _static_segment_clear(from, to, radius, self_unit): return false
+	# Both halves are pure predicates; checking unit blockers first skips the
+	# static sweep whenever a crowded step is already denied, and iterating the
+	# buckets inline avoids materializing the neighborhood array per query.
 	var center := (from + to) * 0.5
-	for other in nearby_units(center, from.distance_to(to) * 0.5 + radius + spatial_index.max_dynamic_radius):
-		if other == self_unit: continue
-		var limit := radius + other.radius()
-		var closest := Geometry2D.get_closest_point_to_segment(other.position, from, to)
-		var distance := closest.distance_squared_to(other.position)
-		if distance >= limit * limit: continue
-		# An existing overlap may only shrink along the entire displacement.
-		var current := from.distance_squared_to(other.position)
-		if current >= limit * limit or distance + 0.001 < current or to.distance_squared_to(other.position) <= current: return false
-	return true
+	var reach := from.distance_to(to) * 0.5 + radius + spatial_index.max_dynamic_radius
+	_ensure_spatial_index()
+	var reach_squared := reach * reach
+	var first := _spatial_cell(center - Vector2.ONE * reach)
+	var last := _spatial_cell(center + Vector2.ONE * reach)
+	for y in range(first.y, last.y + 1):
+		for x in range(first.x, last.x + 1):
+			for other: RtsUnit in units_by_cell.get(Vector2i(x, y), []):
+				if other == self_unit or not is_instance_valid(other) or other.is_queued_for_deletion() or other.garrisoned_in != null: continue
+				if center.distance_squared_to(other.position) > reach_squared: continue
+				var limit: float = radius + other.radius()
+				var closest := Geometry2D.get_closest_point_to_segment(other.position, from, to)
+				var distance := closest.distance_squared_to(other.position)
+				if distance >= limit * limit: continue
+				# An existing overlap may only shrink along the entire displacement.
+				var current := from.distance_squared_to(other.position)
+				if current >= limit * limit or distance + 0.001 < current or to.distance_squared_to(other.position) <= current: return false
+	return _static_segment_clear(from, to, radius, self_unit)
 
 func has_fixed_unit_blocker(unit: RtsUnit, target: Vector2) -> bool:
 	for other in nearby_units(unit.position, 160.0):

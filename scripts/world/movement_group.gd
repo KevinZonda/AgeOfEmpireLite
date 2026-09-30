@@ -41,6 +41,19 @@ var slot_reachability: Dictionary = {}
 var replan_pending := false
 var replan_wait_steps := 0
 var replan_wait_target := 0
+# Failed member segment checks, id -> {target point: position at denial}. A
+# denial is only cached when no mobile wildlife met the capsule, so the blocker
+# is static geometry; a unit that has not moved gets the same denial for free.
+var member_denials: Dictionary = {}
+
+# Mobile wildlife wanders without bumping the obstacle revision. Segment check
+# caches therefore revalidate against live wildlife positions; the per-frame
+# bucket grid is rebuilt once per navigation instance.
+static var _wildlife_nav: RtsNavigation
+static var _wildlife_frame := -1
+static var _wildlife_cells: Dictionary = {}
+static var _wildlife_max_radius := 0.0
+const WILDLIFE_CELL := 128.0
 
 func _init(game_ref: Node2D, squad: Array[RtsUnit], world_goal: Vector2, chosen_formation := "balanced", chosen_width := 5) -> void:
 	game = game_ref
@@ -160,6 +173,7 @@ func _replan_route() -> void:
 	last_obstacle_revision = game.navigation.obstacle_revision
 	corridor_cache.clear()
 	member_segments.clear()
+	member_denials.clear()
 	heading = (goal - center).normalized()
 	if heading.is_zero_approx(): heading = Vector2.RIGHT
 
@@ -393,6 +407,7 @@ func _tick() -> void:
 		# and its slots instead of making every squad search again.
 		corridor_cache.clear()
 		member_segments.clear()
+		member_denials.clear()
 		last_obstacle_revision = game.navigation.obstacle_revision
 		if not _remaining_route_clear(): _replan()
 	if route.is_empty(): return
@@ -451,11 +466,98 @@ func _segment_clear_for(unit: RtsUnit, point: Vector2) -> bool:
 	var id := unit.get_instance_id()
 	if member_segments.has(id):
 		var cached: Dictionary = member_segments[id]
-		if cached["to"] == point and unit.position.distance_squared_to(Geometry2D.get_closest_point_to_segment(unit.position, cached["from"], point)) < 0.0625:
-			return true
-	if not game.navigation._static_segment_clear(unit.position, point, unit.radius(), unit): return false
-	member_segments[id] = {"from": unit.position, "to": point}
+		if cached["to"] == point:
+			var from: Vector2 = cached["from"]
+			if unit.position.distance_squared_to(Geometry2D.get_closest_point_to_segment(unit.position, from, point)) < 0.0625:
+				return true
+			# A unit steering straight at a verified point walks along the cleared
+			# segment: the remaining piece lies strictly inside the cleared
+			# capsule. Buildings, terrain, and static resources are revision
+			# tracked (the caches above clear with it); only the resources that
+			# met the capsule can still matter, and mobile wildlife is evaluated
+			# at its live position since it moves without a revision bump.
+			if _on_segment(unit.position, from, point) and not _wildlife_crosses(unit.position, point, unit.radius()) and _near_resources_clear(unit, point, cached["near"]):
+				return true
+	if member_denials.has(id):
+		var denials: Dictionary = member_denials[id]
+		if denials.get(point, Vector2.INF) == unit.position and not _wildlife_crosses(unit.position, point, unit.radius()):
+			return false
+	if not game.navigation._static_segment_clear(unit.position, point, unit.radius(), unit):
+		# Cache the denial only when no mobile wildlife meets the capsule: the
+		# blocker is then static, so a still unit gets the same answer next step.
+		if not _wildlife_crosses(unit.position, point, unit.radius()):
+			if not member_denials.has(id): member_denials[id] = {}
+			member_denials[id][point] = unit.position
+		return false
+	member_segments[id] = {"from": unit.position, "to": point, "near": _near_resources(unit.position, point, unit.radius())}
 	return true
+
+func _on_segment(point: Vector2, from: Vector2, to: Vector2) -> bool:
+	var segment := to - from
+	var length_sq := segment.length_squared()
+	if length_sq < 0.000001: return point.distance_squared_to(from) < 0.000001
+	var t := (point - from).dot(segment) / length_sq
+	if t < -0.000001 or t > 1.000001: return false
+	return point.distance_squared_to(from + segment * clampf(t, 0.0, 1.0)) < 0.0001
+
+func _near_resources(from: Vector2, to: Vector2, radius: float) -> Array:
+	# Same candidates and intersection predicate as the resource sweep in
+	# navigation's static segment check; these are the only resources whose
+	# blocking answer can depend on the querying unit's position.
+	var navigation: RtsNavigation = game.navigation
+	navigation._ensure_spatial_index()
+	var near: Array = []
+	var center := (from + to) * 0.5
+	var reach: float = from.distance_to(to) * 0.5 + radius + navigation.spatial_index.max_dynamic_radius
+	for resource in navigation.nearby_resources(center, reach):
+		var limit: float = radius + resource.radius
+		if Geometry2D.get_closest_point_to_segment(resource.position, from, to).distance_squared_to(resource.position) < limit * limit: near.append(resource)
+	return near
+
+func _near_resources_clear(unit: RtsUnit, point: Vector2, near: Array) -> bool:
+	# Replays the resource sweep of the live segment check against the capsule
+	# meeting resources recorded when the segment was verified.
+	var radius := unit.radius()
+	for resource in near:
+		if not is_instance_valid(resource) or resource.is_queued_for_deletion(): continue
+		var limit: float = radius + resource.radius
+		var closest := Geometry2D.get_closest_point_to_segment(resource.position, unit.position, point)
+		var distance := closest.distance_squared_to(resource.position)
+		if distance >= limit * limit: continue
+		var current := unit.position.distance_squared_to(resource.position)
+		if current >= limit * limit or distance + 0.001 < current: return false
+	return true
+
+func _wildlife_crosses(from: Vector2, to: Vector2, radius: float) -> bool:
+	var navigation: RtsNavigation = game.navigation
+	var cells := _mobile_wildlife_cells(navigation)
+	# Buckets hold tick-start positions; the margin covers any movement a
+	# wander step can make within the tick (the fastest animal is 80 px/s).
+	var reach := radius + _wildlife_max_radius + 32.0
+	var first := Vector2i(floori((minf(from.x, to.x) - reach) / WILDLIFE_CELL), floori((minf(from.y, to.y) - reach) / WILDLIFE_CELL))
+	var last := Vector2i(floori((maxf(from.x, to.x) + reach) / WILDLIFE_CELL), floori((maxf(from.y, to.y) + reach) / WILDLIFE_CELL))
+	for y in range(first.y, last.y + 1):
+		for x in range(first.x, last.x + 1):
+			for resource in cells.get(Vector2i(x, y), []):
+				if not is_instance_valid(resource) or resource.is_queued_for_deletion(): continue
+				var limit: float = radius + resource.radius
+				if Geometry2D.get_closest_point_to_segment(resource.position, from, to).distance_squared_to(resource.position) < limit * limit: return true
+	return false
+
+static func _mobile_wildlife_cells(navigation: RtsNavigation) -> Dictionary:
+	var frame := navigation.frame_id()
+	if navigation != _wildlife_nav or frame != _wildlife_frame:
+		_wildlife_nav = navigation
+		_wildlife_frame = frame
+		_wildlife_cells.clear()
+		_wildlife_max_radius = 0.0
+		for resource in navigation._entities.resources:
+			if not is_instance_valid(resource) or resource.is_queued_for_deletion() or not navigation._is_mobile_wildlife(resource): continue
+			_wildlife_max_radius = maxf(_wildlife_max_radius, resource.radius)
+			var cell := Vector2i(floori(resource.position.x / WILDLIFE_CELL), floori(resource.position.y / WILDLIFE_CELL))
+			if not _wildlife_cells.has(cell): _wildlife_cells[cell] = []
+			_wildlife_cells[cell].append(resource)
+	return _wildlife_cells
 
 func destination_for(unit: RtsUnit) -> Vector2:
 	return final_destinations.get(unit.get_instance_id(), goal)
