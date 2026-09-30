@@ -60,8 +60,17 @@ func _run() -> void:
 	var resource_count: int = game.resources.size()
 	temporary_resource.free()
 	if not _check(game.resources.size() == resource_count - 1, "direct resource removal must unregister its live reference"): return
+	var removed: RtsUnit = game.spawn_unit(0, "spearman", Vector2(700, 700))
+	removed.issue_command("move", Vector2(800, 700))
+	game.navigation.background_jobs.request(removed, removed.destination, Vector2.INF)
+	game.entity_destroyed(removed)
+	if not _check(not game.navigation.background_jobs.has_request(removed), "registry destruction must cancel orders before deferred free"): return
+	var enemy_unit: RtsUnit = game.units.filter(func(unit: RtsUnit) -> bool: return unit.owner_id == 1)[0]
+	enemy_unit.issue_command("move", Vector2(1000, 1000))
+	game.navigation.background_jobs.request(enemy_unit, enemy_unit.destination, Vector2.INF)
 	var enemy_center: RtsBuilding = game._player_center(1)
 	game.entity_destroyed(enemy_center)
+	if not _check(not game.navigation.background_jobs.has_request(enemy_unit), "defeat must cancel every eliminated unit before deferred free"): return
 	if not _check(game.defeated_players.has(1) and game.units.all(func(unit: RtsUnit) -> bool: return unit.owner_id != 1) and game.buildings.all(func(building: RtsBuilding) -> bool: return building.owner_id != 1), "defeat must remove the whole owner's live world"): return
 	game.free()
 	print("SESSION_RULES_REGRESSION_OK")

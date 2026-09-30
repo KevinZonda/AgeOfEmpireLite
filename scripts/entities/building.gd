@@ -242,10 +242,7 @@ func garrison_unit(unit: RtsUnit) -> bool:
 	if not (RtsSiegeRules.can_garrison(unit.stats, kind) or kind == "landmark" and garrison_capacity() > 0 and not unit.stats.get("tags", []).has("siege")): return false
 	if garrisoned_units.has(unit): return true
 	garrisoned_units.append(unit)
-	unit.garrisoned_in = self
-	unit.order = "idle"
-	unit.position = position
-	unit.hide()
+	unit.enter_garrison(self)
 	game.navigation.invalidate_spatial_index()
 	queue_redraw()
 	return true

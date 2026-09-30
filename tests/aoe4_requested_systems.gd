@@ -8,7 +8,7 @@ func _run() -> void:
 	root.add_child(game)
 	await process_frame
 	game.start_game("English", 44127, "French")
-	assert(game.population_label.text.contains("人口") and game.population_label.tooltip_text.contains("空余"))
+	assert(game.population_label.text == "%d/%d" % [game.population_used(0), game.population_cap(0)] and game.population_label.tooltip_text.contains("空余"), "population icon readout must show used/capacity and free slots")
 	var worker: RtsUnit = game.units[0]
 	worker.order_stop()
 	game._update_hud()
@@ -24,12 +24,16 @@ func _run() -> void:
 	for appearance in food_labels:
 		var food: RtsResource = game.spawn_resource("food", worker.position + Vector2(30, 0), 200, appearance)
 		if appearance == "sheep": food.claimed_by = worker.owner_id
-		worker.order_gather(food)
+		var collector: RtsUnit = game.spawn_unit(0, "fishing_boat", worker.position) if appearance == "fish" else worker
+		game.selected.assign([collector])
+		collector.order_gather(food)
 		game._update_hud()
 		var first_line: String = game.detail_label.text.get_slice("\n", 0)
 		assert(first_line.contains(food_labels[appearance]))
-		assert(first_line.contains("%.2f/秒" % worker.gathering_per_second()))
+		assert(first_line.contains("%.2f/秒" % collector.gathering_per_second()))
 		food.free()
+		if collector != worker: collector.free()
+	game.selected.assign([worker])
 	var farm: RtsBuilding = game.spawn_building(0, "farm", worker.position + Vector2(70, 0))
 	worker.order_gather(farm)
 	game._update_hud()

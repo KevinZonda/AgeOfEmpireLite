@@ -19,7 +19,7 @@ static func process_attack_ground(unit, delta: float) -> void:
 	unit._start_visual_action("attack", 0.28)
 
 static func valid_attack_target(unit, candidate) -> bool:
-	if not is_instance_valid(candidate) or candidate.is_queued_for_deletion(): return false
+	if not is_instance_valid(candidate) or not candidate is Node2D or candidate.is_queued_for_deletion(): return false
 	if candidate is RtsResource: return candidate.appearance == "boar" and candidate.wildlife_hp > 0.0
 	if not (candidate is RtsUnit or candidate is RtsBuilding): return false
 	return candidate.hp > 0.0 and unit.game.is_enemy(unit.owner_id, candidate.owner_id) and (not candidate is RtsUnit or candidate.garrisoned_in == null)
@@ -29,33 +29,14 @@ static func process_attack_order(unit, delta: float) -> void:
 		unit._advance_command()
 		return
 	if unit.auto_engaged and unit.engagement == "defensive" and unit.position.distance_to(unit.engagement_origin) > 175.0:
-		var previous_order: String = unit.resume_order
-		var previous_destination: Vector2 = unit.resume_destination
-		unit.resume_order = ""
-		unit.resume_destination = Vector2.INF
-		unit.target = null
-		unit.auto_engaged = false
-		if previous_order == "patrol" or previous_order == "attack_move":
-			unit.order = previous_order
-			unit.destination = previous_destination
-			unit._reset_route()
-		elif previous_order == "hold":
-			unit.order = "hold"
-		else:
-			unit.order_move(unit.engagement_origin)
+		var origin: Vector2 = unit.engagement_origin
+		if not unit.orders.resume(unit): unit.order_move(origin)
 		return
 	if unit.resume_order == "patrol" and unit.position.distance_to(Geometry2D.get_closest_point_to_segment(unit.position, unit.patrol_origin, unit.patrol_destination)) > 240.0:
-		unit.order = "patrol"
-		unit.destination = unit.resume_destination
-		unit.resume_destination = Vector2.INF
-		unit.resume_order = ""
-		unit.target = null
-		unit._reset_route()
+		unit.orders.resume(unit)
 		return
 	if unit.resume_order == "hold" and unit.position.distance_to(unit.hold_position) > 6.0:
-		unit.order = "hold"
-		unit.resume_order = ""
-		unit.target = null
+		unit.orders.resume(unit)
 		return
 	var target_radius := 18.0
 	if unit.target is RtsUnit: target_radius = unit.target.radius()
@@ -176,6 +157,7 @@ static func take_damage(unit, damage: float) -> void:
 	if unit.owner_id == 0 and unit.game.has_method("play_feedback"): unit.game.play_feedback("alert")
 	unit.queue_redraw()
 	if unit.hp <= 0.0:
+		unit.cancel_orders()
 		if RtsCivilizationRules.is_dynasty_unit(unit.kind) and RtsCivilizationRules.spirit_way_active(unit.game, unit.owner_id):
 			for ally in unit.game.units:
 				if is_instance_valid(ally) and ally != unit and ally.owner_id == unit.owner_id and ally.position.distance_to(unit.position) <= 150.0:

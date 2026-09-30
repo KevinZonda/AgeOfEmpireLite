@@ -106,6 +106,7 @@ func entity_destroyed(entity: Node2D) -> void:
 	game.selected.erase(entity)
 	if entity is RtsUnit:
 		if not entity.passengers.is_empty(): entity.ungarrison_all()
+		entity.cancel_orders()
 		units.erase(entity)
 		game.navigation.invalidate_spatial_index()
 	elif entity is RtsBuilding:
@@ -146,6 +147,7 @@ func eliminate_player(owner_id: int) -> void:
 		if is_instance_valid(unit) and unit.owner_id == owner_id:
 			game.selected.erase(unit)
 			units.erase(unit)
+			unit.cancel_orders()
 			unit.queue_free()
 	for building in buildings.duplicate():
 		if is_instance_valid(building) and building.owner_id == owner_id:

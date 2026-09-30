@@ -30,7 +30,7 @@ TESTS = [
 # Rendering-driver comparisons and existing HUD/range-corner failures are run
 # separately. The integration suite covers the shared state/behavior boundaries.
 REFACTOR_TESTS = list(dict.fromkeys(TESTS + [
-    "session_rules_regression", "unit_components_regression", "settings_store",
+    "session_rules_regression", "unit_components_regression", "unit_orders_regression", "settings_store",
     "match_changes", "right_click_selection", "hud_command_pages", "player_input_actions_regression",
     "production_queue_regression", "hud_queue_layout", "display_settings",
     "unit_preview_page", "tech_tree_page", "typography_scale", "battle_experience",
