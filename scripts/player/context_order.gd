@@ -27,7 +27,7 @@ static func kind_for_unit(game: Node2D, subject: RtsUnit, context: Dictionary) -
 		return "deposit_relic"
 	elif entity != null and game.is_enemy(0, entity.owner_id):
 		return "attack"
-	elif resource != null and resource.appearance == "boar" and resource.wildlife_hp > 0.0 and float(subject.stats.get("damage", 0.0)) > 0.0:
+	elif resource != null and resource.appearance == "boar" and resource.wildlife_hp > 0.0 and subject.attack_damage() > 0.0:
 		return "attack"
 	elif entity is RtsBuilding and entity.owner_id == 0 and not entity.is_complete() and subject.kind == "villager":
 		return "build"

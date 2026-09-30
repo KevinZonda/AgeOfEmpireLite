@@ -23,14 +23,43 @@ func clear() -> void:
 			if is_instance_valid(entity): entity.queue_free()
 		collection.clear()
 
+func register(entity: Node2D) -> void:
+	var collection: Array = _collection_for(entity)
+	if collection.has(entity): return
+	collection.append(entity)
+	if entity is RtsUnit:
+		game.navigation.invalidate_spatial_index()
+		if game.fog.active: game.fog.update_unit_display(entity)
+	elif entity is RtsBuilding:
+		game.navigation.invalidate_obstacles()
+		if game.fog.active: game.fog.update_building_display(entity)
+	elif entity is RtsResource:
+		game.navigation.invalidate_obstacles()
+	entity.tree_exiting.connect(unregister.bind(entity), CONNECT_ONE_SHOT)
+
+func unregister(entity: Node2D) -> void:
+	var collection: Array = _collection_for(entity)
+	if not collection.has(entity): return
+	collection.erase(entity)
+	if game == null or game.is_queued_for_deletion(): return
+	game.selected.erase(entity)
+	if entity is RtsUnit: game.navigation.invalidate_spatial_index()
+	elif entity is RtsBuilding or entity is RtsResource: game.navigation.invalidate_obstacles()
+
+func _collection_for(entity: Node2D) -> Array:
+	if entity is RtsUnit: return units
+	if entity is RtsBuilding: return buildings
+	if entity is RtsResource: return resources
+	if entity is RtsTradePost: return trade_posts
+	return relics
+
 func spawn_resource(kind: String, world_point: Vector2, amount: int, appearance := "") -> RtsResource:
 	var resource: RtsResource = RESOURCE_SCENE.new()
 	resource.position = world_point
 	resource.game = game
 	game.add_child(resource)
 	resource.setup(kind, amount, appearance)
-	resources.append(resource)
-	game.navigation.invalidate_obstacles()
+	register(resource)
 	return resource
 
 func spawn_unit(owner_id: int, kind: String, world_point: Vector2, rally := Vector2.INF, rally_target: Node2D = null, rally_resource_kind := "") -> RtsUnit:
@@ -39,9 +68,7 @@ func spawn_unit(owner_id: int, kind: String, world_point: Vector2, rally := Vect
 	game.add_child(unit)
 	unit.setup(game, owner_id, kind)
 	unit.position = game.navigation.nearest_walkable_point(unit.position, unit.radius(), unit)
-	units.append(unit)
-	if game.fog.active: game.fog.update_unit_display(unit)
-	game.navigation.invalidate_spatial_index()
+	register(unit)
 	if rally != Vector2.INF:
 		if kind == "trader" and rally_target is RtsTradePost:
 			unit.issue_command("trade", Vector2.INF, rally_target)
@@ -63,9 +90,7 @@ func spawn_building(owner_id: int, kind: String, world_point: Vector2, under_con
 	building.wall_vertical = vertical
 	game.add_child(building)
 	building.setup(game, owner_id, kind, under_construction, landmark_id)
-	buildings.append(building)
-	if game.fog.active: game.fog.update_building_display(building)
-	game.navigation.invalidate_obstacles()
+	register(building)
 	game._update_hud()
 	return building
 
@@ -136,10 +161,10 @@ func spawn_neutral_sites() -> void:
 		post.game = game
 		post.position = desired
 		game.add_child(post)
-		trade_posts.append(post)
+		register(post)
 	for site in game.objectives.sacred_sites:
 		var relic := RtsRelic.new()
 		relic.position = game.world_map.nearest_walkable_point(site["position"] + Vector2(70, 45))
 		relic.game = game
 		game.add_child(relic)
-		relics.append(relic)
+		register(relic)

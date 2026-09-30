@@ -4,8 +4,8 @@ extends RefCounted
 # All attack arithmetic lives here. Units and buildings only supply their
 # definitions and the short-lived combat state (charging or braced).
 static func damage(attacker: Dictionary, defender: Dictionary, modifiers: Dictionary = {}) -> float:
-	var attack_type: String = attacker.get("attack_type", "melee")
-	var total: float = float(attacker.get("damage", 0.0))
+	var attack_type: String = RtsStatResolver.primary_attack_type(attacker)
+	var total: float = RtsStatResolver.primary_damage(attacker)
 	var bonuses: Dictionary = attacker.get("bonus", {})
 	var defender_tags: Array = defender.get("tags", [])
 	for tag in bonuses:

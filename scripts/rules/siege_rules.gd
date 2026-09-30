@@ -53,7 +53,8 @@ static func defense_stats(building_kind: String, garrison_count: int = 0) -> Dic
 	}
 
 static func can_attack_target(attacker_definition: Dictionary, _defender_definition: Dictionary, distance: float) -> bool:
-	return distance >= float(attacker_definition.get("min_range", 0.0)) and distance <= float(attacker_definition.get("range", 0.0))
+	var profile := RtsStatResolver.primary_attack(attacker_definition)
+	return distance >= float(profile.get("min_range", attacker_definition.get("min_range", 0.0))) and distance <= RtsStatResolver.primary_range(attacker_definition)
 
 static func is_wall(building_kind: String) -> bool:
 	var definition: Dictionary = GameData.BUILDINGS.get(building_kind, {})

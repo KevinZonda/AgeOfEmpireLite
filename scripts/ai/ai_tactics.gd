@@ -69,7 +69,7 @@ func _recover_stalled_attacks(army: Array[RtsUnit]) -> void:
 		var target_radius: float = 18.0
 		if soldier.target is RtsUnit: target_radius = soldier.target.radius()
 		elif soldier.target is RtsBuilding: target_radius = maxf(soldier.target.size().x, soldier.target.size().y) * 0.5 + soldier.radius()
-		var reach: float = float(soldier.stats.get("range", 0.0)) + target_radius + 14.0
+		var reach: float = soldier.attack_range() + target_radius + 14.0
 		if soldier.position.distance_to(soldier.target.position) <= reach:
 			attack_watch.erase(id)
 			continue

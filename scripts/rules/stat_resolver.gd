@@ -102,15 +102,19 @@ static func primary_attack(stats: Dictionary) -> Dictionary:
 	return stats.get("profiles", {}).get(stats.get("primary_profile", ""), {})
 
 static func primary_damage(stats: Dictionary) -> float:
+	if not stats.has("profiles"): return float(stats.get("damage", 0.0))
 	return float(primary_attack(stats).get("damage", 0.0))
 
 static func primary_range(stats: Dictionary) -> float:
+	if not stats.has("profiles"): return float(stats.get("range", 0.0))
 	return float(primary_attack(stats).get("range", 0.0))
 
 static func primary_cooldown(stats: Dictionary) -> float:
+	if not stats.has("profiles"): return float(stats.get("cooldown", 1.0))
 	return float(primary_attack(stats).get("cooldown", 1.0))
 
 static func primary_attack_type(stats: Dictionary) -> String:
+	if not stats.has("profiles"): return str(stats.get("attack_type", "melee"))
 	var profile := primary_attack(stats)
 	return "ranged" if profile.get("damage_kind") == "ranged" or stats.get("primary_profile") == "siege" and float(profile.get("range", 0.0)) > 70.0 else "melee"
 

@@ -56,6 +56,10 @@ func _run() -> void:
 	if not _check(game.session.entities.units.size() == 12 and is_same(game.units, game.session.entities.units), "restart must replace the live world through its registry"): return
 	for unit in old_units:
 		if not _check(not game.units.has(unit) and unit.is_queued_for_deletion(), "restart must retire every previous unit"): return
+	var temporary_resource: RtsResource = game.spawn_resource("wood", Vector2(400, 400), 10)
+	var resource_count: int = game.resources.size()
+	temporary_resource.free()
+	if not _check(game.resources.size() == resource_count - 1, "direct resource removal must unregister its live reference"): return
 	var enemy_center: RtsBuilding = game._player_center(1)
 	game.entity_destroyed(enemy_center)
 	if not _check(game.defeated_players.has(1) and game.units.all(func(unit: RtsUnit) -> bool: return unit.owner_id != 1) and game.buildings.all(func(building: RtsBuilding) -> bool: return building.owner_id != 1), "defeat must remove the whole owner's live world"): return

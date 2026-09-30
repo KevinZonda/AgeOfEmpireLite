@@ -65,7 +65,7 @@ static func issue_mode_order(game: Node2D, point: Vector2, append_order := false
 		var enemy: Node2D = game._entity_at(point)
 		if enemy != null and game.is_enemy(0, enemy.owner_id):
 			for subject in game.selected:
-				if is_instance_valid(subject) and subject is RtsUnit and float(subject.stats.get("damage", 0.0)) > 0.0:
+				if is_instance_valid(subject) and subject is RtsUnit and subject.attack_damage() > 0.0:
 					subject.issue_command("attack", Vector2.INF, enemy, append_order)
 			game._show_order_feedback(point, "attack", append_order)
 		else:

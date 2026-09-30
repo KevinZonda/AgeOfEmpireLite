@@ -17,33 +17,26 @@ var fixed_target := false
 
 
 func setup(game_ref: Node2D, player_id: int, origin: Vector2, enemy: Node2D, damage_amount: float, flight_speed: float = 350.0, area_radius: float = 0.0, attacker: Dictionary = {}, profile: Dictionary = {}) -> void:
-	game = game_ref
-	owner_id = player_id
-	position = origin
-	launch_position = origin
-	previous_position = origin
+	_initialize(game_ref, player_id, origin, damage_amount, flight_speed, maxf(0.0, area_radius), attacker, profile)
 	target = enemy
-	impact_damage = damage_amount
-	speed = maxf(1.0, flight_speed)
-	splash_radius = maxf(0.0, area_radius)
-	source_stats = attacker.duplicate(true)
-	attack_profile = profile.duplicate(true)
+	fixed_target = false
 	last_destination = enemy.global_position
-	visible = owner_id == 0 or not game.fog.active or game.fog.can_see(0, position)
-	queue_redraw()
 
 func setup_point(game_ref: Node2D, player_id: int, origin: Vector2, point: Vector2, damage_amount: float, flight_speed: float, area_radius: float, attacker: Dictionary, profile: Dictionary) -> void:
-	game = game_ref
-	owner_id = player_id
-	position = origin
-	launch_position = origin
-	previous_position = origin
+	_initialize(game_ref, player_id, origin, damage_amount, flight_speed, maxf(1.0, area_radius), attacker, profile)
 	target = null
 	fixed_target = true
 	last_destination = point
+
+func _initialize(game_ref: Node2D, player_id: int, origin: Vector2, damage_amount: float, flight_speed: float, area_radius: float, attacker: Dictionary, profile: Dictionary) -> void:
+	game = game_ref
+	owner_id = player_id
+	position = origin
+	launch_position = origin
+	previous_position = origin
 	impact_damage = damage_amount
 	speed = maxf(1.0, flight_speed)
-	splash_radius = maxf(1.0, area_radius)
+	splash_radius = area_radius
 	source_stats = attacker.duplicate(true)
 	attack_profile = profile.duplicate(true)
 	visible = owner_id == 0 or not game.fog.active or game.fog.can_see(0, position)

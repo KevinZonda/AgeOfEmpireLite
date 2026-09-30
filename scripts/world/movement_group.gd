@@ -135,7 +135,7 @@ func _role_rank(unit: RtsUnit) -> int:
 	var tags: Array = unit.stats.get("tags", [])
 	if tags.has("cavalry"): return 0
 	if tags.has("siege"): return 3
-	if unit.stats.get("attack_type", "melee") == "ranged": return 2
+	if RtsStatResolver.primary_attack_type(unit.stats) == "ranged": return 2
 	return 1
 
 func _assign_slots(center: Vector2) -> void:
