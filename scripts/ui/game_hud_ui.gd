@@ -116,10 +116,10 @@ class CommandPageButton extends Button:
 	func _draw() -> void:
 		var center := size * 0.5
 		var color := get_theme_color("font_hover_color" if is_hovered() else "font_color")
-		draw_line(center - Vector2(6, 0), center + Vector2(6, 0), color, 1.5, true)
-		var tip := center + Vector2(6 * direction, 0)
-		draw_line(tip, tip + Vector2(-4 * direction, -4), color, 1.5, true)
-		draw_line(tip, tip + Vector2(-4 * direction, 4), color, 1.5, true)
+		draw_line(center - Vector2(14, 0), center + Vector2(14, 0), color, 2.5, true)
+		var tip := center + Vector2(14 * direction, 0)
+		draw_line(tip, tip + Vector2(-10 * direction, -10), color, 2.5, true)
+		draw_line(tip, tip + Vector2(-10 * direction, 10), color, 2.5, true)
 
 const COMMANDS_PER_PAGE := 12
 const COMMAND_TILE_SIZE := Vector2(54, 54)
@@ -1061,12 +1061,6 @@ func _layout_command_grid() -> void:
 	# Reserve the right column even when navigation is absent.
 	var navigation: Control
 	if page_count > 1 and (is_build_page or game.selected[0] is RtsBuilding):
-		var arrows := HBoxContainer.new()
-		arrows.custom_minimum_size = COMMAND_TILE_SIZE
-		arrows.add_theme_constant_override("separation", 2)
-		arrows.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		action_bar.add_child(arrows)
-		navigation = arrows
 		for direction in [-1, 1]:
 			var next_index := posmod(page_index + direction, page_count)
 			var arrow := CommandPageButton.new()
@@ -1076,8 +1070,7 @@ func _layout_command_grid() -> void:
 				arrow.tooltip_text += "：%s → %s" % [current_build_pages[page_index]["title"], current_build_pages[next_index]["title"]]
 			else:
 				arrow.tooltip_text += "（%d/%d）" % [page_index + 1, page_count]
-			arrow.custom_minimum_size = Vector2(26, 26)
-			arrow.size_flags_vertical = Control.SIZE_SHRINK_END
+			arrow.custom_minimum_size = COMMAND_TILE_SIZE
 			arrow.focus_mode = Control.FOCUS_NONE
 			UiStyle._style_button(arrow)
 			arrow.pressed.connect(func() -> void:
@@ -1085,7 +1078,7 @@ func _layout_command_grid() -> void:
 				else: command_page = next_index
 				_rebuild_actions()
 			)
-			arrows.add_child(arrow)
+			action_bar.add_child(arrow)
 			command_page_buttons.append(arrow)
 			command_side_buttons.append(arrow)
 	elif page_count > 1:
@@ -1104,9 +1097,14 @@ func _layout_command_grid() -> void:
 	else:
 		_add_action_spacer()
 		stop = action_bar.get_child(action_bar.get_child_count() - 1)
-	_add_action_spacer()
-	var empty_slot: Control = action_bar.get_child(action_bar.get_child_count() - 1)
-	var side_controls: Array[Control] = [stop, empty_slot, navigation]
+	var middle_slot: Control
+	if command_page_buttons.is_empty():
+		_add_action_spacer()
+		middle_slot = action_bar.get_child(action_bar.get_child_count() - 1)
+	else:
+		middle_slot = command_page_buttons[0]
+		navigation = command_page_buttons[1]
+	var side_controls: Array[Control] = [stop, middle_slot, navigation]
 	for row in 3:
 		for column in 4:
 			action_bar.move_child(visible_actions[row * 4 + column], row * 5 + column)

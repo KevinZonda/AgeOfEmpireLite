@@ -199,7 +199,7 @@ func _run() -> void:
 	game._rebuild_actions()
 	assert(game.action_bar.columns == 5 and game.action_bar.get_child_count() == 15, "economy construction page should fill a 3×5 grid")
 	assert(not game.command_title.visible, "villager commands should have no heading")
-	assert(game.action_bar.get_child(14) == game.hud_ui.command_page_buttons[0].get_parent(), "page arrows should share the bottom right slot")
+	assert(game.action_bar.get_child(9) == game.hud_ui.command_page_buttons[0] and game.action_bar.get_child(14) == game.hud_ui.command_page_buttons[1], "page arrows should occupy the lower two right-column slots")
 	assert(game.action_bar.get_child(4) == game.hud_ui.command_side_buttons.back(), "stop should occupy the top right slot")
 	assert(game.command_buttons[0].icon_kind == "house" and game.command_buttons[1].icon_kind == "lumber_camp" and game.command_buttons[4].icon_kind == "farm", "economy buildings should follow the reference order")
 	assert(game.command_buttons[11].icon_kind == "wonder" and game.command_buttons[11].disabled and game.command_buttons[11].tooltip_text.contains("当前不可用"), "the wonder should remain visible with its age requirement")

@@ -63,10 +63,10 @@ func _check_stable_pages(game: Node, switches: int) -> void:
 	var expected := _rects(game)
 	for switch in switches:
 		assert(game.hud_ui.command_page_buttons.size() == 2, "multi-page villagers and buildings must show two arrows")
-		var slot: Control = game.action_bar.get_child(14)
-		for arrow in game.hud_ui.command_page_buttons:
-			assert(arrow.get_parent() == slot, "both arrows must occupy the bottom right slot")
-			assert(is_equal_approx(arrow.get_global_rect().end.y, slot.get_global_rect().end.y), "arrows must stay at the bottom of their slot")
+		for index in 2:
+			var arrow: Button = game.hud_ui.command_page_buttons[index]
+			assert(game.action_bar.get_child(9 + index * 5) == arrow, "arrows must stack in the lower two right-column slots")
+			assert(arrow.size == Vector2(54, 54), "arrows must use the same full-size tiles as commands")
 		game.hud_ui.command_page_buttons[1 if switch < switches / 2 else 0].pressed.emit()
 		for frame in 4:
 			await process_frame
