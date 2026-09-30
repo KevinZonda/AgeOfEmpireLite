@@ -17,6 +17,7 @@ static func process_attack_ground(unit, delta: float) -> void:
 	unit.attack_timer = float(profile.get("cooldown", unit.attack_cooldown()))
 	unit.revealed_timer = 2.0
 	unit._start_visual_action("attack", 0.28)
+	unit._mark_visual_impact()
 
 static func valid_attack_target(unit, candidate) -> bool:
 	if not is_instance_valid(candidate) or not candidate is Node2D or candidate.is_queued_for_deletion(): return false

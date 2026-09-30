@@ -5,6 +5,7 @@ const UiStyle = preload("res://scripts/ui/ui_style.gd")
 const IconCache = preload("res://scripts/ui/icon_cache.gd")
 const UnitVisual = preload("res://scripts/entities/visuals/unit_visual.gd")
 const UnitVisualState = preload("res://scripts/entities/visuals/unit_visual_state.gd")
+const Siege = preload("res://scripts/entities/visuals/siege_visual.gd")
 const UnitStatText = preload("res://scripts/ui/unit_stat_text.gd")
 const RtsUiTypography = preload("res://scripts/ui/typography.gd")
 
@@ -105,6 +106,7 @@ var preview_unit: PreviewUnit
 var preview_mode_choice: OptionButton
 var style_button: Callable
 var refresh_timer := 0.0
+var siege_renderer = Siege.new()
 
 func build(parent: Control, initial_civilization: String, button_style: Callable) -> void:
 	style_button = button_style
@@ -237,6 +239,7 @@ func _build_model(parent: HBoxContainer) -> void:
 		_refresh_preview()
 	)
 	preview_context = PreviewContext.new()
+	preview_context.camera.zoom = Vector2.ONE
 	preview_viewport.add_child(preview_context)
 	preview_unit = PreviewUnit.new()
 	preview_unit.context = preview_context
@@ -318,9 +321,19 @@ func _refresh_preview() -> void:
 	var previous_phase: float = preview_unit.state.visual_phase if preview_unit.state != null else 0.0
 	preview_unit.state = UnitVisualState.preview(selected_kind, stats, preview_context.player_color(0))
 	preview_unit.state.visual_phase = previous_phase
+	preview_unit.state.update_view(preview_context)
 	var view_size := Vector2(preview_viewport.size)
 	preview_unit.position = Vector2(view_size.x * 0.5, view_size.y * (0.63 if preview_context.view_mode_25d else 0.52))
 	preview_unit.scale = Vector2.ONE * clampf(minf(view_size.x / 400.0, view_size.y / 420.0) * 4.0, 3.4, 6.0)
+	if Siege.handles(selected_kind):
+		# Fit tall machines and long throwing arms using their projected bounds.
+		var bounds: Rect2 = siege_renderer.geometry(preview_unit.state).bounds.grow(5.0)
+		var margin: float = clampf(minf(view_size.x, view_size.y) * 0.06, 12.0, 28.0)
+		var usable := Rect2(Vector2.ONE * margin, (view_size - Vector2.ONE * margin * 2.0).max(Vector2.ONE))
+		var fit: float = minf(usable.size.x / maxf(bounds.size.x, 1.0), usable.size.y / maxf(bounds.size.y, 1.0))
+		var model_scale: float = minf(preview_unit.scale.x, fit)
+		preview_unit.scale = Vector2.ONE * model_scale
+		preview_unit.position = usable.get_center() - bounds.get_center() * model_scale
 	preview_unit.queue_redraw()
 
 func _refresh_stats() -> void:

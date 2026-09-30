@@ -26,6 +26,7 @@ var healing := false
 var converting := false
 var tax_active := false
 var passenger_count := 0
+var siege_deployed := false
 var paling := false
 var gather_kind := ""
 var hunting := false
@@ -72,6 +73,7 @@ static func capture(unit, existing_state = null):
 	result.max_hp = unit.max_hp
 	result.swing = unit._action_swing()
 	result.passenger_count = unit.passengers.size()
+	result.siege_deployed = unit.kind == "siege_tower" and unit.order == "siege_tower_docked"
 	result.paling = unit.paling_timer > 0.0
 	result.carries_relic = unit.carried_relic != null
 	result.braced = unit.is_braced() if unit.kind == "spearman" else false

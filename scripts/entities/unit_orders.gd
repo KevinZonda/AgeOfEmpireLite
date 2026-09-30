@@ -262,6 +262,8 @@ func _tick_assault_wall(unit: RtsUnit, delta: float) -> void:
 		exit(unit)
 		order = "siege_tower_docked"
 		target = dock_target
+		unit._face_direction(target.position - unit.position)
+		unit.queue_redraw()
 		for passenger in unit.passengers.duplicate():
 			if not is_instance_valid(passenger): continue
 			passenger.garrisoned_in = null

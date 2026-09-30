@@ -506,6 +506,8 @@ func _tick_visual(delta: float) -> void:
 	visual_last_position = position
 	if not visual_moving and visual_action_timer > 0.0 and order in ["attack", "gather", "build", "repair"] and is_instance_valid(target) and not target.is_queued_for_deletion():
 		_face_direction(target.position - position)
+	if kind == "siege_tower" and order == "siege_tower_docked" and is_instance_valid(target):
+		_face_direction(target.position - position)
 	var support_active := kind == "monk" and conversion_timer > 0.0 or kind == "imperial_official" and (order in ["supervise", "collect_tax"] or visual_action == "tax") and not visual_moving
 	if support_active and is_instance_valid(target): _face_direction(target.position - position)
 	if visual_moving: visual_phase += delta * (11.0 if stats.get("tags", []).has("cavalry") else 8.0)
