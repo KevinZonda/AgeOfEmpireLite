@@ -25,7 +25,6 @@ var unit_display_cache: Dictionary = {}
 var _ally_snapshot: Array[PackedByteArray] = []
 var _scout_camps: Dictionary = {}
 var _no_camps: Array[Vector2] = []
-var _circle_templates: Dictionary = {}
 var _mountain_prefix := PackedInt32Array()
 var _mask_data := PackedByteArray()
 var _unit_tick_positions: Dictionary = {}
@@ -99,7 +98,6 @@ func clear() -> void:
 	_scout_camps.clear()
 	_unit_tick_positions.clear()
 	_unit_tick_positions_next.clear()
-	_circle_templates.clear()
 	_mountain_prefix = PackedInt32Array()
 
 func _process(delta: float) -> void:
@@ -137,16 +135,27 @@ func can_show_unit(owner_id: int, unit: RtsUnit) -> bool:
 	if not active or unit.owner_id == owner_id: return true
 	# Units render above the fog plane. Hide the figure until its drawn bounds,
 	# rather than only its ground anchor, are inside current vision.
-	var reach := unit.radius() + 16.0
-	var top := maxf(40.0, unit.radius() + 18.0)
+	var unit_radius := unit.radius()
+	var reach := unit_radius + 16.0
+	var top := maxf(40.0, unit_radius + 18.0)
 	var origin := unit.position
 	var iso: bool = game.view_mode_25d
-	var canvas := get_viewport().get_canvas_transform()
-	if iso: origin += RtsIsoProjection.ground_lift(game, unit.position)
+	var canvas: Transform2D
+	if iso:
+		origin += RtsIsoProjection.ground_lift(game, unit.position)
+		canvas = get_viewport().get_canvas_transform()
+	# Inline of can_see's cell lookup; can_detect_unit above guarantees
+	# owner_id is valid and the fog is active here.
+	var vis: PackedByteArray = visible_cells[owner_id]
+	var cell_size := float(RtsWorldMap.CELL_SIZE)
+	var gw := grid_size.x
+	var gh := grid_size.y
 	for sample in SHOW_SAMPLE_OFFSETS:
 		var offset := Vector2(sample.x * reach, sample.y * (top if sample.y < 0.0 else reach))
 		var point: Vector2 = origin + (RtsIsoProjection.world_delta(canvas, offset * game.camera.zoom.x) if iso else offset)
-		if not can_see(owner_id, point): return false
+		var cx := clampi(floori(point.x / cell_size), 0, gw - 1)
+		var cy := clampi(floori(point.y / cell_size), 0, gh - 1)
+		if vis[cy * gw + cx] == 0: return false
 	return true
 
 func update_unit_display(unit: RtsUnit) -> void:
@@ -275,16 +284,15 @@ func _heal_moved_unit_buckets() -> void:
 	_unit_tick_positions_next = swap
 	if moved: game.navigation.invalidate_spatial_index()
 
-# Stamps whole rows of a cached circle template. The exact distance test still
-# gates every cell; line of sight only runs when a mountain lies inside the
-# circle's bounding square (an O(1) prefix-sum query), keeping mountain
-# occlusion identical while open terrain costs one write per cell.
+# Stamps the cells inside the reveal circle. The exact distance test gates
+# every cell; line of sight only runs when a mountain lies inside the circle's
+# bounding square (an O(1) prefix-sum query), keeping mountain occlusion
+# identical while open terrain stamps each row's contiguous run directly.
 func _reveal_circle(visible: PackedByteArray, origin: Vector2, radius: float) -> void:
 	var cell_size := float(RtsWorldMap.CELL_SIZE)
 	var limit := radius + cell_size * 0.45
 	var limit_sq := limit * limit
 	var band := ceili(limit / cell_size)
-	var rows := _circle_template(band)
 	var width := grid_size.x
 	var height := grid_size.y
 	var source: Vector2i = game.world_map.cell_at(origin)
@@ -293,35 +301,70 @@ func _reveal_circle(visible: PackedByteArray, origin: Vector2, radius: float) ->
 	var ox := origin.x
 	var oy := origin.y
 	var with_los := _mountains_within(sx, sy, band)
-	for i in range(0, rows.size(), 3):
-		var y := sy + rows[i]
-		if y < 0 or y >= height: continue
-		var dy_world := oy - (y * cell_size + cell_size * 0.5)
-		var row_base := y * width
-		var x0 := maxi(0, sx + rows[i + 1])
-		var x1 := mini(width - 1, sx + rows[i + 2])
-		for x in range(x0, x1 + 1):
-			var index := row_base + x
-			if visible[index] != 0: continue
-			var dx_world := ox - (x * cell_size + cell_size * 0.5)
-			if dx_world * dx_world + dy_world * dy_world > limit_sq: continue
-			if not with_los or _line_of_sight(source, Vector2i(x, y)): visible[index] = 1
-
-# Relative row spans (dy, dx0, dx1 triples) covering every cell whose center
-# can fall inside the reveal limit for a source anywhere in its own cell.
-func _circle_template(band: int) -> PackedInt32Array:
-	if _circle_templates.has(band): return _circle_templates[band]
-	var cell_size := float(RtsWorldMap.CELL_SIZE)
-	var reach := band * cell_size + 36.0
-	var rows := PackedInt32Array()
-	for dy in range(-band, band + 1):
-		var dy_world := float(dy) * cell_size
-		var remaining := reach * reach - dy_world * dy_world
+	# The cells passing the exact distance test in one row form a single
+	# contiguous run. Solve the run bounds per row with one square root (plus a
+	# one-cell margin refined by the same exact test) instead of probing every
+	# cell of the bounding square.
+	var half := cell_size * 0.5
+	var y0 := maxi(0, sy - band)
+	var y1 := mini(height - 1, sy + band)
+	for y in range(y0, y1 + 1):
+		var dy_world := oy - (y * cell_size + half)
+		var remaining := limit_sq - dy_world * dy_world
 		if remaining < 0.0: continue
-		var dx := floori(sqrt(remaining) / cell_size)
-		rows.append_array(PackedInt32Array([dy, -dx, dx]))
-	_circle_templates[band] = rows
-	return rows
+		var dx_max := sqrt(remaining)
+		var row_base := y * width
+		var x0 := maxi(0, ceili((ox - dx_max - half) / cell_size) - 1)
+		var x1 := mini(width - 1, floori((ox + dx_max - half) / cell_size) + 1)
+		while x0 <= x1:
+			var dx_world := ox - (x0 * cell_size + half)
+			if dx_world * dx_world <= remaining: break
+			x0 += 1
+		while x1 >= x0:
+			var dx_world := ox - (x1 * cell_size + half)
+			if dx_world * dx_world <= remaining: break
+			x1 -= 1
+		if with_los:
+			# Mountain occlusion can break the run, so gate each cell on sight.
+			# The Bresenham walk is inlined (identical steps to _line_of_sight);
+			# at thousands of calls per tick the function-call overhead hurts.
+			var cells: PackedByteArray = game.world_map.cells
+			var ldy := absi(y - sy)
+			var row_step := width if y > sy else -width
+			for x in range(x0, x1 + 1):
+				var index := row_base + x
+				if visible[index] != 0: continue
+				var ldx := absi(x - sx)
+				if ldx <= 1 and ldy <= 1:
+					# One Bresenham step reaches any neighbor, so no intermediate
+					# cell exists that could block the sight line.
+					visible[index] = 1
+					continue
+				var blocked := false
+				var lx := sx
+				var ly := sy
+				var step_x := 1 if lx < x else -1
+				var step_y := 1 if ly < y else -1
+				var error := ldx - ldy
+				var li := sy * width + sx
+				while true:
+					var doubled := error * 2
+					if doubled > -ldy:
+						error -= ldy
+						lx += step_x
+						li += step_x
+					if doubled < ldx:
+						error += ldx
+						ly += step_y
+						li += row_step
+					if lx == x and ly == y: break
+					if cells[li] == RtsWorldMap.Terrain.MOUNTAIN:
+						blocked = true
+						break
+				if not blocked: visible[index] = 1
+		else:
+			for x in range(x0, x1 + 1):
+				visible[row_base + x] = 1
 
 func _build_mountain_prefix() -> void:
 	var width := grid_size.x
