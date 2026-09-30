@@ -2,21 +2,21 @@ class_name RtsUnit
 extends Node2D
 
 const AUTO_GATHER_RADIUS := 180.0
-const ROUTE_STALL_SECONDS := 0.9
-const ROUTE_RETRY_BASE := 0.7
-const ROUTE_RETRY_MAX := 4.0
 const UnitVisual = preload("res://scripts/entities/visuals/unit_visual.gd")
 const UnitVisualState = preload("res://scripts/entities/visuals/unit_visual_state.gd")
 const UnitWork = preload("res://scripts/entities/unit_work.gd")
 const UnitMovement = preload("res://scripts/entities/unit_movement.gd")
+const ROUTE_STALL_SECONDS := UnitMovement.ROUTE_STALL_SECONDS
+const ROUTE_RETRY_BASE := UnitMovement.ROUTE_RETRY_BASE
+const ROUTE_RETRY_MAX := UnitMovement.ROUTE_RETRY_MAX
 const UnitAbilities = preload("res://scripts/entities/unit_abilities.gd")
 const UnitStats = preload("res://scripts/entities/unit_stats.gd")
 const UnitCombat = preload("res://scripts/entities/unit_combat.gd")
 
-var unit_visual = UnitVisual.new()
-var unit_visual_state = UnitVisualState.new()
-var movement = UnitMovement.new()
-var abilities = UnitAbilities.new()
+var unit_visual: UnitVisual = UnitVisual.new()
+var unit_visual_state: UnitVisualState = UnitVisualState.new()
+var movement: UnitMovement = UnitMovement.new()
+var abilities: UnitAbilities = UnitAbilities.new()
 
 var game: Node2D
 var owner_id := 0
