@@ -18,11 +18,12 @@ func _run() -> void:
 	scout.position = house.position + Vector2(-75, 0)
 	game.fog.update_visibility()
 	assert(house.visible and game.fog.remembered_buildings.has(building_id))
-	var ghost: RtsBuilding = game.fog.remembered_buildings[building_id]["ghost"]
-	assert(not ghost.visible and not game.buildings.has(ghost), "memory must not duplicate a visible or interactive building")
+	var ghost = game.fog.remembered_buildings[building_id]["ghost"]
+	assert(not ghost is RtsBuilding and ghost.get("production_queue") == null, "memory must be a visual, without production jobs")
+	assert(not ghost.visible and game.buildings.all(func(item): return item.get_instance_id() != ghost.get_instance_id()), "memory must not duplicate a visible or interactive building")
 	house.hp -= 30.0
 	game.fog.update_visibility()
-	var last_seen_hp := ghost.hp
+	var last_seen_hp: float = ghost.state.hp
 	scout.position = original_position
 	game.fog.update_visibility()
 	assert(not house.visible and ghost.visible, "a discovered building must remain visible as a memory")
@@ -30,10 +31,10 @@ func _run() -> void:
 	house.hp -= 50.0
 	house.build_remaining = 5.0
 	game.fog.update_visibility()
-	assert(ghost.hp == last_seen_hp and ghost.build_remaining == 0.0, "hidden building state must not leak through memory")
+	assert(ghost.state.hp == last_seen_hp and ghost.state.build_remaining == 0.0, "hidden building state must not leak through memory")
 	scout.position = house.position + Vector2(-75, 0)
 	game.fog.update_visibility()
-	assert(not ghost.visible and ghost.hp == house.hp and ghost.build_remaining == house.build_remaining, "returning vision refreshes the remembered state")
+	assert(not ghost.visible and ghost.state.hp == house.hp and ghost.state.build_remaining == house.build_remaining, "returning vision refreshes the remembered state")
 	scout.position = original_position
 	game.fog.update_visibility()
 	assert(ghost.visible)

@@ -39,6 +39,23 @@ var apron_mesh: ArrayMesh
 var relief_mesh: ArrayMesh
 
 func generate(seed_value: int, map_size: Vector2, style := "balanced", participants := 2) -> void:
+	generate_terrain(seed_value, map_size, style, participants)
+	_mark_reachable_cells()
+	_generate_stealth_patches()
+	_generate_plants()
+	_generate_starter_resources()
+	_generate_contested_resources()
+	_generate_resource_clusters()
+	_generate_sheep()
+	_generate_wildlife()
+	_generate_fish()
+	_ensure_starter_access()
+	_build_elevations()
+	queue_redraw()
+
+# The setup preview shares this deterministic terrain phase with full generation.
+# It leaves the RNG at exactly the point where decorations/resources begin.
+func generate_terrain(seed_value: int, map_size: Vector2, style := "balanced", participants := 2) -> void:
 	map_seed = seed_value
 	player_count = clampi(participants, 2, 4)
 	map_style = style if ["balanced", "lakes", "highlands", "islands"].has(style) else "balanced"
@@ -62,18 +79,6 @@ func generate(seed_value: int, map_size: Vector2, style := "balanced", participa
 			var terrain := _layout_terrain(point, variation)
 			cells[_index(Vector2i(x, y))] = terrain
 	_setup_pathfinder()
-	_mark_reachable_cells()
-	_generate_stealth_patches()
-	_generate_plants()
-	_generate_starter_resources()
-	_generate_contested_resources()
-	_generate_resource_clusters()
-	_generate_sheep()
-	_generate_wildlife()
-	_generate_fish()
-	_ensure_starter_access()
-	_build_elevations()
-	queue_redraw()
 
 func _plan_layout() -> void:
 	terrain_shapes.clear()

@@ -8,27 +8,8 @@ const TERRAIN_COLORS := [
 ]
 
 static func create_texture(seed_value: int, world_size: Vector2, style: String, player_colors: Array[Color]) -> ImageTexture:
-	# Mirror the terrain phase of RtsWorldMap.generate without building resources,
-	# paths, or elevation meshes just to draw a small setup preview.
 	var map := RtsWorldMap.new()
-	map.map_seed = seed_value
-	map.world_size = world_size
-	map.grid_size = Vector2i(ceili(world_size.x / map.CELL_SIZE), ceili(world_size.y / map.CELL_SIZE))
-	map.map_style = style
-	map.player_count = player_colors.size()
-	map.rng.seed = seed_value
-	map._plan_layout()
-	map.cells.resize(map.grid_size.x * map.grid_size.y)
-	var noise := FastNoiseLite.new()
-	noise.seed = seed_value
-	noise.frequency = 0.004
-	noise.fractal_type = FastNoiseLite.FRACTAL_FBM
-	noise.fractal_octaves = 3
-	for y in map.grid_size.y:
-		for x in map.grid_size.x:
-			var point := map._reference_point(map.cell_center(Vector2i(x, y)))
-			map.cells[y * map.grid_size.x + x] = map._layout_terrain(point, noise.get_noise_2d(point.x, point.y))
-	map._setup_pathfinder()
+	map.generate_terrain(seed_value, world_size, style, player_colors.size())
 	var image := Image.create_empty(map.grid_size.x * PIXELS_PER_CELL, map.grid_size.y * PIXELS_PER_CELL, false, Image.FORMAT_RGBA8)
 	for y in map.grid_size.y:
 		for x in map.grid_size.x:

@@ -1,6 +1,8 @@
 class_name RtsFogOfWar
 extends Node2D
 
+const RememberedBuildingVisual = preload("res://scripts/entities/visuals/remembered_building_visual.gd")
+
 const UPDATE_INTERVAL := 0.15
 const UNEXPLORED_COLOR := Color(0.035, 0.055, 0.065, 1.0)
 const EXPLORED_COLOR := Color(0.035, 0.055, 0.065, 0.68)
@@ -232,7 +234,7 @@ func _update_building_memory() -> void:
 		if can_see(0, building.position): _remember_building(building, building_id)
 	for building_id in remembered_buildings.keys():
 		var memory: Dictionary = remembered_buildings[building_id]
-		var ghost: RtsBuilding = memory["ghost"]
+		var ghost: RememberedBuildingVisual = memory["ghost"]
 		if can_see(0, memory["position"]):
 			ghost.hide()
 			if not live_ids.has(building_id):
@@ -242,37 +244,29 @@ func _update_building_memory() -> void:
 			ghost.show()
 
 func _remember_building(building: RtsBuilding, building_id: int) -> void:
-	var ghost: RtsBuilding
+	var ghost: RememberedBuildingVisual
 	if remembered_buildings.has(building_id):
 		ghost = remembered_buildings[building_id]["ghost"]
 	else:
-		ghost = RtsBuilding.new()
+		ghost = RememberedBuildingVisual.new()
 		ghost.name = "RememberedBuilding"
 		ghost.game = game
 		ghost.process_mode = Node.PROCESS_MODE_DISABLED
 		ghost.hide()
 		ghost.modulate = Color(0.62, 0.66, 0.69, 0.85)
 		game.add_child(ghost)
-	ghost.owner_id = building.owner_id
-	ghost.kind = building.kind
-	ghost.landmark_id = building.landmark_id
-	ghost.position = building.position
-	ghost.wall_vertical = building.wall_vertical
-	ghost.stats = building.stats.duplicate(true)
-	ghost.hp = building.hp
-	ghost.max_hp = building.max_hp
-	ghost.build_remaining = building.build_remaining
-	ghost.build_total = building.build_total
-	ghost.building_icon = building.building_icon
-	ghost.production_queue.clear()
-	if not building.production_queue.is_empty(): ghost.production_queue.append({})
+	ghost.state = building.visual_snapshot()
+	# Transient hit flashes and change timers never animated on the old memory node.
+	ghost.state.damage_flash_timer = 0.0
+	ghost.state.health_bar_timer = 0.0
+	ghost.position = ghost.state.world_position
 	ghost.z_index = building.z_index
 	remembered_buildings[building_id] = {"ghost": ghost, "position": building.position, "owner_id": building.owner_id}
 	ghost.queue_redraw()
 
 func _clear_building_memory() -> void:
 	for memory in remembered_buildings.values():
-		var ghost: RtsBuilding = memory["ghost"]
+		var ghost: RememberedBuildingVisual = memory["ghost"]
 		if is_instance_valid(ghost):
 			ghost.hide()
 			ghost.queue_free()
@@ -317,7 +311,7 @@ func _update_mask() -> void:
 func update_projection() -> void:
 	if relief_mesh == null: return
 	for memory in remembered_buildings.values():
-		var ghost: RtsBuilding = memory["ghost"]
+		var ghost: RememberedBuildingVisual = memory["ghost"]
 		ghost.z_index = clampi(roundi((ghost.position.x + ghost.position.y) * 0.5), 0, 2800) if game.view_mode_25d else 0
 		ghost.queue_redraw()
 	if not active or not game.view_mode_25d:
