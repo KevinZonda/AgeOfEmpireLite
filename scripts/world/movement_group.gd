@@ -125,11 +125,11 @@ func _replan() -> void:
 	if slots.is_empty(): _assign_slots(center)
 	else:
 		for unit in members:
-			if unit.movement_group != self: continue
+			if unit.movement.movement_group != self: continue
 			var id := unit.get_instance_id()
 			if previous_goal.distance_squared_to(goal) > 1.0 or game.navigation.path_between(unit.position, final_destinations[id], unit).is_empty():
 				final_destinations[id] = _free_slot(unit, member_goals[id] + slots[id])
-			unit.destination = final_destinations[id]
+			unit.movement.destination = final_destinations[id]
 
 func _role_rank(unit: RtsUnit) -> int:
 	var tags: Array = unit.stats.get("tags", [])
@@ -274,7 +274,7 @@ func _center(active_only := true) -> Vector2:
 	var sum := Vector2.ZERO
 	var count := 0
 	for unit in members:
-		if is_instance_valid(unit) and not unit.is_queued_for_deletion() and unit.hp > 0 and (not active_only or unit.movement_group == self):
+		if is_instance_valid(unit) and not unit.is_queued_for_deletion() and unit.hp > 0 and (not active_only or unit.movement.movement_group == self):
 			sum += unit.position
 			count += 1
 	return sum / count if count > 0 else goal
@@ -286,7 +286,7 @@ func _corridor_is_narrow(point: Vector2) -> bool:
 	if corridor_cache.has(cache_key): return corridor_cache[cache_key]
 	var representative: RtsUnit
 	for member in members:
-		if is_instance_valid(member) and member.movement_group == self:
+		if is_instance_valid(member) and member.movement.movement_group == self:
 			representative = member
 			break
 	if representative == null: return false
@@ -330,7 +330,7 @@ func _remaining_route_clear() -> bool:
 	var representative: RtsUnit
 	var first := route.size() - 1
 	for unit in members:
-		if not is_instance_valid(unit) or unit.is_queued_for_deletion() or unit.movement_group != self: continue
+		if not is_instance_valid(unit) or unit.is_queued_for_deletion() or unit.movement.movement_group != self: continue
 		if representative == null: representative = unit
 		first = mini(first, maxi(0, int(member_route_index.get(unit.get_instance_id(), 0)) - 1))
 		if not game.navigation.can_occupy(destination_for(unit), unit.radius(), unit, false): return false

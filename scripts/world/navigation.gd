@@ -15,6 +15,8 @@ var background_jobs = BackgroundJobs.new()
 var background_recovery_enabled := false
 
 var game: Node2D
+# Query the live owner directly; fixture worlds provide the same collections.
+var _entities: Object
 var world_map: RtsWorldMap
 # Generic queries retain their fixed-clearance grid, built only when requested.
 var pathfinder: AStarGrid2D:
@@ -76,6 +78,8 @@ func _point_path(grid: AStarGrid2D, start: Vector2i, end: Vector2i) -> PackedVec
 func _init(game_ref: Node2D, map_ref: RtsWorldMap) -> void:
 	game = game_ref
 	world_map = map_ref
+	var session = game.get("session")
+	_entities = session.entities if session != null else game
 
 func refresh(wake_failed_routes := true) -> void:
 	if wake_failed_routes: retry_obstacle_signature = -1
@@ -110,16 +114,16 @@ func _make_default_grid() -> AStarGrid2D:
 		for x in world_map.grid_size.x:
 			var cell := Vector2i(x, y)
 			if not world_map.is_walkable(world_map.cell_center(cell)): grid.set_point_solid(cell)
-	for building in game.buildings:
+	for building in _entities.buildings:
 		if not is_instance_valid(building) or building.is_queued_for_deletion(): continue
 		if not _gate_passable(building, 0):
 			_mark_rect(Rect2(building.position - building.size() * 0.5, building.size()).grow(CLEARANCE), grid)
-	for resource in game.resources:
+	for resource in _entities.resources:
 		if not is_instance_valid(resource) or resource.is_queued_for_deletion(): continue
 		_mark_circle(resource.position, resource.radius + CLEARANCE, grid)
 	# Preserve the generic query's player-zero gate corridor. Unit queries use
 	# their actual body size and owner through _grid_for instead.
-	for building in game.buildings:
+	for building in _entities.buildings:
 		if not is_instance_valid(building) or building.is_queued_for_deletion() or not _gate_passable(building, 0): continue
 		var first := world_map.cell_at(building.position - Vector2.ONE * RtsWorldMap.CELL_SIZE)
 		var last := world_map.cell_at(building.position + Vector2.ONE * RtsWorldMap.CELL_SIZE)
@@ -135,10 +139,10 @@ func _make_default_grid() -> AStarGrid2D:
 
 func _obstacle_signature(ignore_resource_positions := false) -> int:
 	var signature := 0
-	for building in game.buildings:
+	for building in _entities.buildings:
 		if is_instance_valid(building) and not building.is_queued_for_deletion():
 			signature = hash([signature, building.get_instance_id(), building.position, building.size(), building.owner_id, building.kind, building.is_complete()])
-	for resource in game.resources:
+	for resource in _entities.resources:
 		if is_instance_valid(resource) and not resource.is_queued_for_deletion():
 			# Living wildlife wanders every frame; animals are dynamic obstacles
 			# tracked by the spatial index, not cached geometry.
@@ -169,24 +173,24 @@ func _spatial_cell(point: Vector2) -> Vector2i:
 
 func _ensure_spatial_index() -> void:
 	var frame := Engine.get_process_frames()
-	if spatial_frame == frame and indexed_unit_count == game.units.size() and indexed_resource_count == game.resources.size() and indexed_building_count == game.buildings.size(): return
+	if spatial_frame == frame and indexed_unit_count == _entities.units.size() and indexed_resource_count == _entities.resources.size() and indexed_building_count == _entities.buildings.size(): return
 	units_by_cell.clear()
 	resources_by_cell.clear()
 	buildings_by_cell.clear()
 	max_dynamic_radius = 0.0
-	for unit in game.units:
+	for unit in _entities.units:
 		if not is_instance_valid(unit) or unit.is_queued_for_deletion() or unit.garrisoned_in != null: continue
 		max_dynamic_radius = maxf(max_dynamic_radius, unit.radius())
 		var cell := _spatial_cell(unit.position)
 		if not units_by_cell.has(cell): units_by_cell[cell] = []
 		units_by_cell[cell].append(unit)
-	for resource in game.resources:
+	for resource in _entities.resources:
 		if not is_instance_valid(resource) or resource.is_queued_for_deletion(): continue
 		max_dynamic_radius = maxf(max_dynamic_radius, resource.radius)
 		var cell := _spatial_cell(resource.position)
 		if not resources_by_cell.has(cell): resources_by_cell[cell] = []
 		resources_by_cell[cell].append(resource)
-	for building in game.buildings:
+	for building in _entities.buildings:
 		if not is_instance_valid(building) or building.is_queued_for_deletion(): continue
 		var bounds := Rect2(building.position - building.size() * 0.5, building.size()).grow(48.0)
 		var first := _spatial_cell(bounds.position)
@@ -197,9 +201,9 @@ func _ensure_spatial_index() -> void:
 				if not buildings_by_cell.has(cell): buildings_by_cell[cell] = []
 				buildings_by_cell[cell].append(building)
 	spatial_frame = frame
-	indexed_unit_count = game.units.size()
-	indexed_resource_count = game.resources.size()
-	indexed_building_count = game.buildings.size()
+	indexed_unit_count = _entities.units.size()
+	indexed_resource_count = _entities.resources.size()
+	indexed_building_count = _entities.buildings.size()
 
 func nearby_units(point: Vector2, radius: float) -> Array[RtsUnit]:
 	_ensure_spatial_index()
@@ -518,7 +522,7 @@ func _obstacle_corner_path(from: Vector2, to: Vector2, unit: RtsUnit) -> PackedV
 	var key := _grid_key(unit)
 	if not corner_graphs.has(key):
 		var corners := PackedVector2Array()
-		for obstacle in game.buildings:
+		for obstacle in _entities.buildings:
 			if not is_instance_valid(obstacle) or obstacle.is_queued_for_deletion(): continue
 			if _gate_passable(obstacle, unit.owner_id): continue
 			var bounds := Rect2(obstacle.position - obstacle.size() * 0.5, obstacle.size()).grow(unit.radius() + 0.05)
@@ -655,7 +659,7 @@ func _rasterize_static_grid(unit: RtsUnit, grid: AStarGrid2D, allow_resource_esc
 					if grid.is_point_solid(cell): continue
 					var point := grid.get_point_position(cell)
 					if point.distance_squared_to(point.clamp(tile.position, tile.end)) < radius * radius: grid.set_point_solid(cell)
-	for obstacle in game.buildings:
+	for obstacle in _entities.buildings:
 		if not is_instance_valid(obstacle) or obstacle.is_queued_for_deletion(): continue
 		if _gate_passable(obstacle, unit.owner_id): continue
 		var footprint := Rect2(obstacle.position - obstacle.size() * 0.5, obstacle.size()).grow(radius)
@@ -664,7 +668,7 @@ func _rasterize_static_grid(unit: RtsUnit, grid: AStarGrid2D, allow_resource_esc
 			for x in range(region.position.x, region.end.x):
 				var cell := Vector2i(x, y)
 				if footprint.has_point(grid.get_point_position(cell)): grid.set_point_solid(cell)
-	for obstacle in game.resources:
+	for obstacle in _entities.resources:
 		if not is_instance_valid(obstacle) or obstacle.is_queued_for_deletion(): continue
 		var reach: float = radius + obstacle.radius
 		var current := unit.position.distance_squared_to(obstacle.position)
@@ -727,7 +731,7 @@ func _compute_static_segment_clear(from: Vector2, to: Vector2, radius: float, un
 	# visit thousands of empty buckets to find a handful of buildings. Choose
 	# the smaller broad phase; the exact segment predicates remain unchanged.
 	var building_span := ceili((extent + radius) * 2.0 / SPATIAL_CELL_SIZE) + 1
-	var building_candidates: Array[RtsBuilding] = game.buildings if building_span * building_span > game.buildings.size() * 4 else nearby_buildings(center, extent + radius)
+	var building_candidates: Array[RtsBuilding] = _entities.buildings if building_span * building_span > _entities.buildings.size() * 4 else nearby_buildings(center, extent + radius)
 	for obstacle in building_candidates:
 		if not is_instance_valid(obstacle) or obstacle.is_queued_for_deletion(): continue
 		if unit != null and _gate_passable(obstacle, unit.owner_id): continue
@@ -739,7 +743,7 @@ func _compute_static_segment_clear(from: Vector2, to: Vector2, radius: float, un
 			for i in range(samples + 1):
 				if bounds.has_point(from.lerp(to, float(i) / samples)): return false
 	var resource_span := ceili((extent + radius + max_dynamic_radius) * 2.0 / SPATIAL_CELL_SIZE) + 1
-	var resource_candidates: Array[RtsResource] = game.resources if resource_span * resource_span > game.resources.size() * 4 else nearby_resources(center, extent + radius + max_dynamic_radius)
+	var resource_candidates: Array[RtsResource] = _entities.resources if resource_span * resource_span > _entities.resources.size() * 4 else nearby_resources(center, extent + radius + max_dynamic_radius)
 	for obstacle in resource_candidates:
 		if not is_instance_valid(obstacle) or obstacle.is_queued_for_deletion(): continue
 		var limit := radius + obstacle.radius
@@ -948,7 +952,7 @@ func has_fixed_unit_blocker(unit: RtsUnit, target: Vector2) -> bool:
 		# idle or stalled allies, without rebuilding local grids for traffic
 		# that is still making progress through a chokepoint.
 		if not game.is_enemy(unit.owner_id, other.owner_id) and other.stance != "hold" and other.order in ["move", "attack_move"]:
-			if other.route_failures < 2 and other.route_stalled_time < RtsUnit.ROUTE_STALL_SECONDS and (other.movement_group == null or other.group_stuck_time < 0.9): continue
+			if other.movement.route_failures < 2 and other.movement.route_stalled_time < RtsUnit.ROUTE_STALL_SECONDS and (other.movement.movement_group == null or other.movement.group_stuck_time < 0.9): continue
 		var closest := Geometry2D.get_closest_point_to_segment(other.position, unit.position, target)
 		if closest.distance_to(other.position) < unit.radius() + other.radius() + 4.0: return true
 	return false
@@ -962,7 +966,7 @@ func path_around_units(unit: RtsUnit, target: Vector2) -> PackedVector2Array:
 
 func _path_around_units(unit: RtsUnit, target: Vector2) -> PackedVector2Array:
 	# Recovery only: retain live queries while sharing the worker's search policy.
-	return RecoveryKernel.recover_path(unit.route_failures,
+	return RecoveryKernel.recover_path(unit.movement.route_failures,
 		func(step: float, half: int) -> PackedVector2Array: return _local_unit_path(unit, target, step, half))
 
 func _local_unit_grid(unit: RtsUnit, step: float, half: int) -> AStarGrid2D:
@@ -1029,7 +1033,7 @@ func _yield_allies(unit: RtsUnit, destination: Vector2, yielding: Array[int] = [
 	var changed := false
 	for other in nearby_units(destination, unit.radius() + max_dynamic_radius + 2.0):
 		if yielding.has(other.get_instance_id()) or other.stance == "hold" or game.is_enemy(unit.owner_id, other.owner_id): continue
-		var stalled := other.order in ["move", "attack_move"] and (other.route_stalled_time >= RtsUnit.ROUTE_STALL_SECONDS or other.group_stuck_time >= 0.9)
+		var stalled := other.order in ["move", "attack_move"] and (other.movement.route_stalled_time >= RtsUnit.ROUTE_STALL_SECONDS or other.movement.group_stuck_time >= 0.9)
 		if other.order != "idle" and not (stalled and unit.get_instance_id() < other.get_instance_id()): continue
 		if other.position.distance_to(destination) >= unit.radius() + other.radius(): continue
 		var lateral := Vector2(-forward.y, forward.x)
@@ -1041,7 +1045,7 @@ func _yield_allies(unit: RtsUnit, destination: Vector2, yielding: Array[int] = [
 				if not _yield_allies(other, point, yielding) or not _motion_clear(other, point): continue
 			var previous := other.position
 			other.position = point
-			if other.order != "idle": other.yield_timer = 0.3
+			if other.order != "idle": other.movement.yield_timer = 0.3
 			unit_moved(other, previous)
 			other._update_facing(previous)
 			other._refresh_slope_visual(previous)
@@ -1078,14 +1082,14 @@ func _move_step(unit: RtsUnit, desired_position: Vector2) -> Vector2:
 	var direction := movement.normalized()
 	var distance := movement.length()
 	if _motion_clear(unit, desired_position): return desired_position
-	if unit.movement_group != null:
-		if unit.avoidance_cooldown > 0.0: return unit.position
-		unit.avoidance_cooldown = 0.18
-	if unit.yield_request_cooldown <= 0.0:
-		unit.yield_request_cooldown = 0.18
+	if unit.movement.movement_group != null:
+		if unit.movement.avoidance_cooldown > 0.0: return unit.position
+		unit.movement.avoidance_cooldown = 0.18
+	if unit.movement.yield_request_cooldown <= 0.0:
+		unit.movement.yield_request_cooldown = 0.18
 		if _yield_allies(unit, desired_position) and _motion_clear(unit, desired_position): return desired_position
 	var side := 1.0 if unit.get_instance_id() % 2 == 0 else -1.0
-	var offsets := [side * PI / 4.0, -side * PI / 4.0] if unit.movement_group != null else [side * PI / 4.0, -side * PI / 4.0, side * PI / 2.0, -side * PI / 2.0, side * PI * 0.75, -side * PI * 0.75]
+	var offsets := [side * PI / 4.0, -side * PI / 4.0] if unit.movement.movement_group != null else [side * PI / 4.0, -side * PI / 4.0, side * PI / 2.0, -side * PI / 2.0, side * PI * 0.75, -side * PI * 0.75]
 	for offset in offsets:
 		var candidate_direction := direction.rotated(offset)
 		var candidate: Vector2 = unit.position + candidate_direction * distance

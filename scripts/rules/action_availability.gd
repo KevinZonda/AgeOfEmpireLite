@@ -13,24 +13,33 @@ static func context_for(game: Node2D, owner_id: int, building: RtsBuilding = nul
 		if not is_instance_valid(producer) or producer.owner_id != owner_id: continue
 		officials += producer.queued_unit_count("imperial_official")
 		if producer.kind == "wonder": has_wonder = true
-	return {
-		"game": game, "civilization": game.civilizations[owner_id], "age": bank["age"],
+	return for_producer({
+		"game": game, "owner_id": owner_id, "civilization": game.civilizations[owner_id], "age": bank["age"],
 		"dynasty": bank.get("dynasty", ""), "researched": bank["researched"],
 		"landmarks": bank["landmarks"], "active_landmark": game.active_landmark_id(owner_id),
 		"resources": bank, "population_used": game.population_used(owner_id), "population_cap": game.population_cap(owner_id),
 		"queued_research": game.queued_research(owner_id), "official_count": officials, "has_wonder": has_wonder,
+	}, building)
+
+static func for_producer(context: Dictionary, building: RtsBuilding) -> Dictionary:
+	var result := context.duplicate()
+	result.merge({
 		"producer_building": building, "producer": building.producer_kind() if building != null else "",
 		"production_complete": building.is_complete() if building != null else true,
 		"landmark_id": building.landmark_id if building != null else "",
 		"landmark_cooldown": building.landmark_ability_cooldown if building != null else 0.0,
 		"landmark_stockpile": building.landmark_stockpile if building != null else {},
-	}
+	}, true)
+	return result
 
-static func production(game: Node2D, building: RtsBuilding, action_type: String, kind: String) -> Dictionary:
+static func production(game: Node2D, building: RtsBuilding, action_type: String, kind: String, context: Dictionary = {}) -> Dictionary:
 	if game.game_over: return {"available": false, "reason": "对局已结束", "cost": {}}
 	if not is_instance_valid(building) or building.is_queued_for_deletion():
 		return {"available": false, "reason": "建筑已移除", "cost": {}}
-	return evaluate(action_type, kind, context_for(game, building.owner_id, building))
+	# UI can reuse one refresh's player facts across producers. Transactions omit
+	# the optional context and always recompute immediately before spending.
+	if context.get("owner_id", -1) != building.owner_id: context = context_for(game, building.owner_id)
+	return evaluate(action_type, kind, for_producer(context, building))
 
 static func construction(game: Node2D, owner_id: int, kind: String, point: Vector2, vertical := false, landmark_id := "") -> Dictionary:
 	var bank: Dictionary = game.players[owner_id]

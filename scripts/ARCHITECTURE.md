@@ -1,63 +1,47 @@
-# 代码架构与拆分顺序
+# 代码架构与状态所有权
 
-主场景 `scenes/main.tscn` 使用 `scripts/game.gd` 装配一局游戏。现阶段保留它的公开方法与字段：单位、建筑、AI 和现有测试仍通过 `game` 访问对局。这些方法中已拆出的部分只负责转发；新逻辑按职责放在独立脚本中。
+主场景 `scenes/main.tscn` 由 `scripts/game.gd` 装配。主脚本负责启动／结束对局、输入分发和系统调度，公开字段与方法保留兼容入口。已迁移的字段通过 getter／setter 访问实际拥有者，不维护另一份可变状态。
 
-| 目录 | 职责 |
+| 模块 | 实际职责与状态 |
 | --- | --- |
-| `scripts/ai/` | 电脑玩家调度、经济与战术决策 |
-| `scripts/catalogs/` | 兵种、建筑、科技、地标和平衡数据目录 |
-| `scripts/entities/` | 单位、建筑、资源等场景实体及其行为 |
-| `scripts/match/` | 对局经济、生产、统计与胜利目标 |
-| `scripts/player/` | 玩家选中、编组与下令 |
-| `scripts/rules/` | 战斗、文明、攻城和属性规则 |
-| `scripts/ui/` | HUD 控件、菜单、科技树、战报和反馈表现 |
-| `scripts/world/` | 地图、寻路、迷雾、天气和投影 |
+| `match/match_session.gd` | 玩家、队伍、文明、地图参数与对局运行状态 |
+| `match/player_state.gd` | 玩家资源与研究；`bank` 和兼容 `game.players` 指向同一字典 |
+| `match/entity_registry.gd` | 单位、建筑、资源、贸易站与圣物集合；创建、移除、重开及玩家淘汰 |
+| `match/match_economy.gd` / `match_production.gd` | 经济、生产与退款事务；生产队列由建筑拥有 |
+| `rules/action_availability.gd` | 建造、训练、研究等公共验证与费用；UI 读取结果，事务执行前再次验证 |
+| `player/context_order.gd` | 右键目标与命令优先级；鼠标提示和实际命令共享分类 |
+| `player/player_selection.gd` / `player_orders.gd` | 选择、编组与下令；输入事件入口仍在 `game.gd` |
+| `entities/unit.gd` | 命令调度、工作与战斗的协调入口 |
+| `entities/unit_movement.gd` | 路线、异步请求世代、编队、巡逻、驻守与冲锋状态 |
+| `entities/unit_abilities.gd` | 技能及状态计时器；验证结果同时供 UI 和技能执行使用 |
+| `entities/unit_stats.gd` / `rules/stat_resolver.gd` | 属性及临时加成；攻击 profiles 为战斗数值源，旧 damage／range 等只作兼容投影 |
+| `ai/ai_snapshot.gd` / `economy_plan.gd` / `ai_profile.gd` | 每次思考的实体／队列计数、资源预留与难度配置 |
+| `ui/game_hud_ui.gd` / `game_menu_ui.gd` | 各自拥有控件；通过请求信号调用游戏动作 |
+| `ui/settings_store.gd` / `display_settings.gd` | 偏好读写与兼容旧配置；窗口状态与自适应尺寸检查 |
+| `ui/match_report_ui.gd` / `unit_stat_text.gd` | 战报／回放界面；HUD 和单位图鉴共享攻击属性文字 |
+| `entities/visuals/*_visual.gd` / `*_visual_state.gd` | 绘制和视觉快照；不依赖生产、订单或活实体 |
+| `world/world_map.gd` / `world_map_renderer.gd` | 公共地形生成阶段、完整地图后续生成与地形绘制 |
+| `world/navigation.gd` / `fog_of_war.gd` | 寻路及迷雾；迷雾建筑记忆使用显示节点和冻结快照 |
 
-`scripts/game.gd` 留在根目录，作为唯一的场景装配入口。各脚本原有的 `class_name` 未改变，目录迁移不改变运行时职责。
+## 边界约定
 
-```mermaid
-flowchart TD
-    Game["game.gd<br/>场景装配、对局流程、兼容入口"]
-    UI["tech_tree_page.gd<br/>科技树界面"]
-    Input["player_selection.gd / player_orders.gd<br/>选中、编组、目标命中、下令"]
-    Rules["match_economy.gd / match_production.gd<br/>资源、人口、训练、研究"]
-    World["world_map.gd / world_map_renderer.gd<br/>地图数据、生成、地形绘制"]
-    Systems["navigation.gd / fog_of_war.gd<br/>objective_manager.gd / weather.gd"]
-    Unit["unit.gd<br/>单位状态与命令调度"]
-    UnitParts["unit_work.gd / unit_combat.gd<br/>经济工作、战斗行为"]
-    AI["ai_controller.gd<br/>AI 时钟与决策调度"]
-    AIParts["ai_economy.gd / ai_tactics.gd<br/>经济建设、战术"]
-    Data["game_data.gd / tech_tree.gd<br/>catalog 与数值规则"]
+- `game.session` 拥有对局状态，`game.players`、`game.units` 等旧接口只作代理。正常实体创建使用注册表；实体离开场景树时自动注销。淘汰和普通摧毁仍分别保留各自的游戏规则与反馈。
+- 建筑的 `production_queue` 是任务的唯一数据源，人口预留、研究去重、命官上限、AI 和 HUD 都据此判断。公共验证返回 `{available, reason, cost}`，执行时不信任较早的 UI 判断。
+- 单位旧移动／技能字段代理组件。新命令、停止与驻扎统一取消旧异步路线和临时命令状态；无效命令先拒绝，保留正在执行的命令。
+- 属性每次从定义、研究、文明和临时效果重新解析。模拟通过 profile 查询攻击值；兼容字段不得反向覆盖 profile。
+- AI 快照只存活于一次思考，包含已排队单位，并在同一轮成功训练或建造后更新。快照不成为跨帧缓存；资源规划保留原有决策优先级。
+- `generate_terrain()` 为完整生成与地图预览共同使用的阶段；完整生成按原顺序继续消费 RNG，预览不调用私有生成步骤。
+- 实体绘制可复用工作快照，迷雾记忆必须另建独立快照。快照不保留活实体；镜头、投影与显示偏好可更新，记忆中的生命／建造等信息保持发现时的值。
+- 单位预览与建筑记忆均为轻量显示节点，不注册进对局。静态 UI 结构／样式由 `scenes/ui/` 和 `assets/ui/game_theme.tres` 提供，动态数据由界面模块填入。
 
-    Game --> UI
-    Game --> Input
-    Game --> Rules
-    Game --> World
-    Game --> Systems
-    Game --> Unit
-    Game --> AI
-    Unit --> UnitParts
-    AI --> AIParts
-    Rules --> Data
-    UnitParts --> Data
-    AIParts --> Data
+## 验证
+
+```sh
+python3 tools/check_navigation.py --suite refactor --output /tmp/refactor-checks
 ```
 
-## 当前边界
+默认仍只运行导航回归；`--tests` 可指定子集。集成套件覆盖对局状态、共享规则、单位命令与技能、UI、AI、地图、迷雾及导航。`unit_snapshot_rendering`、农田／地标等截图测试需要真实渲染驱动，应单独运行。`hud_resolution` 的布局断言及 `navigation_range_corner_poc` 的负路径缓存性能断言在基线中也失败，单独记录，不归入通过的集成套件。需直接加载字体的 PoC 还需要引擎生成的字体导入缓存。
 
-- `game.gd` 仍持有玩家、实体、选中对象及界面控件；旧调用方可以继续使用 `start_game`、`train_unit`、`credit_resource` 等方法。
-- `player_selection.gd` 处理框选、双击同类、编组与地图目标命中；`player_orders.gd` 处理右键命令、攻击移动和编队下令。输入事件分发仍在 `game.gd`。
-- `match_economy.gd` 处理资源、市场和人口规则；`match_production.gd` 处理训练、研究及取消队列。它们目前通过 `game` 读取对局状态，尚未拥有独立状态。
-- 建筑的 `production_queue` 是训练和研究任务的唯一数据源；AI、人口统计及研究去重通过建筑查询方法读取队列，不再维护额外的训练或研究数组。
-- `unit.gd` 保留命令状态与逐帧调度，工作和战斗细节分别交给 `unit_work.gd`、`unit_combat.gd`。
-- `ai_controller.gd` 保留思考周期与原有状态字段，经济和战术决策分别交给 `ai_economy.gd`、`ai_tactics.gd`。
-- `world_map.gd` 保留地图生成和地形查询；绘制交给 `world_map_renderer.gd`。
+性能比较使用相同引擎和固定种子的 `performance_navigation`／`performance_400`，交替运行基线和重构版本；CPU 模拟耗时与真实渲染帧率分别判断。
 
-## 后续顺序
-
-1. 将 `game.gd` 中的对局状态与实体注册迁到单独的 session，继续保留旧字段和方法的兼容入口。
-2. 将输入事件分发和快捷键移出主脚本，逐步让玩家输入和 AI 调用同一套命令服务。
-3. 把 HUD、设置和战报界面逐步移出 `game.gd`，再收窄各模块对 `game` 的直接字段访问。
-4. 每次迁移后运行相关固定种子测试，并比较 `tests/performance_400.gd` 的模拟耗时。
-
-这一顺序避免同时改变规则、调用接口和状态所有权；删除兼容入口应单独进行，并先更新直接访问它们的测试。
+进一步删除兼容字段前，应先迁移直接访问这些字段的调用方和测试。输入／快捷键、选择状态仍可以在后续变更中独立迁移，不混入这次状态与视觉重构。

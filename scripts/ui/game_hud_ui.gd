@@ -828,7 +828,7 @@ func _refresh_global_queue_panel() -> void:
 		global_queue_list.add_child(empty)
 
 func _refresh_action_buttons() -> void:
-	if game.players.is_empty(): return
+	if game.players.is_empty() or command_buttons.is_empty(): return
 	var producer: RtsBuilding
 	if not game.selected.is_empty() and is_instance_valid(game.selected[0]) and game.selected[0] is RtsBuilding:
 		producer = game.selected[0]
@@ -839,7 +839,7 @@ func _refresh_action_buttons() -> void:
 		var action_kind: String = button.get_meta("action_kind")
 		var status: Dictionary
 		if action_type in ["train", "research"]:
-			status = RtsActionAvailability.production(game, producer, action_type, action_kind)
+			status = RtsActionAvailability.production(game, producer, action_type, action_kind, context)
 			var found_producer := false
 			for candidate in game.selected:
 				if not is_instance_valid(candidate) or not candidate is RtsBuilding or candidate.owner_id != 0: continue
@@ -847,7 +847,7 @@ func _refresh_action_buttons() -> void:
 				# details from a producer that actually offers this action as well.
 				var offered: Array = RtsTechTree.all_train_units(game.civilizations[0], candidate.producer_kind()) if action_type == "train" else RtsTechTree.all_researches(game.civilizations[0], candidate.producer_kind())
 				if not offered.has(action_kind): continue
-				var candidate_status := RtsActionAvailability.production(game, candidate, action_type, action_kind)
+				var candidate_status := RtsActionAvailability.production(game, candidate, action_type, action_kind, context)
 				if not found_producer or candidate_status["available"]: status = candidate_status
 				found_producer = true
 				if candidate_status["available"]: break
