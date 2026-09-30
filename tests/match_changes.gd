@@ -113,6 +113,27 @@ func _test_view_coalescing() -> void:
 	assert(game.cancel_production_job(center, 0))
 	await process_frame
 	assert(game.population_used(0) == 6 and game.resource_readouts["food"].text == "1007")
+	# Unit creation and next-task initialization are one production completion.
+	assert(game.train_unit(center, "villager") and game.train_unit(center, "villager"))
+	var completions: Array[Dictionary] = []
+	var on_completion := func(_owner_id: int, domains: Array[StringName]) -> void:
+		completions.append({"domains": domains, "queued": center.production_queue.size(), "remaining": center.production_remaining})
+	game.session.changes.changed.connect(on_completion)
+	game.paused = false
+	center._process(center.production_remaining + 0.01)
+	game.paused = true
+	game.session.changes.changed.disconnect(on_completion)
+	assert(completions.size() == 1 and completions[0]["queued"] == 1 and completions[0]["remaining"] == center._training_time("villager"), "completion observer must see the next job fully initialized")
+	assert(completions[0]["domains"].has(&"entities") and completions[0]["domains"].has(&"production"))
+	assert(game.cancel_production_job(center))
+	await process_frame
+	# Entity changes refresh facts without expiring unrelated action callbacks.
+	var generation: int = game.player_actions.generation
+	var command: Node = game.command_buttons[0]
+	game.spawn_unit(1, "spearman", Vector2(2000, 2000))
+	game.spawn_unit(0, "spearman", center.position + Vector2(80, 0))
+	await process_frame
+	assert(game.player_actions.generation == generation and is_instance_valid(command), "ordinary spawns must preserve command tiles and pointer clicks")
 	var before := view_refreshes
 	game.credit_resource(1, "food", 13)
 	await process_frame
@@ -122,4 +143,32 @@ func _test_view_coalescing() -> void:
 	game.paused = true
 	await process_frame
 	assert(game._player_center(0) != center and game._player_center(0).production_queue.is_empty(), "pending view refresh must read the restarted match, never retain an old producer")
+	_test_queue_task_identity(game)
 	game.free()
+
+func _test_queue_task_identity(game: Node2D) -> void:
+	game.players[0]["age"] = 2
+	for resource in GameData.RESOURCE_NAMES: game.players[0][resource] = 10000
+	var barracks: RtsBuilding = game.spawn_building(0, "barracks", game._player_center(0).position + Vector2(0, -180))
+	game.selected.assign([barracks])
+	game._rebuild_actions()
+	for panel in ["global", "selected"]:
+		assert(game.train_unit(barracks, "spearman"))
+		assert(game.research_technology(barracks, "forged_weapons"))
+		assert(game.train_unit(barracks, "spearman"))
+		var third_job: Dictionary = barracks.production_queue[2]
+		var first: Button
+		var second: Button
+		if panel == "global":
+			game._refresh_global_queue_panel()
+			first = game.hud_ui.global_queue_list.get_child(1).get_child(1)
+			second = game.hud_ui.global_queue_list.get_child(2).get_child(1)
+		else:
+			game._update_hud()
+			first = game.queue_controls.get_child(0)
+			second = game.queue_controls.get_child(1)
+		first.pressed.emit()
+		second.pressed.emit()
+		second.pressed.emit()
+		assert(barracks.production_queue.size() == 1 and is_same(barracks.production_queue[0], third_job), "back-to-back stale row clicks must cancel their original tasks exactly once")
+		assert(game.cancel_production_job(barracks))

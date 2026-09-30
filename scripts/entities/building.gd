@@ -353,6 +353,7 @@ func _process(delta: float) -> void:
 			break
 	production_remaining = maxf(0.0, production_remaining - delta * work_rate)
 	if production_remaining > 0.0: return
+	game.session.changes.begin_transaction()
 	var job: Dictionary = production_queue.pop_front()
 	if job["type"] == "train":
 		var trained: RtsUnit = game.spawn_unit(owner_id, job["kind"], game.find_spawn_position(self), rally_point, rally_target, rally_resource_kind)
@@ -368,6 +369,8 @@ func _process(delta: float) -> void:
 	elif job["type"] == "research":
 		game.complete_research(owner_id, job["kind"])
 	_begin_next_job()
+	game.session.changes.mark(owner_id, &"production")
+	game.session.changes.end_transaction()
 	queue_redraw()
 
 func take_damage(damage: float) -> void:

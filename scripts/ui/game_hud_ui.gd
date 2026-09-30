@@ -194,9 +194,9 @@ func _init(game_ref: Node2D) -> void:
 
 func _on_match_changed(owner_id: int, domains: Array[StringName]) -> void:
 	# Enemy entities may be inspected, but their resource/queue changes are private.
-	if owner_id != 0 and not domains.has(&"entities"): return
+	if owner_id != 0 and not domains.has(&"entities") and not domains.has(&"selection"): return
 	_match_dirty = true
-	_match_actions_dirty = _match_actions_dirty or domains.has(&"research") or domains.has(&"market") or domains.has(&"entities")
+	_match_actions_dirty = _match_actions_dirty or domains.has(&"research") or domains.has(&"market") or domains.has(&"selection")
 	if _match_refresh_queued: return
 	_match_refresh_queued = true
 	call_deferred("_flush_match_changes")
@@ -811,9 +811,18 @@ func _queue_job_button(building: RtsBuilding, index: int, job: Dictionary) -> Bu
 	button.mouse_entered.connect(func() -> void: overlay.show())
 	button.mouse_exited.connect(func() -> void: overlay.hide())
 	button.pressed.connect(func() -> void:
-		if is_instance_valid(building): game.cancel_production_job(building, index)
+		_cancel_queue_job(building, job)
 	)
 	return button
+
+func _cancel_queue_job(building: RtsBuilding, job: Dictionary) -> bool:
+	if not is_instance_valid(building) or building.is_queued_for_deletion(): return false
+	# Rows can survive until the deferred redraw. Resolve the original task,
+	# never a stale slot that another cancellation has shifted underneath it.
+	for index in building.production_queue.size():
+		if is_same(building.production_queue[index], job):
+			return game.cancel_production_job(building, index)
+	return false
 
 func _toggle_global_queue() -> void:
 	global_queue_panel.visible = not global_queue_panel.visible
@@ -839,7 +848,7 @@ func _refresh_global_queue_panel() -> void:
 		global_queue_list.add_child(heading)
 		for entry in jobs:
 			var building: RtsBuilding = entry["building"]
-			var index: int = entry["index"]
+			var job: Dictionary = entry["job"]
 			var row := HBoxContainer.new()
 			global_queue_list.add_child(row)
 			var locate := Button.new()
@@ -857,7 +866,7 @@ func _refresh_global_queue_panel() -> void:
 			var cancel := Button.new()
 			cancel.text = "×"
 			cancel.pressed.connect(func() -> void:
-				if is_instance_valid(building): game.cancel_production_job(building, index)
+				_cancel_queue_job(building, job)
 			)
 			row.add_child(cancel)
 		if jobs.is_empty():

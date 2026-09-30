@@ -42,7 +42,9 @@ func unregister(entity: Node2D) -> void:
 	if not collection.has(entity): return
 	collection.erase(entity)
 	if game == null or game.is_queued_for_deletion(): return
+	var was_selected: bool = game.selected.has(entity)
 	game.selected.erase(entity)
+	if was_selected: game.session.changes.mark(0, &"selection")
 	if entity is RtsUnit: game.navigation.invalidate_spatial_index()
 	elif entity is RtsBuilding or entity is RtsResource: game.navigation.invalidate_obstacles()
 
@@ -96,9 +98,11 @@ func spawn_building(owner_id: int, kind: String, world_point: Vector2, under_con
 
 func entity_destroyed(entity: Node2D) -> void:
 	if not is_instance_valid(entity) or entity.is_queued_for_deletion(): return
+	game.session.changes.begin_transaction()
 	if not game.fog.active or game.fog.can_see(0, entity.position):
 		game.world_effects.append({"point": entity.position, "kind": "death" if entity is RtsUnit else "collapse", "color": game.player_color(entity.owner_id), "time": 0.9})
 		if entity.owner_id == 0 and entity is RtsUnit: game.play_feedback("alert")
+	if game.selected.has(entity): game.session.changes.mark(0, &"selection")
 	game.selected.erase(entity)
 	if entity is RtsUnit:
 		if not entity.passengers.is_empty(): entity.ungarrison_all()
@@ -133,8 +137,11 @@ func entity_destroyed(entity: Node2D) -> void:
 				game._check_match_end()
 	entity.queue_free()
 	game.session.changes.mark(entity.owner_id, &"entities")
+	game.session.changes.end_transaction()
 
 func eliminate_player(owner_id: int) -> void:
+	game.session.changes.begin_transaction()
+	var previous_selection: Array = game.selected.duplicate()
 	for unit in units.duplicate():
 		if is_instance_valid(unit) and unit.owner_id == owner_id:
 			game.selected.erase(unit)
@@ -153,6 +160,9 @@ func eliminate_player(owner_id: int) -> void:
 			building.queue_free()
 	game.navigation.refresh()
 	if game.fog.active: game.fog.update_visibility()
+	if previous_selection != game.selected: game.session.changes.mark(0, &"selection")
+	game.session.changes.mark(owner_id, &"entities")
+	game.session.changes.end_transaction()
 
 func spawn_neutral_sites() -> void:
 	for desired in game.world_map.trade_post_positions():
