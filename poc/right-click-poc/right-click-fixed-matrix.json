@@ -1,0 +1,1898 @@
+{
+  "synthetic": true,
+  "physical_gesture_reproduced": false,
+  "cases_per_map": 641,
+  "total_runs": 115380,
+  "map_seeds": [
+    12345.0,
+    4242.0,
+    431.0
+  ],
+  "repeats": 10.0,
+  "aggregates": [
+    {
+      "family": "ctrl_mapping",
+      "variant": "event_owned_poll",
+      "driver": "direct",
+      "runs": 60,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 0,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "ctrl_mapping",
+      "variant": "event_owned_poll",
+      "driver": "engine_buffered",
+      "runs": 60,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 0,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "ctrl_mapping",
+      "variant": "event_owned_poll",
+      "driver": "engine_immediate",
+      "runs": 60,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 0,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "ctrl_mapping",
+      "variant": "production",
+      "driver": "direct",
+      "runs": 60,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 0,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "ctrl_mapping",
+      "variant": "production",
+      "driver": "engine_buffered",
+      "runs": 60,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 0,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "ctrl_mapping",
+      "variant": "production",
+      "driver": "engine_immediate",
+      "runs": 60,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 0,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "delivered_left",
+      "variant": "event_owned_poll",
+      "driver": "direct",
+      "runs": 90,
+      "selection_lost": 60,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 30,
+      "moved_then_selection_lost": 30,
+      "still_dragging": 0
+    },
+    {
+      "family": "delivered_left",
+      "variant": "event_owned_poll",
+      "driver": "engine_buffered",
+      "runs": 90,
+      "selection_lost": 60,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 30,
+      "moved_then_selection_lost": 30,
+      "still_dragging": 0
+    },
+    {
+      "family": "delivered_left",
+      "variant": "event_owned_poll",
+      "driver": "engine_immediate",
+      "runs": 90,
+      "selection_lost": 60,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 30,
+      "moved_then_selection_lost": 30,
+      "still_dragging": 0
+    },
+    {
+      "family": "delivered_left",
+      "variant": "production",
+      "driver": "direct",
+      "runs": 90,
+      "selection_lost": 60,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 30,
+      "moved_then_selection_lost": 30,
+      "still_dragging": 0
+    },
+    {
+      "family": "delivered_left",
+      "variant": "production",
+      "driver": "engine_buffered",
+      "runs": 90,
+      "selection_lost": 60,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 30,
+      "moved_then_selection_lost": 30,
+      "still_dragging": 0
+    },
+    {
+      "family": "delivered_left",
+      "variant": "production",
+      "driver": "engine_immediate",
+      "runs": 90,
+      "selection_lost": 60,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 30,
+      "moved_then_selection_lost": 30,
+      "still_dragging": 0
+    },
+    {
+      "family": "left_control",
+      "variant": "event_owned_poll",
+      "driver": "direct",
+      "runs": 120,
+      "selection_lost": 120,
+      "stray_selection": 0,
+      "no_order_dispatch": 120,
+      "no_move": 120,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "left_control",
+      "variant": "event_owned_poll",
+      "driver": "engine_buffered",
+      "runs": 120,
+      "selection_lost": 120,
+      "stray_selection": 0,
+      "no_order_dispatch": 120,
+      "no_move": 120,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "left_control",
+      "variant": "event_owned_poll",
+      "driver": "engine_immediate",
+      "runs": 120,
+      "selection_lost": 120,
+      "stray_selection": 0,
+      "no_order_dispatch": 120,
+      "no_move": 120,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "left_control",
+      "variant": "production",
+      "driver": "direct",
+      "runs": 120,
+      "selection_lost": 120,
+      "stray_selection": 0,
+      "no_order_dispatch": 120,
+      "no_move": 120,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "left_control",
+      "variant": "production",
+      "driver": "engine_buffered",
+      "runs": 120,
+      "selection_lost": 120,
+      "stray_selection": 0,
+      "no_order_dispatch": 120,
+      "no_move": 120,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "left_control",
+      "variant": "production",
+      "driver": "engine_immediate",
+      "runs": 120,
+      "selection_lost": 120,
+      "stray_selection": 0,
+      "no_order_dispatch": 120,
+      "no_move": 120,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "missing_release",
+      "variant": "event_owned_poll",
+      "driver": "direct",
+      "runs": 30,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 30,
+      "no_move": 30,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 30
+    },
+    {
+      "family": "missing_release",
+      "variant": "event_owned_poll",
+      "driver": "engine_buffered",
+      "runs": 30,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 30,
+      "no_move": 30,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 30
+    },
+    {
+      "family": "missing_release",
+      "variant": "event_owned_poll",
+      "driver": "engine_immediate",
+      "runs": 30,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 30,
+      "no_move": 30,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 30
+    },
+    {
+      "family": "missing_release",
+      "variant": "production",
+      "driver": "direct",
+      "runs": 30,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 30,
+      "no_move": 30,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 30
+    },
+    {
+      "family": "missing_release",
+      "variant": "production",
+      "driver": "engine_buffered",
+      "runs": 30,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 30,
+      "no_move": 30,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 30
+    },
+    {
+      "family": "missing_release",
+      "variant": "production",
+      "driver": "engine_immediate",
+      "runs": 30,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 30,
+      "no_move": 30,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 30
+    },
+    {
+      "family": "native_left_interleaving",
+      "variant": "event_owned_poll",
+      "driver": "direct",
+      "runs": 5760,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 0,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "native_left_interleaving",
+      "variant": "event_owned_poll",
+      "driver": "engine_buffered",
+      "runs": 5760,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 0,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "native_left_interleaving",
+      "variant": "event_owned_poll",
+      "driver": "engine_immediate",
+      "runs": 5760,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 0,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "native_left_interleaving",
+      "variant": "production",
+      "driver": "direct",
+      "runs": 5760,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 0,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "native_left_interleaving",
+      "variant": "production",
+      "driver": "engine_buffered",
+      "runs": 5760,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 0,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "native_left_interleaving",
+      "variant": "production",
+      "driver": "engine_immediate",
+      "runs": 5760,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 0,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "right_control",
+      "variant": "event_owned_poll",
+      "driver": "direct",
+      "runs": 210,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 0,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "right_control",
+      "variant": "event_owned_poll",
+      "driver": "engine_buffered",
+      "runs": 210,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 0,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "right_control",
+      "variant": "event_owned_poll",
+      "driver": "engine_immediate",
+      "runs": 210,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 0,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "right_control",
+      "variant": "production",
+      "driver": "direct",
+      "runs": 210,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 0,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "right_control",
+      "variant": "production",
+      "driver": "engine_buffered",
+      "runs": 210,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 0,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "right_control",
+      "variant": "production",
+      "driver": "engine_immediate",
+      "runs": 210,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 0,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "timing_both_native",
+      "variant": "event_owned_poll",
+      "driver": "direct",
+      "runs": 4320,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 0,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "timing_both_native",
+      "variant": "event_owned_poll",
+      "driver": "engine_buffered",
+      "runs": 4320,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 0,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "timing_both_native",
+      "variant": "event_owned_poll",
+      "driver": "engine_immediate",
+      "runs": 4320,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 0,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "timing_both_native",
+      "variant": "production",
+      "driver": "direct",
+      "runs": 4320,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 0,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "timing_both_native",
+      "variant": "production",
+      "driver": "engine_buffered",
+      "runs": 4320,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 0,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "timing_both_native",
+      "variant": "production",
+      "driver": "engine_immediate",
+      "runs": 4320,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 0,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "timing_left_native",
+      "variant": "event_owned_poll",
+      "driver": "direct",
+      "runs": 4320,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 0,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "timing_left_native",
+      "variant": "event_owned_poll",
+      "driver": "engine_buffered",
+      "runs": 4320,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 0,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "timing_left_native",
+      "variant": "event_owned_poll",
+      "driver": "engine_immediate",
+      "runs": 4320,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 0,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "timing_left_native",
+      "variant": "production",
+      "driver": "direct",
+      "runs": 4320,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 0,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "timing_left_native",
+      "variant": "production",
+      "driver": "engine_buffered",
+      "runs": 4320,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 0,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "timing_left_native",
+      "variant": "production",
+      "driver": "engine_immediate",
+      "runs": 4320,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 0,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "timing_right_native",
+      "variant": "event_owned_poll",
+      "driver": "direct",
+      "runs": 4320,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 0,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "timing_right_native",
+      "variant": "event_owned_poll",
+      "driver": "engine_buffered",
+      "runs": 4320,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 0,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "timing_right_native",
+      "variant": "event_owned_poll",
+      "driver": "engine_immediate",
+      "runs": 4320,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 0,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "timing_right_native",
+      "variant": "production",
+      "driver": "direct",
+      "runs": 4320,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 0,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "timing_right_native",
+      "variant": "production",
+      "driver": "engine_buffered",
+      "runs": 4320,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 0,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    },
+    {
+      "family": "timing_right_native",
+      "variant": "production",
+      "driver": "engine_immediate",
+      "runs": 4320,
+      "selection_lost": 0,
+      "stray_selection": 0,
+      "no_order_dispatch": 0,
+      "no_move": 0,
+      "moved_then_selection_lost": 0,
+      "still_dragging": 0
+    }
+  ],
+  "control_failures": [],
+  "repeat_instability": [],
+  "direct_vs_engine_immediate_mismatches": [],
+  "representatives": {
+    "delivered_left/production/direct": {
+      "seed": 12345.0,
+      "schedule": [
+        {
+          "op": "button",
+          "button": 1,
+          "pressed": true
+        },
+        {
+          "op": "button",
+          "button": 1,
+          "pressed": false
+        },
+        {
+          "op": "button",
+          "button": 2,
+          "pressed": true
+        },
+        {
+          "op": "button",
+          "button": 2,
+          "pressed": false
+        },
+        {
+          "op": "flush"
+        },
+        {
+          "op": "poll"
+        }
+      ],
+      "case": "left_tap_before_right_same_batch",
+      "driver": "direct",
+      "family": "delivered_left",
+      "final": {
+        "begins": 1,
+        "completes": 1,
+        "dragging": false,
+        "order": "idle",
+        "orders": 1,
+        "phase": 0,
+        "previous_left": false,
+        "selected": 0
+      },
+      "selection_lost": true,
+      "transitions": [
+        {
+          "state": {
+            "begins": 1,
+            "completes": 0,
+            "dragging": true,
+            "order": "idle",
+            "orders": 0,
+            "phase": 2,
+            "previous_left": false,
+            "selected": 1
+          },
+          "step": {
+            "button": 1.0,
+            "op": "button",
+            "pressed": true
+          }
+        },
+        {
+          "state": {
+            "begins": 1,
+            "completes": 1,
+            "dragging": false,
+            "order": "idle",
+            "orders": 0,
+            "phase": 0,
+            "previous_left": false,
+            "selected": 0
+          },
+          "step": {
+            "button": 1.0,
+            "op": "button",
+            "pressed": false
+          }
+        },
+        {
+          "state": {
+            "begins": 1,
+            "completes": 1,
+            "dragging": false,
+            "order": "idle",
+            "orders": 1,
+            "phase": 0,
+            "previous_left": false,
+            "selected": 0
+          },
+          "step": {
+            "button": 2.0,
+            "op": "button",
+            "pressed": true
+          }
+        }
+      ],
+      "trial": 0,
+      "variant": "production"
+    },
+    "left_control/production/direct": {
+      "seed": 12345.0,
+      "schedule": [
+        {
+          "op": "button",
+          "button": 1,
+          "pressed": true
+        },
+        {
+          "op": "button",
+          "button": 1,
+          "pressed": false
+        },
+        {
+          "op": "flush"
+        },
+        {
+          "op": "poll"
+        }
+      ],
+      "case": "left_only_tap",
+      "driver": "direct",
+      "family": "left_control",
+      "final": {
+        "begins": 1,
+        "completes": 1,
+        "dragging": false,
+        "order": "idle",
+        "orders": 0,
+        "phase": 0,
+        "previous_left": false,
+        "selected": 0
+      },
+      "selection_lost": true,
+      "transitions": [
+        {
+          "state": {
+            "begins": 1,
+            "completes": 0,
+            "dragging": true,
+            "order": "idle",
+            "orders": 0,
+            "phase": 2,
+            "previous_left": false,
+            "selected": 1
+          },
+          "step": {
+            "button": 1.0,
+            "op": "button",
+            "pressed": true
+          }
+        },
+        {
+          "state": {
+            "begins": 1,
+            "completes": 1,
+            "dragging": false,
+            "order": "idle",
+            "orders": 0,
+            "phase": 0,
+            "previous_left": false,
+            "selected": 0
+          },
+          "step": {
+            "button": 1.0,
+            "op": "button",
+            "pressed": false
+          }
+        }
+      ],
+      "trial": 0,
+      "variant": "production"
+    },
+    "missing_release/production/direct": {
+      "seed": 12345.0,
+      "schedule": [
+        {
+          "op": "button",
+          "button": 1,
+          "pressed": true
+        },
+        {
+          "op": "flush"
+        },
+        {
+          "op": "poll"
+        }
+      ],
+      "case": "left_no_native_state_missing_up",
+      "driver": "direct",
+      "family": "missing_release",
+      "final": {
+        "begins": 1,
+        "completes": 0,
+        "dragging": true,
+        "order": "idle",
+        "orders": 0,
+        "phase": 2,
+        "previous_left": false,
+        "selected": 1
+      },
+      "selection_lost": false,
+      "transitions": [
+        {
+          "state": {
+            "begins": 1,
+            "completes": 0,
+            "dragging": true,
+            "order": "idle",
+            "orders": 0,
+            "phase": 2,
+            "previous_left": false,
+            "selected": 1
+          },
+          "step": {
+            "button": 1.0,
+            "op": "button",
+            "pressed": true
+          }
+        }
+      ],
+      "trial": 0,
+      "variant": "production"
+    },
+    "delivered_left/production/engine_immediate": {
+      "seed": 12345.0,
+      "schedule": [
+        {
+          "op": "button",
+          "button": 1,
+          "pressed": true
+        },
+        {
+          "op": "button",
+          "button": 1,
+          "pressed": false
+        },
+        {
+          "op": "button",
+          "button": 2,
+          "pressed": true
+        },
+        {
+          "op": "button",
+          "button": 2,
+          "pressed": false
+        },
+        {
+          "op": "flush"
+        },
+        {
+          "op": "poll"
+        }
+      ],
+      "case": "left_tap_before_right_same_batch",
+      "driver": "engine_immediate",
+      "family": "delivered_left",
+      "final": {
+        "begins": 1,
+        "completes": 1,
+        "dragging": false,
+        "order": "idle",
+        "orders": 1,
+        "phase": 0,
+        "previous_left": false,
+        "selected": 0
+      },
+      "selection_lost": true,
+      "transitions": [
+        {
+          "state": {
+            "begins": 1,
+            "completes": 0,
+            "dragging": true,
+            "order": "idle",
+            "orders": 0,
+            "phase": 2,
+            "previous_left": false,
+            "selected": 1
+          },
+          "step": {
+            "button": 1.0,
+            "op": "button",
+            "pressed": true
+          }
+        },
+        {
+          "state": {
+            "begins": 1,
+            "completes": 1,
+            "dragging": false,
+            "order": "idle",
+            "orders": 0,
+            "phase": 0,
+            "previous_left": false,
+            "selected": 0
+          },
+          "step": {
+            "button": 1.0,
+            "op": "button",
+            "pressed": false
+          }
+        },
+        {
+          "state": {
+            "begins": 1,
+            "completes": 1,
+            "dragging": false,
+            "order": "idle",
+            "orders": 1,
+            "phase": 0,
+            "previous_left": false,
+            "selected": 0
+          },
+          "step": {
+            "button": 2.0,
+            "op": "button",
+            "pressed": true
+          }
+        }
+      ],
+      "trial": 0,
+      "variant": "production"
+    },
+    "left_control/production/engine_immediate": {
+      "seed": 12345.0,
+      "schedule": [
+        {
+          "op": "button",
+          "button": 1,
+          "pressed": true
+        },
+        {
+          "op": "button",
+          "button": 1,
+          "pressed": false
+        },
+        {
+          "op": "flush"
+        },
+        {
+          "op": "poll"
+        }
+      ],
+      "case": "left_only_tap",
+      "driver": "engine_immediate",
+      "family": "left_control",
+      "final": {
+        "begins": 1,
+        "completes": 1,
+        "dragging": false,
+        "order": "idle",
+        "orders": 0,
+        "phase": 0,
+        "previous_left": false,
+        "selected": 0
+      },
+      "selection_lost": true,
+      "transitions": [
+        {
+          "state": {
+            "begins": 1,
+            "completes": 0,
+            "dragging": true,
+            "order": "idle",
+            "orders": 0,
+            "phase": 2,
+            "previous_left": false,
+            "selected": 1
+          },
+          "step": {
+            "button": 1.0,
+            "op": "button",
+            "pressed": true
+          }
+        },
+        {
+          "state": {
+            "begins": 1,
+            "completes": 1,
+            "dragging": false,
+            "order": "idle",
+            "orders": 0,
+            "phase": 0,
+            "previous_left": false,
+            "selected": 0
+          },
+          "step": {
+            "button": 1.0,
+            "op": "button",
+            "pressed": false
+          }
+        }
+      ],
+      "trial": 0,
+      "variant": "production"
+    },
+    "missing_release/production/engine_immediate": {
+      "seed": 12345.0,
+      "schedule": [
+        {
+          "op": "button",
+          "button": 1,
+          "pressed": true
+        },
+        {
+          "op": "flush"
+        },
+        {
+          "op": "poll"
+        }
+      ],
+      "case": "left_no_native_state_missing_up",
+      "driver": "engine_immediate",
+      "family": "missing_release",
+      "final": {
+        "begins": 1,
+        "completes": 0,
+        "dragging": true,
+        "order": "idle",
+        "orders": 0,
+        "phase": 2,
+        "previous_left": false,
+        "selected": 1
+      },
+      "selection_lost": false,
+      "transitions": [
+        {
+          "state": {
+            "begins": 1,
+            "completes": 0,
+            "dragging": true,
+            "order": "idle",
+            "orders": 0,
+            "phase": 2,
+            "previous_left": false,
+            "selected": 1
+          },
+          "step": {
+            "button": 1.0,
+            "op": "button",
+            "pressed": true
+          }
+        }
+      ],
+      "trial": 0,
+      "variant": "production"
+    },
+    "delivered_left/production/engine_buffered": {
+      "seed": 12345.0,
+      "schedule": [
+        {
+          "op": "button",
+          "button": 1,
+          "pressed": true
+        },
+        {
+          "op": "button",
+          "button": 1,
+          "pressed": false
+        },
+        {
+          "op": "button",
+          "button": 2,
+          "pressed": true
+        },
+        {
+          "op": "button",
+          "button": 2,
+          "pressed": false
+        },
+        {
+          "op": "flush"
+        },
+        {
+          "op": "poll"
+        }
+      ],
+      "case": "left_tap_before_right_same_batch",
+      "driver": "engine_buffered",
+      "family": "delivered_left",
+      "final": {
+        "begins": 1,
+        "completes": 1,
+        "dragging": false,
+        "order": "idle",
+        "orders": 1,
+        "phase": 0,
+        "previous_left": false,
+        "selected": 0
+      },
+      "selection_lost": true,
+      "transitions": [
+        {
+          "state": {
+            "begins": 1,
+            "completes": 1,
+            "dragging": false,
+            "order": "idle",
+            "orders": 1,
+            "phase": 0,
+            "previous_left": false,
+            "selected": 0
+          },
+          "step": {
+            "op": "flush"
+          }
+        }
+      ],
+      "trial": 0,
+      "variant": "production"
+    },
+    "left_control/production/engine_buffered": {
+      "seed": 12345.0,
+      "schedule": [
+        {
+          "op": "button",
+          "button": 1,
+          "pressed": true
+        },
+        {
+          "op": "button",
+          "button": 1,
+          "pressed": false
+        },
+        {
+          "op": "flush"
+        },
+        {
+          "op": "poll"
+        }
+      ],
+      "case": "left_only_tap",
+      "driver": "engine_buffered",
+      "family": "left_control",
+      "final": {
+        "begins": 1,
+        "completes": 1,
+        "dragging": false,
+        "order": "idle",
+        "orders": 0,
+        "phase": 0,
+        "previous_left": false,
+        "selected": 0
+      },
+      "selection_lost": true,
+      "transitions": [
+        {
+          "state": {
+            "begins": 1,
+            "completes": 1,
+            "dragging": false,
+            "order": "idle",
+            "orders": 0,
+            "phase": 0,
+            "previous_left": false,
+            "selected": 0
+          },
+          "step": {
+            "op": "flush"
+          }
+        }
+      ],
+      "trial": 0,
+      "variant": "production"
+    },
+    "missing_release/production/engine_buffered": {
+      "seed": 12345.0,
+      "schedule": [
+        {
+          "op": "button",
+          "button": 1,
+          "pressed": true
+        },
+        {
+          "op": "flush"
+        },
+        {
+          "op": "poll"
+        }
+      ],
+      "case": "left_no_native_state_missing_up",
+      "driver": "engine_buffered",
+      "family": "missing_release",
+      "final": {
+        "begins": 1,
+        "completes": 0,
+        "dragging": true,
+        "order": "idle",
+        "orders": 0,
+        "phase": 2,
+        "previous_left": false,
+        "selected": 1
+      },
+      "selection_lost": false,
+      "transitions": [
+        {
+          "state": {
+            "begins": 1,
+            "completes": 0,
+            "dragging": true,
+            "order": "idle",
+            "orders": 0,
+            "phase": 2,
+            "previous_left": false,
+            "selected": 1
+          },
+          "step": {
+            "op": "flush"
+          }
+        }
+      ],
+      "trial": 0,
+      "variant": "production"
+    },
+    "delivered_left/event_owned_poll/direct": {
+      "seed": 12345.0,
+      "schedule": [
+        {
+          "op": "button",
+          "button": 1,
+          "pressed": true
+        },
+        {
+          "op": "button",
+          "button": 1,
+          "pressed": false
+        },
+        {
+          "op": "button",
+          "button": 2,
+          "pressed": true
+        },
+        {
+          "op": "button",
+          "button": 2,
+          "pressed": false
+        },
+        {
+          "op": "flush"
+        },
+        {
+          "op": "poll"
+        }
+      ],
+      "case": "left_tap_before_right_same_batch",
+      "driver": "direct",
+      "family": "delivered_left",
+      "final": {
+        "begins": 1,
+        "completes": 1,
+        "dragging": false,
+        "order": "idle",
+        "orders": 1,
+        "phase": 0,
+        "previous_left": false,
+        "selected": 0
+      },
+      "selection_lost": true,
+      "transitions": [
+        {
+          "state": {
+            "begins": 1,
+            "completes": 0,
+            "dragging": true,
+            "order": "idle",
+            "orders": 0,
+            "phase": 2,
+            "previous_left": false,
+            "selected": 1
+          },
+          "step": {
+            "button": 1.0,
+            "op": "button",
+            "pressed": true
+          }
+        },
+        {
+          "state": {
+            "begins": 1,
+            "completes": 1,
+            "dragging": false,
+            "order": "idle",
+            "orders": 0,
+            "phase": 0,
+            "previous_left": false,
+            "selected": 0
+          },
+          "step": {
+            "button": 1.0,
+            "op": "button",
+            "pressed": false
+          }
+        },
+        {
+          "state": {
+            "begins": 1,
+            "completes": 1,
+            "dragging": false,
+            "order": "idle",
+            "orders": 1,
+            "phase": 0,
+            "previous_left": false,
+            "selected": 0
+          },
+          "step": {
+            "button": 2.0,
+            "op": "button",
+            "pressed": true
+          }
+        }
+      ],
+      "trial": 0,
+      "variant": "event_owned_poll"
+    },
+    "left_control/event_owned_poll/direct": {
+      "seed": 12345.0,
+      "schedule": [
+        {
+          "op": "button",
+          "button": 1,
+          "pressed": true
+        },
+        {
+          "op": "button",
+          "button": 1,
+          "pressed": false
+        },
+        {
+          "op": "flush"
+        },
+        {
+          "op": "poll"
+        }
+      ],
+      "case": "left_only_tap",
+      "driver": "direct",
+      "family": "left_control",
+      "final": {
+        "begins": 1,
+        "completes": 1,
+        "dragging": false,
+        "order": "idle",
+        "orders": 0,
+        "phase": 0,
+        "previous_left": false,
+        "selected": 0
+      },
+      "selection_lost": true,
+      "transitions": [
+        {
+          "state": {
+            "begins": 1,
+            "completes": 0,
+            "dragging": true,
+            "order": "idle",
+            "orders": 0,
+            "phase": 2,
+            "previous_left": false,
+            "selected": 1
+          },
+          "step": {
+            "button": 1.0,
+            "op": "button",
+            "pressed": true
+          }
+        },
+        {
+          "state": {
+            "begins": 1,
+            "completes": 1,
+            "dragging": false,
+            "order": "idle",
+            "orders": 0,
+            "phase": 0,
+            "previous_left": false,
+            "selected": 0
+          },
+          "step": {
+            "button": 1.0,
+            "op": "button",
+            "pressed": false
+          }
+        }
+      ],
+      "trial": 0,
+      "variant": "event_owned_poll"
+    },
+    "missing_release/event_owned_poll/direct": {
+      "seed": 12345.0,
+      "schedule": [
+        {
+          "op": "button",
+          "button": 1,
+          "pressed": true
+        },
+        {
+          "op": "flush"
+        },
+        {
+          "op": "poll"
+        }
+      ],
+      "case": "left_no_native_state_missing_up",
+      "driver": "direct",
+      "family": "missing_release",
+      "final": {
+        "begins": 1,
+        "completes": 0,
+        "dragging": true,
+        "order": "idle",
+        "orders": 0,
+        "phase": 2,
+        "previous_left": false,
+        "selected": 1
+      },
+      "selection_lost": false,
+      "transitions": [
+        {
+          "state": {
+            "begins": 1,
+            "completes": 0,
+            "dragging": true,
+            "order": "idle",
+            "orders": 0,
+            "phase": 2,
+            "previous_left": false,
+            "selected": 1
+          },
+          "step": {
+            "button": 1.0,
+            "op": "button",
+            "pressed": true
+          }
+        }
+      ],
+      "trial": 0,
+      "variant": "event_owned_poll"
+    },
+    "delivered_left/event_owned_poll/engine_immediate": {
+      "seed": 12345.0,
+      "schedule": [
+        {
+          "op": "button",
+          "button": 1,
+          "pressed": true
+        },
+        {
+          "op": "button",
+          "button": 1,
+          "pressed": false
+        },
+        {
+          "op": "button",
+          "button": 2,
+          "pressed": true
+        },
+        {
+          "op": "button",
+          "button": 2,
+          "pressed": false
+        },
+        {
+          "op": "flush"
+        },
+        {
+          "op": "poll"
+        }
+      ],
+      "case": "left_tap_before_right_same_batch",
+      "driver": "engine_immediate",
+      "family": "delivered_left",
+      "final": {
+        "begins": 1,
+        "completes": 1,
+        "dragging": false,
+        "order": "idle",
+        "orders": 1,
+        "phase": 0,
+        "previous_left": false,
+        "selected": 0
+      },
+      "selection_lost": true,
+      "transitions": [
+        {
+          "state": {
+            "begins": 1,
+            "completes": 0,
+            "dragging": true,
+            "order": "idle",
+            "orders": 0,
+            "phase": 2,
+            "previous_left": false,
+            "selected": 1
+          },
+          "step": {
+            "button": 1.0,
+            "op": "button",
+            "pressed": true
+          }
+        },
+        {
+          "state": {
+            "begins": 1,
+            "completes": 1,
+            "dragging": false,
+            "order": "idle",
+            "orders": 0,
+            "phase": 0,
+            "previous_left": false,
+            "selected": 0
+          },
+          "step": {
+            "button": 1.0,
+            "op": "button",
+            "pressed": false
+          }
+        },
+        {
+          "state": {
+            "begins": 1,
+            "completes": 1,
+            "dragging": false,
+            "order": "idle",
+            "orders": 1,
+            "phase": 0,
+            "previous_left": false,
+            "selected": 0
+          },
+          "step": {
+            "button": 2.0,
+            "op": "button",
+            "pressed": true
+          }
+        }
+      ],
+      "trial": 0,
+      "variant": "event_owned_poll"
+    },
+    "left_control/event_owned_poll/engine_immediate": {
+      "seed": 12345.0,
+      "schedule": [
+        {
+          "op": "button",
+          "button": 1,
+          "pressed": true
+        },
+        {
+          "op": "button",
+          "button": 1,
+          "pressed": false
+        },
+        {
+          "op": "flush"
+        },
+        {
+          "op": "poll"
+        }
+      ],
+      "case": "left_only_tap",
+      "driver": "engine_immediate",
+      "family": "left_control",
+      "final": {
+        "begins": 1,
+        "completes": 1,
+        "dragging": false,
+        "order": "idle",
+        "orders": 0,
+        "phase": 0,
+        "previous_left": false,
+        "selected": 0
+      },
+      "selection_lost": true,
+      "transitions": [
+        {
+          "state": {
+            "begins": 1,
+            "completes": 0,
+            "dragging": true,
+            "order": "idle",
+            "orders": 0,
+            "phase": 2,
+            "previous_left": false,
+            "selected": 1
+          },
+          "step": {
+            "button": 1.0,
+            "op": "button",
+            "pressed": true
+          }
+        },
+        {
+          "state": {
+            "begins": 1,
+            "completes": 1,
+            "dragging": false,
+            "order": "idle",
+            "orders": 0,
+            "phase": 0,
+            "previous_left": false,
+            "selected": 0
+          },
+          "step": {
+            "button": 1.0,
+            "op": "button",
+            "pressed": false
+          }
+        }
+      ],
+      "trial": 0,
+      "variant": "event_owned_poll"
+    },
+    "missing_release/event_owned_poll/engine_immediate": {
+      "seed": 12345.0,
+      "schedule": [
+        {
+          "op": "button",
+          "button": 1,
+          "pressed": true
+        },
+        {
+          "op": "flush"
+        },
+        {
+          "op": "poll"
+        }
+      ],
+      "case": "left_no_native_state_missing_up",
+      "driver": "engine_immediate",
+      "family": "missing_release",
+      "final": {
+        "begins": 1,
+        "completes": 0,
+        "dragging": true,
+        "order": "idle",
+        "orders": 0,
+        "phase": 2,
+        "previous_left": false,
+        "selected": 1
+      },
+      "selection_lost": false,
+      "transitions": [
+        {
+          "state": {
+            "begins": 1,
+            "completes": 0,
+            "dragging": true,
+            "order": "idle",
+            "orders": 0,
+            "phase": 2,
+            "previous_left": false,
+            "selected": 1
+          },
+          "step": {
+            "button": 1.0,
+            "op": "button",
+            "pressed": true
+          }
+        }
+      ],
+      "trial": 0,
+      "variant": "event_owned_poll"
+    },
+    "delivered_left/event_owned_poll/engine_buffered": {
+      "seed": 12345.0,
+      "schedule": [
+        {
+          "op": "button",
+          "button": 1,
+          "pressed": true
+        },
+        {
+          "op": "button",
+          "button": 1,
+          "pressed": false
+        },
+        {
+          "op": "button",
+          "button": 2,
+          "pressed": true
+        },
+        {
+          "op": "button",
+          "button": 2,
+          "pressed": false
+        },
+        {
+          "op": "flush"
+        },
+        {
+          "op": "poll"
+        }
+      ],
+      "case": "left_tap_before_right_same_batch",
+      "driver": "engine_buffered",
+      "family": "delivered_left",
+      "final": {
+        "begins": 1,
+        "completes": 1,
+        "dragging": false,
+        "order": "idle",
+        "orders": 1,
+        "phase": 0,
+        "previous_left": false,
+        "selected": 0
+      },
+      "selection_lost": true,
+      "transitions": [
+        {
+          "state": {
+            "begins": 1,
+            "completes": 1,
+            "dragging": false,
+            "order": "idle",
+            "orders": 1,
+            "phase": 0,
+            "previous_left": false,
+            "selected": 0
+          },
+          "step": {
+            "op": "flush"
+          }
+        }
+      ],
+      "trial": 0,
+      "variant": "event_owned_poll"
+    },
+    "left_control/event_owned_poll/engine_buffered": {
+      "seed": 12345.0,
+      "schedule": [
+        {
+          "op": "button",
+          "button": 1,
+          "pressed": true
+        },
+        {
+          "op": "button",
+          "button": 1,
+          "pressed": false
+        },
+        {
+          "op": "flush"
+        },
+        {
+          "op": "poll"
+        }
+      ],
+      "case": "left_only_tap",
+      "driver": "engine_buffered",
+      "family": "left_control",
+      "final": {
+        "begins": 1,
+        "completes": 1,
+        "dragging": false,
+        "order": "idle",
+        "orders": 0,
+        "phase": 0,
+        "previous_left": false,
+        "selected": 0
+      },
+      "selection_lost": true,
+      "transitions": [
+        {
+          "state": {
+            "begins": 1,
+            "completes": 1,
+            "dragging": false,
+            "order": "idle",
+            "orders": 0,
+            "phase": 0,
+            "previous_left": false,
+            "selected": 0
+          },
+          "step": {
+            "op": "flush"
+          }
+        }
+      ],
+      "trial": 0,
+      "variant": "event_owned_poll"
+    },
+    "missing_release/event_owned_poll/engine_buffered": {
+      "seed": 12345.0,
+      "schedule": [
+        {
+          "op": "button",
+          "button": 1,
+          "pressed": true
+        },
+        {
+          "op": "flush"
+        },
+        {
+          "op": "poll"
+        }
+      ],
+      "case": "left_no_native_state_missing_up",
+      "driver": "engine_buffered",
+      "family": "missing_release",
+      "final": {
+        "begins": 1,
+        "completes": 0,
+        "dragging": true,
+        "order": "idle",
+        "orders": 0,
+        "phase": 2,
+        "previous_left": false,
+        "selected": 1
+      },
+      "selection_lost": false,
+      "transitions": [
+        {
+          "state": {
+            "begins": 1,
+            "completes": 0,
+            "dragging": true,
+            "order": "idle",
+            "orders": 0,
+            "phase": 2,
+            "previous_left": false,
+            "selected": 1
+          },
+          "step": {
+            "op": "flush"
+          }
+        }
+      ],
+      "trial": 0,
+      "variant": "event_owned_poll"
+    }
+  },
+  "expect_fixed": true
+}

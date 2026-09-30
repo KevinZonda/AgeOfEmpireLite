@@ -1,6 +1,34 @@
 # 触摸板双指轻点右键 POC
 
-2026-09-30。用户报告：双指轻点有时表现为左键。使用本项目已有补丁的 Godot 4.7.2 运行时。此轮只添加诊断和事件回放，不修改正式游戏输入逻辑。
+2026-09-30。用户报告：双指轻点有时表现为左键。使用本项目已有补丁的 Godot 4.7.2 运行时。原始诊断仅添加采样和回放；`fix/right-click-selection` 分支现已修复正式游戏的轮询选择入口，修复验证见下节。
+
+## worktree 修复与验证
+
+分支：`fix/right-click-selection`。工作目录：`/Users/kevin/Desktop/AgeOfEmpireLite-right-click`，复用现有补丁引擎。
+
+`scripts/game.gd::_advance_selection_pointer()` 不再根据原生 LEFT 上升沿调用 `_begin_selection_candidate()`。正常 LEFT 事件仍经 `_unhandled_input()` 开始选择；原生坐标和按钮轮询继续更新已有拖框、在松开时完成选择。仅原生状态出现 LEFT 而没有 LEFT 事件时，不会创建选择。移除了不再使用的原生选择开始条件函数，并把旧拖选性能 POC 改为同时提供真实的 LEFT 事件。
+
+修复后以相同 641 种场景、3 个种子、每场景 10 次、3 种分发和 2 个版本重复了 115,380 次合成回放。`--expect-fixed` 会要求原游戏版本也保持选中单位、正常移动且不额外启动选择；全部通过，没有重复不一致或直接调用／引擎即时分发差异。完整结果见 [right-click-fixed-matrix.json](right-click-fixed-matrix.json)。
+
+| 场景组（仅原游戏版本、即时引擎分发）| 修复前清空选择 | 修复后清空选择 |
+| --- | ---: | ---: |
+| RIGHT 与原生 LEFT 顺序／轮询位置交错 | 2,520 / 5,760 | 0 / 5,760 |
+| RIGHT 与原生 LEFT 帧时间组合 | 990 / 4,320 | 0 / 4,320 |
+| RIGHT 与原生 BOTH 帧时间组合 | 990 / 4,320 | 0 / 4,320 |
+| Control+点击两个对照 | 30 / 60 | 0 / 60 |
+
+这些是合成场景计数，不代表物理触摸板故障率。原始诊断 JSON 保持不变；矩阵默认写入 `right-click-current-matrix.json`，使用 `--expect-fixed` 时默认写入 `right-click-fixed-matrix.json`，避免覆盖历史证据。
+
+新增 [right_click_selection.gd](../../tests/right_click_selection.gd) 经 `Input.parse_input_event()` 验证原生 LEFT 脉冲、Control+点击、右键取消与迟到松开、瞬时 LEFT、Shift 追加、双击、真实事件启动的拖框及失焦取消。该测试和原有 smoke、selection、build_selection、landmark_selection、minimap_projection 均通过。更新后的 `selection_battle_latency_poc.gd` 在 headless 实际帧循环中完成 3 次拖选、429 个按住样本，选框状态／位置不一致数为 0；这不衡量显示器延迟。
+
+```sh
+make run RUN_ARGS='--headless --script res://tests/right_click_selection.gd'
+python3 poc/right-click-poc/right_click_matrix.py --repeats 10 --expect-fixed
+RTS_DRAG_IDLE=1 RTS_DRAG_SECONDS=4.5 \
+  make run RUN_ARGS='--headless --script res://tests/selection_battle_latency_poc.gd'
+```
+
+本修复针对游戏轮询额外产生的选择。如果 AppKit 已送出 LEFT，游戏仍按实际 LEFT 事件处理；真实双指轻点是否被系统误识别仍需带用户意图标记的物理采样确认。缺失 LEFT 松开且轮询从未见到按下的另一现象也未在此修复中改变。
 
 ## 具体诊断目标与判据
 
@@ -13,7 +41,7 @@
 | 游戏是否在已识别 RIGHT 后额外执行 LEFT 选择？ | 不送任何 LEFT 按下事件；已选单位收到 RIGHT；其后仅原生 LEFT 状态出现并消失。观察是否由 `source=native_poll` 启动并完成选择、清空已选单位 | 合成回放已稳定复现；原因在游戏选择状态机 |
 | 双指轻点是否在进入游戏之前被系统判成 LEFT？ | 用 F7／F8 标记用户右键意图；若 AppKit 原始事件为 LEFT，说明游戏接收之前已是 LEFT | 首轮日志出现过 AppKit LEFT，但没有用户意图标记，尚未确认该次物理手势 |
 
-成功识别的 RIGHT 事件不应为同一次操作额外创建 LEFT 选择。故障回放的目标是确认这条游戏行为；注入原生 LEFT 脉冲是明确的输入假设，不能证明硬件双指轻点必然生成该脉冲。正式修复尚未应用，测试夹具中的“必须有 LEFT 事件才允许轮询选择”只用于 A/B 验证。
+成功识别的 RIGHT 事件不应为同一次操作额外创建 LEFT 选择。故障回放的目标是确认这条游戏行为；注入原生 LEFT 脉冲是明确的输入假设，不能证明硬件双指轻点必然生成该脉冲。原始 A/B 版本用“必须有 LEFT 事件才允许轮询选择”确认原因；当前修复直接取消轮询创建选择的入口，保留其更新与松开处理。
 
 ## 目录与运行入口
 
@@ -24,9 +52,9 @@
 | [run.sh](run.sh) | `poc/right-click-poc/run.sh --game` 启动完整游戏采样；不加参数启动空场景对照。`right_click.sh` 是同一入口的兼容包装 |
 | [probe.gd](probe.gd)、[trace.gd](trace.gd)、[game_trace.gd](game_trace.gd)、[native_probe.m](native_probe.m) | 关联 Quartz、AppKit、Godot 事件与游戏选择／下令动作；原样返回系统事件 |
 | [right_click_replay.gd](right_click_replay.gd)、[right_click_fixture.gd](right_click_fixture.gd) | 最小故障及正常左右键对照；`make run RUN_ARGS='--headless --script res://poc/right-click-poc/right_click_replay.gd'` |
-| [right_click_matrix.py](right_click_matrix.py)、[right_click_matrix.gd](right_click_matrix.gd) | 自动构造时序矩阵；`python3 poc/right-click-poc/right_click_matrix.py --repeats 10` |
+| [right_click_matrix.py](right_click_matrix.py)、[right_click_matrix.gd](right_click_matrix.gd) | 自动构造时序矩阵；`python3 poc/right-click-poc/right_click_matrix.py --repeats 10 --expect-fixed` |
 | [right_click_summary.py](right_click_summary.py) | 汇总采样时间线；`python3 poc/right-click-poc/right_click_summary.py /tmp/aoe-right-click-poc-日期时间` |
-| `right-click-*.json` | 已保存的最小回放、矩阵统计和首轮窗口事件摘录；不是修复后游戏的回归基线 |
+| `right-click-*.json` | 原始诊断数据与 `right-click-fixed-matrix.json` 修复验证结果分别保留 |
 
 ## 当前结论
 
@@ -41,7 +69,7 @@
 
 ## 可重复的回放结果
 
-回放使用真实游戏状态机，测试夹具仅提供独立的原生 LEFT 状态和指针坐标，并放宽 headless 窗口的焦点条件。每轮选中侦察兵，点击可见的空地。结果保存在 [right-click-replay.json](right-click-replay.json)。
+回放使用真实游戏状态机，测试夹具仅提供独立的原生 LEFT 状态和指针坐标，；原始版本还放宽 headless 窗口的焦点条件，修复后轮询不再负责开始选择。每轮选中侦察兵，点击可见的空地。结果保存在 [right-click-replay.json](right-click-replay.json)。
 
 | 输入顺序 | 右键移动 | 松开后仍选中侦察兵 |
 | --- | --- | --- |
@@ -66,15 +94,15 @@ AOE_RIGHT_CLICK_REPLAY="$PWD/poc/right-click-poc/right-click-replay.json" \
 
 ## 自动构造与重复测试
 
-后续扩展为 [right_click_matrix.py](right_click_matrix.py) 与 [right_click_matrix.gd](right_click_matrix.gd)。结果保存于 [right-click-matrix.json](right-click-matrix.json)。运行：
+后续扩展为 [right_click_matrix.py](right_click_matrix.py) 与 [right_click_matrix.gd](right_click_matrix.gd)。原始结果保存于 [right-click-matrix.json](right-click-matrix.json)，修复结果保存于 [right-click-fixed-matrix.json](right-click-fixed-matrix.json)。验证修复：
 
 ```sh
-python3 poc/right-click-poc/right_click_matrix.py --repeats 10
+python3 poc/right-click-poc/right_click_matrix.py --repeats 10 --expect-fixed
 ```
 
 **641 种场景 × 3 个地图种子（12345、4242、431）× 每种 10 次 × 3 种输入分发 × 2 种 POC 版本 = 115,380 次合成回放。** 正常左右键对照无失败，相同场景重复结果无变化，直接调用与 `Input.parse_input_event()` 即时分发无结果差异。
 
-这不是 115,380 次物理触摸板操作。原生按钮状态和指针由夹具提供，headless 焦点条件被放宽；画面、设备识别和 AppKit 的物理手势判定未在此矩阵中运行。时间参数用于排列事件和帧轮询先后，采用虚拟时间，不以 sleep 模拟真实负载。
+这不是 115,380 次物理触摸板操作。原生按钮状态和指针由夹具提供，原始版本的 headless 焦点条件被放宽；画面、设备识别和 AppKit 的物理手势判定未在此矩阵中运行。时间参数用于排列事件和帧轮询先后，采用虚拟时间，不以 sleep 模拟真实负载。
 
 覆盖范围：
 
@@ -83,9 +111,9 @@ python3 poc/right-click-poc/right_click_matrix.py --repeats 10
 - 双指轻点日志中常见的按下／松开同批、原生状态已经回到 0；事件掩码为 LEFT/BOTH 但 `button_index=RIGHT`；重复 RIGHT、RIGHT 的双击标记、迟到的 LEFT 松开；RIGHT 前后实际送达 LEFT；Control+点击的事件／状态语义差异；LEFT 缺失松开。
 - 直接调用游戏入口、Godot 即时输入分发、Godot 缓冲输入后显式 flush。后两者真实经过 Input 与 Viewport 路径，没有跳过 GUI／handled 分发。
 
-对照版本仅存在于测试夹具中：轮询必须先有已送达的 LEFT 按下才允许启动／更新选择，RIGHT 按下撤销该许可。正式 `scripts/game.gd` 未应用此方案。这是验证原因的实验，不是已完成全面回归的正式修复。
+对照版本仅存在于测试夹具中：轮询必须先有已送达的 LEFT 按下才允许启动／更新选择，RIGHT 按下撤销该许可。该 A/B 版本保留用于历史对照。当前分支采用“只有 LEFT 事件能开始选择”的正式修复，而不是添加同一个许可标记。
 
-下表只统计 `engine_immediate` 的结果；每组包含 3 个种子、每场景 10 次。分母是合成场景执行次数，**不能当作真实触摸板故障率**。
+下表为修复前的历史结果，只统计 `engine_immediate`；每组包含 3 个种子、每场景 10 次。分母是合成场景执行次数，**不能当作真实触摸板故障率**。
 
 | 合成场景组 | 原游戏清空选择 | 对照版清空选择 |
 | --- | ---: | ---: |

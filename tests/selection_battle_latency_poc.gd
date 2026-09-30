@@ -73,9 +73,6 @@ class ProbeGame extends DemoGame:
 	func _selection_pointer_screen_position() -> Vector2:
 		var phase := fmod(_seconds(), 1.5)
 		return Vector2(360, 240) + Vector2(minf(phase / 1.2, 1.0) * 420, sin(phase * PI / 1.2) * 100)
-	func _can_begin_native_selection(point: Vector2) -> bool:
-		# A headless window has no OS focus. Keep all game/UI checks intact.
-		return started and not paused and not game_over and build_mode == "" and order_mode == "" and not wall_dragging and not _selection_point_over_hud(point)
 	func _poll_selection_pointer() -> void:
 		if not polling: return
 		var started := Time.get_ticks_usec()
@@ -85,8 +82,14 @@ class ProbeGame extends DemoGame:
 		sampled_pointer = _selection_pointer_screen_position()
 		var held := _selection_native_left_down()
 		gap_during_hold = held and previous_sample_held
+		# Production starts selection from LEFT events. Generate the matching
+		# press instead of letting a native-state-only pulse create a selection.
+		if held and not previous_sample_held:
+			_send_left_event(true, sampled_pointer)
+		var released := not held and previous_sample_held
 		previous_sample_held = held
 		_advance_selection_pointer(sampled_pointer, held)
+		if released: _send_left_event(false, sampled_pointer)
 		poll_us = Time.get_ticks_usec() - started
 		if dragging and held:
 			held_samples += 1
@@ -98,6 +101,15 @@ class ProbeGame extends DemoGame:
 				if selection_drag_overlay.borders[0].position != expected.position: overlay_mismatches += 1
 		elif not held and (dragging or selection_drag_overlay.visible or selection_drag_overlay.tracking):
 			overlay_mismatches += 1
+	func _send_left_event(pressed: bool, point: Vector2) -> void:
+		var event := InputEventMouseButton.new()
+		event.button_index = MOUSE_BUTTON_LEFT
+		event.pressed = pressed
+		event.position = point
+		event.global_position = point
+		event.button_mask = MOUSE_BUTTON_MASK_LEFT if pressed else 0
+		Input.parse_input_event(event)
+		Input.flush_buffered_events()
 	func _complete_selection_drag(point: Vector2, additive: bool) -> void:
 		var started := Time.get_ticks_usec()
 		super._complete_selection_drag(point, additive)
