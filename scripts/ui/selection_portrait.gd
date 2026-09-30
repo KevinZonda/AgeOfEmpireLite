@@ -7,12 +7,15 @@ const Figure = preload("res://scripts/entities/visuals/unit_figure_visual.gd")
 const UnitVisualState = preload("res://scripts/entities/visuals/unit_visual_state.gd")
 const DeerVisual = preload("res://scripts/entities/visuals/deer_visual.gd")
 const LivestockVisual = preload("res://scripts/entities/visuals/livestock_visual.gd")
+const BuildingVisual = preload("res://scripts/entities/visuals/building_visual.gd")
+const RefinedGeometry = preload("res://scripts/entities/visuals/refined_building_geometry.gd")
 
 var subject: Node2D
 var owner_tint := Color("8a9a8e")
 var figure_renderer := Figure.new()
 var siege_renderer := Siege.new()
 var humanoid_state := UnitVisualState.new()
+var building_portrait_renderer := BuildingVisual.new()
 
 func _ready() -> void:
 	custom_minimum_size = Vector2(102, 142)
@@ -99,6 +102,9 @@ func _draw_empty() -> void:
 func _draw_building() -> void:
 	var center := Vector2(size.x * 0.5, size.y * 0.5)
 	var building: RtsBuilding = subject
+	if RefinedGeometry.handles(building.kind):
+		building_portrait_renderer.draw_refined_portrait(self, building.visual_snapshot(), Rect2(Vector2(17, 20), size - Vector2(34, 40)))
+		return
 	draw_colored_polygon(PackedVector2Array([Vector2(14, 105), Vector2(88, 105), Vector2(78, 119), Vector2(24, 119)]), Color("202622", 0.65))
 	draw_rect(Rect2(center + Vector2(-29, -20), Vector2(58, 47)), Color("a99570"))
 	draw_rect(Rect2(center + Vector2(-34, -32), Vector2(68, 14)), owner_tint.darkened(0.23))

@@ -14,11 +14,14 @@ const IndustryBuildingVisual = preload("res://scripts/entities/visuals/industry_
 const DockBuildingVisual = preload("res://scripts/entities/visuals/dock_building_visual.gd")
 const KeepMonasteryVisual = preload("res://scripts/entities/visuals/keep_monastery_visual.gd")
 const FortificationVisual = preload("res://scripts/entities/visuals/fortification_visual.gd")
+const RefinedGeometry = preload("res://scripts/entities/visuals/refined_building_geometry.gd")
 
 var canvas_item: CanvasItem
 var state: VisualState
 var landmark_geometry
 var landmark_geometry_key := ""
+var refined_geometry
+var refined_geometry_key: Array = []
 
 func contains_icon_visual(snapshot: VisualState, world_point: Vector2, canvas: Transform2D) -> bool:
 	state = snapshot
@@ -57,6 +60,10 @@ func contains_isometric_visual(snapshot: VisualState, world_point: Vector2, canv
 		var scaffold_top := terrain_lift + RtsIsoProjection.world_delta(canvas, Vector2(0, -_visible_height(construction_ratio) * state.zoom))
 		var hull := Geometry2D.convex_hull(PackedVector2Array([nw + terrain_lift, ne + terrain_lift, se + terrain_lift, sw + terrain_lift, nw + scaffold_top, ne + scaffold_top, se + scaffold_top, sw + scaffold_top]))
 		return Geometry2D.is_point_in_polygon(local_point, hull)
+	if RefinedGeometry.handles(state.kind) and construction_ratio >= 0.65:
+		for polygon in _refined_geometry().projected_faces(canvas, state.zoom, terrain_lift):
+			if Geometry2D.is_point_in_polygon(local_point, polygon["points"]): return true
+		return false
 	if not state.kind in ["landmark", "wonder", "farm", "barracks", "archery_range", "stable", "palisade_wall", "stone_wall", "palisade_gate", "stone_gate"]:
 		var center := (nw + ne + se + sw) * 0.25
 		var overhang := 1.1 if state.civilization == "Chinese" else 1.06
@@ -111,7 +118,7 @@ func draw(item: CanvasItem, snapshot: VisualState) -> void:
 	var wall_color: Color = palette["wall"]
 	var construction_ratio := 1.0 - state.build_remaining / maxf(state.build_total, 0.1)
 	var art_kind := state.visual_kind()
-	if not (art_kind.ends_with("_wall") or art_kind.ends_with("_gate")):
+	if not (art_kind.ends_with("_wall") or art_kind.ends_with("_gate")) and not (RefinedGeometry.handles(state.kind) and state.is_complete()):
 		canvas_item.draw_rect(bounds, Color("272d2a"))
 		canvas_item.draw_rect(bounds.grow(-4), wall_color.darkened(0.28) if not state.is_complete() else wall_color)
 	if state.damage_flash_timer > 0.0: canvas_item.draw_rect(bounds.grow(-2), Color("f8ca91", state.damage_flash_timer * 1.4), false, 3.0)
@@ -173,7 +180,7 @@ func _draw_isometric() -> void:
 		canvas_item.draw_line(sw + sw_ground, se + se_ground, Color("3a3c32", 0.75), 1.4)
 	if not fortification:
 		FilledPolygon.draw(canvas_item, PackedVector2Array([nw, ne, se, sw]), Color("273a30", 0.65))
-	if height > 0.0 and not fortification:
+	if height > 0.0 and not fortification and not RefinedGeometry.handles(state.kind):
 		FilledPolygon.draw(canvas_item, PackedVector2Array([ne + wall_lift, se + wall_lift, se, ne]), color.darkened(0.26))
 		FilledPolygon.draw(canvas_item, PackedVector2Array([sw + wall_lift, se + wall_lift, se, sw]), color)
 		canvas_item.draw_polyline(PackedVector2Array([ne + wall_lift, se + wall_lift, se, ne, ne + wall_lift]), Color("1c2829"), 2.0)
@@ -181,7 +188,7 @@ func _draw_isometric() -> void:
 	var roof_color: Color = Color("a79f89") if state.kind == "landmark" else palette["roof"]
 	if art_kind == "farm": roof_color = Color("735035")
 	if construction_ratio >= 0.65:
-		if not fortification:
+		if not fortification and not RefinedGeometry.handles(state.kind):
 			FilledPolygon.draw(canvas_item, PackedVector2Array([nw + wall_lift, ne + wall_lift, se + wall_lift, sw + wall_lift]), roof_color if not open_yard else palette["timber"])
 			canvas_item.draw_polyline(PackedVector2Array([nw + wall_lift, ne + wall_lift, se + wall_lift, sw + wall_lift, nw + wall_lift]), Color("1f2929"), 2.0)
 		_draw_iso_architecture(art_kind, nw, ne, se, sw, lift, palette, canvas)
@@ -231,6 +238,10 @@ func _architecture_palette() -> Dictionary:
 func _draw_topdown_architecture(bounds: Rect2, palette: Dictionary) -> void:
 	if state.kind == "landmark": return
 	var art_kind := state.visual_kind()
+	if RefinedGeometry.handles(state.kind):
+		for polygon in _refined_geometry().flat_faces:
+			FilledPolygon.draw(canvas_item, polygon["points"], polygon["color"])
+		return
 	if state.kind not in ["landmark", "wonder"] and art_kind in ["town_center", "mill", "lumber_camp"]:
 		EconomyBuildingVisual.draw_topdown(canvas_item, art_kind, bounds, palette, state.player_color, state.civilization)
 		return
@@ -487,6 +498,10 @@ func _draw_topdown_landmark(bounds: Rect2, palette: Dictionary) -> void:
 
 func _draw_iso_architecture(art_kind: String, nw: Vector2, ne: Vector2, se: Vector2, sw: Vector2, lift: Vector2, palette: Dictionary, canvas: Transform2D) -> void:
 	if state.kind == "landmark": return
+	if RefinedGeometry.handles(state.kind):
+		for polygon in _refined_geometry().projected_faces(canvas, state.zoom, Vector2.ZERO):
+			FilledPolygon.draw(canvas_item, polygon["points"], polygon["color"])
+		return
 	if state.kind not in ["landmark", "wonder"] and art_kind in ["town_center", "mill", "lumber_camp"]:
 		EconomyBuildingVisual.draw_iso(canvas_item, art_kind, nw, ne, se, sw, lift, palette, state.player_color, state.civilization, canvas, state.zoom)
 		return
@@ -969,10 +984,35 @@ func landmark_extra_height(snapshot: VisualState) -> float:
 	return _landmark_extra_height()
 
 func _landmark_extra_height() -> float:
+	if RefinedGeometry.handles(state.kind):
+		return maxf(0.0, _refined_geometry().height_above_origin - state.isometric_height() - state.visual_feature_height())
 	if state.kind not in ["landmark", "wonder"]: return 0.0
 	return _landmark_geometry().height_above_origin
 
+func _refined_geometry():
+	# Position-derived variation also survives fog snapshots, without live entities.
+	var variant := absi(hash(state.world_position)) % 3 if state.kind == "house" else 0
+	var key: Array = [state.kind, state.dimensions, state.civilization, state.player_color, variant]
+	if refined_geometry == null or key != refined_geometry_key:
+		refined_geometry = RefinedGeometry.new(state.kind, state.dimensions, state.civilization, state.player_color, variant, _architecture_palette())
+		refined_geometry_key = key
+	return refined_geometry
+
+func draw_refined_portrait(item: CanvasItem, snapshot: VisualState, frame: Rect2) -> void:
+	state = snapshot
+	var geometry = _refined_geometry()
+	var bounds: Rect2 = geometry.portrait_bounds
+	var fit := minf(frame.size.x / bounds.size.x, frame.size.y / bounds.size.y)
+	var origin := frame.get_center() - bounds.get_center() * fit
+	item.draw_set_transform_matrix(Transform2D(0.0, Vector2.ONE * fit, 0.0, origin))
+	for polygon in geometry.portrait_faces:
+		FilledPolygon.draw(item, polygon["points"], polygon["color"])
+	item.draw_set_transform_matrix(Transform2D.IDENTITY)
+
 func _visible_height(construction_ratio: float) -> float:
+	# Finished geometry appears at this stage without height scaling.
+	if RefinedGeometry.handles(state.kind) and construction_ratio >= 0.65:
+		return _refined_geometry().height_above_origin
 	var base := state.isometric_height() * (0.25 + 0.75 * construction_ratio)
 	if construction_ratio >= 0.65: return base + state.visual_feature_height() + _landmark_extra_height()
 	# The low finished plinth must not shrink the early structural scaffold.
