@@ -1,5 +1,11 @@
 extends RefCounted
 
+# Owns the selected entities and remembered control groups.
+var selected: Array[Node2D] = []
+var control_groups: Dictionary = {}
+var last_group_key := -1
+var last_group_press_time := -10.0
+
 # Screen picking and player selection use the match state owned by the game.
 
 static func select_area(game: Node2D, from: Vector2, to: Vector2, additive: bool) -> void:
@@ -127,3 +133,39 @@ static func relic_at(game: Node2D, point: Vector2) -> RtsRelic:
 			if absf(screen_delta.x) <= 16.0 * game.camera.zoom.x and screen_delta.y >= -20.0 * game.camera.zoom.x and screen_delta.y <= 14.0 * game.camera.zoom.x: return relic
 		if relic.position.distance_to(point) <= 20.0: return relic
 	return null
+
+static func prune_hidden_enemy_selection(game: Node2D) -> void:
+	var changed := false
+	for entity in game.selected.duplicate():
+		var hidden := false
+		if is_instance_valid(entity) and not entity.is_queued_for_deletion() and game.fog.active:
+			if entity is RtsResource:
+				hidden = not game.fog.can_show_resource(0, entity)
+			elif entity is RtsUnit and game.is_enemy(0, entity.owner_id):
+				hidden = not game.fog.can_show_unit(0, entity)
+			elif entity is RtsBuilding and game.is_enemy(0, entity.owner_id):
+				hidden = not game.fog.can_see(0, entity.position)
+		if not is_instance_valid(entity) or entity.is_queued_for_deletion() or hidden:
+			game.selected.erase(entity)
+			changed = true
+	if changed:
+		game._rebuild_actions()
+		game._update_selection_hud()
+		game.queue_redraw()
+
+
+static func select_next_idle_villager(game: Node2D) -> void:
+	if not game.started or game.paused or game.game_over: return
+	var idle: Array[RtsUnit] = game.idle_villagers()
+	if idle.is_empty(): return
+	var index := 0
+	if game.selected.size() == 1 and game.selected[0] is RtsUnit:
+		var previous: int = idle.find(game.selected[0])
+		if previous >= 0: index = (previous + 1) % idle.size()
+	game.selected.clear()
+	game.selected.append(idle[index])
+	game.camera.position = idle[index].position
+	game._clamp_camera_position()
+	game._rebuild_actions()
+	game._update_hud()
+	game.queue_redraw()

@@ -11,7 +11,9 @@
 | `match/match_changes.gd` | 事务结束后的状态变化与反馈通知；嵌套事务合并发布，不持有界面 |
 | `rules/action_availability.gd` | 建造、训练、研究等公共验证与费用；UI 读取结果，事务执行前再次验证 |
 | `player/context_order.gd` | 右键目标与命令优先级；鼠标提示和实际命令共享分类 |
-| `player/player_selection.gd` / `player_orders.gd` | 选择、编组与下令；输入事件入口仍在 `game.gd` |
+| `player/player_selection.gd` / `player_orders.gd` | 选择及编组的状态所有权、可见性清理与下令 |
+| `player/player_input.gd` / `platform_pointer.gd` | 输入路由、互斥操作模式、拖框及镜头控制；平台鼠标适配独立 |
+| `player/player_actions.gd` | 按钮与快捷键共享动作入口，执行时重验可用性及选择世代，不依赖按钮实例 |
 | `entities/unit.gd` | 命令调度、工作与战斗的协调入口 |
 | `entities/unit_movement.gd` | 路线、异步请求世代、编队、巡逻、驻守与冲锋状态 |
 | `entities/unit_abilities.gd` | 技能及状态计时器；验证结果同时供 UI 和技能执行使用 |
@@ -29,6 +31,7 @@
 - `game.session` 拥有对局状态，`game.players`、`game.units` 等旧接口只作代理。正常实体创建使用注册表；实体离开场景树时自动注销。淘汰和普通摧毁仍分别保留各自的游戏规则与反馈。
 - 经济与生产通过 `session.changes` 发布资源、生产、研究等变化。训练／研究的扣费和入队、取消退款在同一事务结束后发布；HUD 合并同一帧通知，读取最终状态。反馈由游戏装配层订阅并显示。周期刷新继续覆盖进度与兼容字典写入。全局队列只有结构变化才重建控件，倒计时原位更新。HUD 更新不修改选择；迷雾更新和玩家选择系统维护选择有效性。
 - 建筑的 `production_queue` 是任务的唯一数据源，人口预留、研究去重、命官上限、AI 和 HUD 都据此判断。公共验证返回 `{available, reason, cost}`，执行时不信任较早的 UI 判断。
+- 输入状态和选择状态分别由 `player_input` 和 `player_selection` 拥有；`game` 兼容字段代理实际拥有者。建造和目标模式互斥。动作在命令面板重建后更新世代，旧选择、旧按钮和隐藏页动作不可执行；快捷键直接调用动作注册表，按钮可用性只是显示投影。
 - 单位旧移动／技能字段代理组件。新命令、停止与驻扎统一取消旧异步路线和临时命令状态；无效命令先拒绝，保留正在执行的命令。
 - 属性每次从定义、研究、文明和临时效果重新解析。模拟通过 profile 查询攻击值；兼容字段不得反向覆盖 profile。
 - AI 快照只存活于一次思考，包含已排队单位，并在同一轮成功训练或建造后更新。快照不成为跨帧缓存；资源规划保留原有决策优先级。
@@ -46,4 +49,4 @@ python3 tools/check_navigation.py --suite refactor --output /tmp/refactor-checks
 
 性能比较使用相同引擎和固定种子的 `performance_navigation`／`performance_400`，交替运行基线和重构版本；CPU 模拟耗时与真实渲染帧率分别判断。
 
-进一步删除兼容字段前，应先迁移直接访问这些字段的调用方和测试。输入／快捷键、选择状态仍可以在后续变更中独立迁移，不混入这次状态与视觉重构。
+进一步删除兼容字段前，应先迁移直接访问这些字段的调用方和测试。输入／快捷键、选择状态已迁移到玩家模块；旧入口仅作为场景与测试适配。

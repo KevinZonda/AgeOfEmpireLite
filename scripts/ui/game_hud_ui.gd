@@ -872,51 +872,17 @@ func _refresh_global_queue_panel() -> void:
 
 func _refresh_action_buttons() -> void:
 	if game.players.is_empty() or command_buttons.is_empty(): return
-	var producer: RtsBuilding
-	if not game.selected.is_empty() and is_instance_valid(game.selected[0]) and game.selected[0] is RtsBuilding:
-		producer = game.selected[0]
-	var context := RtsActionAvailability.context_for(game, 0, producer)
+	var context := RtsActionAvailability.context_for(game, 0, game.selected[0] if not game.selected.is_empty() and game.selected[0] is RtsBuilding else null)
 	for button in command_buttons:
 		if not is_instance_valid(button) or button.is_queued_for_deletion(): continue
-		var action_type: String = button.get_meta("action_type")
-		var action_kind: String = button.get_meta("action_kind")
-		var status: Dictionary
-		if action_type in ["train", "research"]:
-			status = RtsActionAvailability.production(game, producer, action_type, action_kind, context)
-			var found_producer := false
-			for candidate in game.selected:
-				if not is_instance_valid(candidate) or not candidate is RtsBuilding or candidate.owner_id != 0: continue
-				# A union of selected producers supplies the visible actions. Pick failure
-				# details from a producer that actually offers this action as well.
-				var offered: Array = RtsTechTree.all_train_units(game.civilizations[0], candidate.producer_kind()) if action_type == "train" else RtsTechTree.all_researches(game.civilizations[0], candidate.producer_kind())
-				if not offered.has(action_kind): continue
-				var candidate_status := RtsActionAvailability.production(game, candidate, action_type, action_kind, context)
-				if not found_producer or candidate_status["available"]: status = candidate_status
-				found_producer = true
-				if candidate_status["available"]: break
-		elif action_type == "unit_ability":
-			status = _selected_ability_availability(action_kind)
-		else:
-			status = RtsActionAvailability.evaluate(action_type, action_kind, context)
+		var status: Dictionary = game.player_actions.availability(button.get_meta("action_type"), button.get_meta("action_kind"), context)
 		button.set_availability(status["available"], status["reason"], status["cost"])
 
 func _selected_ability_availability(ability_id: String) -> Dictionary:
-	var status := {"available": false, "reason": "没有可使用此技能的单位", "cost": {}}
-	var found := false
-	for ability in game.UNIT_ABILITY_ACTIONS:
-		if ability["id"] != ability_id: continue
-		for candidate in game.selected:
-			if not is_instance_valid(candidate) or not candidate is RtsUnit or candidate.owner_id != 0: continue
-			if not ability["kinds"].has(candidate.kind): continue
-			if ability.has("civilization") and game.civilizations[0] != ability["civilization"]: continue
-			if ability.has("producer_landmark") and candidate.producer_landmark_id != ability["producer_landmark"]: continue
-			var candidate_status: Dictionary = candidate.ability_availability(ability_id)
-			if not found or candidate_status["available"]: status = candidate_status
-			found = true
-			if candidate_status["available"]: return status
-	return status
+	return game.player_actions._selected_ability_availability(ability_id)
 
 func _rebuild_actions() -> void:
+	game.player_actions.clear()
 	if action_bar == null: return
 	for child in action_bar.get_children():
 		action_bar.remove_child(child)
@@ -1112,11 +1078,12 @@ func _layout_command_grid() -> void:
 			arrow.custom_minimum_size = COMMAND_TILE_SIZE
 			arrow.focus_mode = Control.FOCUS_NONE
 			UiStyle._style_button(arrow)
-			arrow.pressed.connect(func() -> void:
+			var page_action: String = game.player_actions.register("order", "page", KEY_NONE, func() -> void:
 				if is_build_page: game.build_page = next_index
 				else: command_page = next_index
 				_rebuild_actions()
 			)
+			arrow.pressed.connect(func() -> void: game.execute_player_action(page_action))
 			action_bar.add_child(arrow)
 			command_page_buttons.append(arrow)
 			command_side_buttons.append(arrow)
@@ -1143,6 +1110,8 @@ func _layout_command_grid() -> void:
 	else:
 		middle_slot = command_page_buttons[0]
 		navigation = command_page_buttons[1]
+	for button in command_buttons:
+		game.player_actions.set_active(button.get_meta("action_id"), button.visible)
 	var side_controls: Array[Control] = [stop, middle_slot, navigation]
 	for row in 3:
 		for column in 4:
@@ -1156,7 +1125,8 @@ func _add_side_button(symbol: String, description: String, callback: Callable) -
 	button.custom_minimum_size = COMMAND_TILE_SIZE
 	button.focus_mode = Control.FOCUS_NONE
 	UiStyle._style_button(button)
-	button.pressed.connect(callback)
+	var action_id: String = game.player_actions.register("order", "side", KEY_NONE, callback)
+	button.pressed.connect(func() -> void: game.execute_player_action(action_id))
 	action_bar.add_child(button)
 	command_side_buttons.append(button)
 	return button
@@ -1374,7 +1344,9 @@ func _add_action(icon_kind: String, label_text: String, cost: Dictionary, keycod
 	button.set_meta("cost", cost)
 	button.set_meta("action_type", action_type)
 	button.set_meta("action_kind", icon_kind)
-	button.pressed.connect(callback)
+	var action_id: String = game.player_actions.register(action_type, icon_kind, keycode, callback)
+	button.set_meta("action_id", action_id)
+	button.pressed.connect(func() -> void: game.execute_player_action(action_id))
 	action_bar.add_child(button)
 	command_buttons.append(button)
 	if keycode != KEY_NONE: hotkey_buttons[keycode] = button

@@ -29,6 +29,13 @@ const BUILD_GRID_SIZE := 25.0 # Half a terrain cell keeps existing building art 
 const MENU_UI := preload("res://scripts/ui/game_menu_ui.gd")
 const HUD_UI := preload("res://scripts/ui/game_hud_ui.gd")
 const PlayerSelection = preload("res://scripts/player/player_selection.gd")
+const PlayerInput = preload("res://scripts/player/player_input.gd")
+const PlatformPointer = preload("res://scripts/player/platform_pointer.gd")
+const PlayerActions = preload("res://scripts/player/player_actions.gd")
+var player_selection := PlayerSelection.new()
+var player_input := PlayerInput.new(self)
+var platform_pointer := PlatformPointer.new(self)
+var player_actions := PlayerActions.new(self)
 const ContextOrder = preload("res://scripts/player/context_order.gd")
 const PlayerOrders = preload("res://scripts/player/player_orders.gd")
 const MATCH_ECONOMY := preload("res://scripts/match/match_economy.gd")
@@ -44,7 +51,7 @@ const UNIT_ABILITY_ACTIONS := [
 	{"id": "artillery_shot", "label": "炮击齐射", "kinds": ["cannon"], "producer_landmark": "fr_college_of_artillery"},
 ]
 
-enum SelectionDragPhase { IDLE, BLOCKED, CANDIDATE, ACTIVE }
+const SelectionDragPhase = PlayerInput.SelectionDragPhase
 const PLAYER_COLOR_NAMES := ["蓝色", "红色", "黄色", "绿色", "青色", "紫色", "橙色", "粉色"]
 const PLAYER_COLORS := [
 	Color("4e9bea"), Color("e65852"), Color("e5c44b"), Color("4ac57b"),
@@ -87,10 +94,18 @@ var relics: Array[RtsRelic]:
 var market_supply: Dictionary:
 	get: return session.market_supply
 	set(value): session.market_supply = value
-var selected: Array[Node2D] = []
-var control_groups: Dictionary = {}
-var last_group_key := -1
-var last_group_press_time := -10.0
+var selected: Array[Node2D]:
+	get: return player_selection.selected
+	set(value): player_selection.selected = value
+var control_groups: Dictionary:
+	get: return player_selection.control_groups
+	set(value): player_selection.control_groups = value
+var last_group_key: int:
+	get: return player_selection.last_group_key
+	set(value): player_selection.last_group_key = value
+var last_group_press_time: float:
+	get: return player_selection.last_group_press_time
+	set(value): player_selection.last_group_press_time = value
 var camera: Camera2D
 var world_map: RtsWorldMap
 var navigation: RtsNavigation
@@ -159,20 +174,48 @@ var formation_mode := "balanced"
 var formation_width := 5
 var selected_civ := "English"
 var selected_opponent_civ := "French"
-var build_mode := ""
-var pending_landmark_id := ""
-var build_page := 0
-var order_mode := ""
-var dragging := false
-var wall_dragging := false
-var wall_vertical := false
-var wall_start := Vector2.ZERO
-var wall_end := Vector2.ZERO
-var drag_start_screen := Vector2.ZERO
-var drag_current_screen := Vector2.ZERO
-var selection_drag_phase := SelectionDragPhase.IDLE
-var selection_drag_additive := false
-var selection_previous_left_down := false
+var build_mode: String:
+	get: return player_input.build_mode
+	set(value): player_input.set_build_mode(value)
+var pending_landmark_id: String:
+	get: return player_input.pending_landmark_id
+	set(value): player_input.pending_landmark_id = value
+var build_page: int:
+	get: return player_input.build_page
+	set(value): player_input.build_page = value
+var order_mode: String:
+	get: return player_input.order_mode
+	set(value): player_input.set_order_mode(value)
+var dragging: bool:
+	get: return player_input.dragging
+	set(value): player_input.dragging = value
+var wall_dragging: bool:
+	get: return player_input.wall_dragging
+	set(value): player_input.wall_dragging = value
+var wall_vertical: bool:
+	get: return player_input.wall_vertical
+	set(value): player_input.wall_vertical = value
+var wall_start: Vector2:
+	get: return player_input.wall_start
+	set(value): player_input.wall_start = value
+var wall_end: Vector2:
+	get: return player_input.wall_end
+	set(value): player_input.wall_end = value
+var drag_start_screen: Vector2:
+	get: return player_input.drag_start_screen
+	set(value): player_input.drag_start_screen = value
+var drag_current_screen: Vector2:
+	get: return player_input.drag_current_screen
+	set(value): player_input.drag_current_screen = value
+var selection_drag_phase: int:
+	get: return player_input.selection_drag_phase
+	set(value): player_input.selection_drag_phase = value
+var selection_drag_additive: bool:
+	get: return player_input.selection_drag_additive
+	set(value): player_input.selection_drag_additive = value
+var selection_previous_left_down: bool:
+	get: return player_input.selection_previous_left_down
+	set(value): player_input.selection_previous_left_down = value
 var ai_think_timers: Dictionary = {}
 var iso_sort_timer := 0.0
 var ai: RtsAiController
@@ -1188,30 +1231,13 @@ func _process(delta: float) -> void:
 	if build_mode != "" or not hit_lines.is_empty() or not order_markers.is_empty() or not world_effects.is_empty() or selected.any(func(entity: Node2D) -> bool: return is_instance_valid(entity) and entity is RtsUnit): queue_redraw()
 
 func _pan_camera(delta: float) -> void:
-	var direction := Vector2.ZERO
-	if Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT): direction.x -= 1
-	if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT): direction.x += 1
-	if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP): direction.y -= 1
-	if Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN): direction.y += 1
-	# A pointer resting at the screen edge must not cancel or skew WASD movement.
-	if direction == Vector2.ZERO and get_window().has_focus():
-		direction = _edge_pan_direction(_selection_pointer_screen_position(), get_viewport_rect().size)
-	if direction != Vector2.ZERO:
-		_move_camera_screen_delta(direction.normalized() * CAMERA_PAN_SPEED * delta)
+	player_input._pan_camera(delta)
 
 func _move_camera_screen_delta(screen_delta: Vector2) -> void:
-	var world_delta := Vector2(screen_delta.x / camera.zoom.x, screen_delta.y / camera.zoom.y).rotated(camera.rotation)
-	camera.position += world_delta
-	_clamp_camera_position()
+	player_input._move_camera_screen_delta(screen_delta)
 
 func _clamp_camera_position() -> void:
-	var half_view := get_viewport_rect().size * 0.5 / camera.zoom
-	var angle := camera.rotation
-	var extents := Vector2(absf(cos(angle)) * half_view.x + absf(sin(angle)) * half_view.y, absf(sin(angle)) * half_view.x + absf(cos(angle)) * half_view.y)
-	# A diamond-shaped projected view cannot fit inside the standard map.
-	# Keep its center navigable and allow some background at the corners.
-	var margin := extents.min(world_size * (0.12 if view_mode_25d else 0.5))
-	camera.position = camera.position.clamp(margin, world_size - margin)
+	player_input._clamp_camera_position()
 
 func _toggle_view_mode(save_setting := false) -> void:
 	var at_starting_camera := started and match_statistics.elapsed < 2.0 and camera.position.distance_to(spawn_point_for(0) + _scaled_point(START_CAMERA_POINT - Vector2(330, 720))) < 2.0
@@ -1265,182 +1291,70 @@ func _update_iso_depths() -> void:
 			unit.z_index = clampi(roundi((unit.position.x + unit.position.y) * 0.5), 0, 2800) + (8 if is_instance_valid(unit.wall_host) else 0) if view_mode_25d else (3 if is_instance_valid(unit.wall_host) else 0)
 
 func _adjust_zoom(factor: float, screen_anchor := Vector2.INF) -> void:
-	var base_zoom := clampf(camera.zoom.x * factor, 0.7, 1.65)
-	if is_equal_approx(base_zoom, camera.zoom.x): return
-	if screen_anchor == Vector2.INF: screen_anchor = get_viewport_rect().size * 0.5
-	camera.force_update_scroll()
-	var anchor_world := get_viewport().get_canvas_transform().affine_inverse() * screen_anchor
-	camera.zoom = Vector2(base_zoom, base_zoom * 0.5 if view_mode_25d else base_zoom)
-	camera.force_update_scroll()
-	var shifted_world := get_viewport().get_canvas_transform().affine_inverse() * screen_anchor
-	camera.position += anchor_world - shifted_world
-	_clamp_camera_position()
-	# Projection geometry depends on zoom.x / zoom.y, which stays fixed here.
-	# Camera2D scales the existing map, fog mesh and entity drawings itself.
-	queue_redraw()
+	player_input._adjust_zoom(factor, screen_anchor)
 
 func _edge_pan_direction(screen_point: Vector2, viewport_size: Vector2) -> Vector2:
-	if not edge_scroll_enabled: return Vector2.ZERO
-	if viewport_size.x <= 0.0 or viewport_size.y <= 0.0: return Vector2.ZERO
-	# Confined mouse coordinates can land exactly on the right or bottom edge.
-	# Clamping also keeps edge scrolling continuous during a focus transition.
-	var point := screen_point.clamp(Vector2.ZERO, (viewport_size - Vector2.ONE).max(Vector2.ZERO))
-	# Command buttons and the minimap can overlap the edge-scroll strip.
-	# Hovering the HUD must not move the battlefield while clicking a command.
-	if hud_top != null and hud_top.visible and hud_top.get_global_rect().has_point(point): return Vector2.ZERO
-	if hud_bottom != null and hud_bottom.visible and hud_bottom.get_global_rect().has_point(point): return Vector2.ZERO
-	if global_queue_panel != null and global_queue_panel.visible and global_queue_panel.get_global_rect().has_point(point): return Vector2.ZERO
-	if hud_ui != null and hud_ui.minimap_panel != null and hud_ui.minimap_panel.visible and hud_ui.minimap_panel.get_global_rect().has_point(point): return Vector2.ZERO
-	var direction := Vector2.ZERO
-	if point.x <= EDGE_SCROLL_MARGIN: direction.x -= 1
-	if point.x >= viewport_size.x - EDGE_SCROLL_MARGIN: direction.x += 1
-	if point.y <= EDGE_SCROLL_MARGIN: direction.y -= 1
-	if point.y >= viewport_size.y - EDGE_SCROLL_MARGIN: direction.y += 1
-	return direction
+	return player_input._edge_pan_direction(screen_point, viewport_size)
 
 func _uses_native_selection_pointer() -> bool:
-	return OS.get_name() == "macOS" and DisplayServer.get_name() != "headless"
+	return platform_pointer._uses_native_selection_pointer()
 
 func _gameplay_mouse_mode():
-	if _uses_native_selection_pointer():
-		return Input.MOUSE_MODE_HIDDEN
-	return Input.MOUSE_MODE_CONFINED_HIDDEN
+	return platform_pointer._gameplay_mouse_mode()
 
 func _apply_gameplay_mouse_mode() -> void:
-	Input.mouse_mode = _gameplay_mouse_mode()
+	platform_pointer._apply_gameplay_mouse_mode()
 
 func _selection_pointer_screen_position() -> Vector2:
-	if not _uses_native_selection_pointer(): return get_viewport().get_mouse_position()
-	var window_id := get_window().get_window_id()
-	var window_position := DisplayServer.window_get_position(window_id)
-	var window_size := DisplayServer.window_get_size(window_id)
-	if window_size.x <= 0 or window_size.y <= 0: return get_viewport().get_mouse_position()
-	var client_point := Vector2(DisplayServer.mouse_get_position() - window_position)
-	return client_point * get_viewport_rect().size / Vector2(window_size)
+	return platform_pointer._selection_pointer_screen_position()
 
 func _selection_native_left_down() -> bool:
-	return (DisplayServer.mouse_get_button_state() & MOUSE_BUTTON_MASK_LEFT) != 0
+	return platform_pointer._selection_native_left_down()
 
 func _reset_selection_pointer() -> void:
-	selection_drag_phase = SelectionDragPhase.IDLE
-	selection_previous_left_down = _selection_native_left_down() if _uses_native_selection_pointer() else false
+	player_input._reset_selection_pointer()
 
 func _selection_point_over_hud(screen_point: Vector2) -> bool:
-	if not Rect2(Vector2.ZERO, get_viewport_rect().size).has_point(screen_point): return true
-	for control in [hud_top, hud_bottom, minimap, global_queue_panel, pause_overlay, settings_overlay, tech_tree_overlay, age_choice_overlay]:
-		if control == null or not (control is Control) or not control.is_visible_in_tree(): continue
-		var canvas_transform: Transform2D = control.get_global_transform_with_canvas()
-		var screen_rect := Rect2(canvas_transform * Vector2.ZERO, canvas_transform * control.size - canvas_transform * Vector2.ZERO)
-		if screen_rect.has_point(screen_point):
-			if control == minimap and not minimap._inside_map(canvas_transform.affine_inverse() * screen_point): continue
-			return true
-	return false
+	return player_input._selection_point_over_hud(screen_point)
 
 func _poll_selection_pointer() -> void:
-	_advance_selection_pointer(_selection_pointer_screen_position(), _selection_native_left_down())
+	player_input._poll_selection_pointer()
 
 func _advance_selection_pointer(screen_point: Vector2, left_down: bool) -> void:
-	if left_down and not selection_previous_left_down:
-		if selection_drag_phase == SelectionDragPhase.BLOCKED:
-			pass
-		elif dragging:
-			if selection_drag_phase == SelectionDragPhase.IDLE: selection_drag_phase = SelectionDragPhase.CANDIDATE
-		else:
-			# Native LEFT can belong to a logical RIGHT (for example Ctrl-click).
-			# Only an unhandled LEFT event may start a selection; polling keeps
-			# an existing drag responsive and detects its release.
-			selection_drag_phase = SelectionDragPhase.BLOCKED
-	elif left_down:
-		if dragging and selection_drag_phase in [SelectionDragPhase.CANDIDATE, SelectionDragPhase.ACTIVE]:
-			selection_drag_additive = Input.is_key_pressed(KEY_SHIFT)
-			_update_selection_drag(screen_point)
-	elif selection_previous_left_down:
-		if dragging and selection_drag_phase in [SelectionDragPhase.CANDIDATE, SelectionDragPhase.ACTIVE]:
-			# The pointer may already be at the next right-click target by this frame.
-			_complete_selection_drag(drag_current_screen, selection_drag_additive)
-		else:
-			selection_drag_phase = SelectionDragPhase.IDLE
-	selection_previous_left_down = left_down
+	player_input._advance_selection_pointer(screen_point, left_down)
 
 func _consume_placement_left_press() -> void:
-	# Placing may clear build_mode before macOS polls the still-held button.
-	# Keep this press blocked until release so it cannot select the new building.
-	_cancel_selection_drag()
-	selection_drag_phase = SelectionDragPhase.BLOCKED
-	selection_previous_left_down = true
+	player_input._consume_placement_left_press()
 
 func _begin_selection_candidate(screen_point: Vector2) -> void:
-	dragging = true
-	selection_drag_phase = SelectionDragPhase.CANDIDATE
-	selection_drag_additive = Input.is_key_pressed(KEY_SHIFT)
-	drag_start_screen = screen_point
-	drag_current_screen = screen_point
-	_begin_selection_drag(screen_point)
-	if _uses_native_selection_pointer(): selection_previous_left_down = _selection_native_left_down()
+	player_input._begin_selection_candidate(screen_point)
 
 func _selection_drag_active() -> bool:
-	return dragging and selection_drag_phase == SelectionDragPhase.ACTIVE
+	return player_input._selection_drag_active()
 
 func _selection_drag_visible() -> bool:
-	return dragging and drag_start_screen.distance_to(drag_current_screen) > SELECTION_DRAG_VISUAL_THRESHOLD
+	return player_input._selection_drag_visible()
 
 func _begin_selection_drag(screen_point: Vector2) -> void:
-	if selection_drag_overlay != null: selection_drag_overlay.begin(screen_point)
+	player_input._begin_selection_drag(screen_point)
 
 func _update_selection_drag(screen_point: Vector2) -> void:
-	drag_current_screen = screen_point
-	if selection_drag_phase == SelectionDragPhase.CANDIDATE and drag_start_screen.distance_to(screen_point) > SELECTION_DRAG_THRESHOLD:
-		selection_drag_phase = SelectionDragPhase.ACTIVE
-	var should_show := _selection_drag_visible()
-	if selection_drag_overlay != null:
-		selection_drag_overlay.update_drag(screen_point, should_show)
+	player_input._update_selection_drag(screen_point)
 
 func _finish_selection_drag() -> void:
-	if selection_drag_overlay != null: selection_drag_overlay.finish()
+	player_input._finish_selection_drag()
 
 func _complete_selection_drag(screen_point: Vector2, additive: bool) -> void:
-	if not dragging: return
-	_update_selection_drag(screen_point)
-	dragging = false
-	selection_drag_phase = SelectionDragPhase.IDLE
-	_finish_selection_drag()
-	_select_screen_area(drag_start_screen, screen_point, additive)
+	player_input._complete_selection_drag(screen_point, additive)
 
 func _cancel_selection_drag(block_until_release := false) -> void:
-	dragging = false
-	var left_down := _selection_native_left_down() if _uses_native_selection_pointer() else false
-	selection_drag_phase = SelectionDragPhase.BLOCKED if block_until_release and left_down else SelectionDragPhase.IDLE
-	if _uses_native_selection_pointer(): selection_previous_left_down = left_down
-	_finish_selection_drag()
+	player_input._cancel_selection_drag(block_until_release)
 
 func _update_cursor() -> void:
-	var screen_point := _selection_pointer_screen_position()
-	cursor.position = screen_point
-	if dragging:
-		# Keep the current cursor for the click-sized candidate. The anchor is
-		# sufficient feedback and avoids introducing a first-draw font cost.
-		if _selection_drag_visible(): cursor.set_state("select")
-		cursor.set_context("")
-		return
-	var over_ui := _selection_point_over_hud(screen_point)
-	var world_point := get_viewport().get_canvas_transform().affine_inverse() * screen_point
-	cursor.set_state(_cursor_state_at(world_point, over_ui))
-	var resource := _resource_at(world_point) if not over_ui and build_mode == "" else null
-	var context := ""
-	if resource != null:
-		context = GameData.RESOURCE_LABELS[resource.kind]
-		context += " · %d" % resource.amount if not fog.active or fog.can_see(0, resource.position) else " · 未在视野内"
-	cursor.set_context(context)
+	player_input._update_cursor()
 
 func _cursor_state_at(world_point: Vector2, over_ui := false) -> String:
-	if over_ui: return "default"
-	if order_mode in ["attack_move", "patrol", "focus", "attack_ground"]: return order_mode
-	if order_mode in ["field_ram", "field_tower"]: return "build_valid" if world_map.is_walkable(world_point) else "build_invalid"
-	if order_mode == "unload": return "unload" if world_map.is_walkable(world_point) else "build_invalid"
-	if build_mode != "":
-		return "build_valid" if RtsActionAvailability.construction(self, 0, build_mode, world_point, wall_vertical, pending_landmark_id)["available"] else "build_invalid"
-	if _selection_drag_active(): return "drag"
-	return ContextOrder.cursor_for(self, ContextOrder.targets(self, world_point))
+	return player_input._cursor_state_at(world_point, over_ui)
 
 func _player_center(owner_id: int) -> RtsBuilding:
 	for building in buildings:
@@ -1448,152 +1362,13 @@ func _player_center(owner_id: int) -> RtsBuilding:
 	return null
 
 func _input(event: InputEvent) -> void:
-	if age_choice_overlay != null:
-		if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
-			_close_age_choice()
-			get_viewport().set_input_as_handled()
-		return
-	if unit_preview_page != null:
-		if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
-			menu_ui._close_unit_preview()
-			get_viewport().set_input_as_handled()
-		return
-	if tech_tree_overlay != null:
-		if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
-			_close_tech_tree()
-			get_viewport().set_input_as_handled()
-		return
-	if settings_overlay != null and settings_overlay.visible:
-		if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
-			_close_settings()
-			get_viewport().set_input_as_handled()
-		return
-	if not started:
-		if menu_ui.setup_menu_active and menu_panel.visible and event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
-			menu_ui._show_home_menu()
-			get_viewport().set_input_as_handled()
-		return
-	if game_over: return
-	# Active drags receive motion before GUI controls can consume it.
-	if event is InputEventMouseMotion:
-		if dragging:
-			_update_selection_drag(_selection_pointer_screen_position() if _uses_native_selection_pointer() else event.position)
-		if wall_dragging:
-			wall_end = get_global_mouse_position()
-			queue_redraw()
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
-		if _finish_left_drag(event):
-			get_viewport().set_input_as_handled()
-			return
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed and dragging:
-		_cancel_selection_drag(true)
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
-		_set_paused(not paused)
-		get_viewport().set_input_as_handled()
-		return
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F:
-		_toggle_global_queue()
-		get_viewport().set_input_as_handled()
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_V:
-		_toggle_view_mode(true)
-		get_viewport().set_input_as_handled()
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_R and (build_mode.ends_with("_wall") or build_mode.ends_with("_gate")):
-		wall_vertical = not wall_vertical
-		queue_redraw()
-		get_viewport().set_input_as_handled()
+	player_input._input(event)
 
 func _finish_left_drag(event: InputEventMouseButton) -> bool:
-	if wall_dragging:
-		wall_dragging = false
-		_confirm_wall_line(wall_start, get_global_mouse_position(), event.shift_pressed)
-		return true
-	if dragging:
-		# Use the release event's position, not the pointer's later position.
-		_complete_selection_drag(event.position, event.shift_pressed)
-		if _uses_native_selection_pointer(): selection_previous_left_down = _selection_native_left_down()
-		return true
-	return false
+	return player_input._finish_left_drag(event)
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not started or game_over or paused or age_choice_overlay != null: return
-	if event is InputEventMagnifyGesture:
-		if zoom_gesture_enabled:
-			_adjust_zoom(event.factor, event.position)
-			get_viewport().set_input_as_handled()
-		return
-	if event is InputEventPanGesture:
-		_move_camera_screen_delta(event.delta * GESTURE_PAN_PIXELS)
-		get_viewport().set_input_as_handled()
-		return
-	if event is InputEventMouseButton:
-		if event.pressed and (event.button_index == MOUSE_BUTTON_LEFT or event.button_index == MOUSE_BUTTON_RIGHT): cursor.flash()
-		if event.button_index == MOUSE_BUTTON_WHEEL_UP and event.pressed:
-			_adjust_zoom(1.1, event.position)
-			return
-		if event.button_index == MOUSE_BUTTON_WHEEL_DOWN and event.pressed:
-			_adjust_zoom(1.0 / 1.1, event.position)
-			return
-		if event.button_index == MOUSE_BUTTON_LEFT:
-			if not event.pressed:
-				_finish_left_drag(event)
-				return
-			if order_mode != "":
-				_issue_mode_order(get_global_mouse_position(), event.shift_pressed)
-				return
-			if build_mode != "":
-				_consume_placement_left_press()
-				if build_mode.ends_with("_wall"):
-					wall_dragging = true
-					wall_start = get_global_mouse_position()
-					wall_end = wall_start
-				else:
-					_confirm_build(get_global_mouse_position(), event.shift_pressed)
-				return
-			if event.double_click:
-				var clicked := _entity_at(get_viewport().get_canvas_transform().affine_inverse() * event.position)
-				if clicked is RtsUnit and clicked.owner_id == 0:
-					_cancel_selection_drag(true)
-					_select_same_type_visible(clicked, event.shift_pressed)
-					return
-				if clicked is RtsBuilding and clicked.owner_id == 0:
-					_cancel_selection_drag(true)
-					_select_same_buildings_visible(clicked, event.shift_pressed)
-					return
-			if _uses_native_selection_pointer():
-				if dragging and selection_drag_phase in [SelectionDragPhase.CANDIDATE, SelectionDragPhase.ACTIVE]: return
-			_begin_selection_candidate(_selection_pointer_screen_position() if _uses_native_selection_pointer() else event.position)
-			return
-		if event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
-			if order_mode != "":
-				order_mode = ""
-				notify_player("已取消命令")
-				return
-			if build_mode != "":
-				build_mode = ""
-				wall_dragging = false
-				pending_landmark_id = ""
-				notify_player("已取消建造")
-				return
-			_issue_order(get_viewport().get_canvas_transform().affine_inverse() * event.position, event.shift_pressed)
-			return
-	if event is InputEventKey and event.pressed and not event.echo:
-		if event.keycode == KEY_PERIOD:
-			_select_next_idle_villager()
-			get_viewport().set_input_as_handled()
-			return
-		if event.keycode >= KEY_0 and event.keycode <= KEY_9 and (event.ctrl_pressed or control_groups.has(event.keycode)) and not event.alt_pressed:
-			_handle_control_group(event)
-			get_viewport().set_input_as_handled()
-			return
-		if hotkey_buttons.has(event.keycode):
-			var button: RtsCommandButton = hotkey_buttons[event.keycode]
-			if is_instance_valid(button) and not button.disabled:
-				button.pressed.emit()
-				get_viewport().set_input_as_handled()
-			return
-		if event.keycode == KEY_DELETE:
-			for entity in selected.duplicate():
-				if entity is RtsBuilding and entity.kind != "town_center": entity_destroyed(entity)
+	player_input._unhandled_input(event)
 
 func _select_area(from: Vector2, to: Vector2, additive: bool) -> void:
 	PlayerSelection.select_area(self, from, to, additive)
@@ -1656,86 +1431,19 @@ func _retreat_selected() -> void:
 	PlayerOrders.retreat_selected(self)
 
 func _confirm_build(point: Vector2, append_order := false) -> void:
-	var builders: Array[RtsUnit] = []
-	for entity in selected:
-		if is_instance_valid(entity) and entity is RtsUnit and entity.owner_id == 0 and entity.kind == "villager":
-			builders.append(entity)
-	if builders.is_empty():
-		for unit in units:
-			if is_instance_valid(unit) and unit.owner_id == 0 and unit.kind == "villager": builders.append(unit)
-		builders.sort_custom(func(a: RtsUnit, b: RtsUnit) -> bool: return a.position.distance_squared_to(point) < b.position.distance_squared_to(point))
-		if builders.size() > 2: builders.resize(2)
-	if builders.is_empty():
-		notify_player("需要村民建造")
-		return
-	var success := place_landmark(0, pending_landmark_id, point, builders, append_order) if build_mode == "landmark" else place_building(0, build_mode, point, builders, append_order, wall_vertical)
-	if success and (not append_order or build_mode == "landmark"):
-		build_mode = ""
-		pending_landmark_id = ""
-		_rebuild_actions()
-	queue_redraw()
+	player_input._confirm_build(point, append_order)
 
 func _wall_positions(from: Vector2, to: Vector2, kind := "palisade_wall") -> Array[Vector2]:
-	var positions: Array[Vector2] = []
-	var delta := to - from
-	var vertical := absf(delta.y) > absf(delta.x) if delta.length() > 20.0 else wall_vertical
-	var start := snap_build_point(kind, from, vertical)
-	var end := snap_build_point(kind, to, vertical)
-	var spacing := build_footprint_size(kind, vertical).y if vertical else build_footprint_size(kind, vertical).x
-	var length := absf(end.y - start.y) if vertical else absf(end.x - start.x)
-	var count := clampi(roundi(length / spacing) + 1, 1, 24)
-	var sign_value := signf(delta.y if vertical else delta.x)
-	if is_zero_approx(sign_value): sign_value = 1.0
-	for index in count:
-		positions.append(start + (Vector2.DOWN if vertical else Vector2.RIGHT) * sign_value * index * spacing)
-	return positions
+	return player_input._wall_positions(from, to, kind)
 
 func _confirm_wall_line(from: Vector2, to: Vector2, append_order := false) -> void:
-	var vertical := absf(to.y - from.y) > absf(to.x - from.x) if from.distance_to(to) > 20.0 else wall_vertical
-	var positions := _wall_positions(from, to, build_mode)
-	var builders: Array[RtsUnit] = []
-	for entity in selected:
-		if entity is RtsUnit and entity.owner_id == 0 and entity.kind == "villager": builders.append(entity)
-	if builders.is_empty():
-		notify_player("需要村民建墙")
-		return
-	var cost: Dictionary = GameData.BUILDINGS[build_mode]["cost"]
-	for resource in cost:
-		if players[0][resource] < cost[resource] * positions.size():
-			notify_player("整段城墙所需资源不足")
-			return
-	for point in positions:
-		if not can_place(build_mode, point, vertical):
-			notify_player("城墙经过不可建造的位置")
-			return
-	for index in positions.size():
-		place_building(0, build_mode, positions[index], builders, append_order or index > 0, vertical)
-	if not append_order:
-		build_mode = ""
-		_rebuild_actions()
-	queue_redraw()
+	player_input._confirm_wall_line(from, to, append_order)
 
 func _update_hud() -> void:
 	hud_ui._update_hud()
 
 func _prune_hidden_enemy_selection() -> void:
-	var changed := false
-	for entity in selected.duplicate():
-		var hidden := false
-		if is_instance_valid(entity) and not entity.is_queued_for_deletion() and fog.active:
-			if entity is RtsResource:
-				hidden = not fog.can_show_resource(0, entity)
-			elif entity is RtsUnit and is_enemy(0, entity.owner_id):
-				hidden = not fog.can_show_unit(0, entity)
-			elif entity is RtsBuilding and is_enemy(0, entity.owner_id):
-				hidden = not fog.can_see(0, entity.position)
-		if not is_instance_valid(entity) or entity.is_queued_for_deletion() or hidden:
-			selected.erase(entity)
-			changed = true
-	if changed:
-		_rebuild_actions()
-		_update_selection_hud()
-		queue_redraw()
+	PlayerSelection.prune_hidden_enemy_selection(self)
 
 func _update_selection_hud() -> void:
 	hud_ui._update_selection_hud()
@@ -1765,20 +1473,7 @@ func find_nearest_free_farm(owner_id: int, point: Vector2, max_distance: float, 
 	return result
 
 func _select_next_idle_villager() -> void:
-	if not started or paused or game_over: return
-	var idle := idle_villagers()
-	if idle.is_empty(): return
-	var index := 0
-	if selected.size() == 1 and selected[0] is RtsUnit:
-		var previous := idle.find(selected[0])
-		if previous >= 0: index = (previous + 1) % idle.size()
-	selected.clear()
-	selected.append(idle[index])
-	camera.position = idle[index].position
-	_clamp_camera_position()
-	_rebuild_actions()
-	_update_hud()
-	queue_redraw()
+	PlayerSelection.select_next_idle_villager(self)
 
 func _toggle_global_queue() -> void:
 	hud_ui._toggle_global_queue()
@@ -1946,3 +1641,7 @@ func _draw_selected_route(unit: RtsUnit) -> void:
 		draw_dashed_line(points[index], points[index + 1], Color("e8d99e", 0.52), 1.4, 8.0)
 	for index in range(1, points.size()):
 		draw_arc(points[index], 3.5, 0.0, TAU, 14, Color("e8d99e", 0.72), 1.2)
+
+# Both HUD clicks and keyboard shortcuts execute registered gameplay actions.
+func execute_player_action(action_id: String) -> bool:
+	return player_actions.execute(action_id)
