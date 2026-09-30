@@ -69,12 +69,34 @@ static func _mining(m) -> void:
 	_cylinder(m, m.p(0.79, 0.265, 13), Vector3(5, 0, 0), 2, Color("a48c61"), 8)
 	_rope(m, m.p(0.83, 0.28, 20), m.p(0.83, 0.28, 6))
 	m.cube(0.79, 0.245, 0.08, 0.08, 2, 5, Color("9f8860"))
-	# Faceted ore uses broad planes instead of a flat circular heap.
-	_ore(m, m.p(0.78, 0.79, 2), 5.0, 5.0, Color("96927e"))
-	_ore(m, m.p(0.90, 0.69, 2), 3.4, 4.0, Color("a8a084"))
-	_ore(m, m.p(0.74, 0.88, 2), 3.2, 3.0, Color("7f8575"))
+	# Broad broken stones form a two-layer stockpile in the open foreground.
+	_stone(m, m.p(0.69, 0.67, 2), Vector2(7.6, 6.0), 4.2, Color("92988d"))
+	_stone(m, m.p(0.85, 0.65, 2), Vector2(7.4, 6.0), 3.8, Color("a4a79b"))
+	_stone(m, m.p(0.89, 0.82, 2), Vector2(7.0, 6.5), 4.0, Color("858f89"))
+	_stone(m, m.p(0.70, 0.84, 2), Vector2(7.6, 6.5), 4.3, Color("a1a499"))
+	_stone(m, m.p(0.78, 0.72, 5.6), Vector2(7.2, 6.2), 4.2, Color("aeb2a8"))
+	_stone(m, m.p(0.81, 0.83, 5.7), Vector2(6.4, 5.4), 3.5, Color("929d96"))
+	_stone(m, m.p(0.60, 0.90, 2), Vector2(3.1, 2.7), 2.0, Color("879289"))
 	m.cube(0.84, 0.84, 0.014, 0.017, 3, 11, Color("ad9161"))
 	m.cube(0.805, 0.835, 0.085, 0.02, 12, 1.8, Color("5e6d69"))
+
+static func _stone(m, center: Vector3, extent: Vector2, height: float, color: Color) -> void:
+	# An irregular, flat-topped broken block. Triangular sides keep every face
+	# planar despite the tilted top and unequal cuts around the footprint.
+	var outline := [Vector2(-0.95, -0.35), Vector2(-0.38, -0.85), Vector2(0.56, -0.73), Vector2(1.0, 0.02), Vector2(0.55, 0.74), Vector2(-0.56, 0.79)]
+	var lower: Array = []
+	var upper: Array = []
+	for point in outline:
+		var ground: Vector2 = point * extent * 0.5
+		var cap := ground * 0.74 + extent * Vector2(0.04, -0.03)
+		lower.append(center + Vector3(ground.x, ground.y, 0))
+		upper.append(center + Vector3(cap.x, cap.y, height + cap.x * 0.13 - cap.y * 0.10))
+	m.face(upper, color.lightened(0.13))
+	for i in outline.size():
+		var j := (i + 1) % outline.size()
+		var tint := color.darkened(0.16 if i < 3 else 0.04)
+		m.face([lower[i], lower[j], upper[j]], tint)
+		m.face([lower[i], upper[j], upper[i]], tint)
 
 static func _basket(m, center: Vector3, radius: float) -> void:
 	var wicker := Color("ae9464")
