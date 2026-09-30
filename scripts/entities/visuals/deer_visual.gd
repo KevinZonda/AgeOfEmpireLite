@@ -3,6 +3,13 @@ extends RefCounted
 const OUTLINE := Color("26352d")
 const Quadruped = preload("res://scripts/entities/visuals/quadruped_visual.gd")
 
+static func draw_carcass(item: CanvasItem, base: Transform2D) -> void:
+	item.draw_set_transform_matrix(base)
+	var body := PackedVector2Array([Vector2(-20, 2), Vector2(-14, -5), Vector2(13, -5), Vector2(21, 2), Vector2(14, 9), Vector2(-14, 9)])
+	item.draw_colored_polygon(body, Color("886448"))
+	item.draw_polyline(body + PackedVector2Array([body[0]]), OUTLINE, 2.0)
+	item.draw_line(Vector2(14, -1), Vector2(24, -8), Color("674b37"), 2.0)
+
 # Direction is projected into screen space by the caller. Keep the animal
 # upright in both camera modes, with a narrower silhouette toward/away.
 static func draw(item: CanvasItem, base: Transform2D, direction: Vector2, phase: float, gait: float, graze: float, time: float, running: float) -> void:

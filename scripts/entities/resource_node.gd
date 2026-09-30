@@ -323,10 +323,8 @@ func _draw() -> void:
 			DeerVisual.draw(self, figure, canvas.basis_xform(deer_direction).normalized(), deer_phase, deer_gait, deer_graze, wander_time, deer_speed / DEER_FLEE_SPEED)
 			draw_set_transform_matrix(figure)
 		else:
-			var carcass := PackedVector2Array([Vector2(-20, 2), Vector2(-14, -5), Vector2(13, -5), Vector2(21, 2), Vector2(14, 9), Vector2(-14, 9)])
-			draw_colored_polygon(carcass, Color("886448"))
-			draw_polyline(carcass + PackedVector2Array([carcass[0]]), outline, 2.0)
-			draw_line(Vector2(14, -1), Vector2(24, -8), Color("674b37"), 2.0)
+			var figure := RtsIsoProjection.upright(canvas, RtsIsoProjection.ground_lift(game, position), game.camera.zoom.x) if isometric else Transform2D.IDENTITY
+			DeerVisual.draw_carcass(self, figure)
 	elif appearance in ["boar", "sheep"]:
 		var figure := RtsIsoProjection.upright(canvas, RtsIsoProjection.ground_lift(game, position), game.camera.zoom.x) if isometric else Transform2D.IDENTITY
 		if not isometric:

@@ -7,6 +7,8 @@ const ChineseVisual = preload("res://scripts/entities/visuals/chinese_visual.gd"
 const InfantryVisual = preload("res://scripts/entities/visuals/infantry_visual.gd")
 const SupportVisual = preload("res://scripts/entities/visuals/support_visual.gd")
 const OreVisual = preload("res://scripts/entities/visuals/ore_visual.gd")
+const DeerVisual = preload("res://scripts/entities/visuals/deer_visual.gd")
+const LivestockVisual = preload("res://scripts/entities/visuals/livestock_visual.gd")
 
 var subject: Node2D
 var owner_tint := Color("8a9a8e")
@@ -48,10 +50,21 @@ func _draw_resource() -> void:
 		"gold": color = Color("e4c359")
 		"stone": color = Color("9b9f9e")
 	if resource.appearance in ["deer", "boar", "sheep"]:
-		color = {"deer": Color("a8794e"), "boar": Color("684d3a"), "sheep": Color("efead9")}[resource.appearance]
-		draw_colored_polygon(PackedVector2Array([center + Vector2(-31, -9), center + Vector2(-20, -19), center + Vector2(17, -19), center + Vector2(31, -5), center + Vector2(25, 13), center + Vector2(-22, 17)]), color)
-		draw_circle(center + Vector2(24, -14), 12, color.lightened(0.1))
-		for x in [-18.0, 18.0]: draw_line(center + Vector2(x, 10), center + Vector2(x, 35), color.darkened(0.35), 4)
+		# Share the map silhouettes, but use a stable side-on portrait pose.
+		# Fit inside the frame even when UI scaling changes the portrait size.
+		var portrait_scale := minf((size.x - 30.0) / 54.0, (size.y - 30.0) / 70.0)
+		var alive := resource.wildlife_hp > 0.0
+		var ground := center + Vector2(0, 23.0 if alive else 4.0)
+		var figure := Transform2D(0.0, Vector2.ONE * portrait_scale, 0.0, ground)
+		draw_set_transform_matrix(figure * Transform2D(0.0, Vector2(1, 0.35), 0.0, Vector2.ZERO))
+		draw_circle(Vector2.ZERO, 17.0, Color("1c2524", 0.5))
+		if resource.appearance == "deer":
+			if alive: DeerVisual.draw(self, figure, Vector2.RIGHT, 0.0, 0.0, 0.0, 0.0, 0.0)
+			else: DeerVisual.draw_carcass(self, figure)
+		else:
+			var wool: Color = Color("efead9") if resource.claimed_by < 0 or resource.game == null else resource.game.player_color(resource.claimed_by).lightened(0.35)
+			LivestockVisual.draw(self, figure, resource.appearance, Vector2.RIGHT, 0.0, 0.0, 0.0, 0.0, 0.0, alive, wool)
+		draw_set_transform_matrix(Transform2D.IDENTITY)
 	elif resource.appearance == "fish":
 		draw_colored_polygon(PackedVector2Array([center + Vector2(-30, 0), center + Vector2(5, -18), center + Vector2(31, 0), center + Vector2(5, 18)]), Color("c5d9cf"))
 	elif resource.kind == "gold" or resource.kind == "stone":
