@@ -22,6 +22,12 @@ const RouteJobs = preload("res://scripts/world/navigation_route_jobs.gd")
 var route_jobs := RouteJobs.new()
 # Immediate queries are the default; live matches may opt into admission.
 var route_budget_enabled := false
+const GridBuilds = preload("res://scripts/world/navigation_grid_build.gd")
+var grid_builds = GridBuilds.new()
+# Geometry revisions keep stale world fine grids answering while workers
+# rasterize replacements and their components. Disable to restore synchronous
+# rebuild-on-invalidation for debugging.
+var async_geometry_enabled := OS.get_environment("RTS_ASYNC_GEOMETRY") != "0"
 
 var simulation_frame := -1
 
@@ -101,10 +107,14 @@ var profile: Dictionary = {}
 func tick_jobs(allow_dispatch := true, simulation_frame := -1) -> void:
 	if route_budget_enabled and allow_dispatch: route_jobs.tick(self, simulation_frame)
 	if background_recovery_enabled: background_jobs.tick(self, allow_dispatch)
+	# Geometry rebuilds are independent of the crowd-recovery opt-out: their
+	# results must be reaped in every mode.
+	if not grid_builds.active.is_empty(): grid_builds.poll(self)
 
 func shutdown_jobs() -> void:
 	route_jobs.reset()
 	background_jobs.shutdown()
+	grid_builds.shutdown()
 
 func request_route(unit: RtsUnit, target: Vector2, reach: float, use_range: bool) -> bool:
 	return route_jobs.request(unit, target, reach, use_range)
@@ -149,9 +159,14 @@ func refresh(wake_failed_routes := true) -> void:
 	if profiling_enabled: _record_profile(&"grid_refresh", started)
 
 func _refresh_grids() -> void:
-	geometry_cache.rebuild(_entities)
+	var stale_keys: Array = fine_grids.keys() if async_geometry_enabled else []
+	geometry_cache.rebuild(_entities, async_geometry_enabled)
 	geometry_cache.obstacle_check_frame = frame_id()
 	invalidate_spatial_index()
+	# Rebuild surviving world fine grids off-thread. Queries keep using the
+	# stale grids (revalidating edges against live geometry) until each swap.
+	for key in stale_keys:
+		grid_builds.request(self, key)
 
 func _make_default_grid() -> AStarGrid2D:
 	var grid := AStarGrid2D.new()
@@ -475,6 +490,8 @@ func _fine_static_path(from: Vector2, to: Vector2, unit: RtsUnit, corner_fallbac
 		if _fine_components_disconnect(from, to, unit, world):
 			# A previous failure already flooded the world grid: skip hopeless
 			# local builds and A* retries, keep only the exact corner fallback.
+			# The corner search runs against live geometry, so it stays correct
+			# even while a worker rebuild of this grid is in flight.
 			return _obstacle_corner_path(from, to, unit) if corner_fallback else PackedVector2Array()
 	else:
 		var local := _local_fine_grid_for(from, to, unit, key)
@@ -521,8 +538,7 @@ func _local_fine_grid_for(from: Vector2, to: Vector2, unit: RtsUnit, key: Vector
 	if size.x * size.y > 16000: return null
 	if local_fine_grids.size() >= MAX_FINE_GRIDS:
 		var oldest: Dictionary = local_fine_grids.pop_front()
-		grid_components.erase(oldest["grid"].get_instance_id())
-		grid_component_sizes.erase(oldest["grid"].get_instance_id())
+		geometry_cache._forget_components(oldest["grid"])
 	var grid := _make_fine_grid(unit, bounds)
 	local_fine_grids.append({"key": key, "bounds": bounds, "grid": grid})
 	return grid
@@ -607,10 +623,14 @@ func _corner_search_from_target(from: Vector2, to: Vector2, unit: RtsUnit) -> bo
 func _fine_grid_for(unit: RtsUnit) -> AStarGrid2D:
 	var key := _grid_key(unit)
 	if fine_grids.has(key): return fine_grids[key]
+	# Deterministic tests drive queries without ticking jobs; reap finished
+	# rebuilds lazily so the fresh grid lands without a frame loop.
+	if not grid_builds.active.is_empty():
+		grid_builds.poll(self)
+		if fine_grids.has(key): return fine_grids[key]
 	if fine_grids.size() >= MAX_FINE_GRIDS:
 		var oldest: Vector3 = fine_grids.keys()[0]
-		grid_components.erase(fine_grids[oldest].get_instance_id())
-		grid_component_sizes.erase(fine_grids[oldest].get_instance_id())
+		geometry_cache._forget_components(fine_grids[oldest])
 		fine_grids.erase(oldest)
 	var grid := _make_fine_grid(unit, Rect2(Vector2.ZERO, world_map.world_size))
 	fine_grids[key] = grid
@@ -674,13 +694,18 @@ func _rasterize_static_grid(unit: RtsUnit, grid: AStarGrid2D, allow_resource_esc
 	for obstacle in _entities.resources:
 		if not is_instance_valid(obstacle) or obstacle.is_queued_for_deletion(): continue
 		var reach: float = radius + obstacle.radius
+		if not allow_resource_escape:
+			# Native row-span fill with the exact same circle predicate as the
+			# per-cell loop below; resource disks dominate cold build time.
+			RecoveryKernel._rasterize_unit_circle(grid, obstacle.position, reach, INF)
+			continue
 		var current := unit.position.distance_squared_to(obstacle.position)
 		var region := _fine_region(grid, Rect2(obstacle.position - Vector2.ONE * reach, Vector2.ONE * reach * 2))
 		for y in range(region.position.y, region.end.y):
 			for x in range(region.position.x, region.end.x):
 				var cell := Vector2i(x, y)
 				var distance := grid.get_point_position(cell).distance_squared_to(obstacle.position)
-				if distance < reach * reach and (not allow_resource_escape or current >= reach * reach or distance + 0.001 < current): grid.set_point_solid(cell)
+				if distance < reach * reach and (current >= reach * reach or distance + 0.001 < current): grid.set_point_solid(cell)
 
 func _fine_region(grid: AStarGrid2D, bounds: Rect2) -> Rect2i:
 	return RecoveryKernel._fine_region(grid, bounds)

@@ -97,7 +97,20 @@ func _test_enclosed_corner_direction() -> void:
 	game.buildings.erase(door)
 	door.free()
 	nav.refresh()
-	check(nav.grid_component_sizes.is_empty(), "component_sizes_invalidated_by_opening")
+	# World fine grids survive as stale answers while a worker rebuilds them;
+	# component labels must always belong to a grid that is still installed,
+	# and the swap delivers the replacement's labels with it.
+	var consistent := true
+	for id in nav.grid_component_sizes:
+		var survives := false
+		for key in nav.fine_grids:
+			if nav.fine_grids[key].get_instance_id() == id: survives = true
+		if not survives: consistent = false
+	check(consistent, "component_sizes_track_installed_grids")
+	while not nav.grid_builds.active.is_empty():
+		nav.grid_builds.poll(nav)
+		await process_frame
+	check(nav.grid_component_sizes.size() == nav.fine_grids.size(), "swapped_grid_carries_fresh_components")
 	var path := nav._obstacle_corner_path(unit.position, goal, unit)
 	check(safe_route(game, unit, path) and path[0] == unit.position and path[-1] == goal, "opened_corner_route_keeps_original_direction")
 	game.free()

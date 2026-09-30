@@ -31,14 +31,26 @@ func invalidate(wake_failed_routes: bool) -> void:
 	obstacle_signature = -1
 	obstacle_check_frame = -1
 
-func rebuild(entities: Object) -> void:
+func rebuild(entities: Object, keep_fine_grids := false) -> void:
+	# World fine grids survive as stale answers while workers rebuild them
+	# (navigation dispatches those rebuilds). Queries revalidate every returned
+	# edge against live geometry, so stale grids cannot produce illegal paths.
+	# Every dropped grid's component labels are erased with it: instance ids
+	# can be reused after a grid is freed, which would alias wrong labels.
+	for key in clearance_grids:
+		_forget_components(clearance_grids[key])
 	clearance_grids.clear()
-	fine_grids.clear()
+	if not keep_fine_grids:
+		for key in fine_grids:
+			_forget_components(fine_grids[key])
+		fine_grids.clear()
+	for entry in local_fine_grids:
+		_forget_components(entry["grid"])
 	local_fine_grids.clear()
-	grid_components.clear()
-	grid_component_sizes.clear()
-	invalidate_corner_visibility()
+	if _default_grid != null:
+		_forget_components(_default_grid)
 	_default_grid = null
+	invalidate_corner_visibility()
 	obstacle_revision += 1
 	obstacle_signature = signature(entities)
 	_watched_buildings.clear()
@@ -61,6 +73,10 @@ func silent_geometry_changed() -> bool:
 	for resource in _watched_wildlife:
 		if not is_instance_valid(resource) or resource.is_queued_for_deletion() or resource.wildlife_hp <= 0.0: return true
 	return false
+
+func _forget_components(grid: AStarGrid2D) -> void:
+	grid_components.erase(grid.get_instance_id())
+	grid_component_sizes.erase(grid.get_instance_id())
 
 func invalidate_corner_visibility() -> void:
 	corner_graphs.clear()

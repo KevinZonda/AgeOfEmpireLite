@@ -41,7 +41,20 @@ func _test_cache_and_spatial_ownership() -> void:
 	nav.resource_moved(tree, previous)
 	nav._ensure_current()
 	check(nav.obstacle_revision == revision + 1 and nav.retry_obstacle_revision == structural, "resource_relocation_invalidates_geometry_without_waking_retries")
-	check(nav.clearance_grids.is_empty() and nav.fine_grids.is_empty() and nav.local_fine_grids.is_empty() and nav.grid_components.is_empty() and nav.grid_component_sizes.is_empty() and nav.corner_graphs.is_empty(), "derived_geometry_invalidates_together")
+	# World fine grids survive as stale answers while workers rebuild them
+	# (queries revalidate returned edges against live geometry). Every other
+	# derived structure is dropped with its component labels.
+	var rebuilds_dispatched := not nav.fine_grids.is_empty()
+	for key in nav.fine_grids:
+		var dispatched := false
+		for job in nav.grid_builds.active:
+			if job.key == key: dispatched = true
+		if not dispatched: rebuilds_dispatched = false
+	check(nav.clearance_grids.is_empty() and nav.local_fine_grids.is_empty() and nav.grid_components.is_empty() and nav.grid_component_sizes.is_empty() and nav.corner_graphs.is_empty(), "dropped_geometry_invalidates_together")
+	if nav.async_geometry_enabled:
+		check(rebuilds_dispatched, "fine_grids_rebuild_asynchronously")
+	else:
+		check(nav.fine_grids.is_empty(), "fine_grids_invalidate_synchronously")
 	building(game, Vector2(900, 700), Vector2(55, 55))
 	nav._ensure_current()
 	check(nav.retry_obstacle_revision > structural, "structural_edit_wakes_failed_routes")

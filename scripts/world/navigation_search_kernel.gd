@@ -37,39 +37,70 @@ static func components_for(grid: AStarGrid2D) -> Dictionary:
 	# Diagonals cannot cross blocked corners, so four-neighbor components are
 	# also valid for the eight-neighbor search. Reject disconnected candidates
 	# once, rather than exhausting A* for every worker/interaction sample.
+	# Integer index math only: per-cell Vector2i/offset-array allocation made a
+	# world-grid flood dominate a frame. Solidity is snapshotted once so the
+	# flood itself performs no native calls.
 	var size := grid.region.size
+	var width := size.x
+	var count := width * size.y
+	var solid := PackedByteArray()
+	solid.resize(count)
+	var index := 0
+	for y in size.y:
+		for x in width:
+			if grid.is_point_solid(Vector2i(x, y)): solid[index] = 1
+			index += 1
 	var labels := PackedInt32Array()
-	labels.resize(size.x * size.y)
+	labels.resize(count)
 	labels.fill(-1)
 	var queue := PackedInt32Array()
-	queue.resize(labels.size())
+	queue.resize(count)
 	var component := 0
 	var sizes := PackedInt32Array()
-	for index in labels.size():
-		if labels[index] != -1: continue
-		var origin := Vector2i(index % size.x, index / size.x)
-		if grid.is_point_solid(origin):
-			labels[index] = -2
+	for start in count:
+		if labels[start] != -1: continue
+		if solid[start]:
+			labels[start] = -2
 			continue
-		labels[index] = component
-		queue[0] = index
+		labels[start] = component
+		queue[0] = start
 		var head := 0
 		var tail := 1
 		while head < tail:
 			var current := queue[head]
 			head += 1
-			var cell := Vector2i(current % size.x, current / size.x)
-			for offset in [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]:
-				var next: Vector2i = cell + offset
-				if next.x < 0 or next.y < 0 or next.x >= size.x or next.y >= size.y: continue
-				var neighbor := next.y * size.x + next.x
-				if labels[neighbor] != -1: continue
-				if grid.is_point_solid(next):
-					labels[neighbor] = -2
-					continue
-				labels[neighbor] = component
-				queue[tail] = neighbor
-				tail += 1
+			if current % width > 0:
+				var left := current - 1
+				if labels[left] == -1:
+					if solid[left]: labels[left] = -2
+					else:
+						labels[left] = component
+						queue[tail] = left
+						tail += 1
+			if current % width < width - 1:
+				var right := current + 1
+				if labels[right] == -1:
+					if solid[right]: labels[right] = -2
+					else:
+						labels[right] = component
+						queue[tail] = right
+						tail += 1
+			if current >= width:
+				var up := current - width
+				if labels[up] == -1:
+					if solid[up]: labels[up] = -2
+					else:
+						labels[up] = component
+						queue[tail] = up
+						tail += 1
+			if current < count - width:
+				var down := current + width
+				if labels[down] == -1:
+					if solid[down]: labels[down] = -2
+					else:
+						labels[down] = component
+						queue[tail] = down
+						tail += 1
 		sizes.append(tail)
 		component += 1
 	return {"labels": labels, "sizes": sizes}
