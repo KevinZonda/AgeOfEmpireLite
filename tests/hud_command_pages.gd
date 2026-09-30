@@ -66,7 +66,7 @@ func _check_stable_pages(game: Node, switches: int) -> void:
 		for index in 2:
 			var arrow: Button = game.hud_ui.command_page_buttons[index]
 			assert(game.action_bar.get_child(9 + index * 5) == arrow, "arrows must stack in the lower two right-column slots")
-			assert(arrow.size == Vector2(54, 54), "arrows must use the same full-size tiles as commands")
+			assert(arrow.size == game.hud_ui.command_tile_size, "arrows must use the same full-size tiles as commands")
 		game.hud_ui.command_page_buttons[1 if switch < switches / 2 else 0].pressed.emit()
 		for frame in 4:
 			await process_frame

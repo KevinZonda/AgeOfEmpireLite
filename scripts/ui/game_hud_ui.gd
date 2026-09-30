@@ -23,8 +23,9 @@ class CommandPageButton extends Button:
 		draw_line(tip, tip + Vector2(-10 * direction, -10), color, 2.5, true)
 		draw_line(tip, tip + Vector2(-10 * direction, 10), color, 2.5, true)
 
-const COMMAND_TILE_SIZE := Vector2(54, 54)
+const COMMAND_TILE_SIZE := Vector2(68, 68)
 const HUD_BOTTOM_HEIGHT := 241.0
+var command_tile_size := COMMAND_TILE_SIZE
 var game: Node2D
 var top_label: Label
 var fps_label: Label
@@ -229,7 +230,7 @@ func _create_hud() -> void:
 	dock.add_theme_constant_override("separation", 9)
 	bottom.add_child(dock)
 	command_panel = PanelContainer.new()
-	command_panel.custom_minimum_size.x = 308
+	command_panel.custom_minimum_size.x = 378
 	command_panel.add_theme_stylebox_override("panel", UiStyle._hud_panel_style(Color("30261b"), 7))
 	dock.add_child(command_panel)
 	var command_column := VBoxContainer.new()
@@ -243,13 +244,15 @@ func _create_hud() -> void:
 	command_title.hide()
 	command_column.add_child(command_title)
 	var action_scroll := ScrollContainer.new()
-	action_scroll.custom_minimum_size = Vector2(294, 170)
+	# The grid determines its width and fills three rows of the default HUD.
+	action_scroll.custom_minimum_size = Vector2(0, 170)
 	action_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	action_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	action_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	command_column.add_child(action_scroll)
 	action_bar = GridContainer.new()
 	action_bar.columns = 5
+	action_bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	action_bar.add_theme_constant_override("h_separation", 6)
 	action_bar.add_theme_constant_override("v_separation", 4)
 	action_scroll.add_child(action_bar)
@@ -383,13 +386,34 @@ func _apply_minimap_size() -> void:
 
 func _fit_bottom_hud() -> void:
 	if hud_bottom == null: return
-	var command_width := maxf(308.0, action_bar.get_combined_minimum_size().x + command_panel.get_theme_stylebox("panel").get_minimum_size().x)
+	_fit_command_tiles()
+	var grid_width := command_tile_size.x * 5.0 + action_bar.get_theme_constant("h_separation") * 4.0
+	var command_width := maxf(grid_width, action_bar.get_combined_minimum_size().x) + command_panel.get_theme_stylebox("panel").get_minimum_size().x
 	if not is_equal_approx(command_panel.custom_minimum_size.x, command_width):
 		command_panel.custom_minimum_size.x = command_width
 	var content_height: float = hud_bottom.get_combined_minimum_size().y
 	var required_height := maxf(maxf(HUD_BOTTOM_HEIGHT, content_height), _production_hud_floor())
 	if not is_equal_approx(hud_bottom.offset_top, -required_height):
 		hud_bottom.offset_top = -required_height
+
+func _fit_command_tiles() -> void:
+	# At very large text sizes, reserve enough width for the production summary
+	# so larger command tiles do not force an extra row and a taller bottom HUD.
+	var summary_font: Font = selection_summary.get_theme_font("font")
+	var summary_size := selection_summary.get_theme_font_size("font_size")
+	var summary_width := summary_font.get_string_size("生命 1050/1050   已建成   右键设置集结点", HORIZONTAL_ALIGNMENT_LEFT, -1, summary_size).x
+	var dock := command_panel.get_parent() as HBoxContainer
+	var selection_row := selection_column.get_parent() as HBoxContainer
+	var reserved_width := hud_bottom.get_theme_stylebox("panel").get_minimum_size().x + dock.get_theme_constant("separation") * 2.0
+	reserved_width += minimap_anchor.get_combined_minimum_size().x + selection_panel.get_theme_stylebox("panel").get_minimum_size().x
+	reserved_width += selection_portrait.custom_minimum_size.x + selection_row.get_theme_constant("separation") + ceilf(summary_width)
+	var grid_gaps := action_bar.get_theme_constant("h_separation") * 4.0 + command_panel.get_theme_stylebox("panel").get_minimum_size().x
+	var tile_side := clampf(floorf((ui_root.size.x - reserved_width - grid_gaps) / 5.0), 54.0, COMMAND_TILE_SIZE.x)
+	command_tile_size = Vector2.ONE * tile_side
+	if action_bar.columns != 5 or command_title.visible: return
+	for child in action_bar.get_children():
+		if child.custom_minimum_size != command_tile_size:
+			child.custom_minimum_size = command_tile_size
 
 func _production_hud_floor() -> float:
 	if selection_header == null or queue_scroll == null: return HUD_BOTTOM_HEIGHT
@@ -846,7 +870,7 @@ func _render_actions() -> void:
 func _render_command(descriptor: Dictionary) -> Control:
 	if descriptor["view"] == "spacer":
 		var spacer := Control.new()
-		spacer.custom_minimum_size = COMMAND_TILE_SIZE
+		spacer.custom_minimum_size = command_tile_size
 		spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		action_bar.add_child(spacer)
 		return spacer
@@ -862,7 +886,7 @@ func _render_command(descriptor: Dictionary) -> Control:
 			button.text = descriptor["symbol"]
 		button.set_meta("side_order", descriptor["side_order"])
 		button.tooltip_text = descriptor["description"]
-		button.custom_minimum_size = COMMAND_TILE_SIZE
+		button.custom_minimum_size = command_tile_size
 		button.focus_mode = Control.FOCUS_NONE
 		UiStyle._style_button(button)
 		button.pressed.connect(func() -> void: game.execute_player_action(action_id))
@@ -872,7 +896,7 @@ func _render_command(descriptor: Dictionary) -> Control:
 	var button := RtsCommandButton.new()
 	var keycode: int = descriptor["keycode"]
 	button.configure(descriptor["kind"], descriptor["label"], OS.get_keycode_string(keycode) if keycode != KEY_NONE else "")
-	button.custom_minimum_size = COMMAND_TILE_SIZE
+	button.custom_minimum_size = command_tile_size
 	button.set_description(descriptor["description"])
 	button.set_meta("cost", descriptor["cost"])
 	button.set_meta("action_type", descriptor["type"])

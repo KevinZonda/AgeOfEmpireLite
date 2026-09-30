@@ -55,19 +55,21 @@ func _refresh_tooltip() -> void:
 
 func _draw() -> void:
 	var color := Color("f1d99b") if not disabled else Color("8b8679")
-	var icon_rect := Rect2((size - Vector2(45, 45)) * 0.5, Vector2(45, 45))
+	var icon_side := minf(size.x, size.y) - 6.0
+	var icon_size := Vector2.ONE * icon_side
+	var icon_rect := Rect2((size - icon_size) * 0.5, icon_size)
 	if icon_texture != null:
 		draw_texture_rect(icon_texture, icon_rect, false, Color(1, 1, 1, 0.38) if disabled else Color.WHITE)
 	else:
 		draw_rect(icon_rect, Color("211d16") if not disabled else Color("272722"))
 		draw_rect(icon_rect, Color("a68b53") if not disabled else Color("59574d"), false, 1)
-		draw_set_transform(icon_rect.get_center(), 0.0, Vector2(1.5, 1.5))
+		draw_set_transform(icon_rect.get_center(), 0.0, Vector2.ONE * (icon_side / 30.0))
 		_draw_icon(Vector2.ZERO, color)
 		draw_set_transform(Vector2.ZERO)
 	var font := ThemeDB.fallback_font
 	if font == null: return
 	if rank_icon_fallback:
-		var rank_badge := Rect2(icon_rect.position + Vector2(0, 44), Vector2(22, 16))
+		var rank_badge := Rect2(Vector2(icon_rect.position.x, icon_rect.end.y - 16.0), Vector2(22, 16))
 		draw_rect(rank_badge, Color("211b14"))
 		draw_rect(rank_badge, Color("a68b53"), false, 1)
 		draw_string(font, rank_badge.position + Vector2(2, 12), "III" if icon_kind.ends_with("_3") else "IV", HORIZONTAL_ALIGNMENT_CENTER, 18, 10, color)
