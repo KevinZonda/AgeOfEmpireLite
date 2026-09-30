@@ -110,7 +110,19 @@ const BUILD_PAGES := [
 	{"title": "经济", "kinds": ["house", "lumber_camp", "mining_camp", "mill", "farm", "market", "dock", "age", "blacksmith", "monastery", "university", "wonder"]},
 	{"title": "军事", "kinds": ["barracks", "archery_range", "stable", "siege_workshop", "outpost", "keep", "", "", "palisade_wall", "stone_wall", "palisade_gate", "stone_gate"]},
 ]
+# Arrow glyphs are drawn at a fixed size so text scaling cannot resize the slots.
+class CommandPageButton extends Button:
+	var direction := 1
+	func _draw() -> void:
+		var center := size * 0.5
+		var color := get_theme_color("font_hover_color" if is_hovered() else "font_color")
+		draw_line(center - Vector2(6, 0), center + Vector2(6, 0), color, 1.5, true)
+		var tip := center + Vector2(6 * direction, 0)
+		draw_line(tip, tip + Vector2(-4 * direction, -4), color, 1.5, true)
+		draw_line(tip, tip + Vector2(-4 * direction, 4), color, 1.5, true)
+
 const COMMANDS_PER_PAGE := 12
+const COMMAND_TILE_SIZE := Vector2(54, 54)
 const HUD_BOTTOM_HEIGHT := 241.0
 var game: Node2D
 var top_label: Label
@@ -146,6 +158,7 @@ var top_column: VBoxContainer
 var top_row: HBoxContainer
 var top_tools: HBoxContainer
 var command_side_buttons: Array[Button] = []
+var command_page_buttons: Array[Button] = []
 var current_build_pages: Array = []
 var minimap_anchor: Control
 var minimap_panel: PanelContainer
@@ -873,6 +886,7 @@ func _rebuild_actions() -> void:
 	hotkey_buttons.clear()
 	command_title.hide()
 	command_side_buttons.clear()
+	command_page_buttons.clear()
 	current_build_pages.clear()
 	if game.selected.is_empty() or not is_instance_valid(game.selected[0]):
 		command_page = 0
@@ -1044,19 +1058,44 @@ func _layout_command_grid() -> void:
 	while visible_actions.size() < COMMANDS_PER_PAGE:
 		_add_action_spacer()
 		visible_actions.append(action_bar.get_child(action_bar.get_child_count() - 1))
-	for direction in [-1, 1]:
-		var next_index := posmod(page_index + direction, page_count)
-		var tip := "上一页" if direction == -1 else "下一页"
-		if is_build_page:
-			tip += "：%s → %s" % [current_build_pages[page_index]["title"], current_build_pages[next_index]["title"]]
-		else:
-			tip += "（%d/%d）" % [page_index + 1, page_count]
-		var arrow := _add_side_button("←" if direction == -1 else "→", tip, func() -> void:
-			if is_build_page: game.build_page = next_index
-			else: command_page = next_index
+	# Reserve the right column even when navigation is absent.
+	var navigation: Control
+	if page_count > 1 and (is_build_page or game.selected[0] is RtsBuilding):
+		var arrows := HBoxContainer.new()
+		arrows.custom_minimum_size = COMMAND_TILE_SIZE
+		arrows.add_theme_constant_override("separation", 2)
+		arrows.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		action_bar.add_child(arrows)
+		navigation = arrows
+		for direction in [-1, 1]:
+			var next_index := posmod(page_index + direction, page_count)
+			var arrow := CommandPageButton.new()
+			arrow.direction = direction
+			arrow.tooltip_text = "上一页" if direction == -1 else "下一页"
+			if is_build_page:
+				arrow.tooltip_text += "：%s → %s" % [current_build_pages[page_index]["title"], current_build_pages[next_index]["title"]]
+			else:
+				arrow.tooltip_text += "（%d/%d）" % [page_index + 1, page_count]
+			arrow.custom_minimum_size = Vector2(26, 26)
+			arrow.size_flags_vertical = Control.SIZE_SHRINK_END
+			arrow.focus_mode = Control.FOCUS_NONE
+			UiStyle._style_button(arrow)
+			arrow.pressed.connect(func() -> void:
+				if is_build_page: game.build_page = next_index
+				else: command_page = next_index
+				_rebuild_actions()
+			)
+			arrows.add_child(arrow)
+			command_page_buttons.append(arrow)
+			command_side_buttons.append(arrow)
+	elif page_count > 1:
+		navigation = _add_side_button("⋯", "更多命令（%d/%d）" % [page_index + 1, page_count], func() -> void:
+			command_page = posmod(command_page + 1, page_count)
 			_rebuild_actions()
 		)
-		arrow.disabled = page_count <= 1
+	else:
+		_add_action_spacer()
+		navigation = action_bar.get_child(action_bar.get_child_count() - 1)
 	if stop == null and game.selected[0] is RtsUnit:
 		stop = _add_side_button("■", "停止选中单位当前的命令", func() -> void: game._stop_selected_units())
 	elif stop != null:
@@ -1065,7 +1104,9 @@ func _layout_command_grid() -> void:
 	else:
 		_add_action_spacer()
 		stop = action_bar.get_child(action_bar.get_child_count() - 1)
-	var side_controls: Array[Control] = [command_side_buttons[0], command_side_buttons[1], stop]
+	_add_action_spacer()
+	var empty_slot: Control = action_bar.get_child(action_bar.get_child_count() - 1)
+	var side_controls: Array[Control] = [stop, empty_slot, navigation]
 	for row in 3:
 		for column in 4:
 			action_bar.move_child(visible_actions[row * 4 + column], row * 5 + column)
@@ -1075,7 +1116,7 @@ func _add_side_button(symbol: String, description: String, callback: Callable) -
 	var button := Button.new()
 	button.text = symbol
 	button.tooltip_text = description
-	button.custom_minimum_size = Vector2(54, 54)
+	button.custom_minimum_size = COMMAND_TILE_SIZE
 	button.focus_mode = Control.FOCUS_NONE
 	UiStyle._style_button(button)
 	button.pressed.connect(callback)
@@ -1263,7 +1304,7 @@ func _add_research_action(kind: String, keycode: int) -> void:
 
 func _add_action_spacer() -> void:
 	var spacer := Control.new()
-	spacer.custom_minimum_size = Vector2(54, 54)
+	spacer.custom_minimum_size = COMMAND_TILE_SIZE
 	spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	action_bar.add_child(spacer)
 
@@ -1271,6 +1312,7 @@ func _add_action(icon_kind: String, label_text: String, cost: Dictionary, keycod
 	var button := RtsCommandButton.new()
 	var key_text := OS.get_keycode_string(keycode) if keycode != KEY_NONE else ""
 	button.configure(icon_kind, label_text, key_text)
+	button.custom_minimum_size = COMMAND_TILE_SIZE
 	if action_type == "train" and GameData.UNITS.has(icon_kind):
 		var source_landmark: String = game.selected[0].landmark_id if not game.selected.is_empty() and game.selected[0] is RtsBuilding else ""
 		var unit_stats := RtsUnitCatalog.unit_definition(game.civilizations[0], icon_kind, game.players[0]["researched"], game.players[0]["age"], game.players[0]["landmarks"], game.players[0].get("dynasty", ""), source_landmark)
