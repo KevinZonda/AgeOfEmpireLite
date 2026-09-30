@@ -196,7 +196,7 @@ func _on_match_changed(owner_id: int, domains: Array[StringName]) -> void:
 	# Enemy entities may be inspected, but their resource/queue changes are private.
 	if owner_id != 0 and not domains.has(&"entities") and not domains.has(&"selection"): return
 	_match_dirty = true
-	_match_actions_dirty = _match_actions_dirty or domains.has(&"research") or domains.has(&"market") or domains.has(&"selection")
+	_match_actions_dirty = _match_actions_dirty or domains.has(&"research") or domains.has(&"market") or domains.has(&"selection") or domains.has(&"age") or domains.has(&"landmarks") or domains.has(&"dynasty")
 	if _match_refresh_queued: return
 	_match_refresh_queued = true
 	call_deferred("_flush_match_changes")

@@ -4,7 +4,7 @@
 
 模块边界和后续拆分顺序见 [架构说明](scripts/ARCHITECTURE.md)。
 
-四项重构的实现提交、回归命令及性能取舍见 [验证记录](docs/refactor-validation.md)。
+四项重构的实现提交、回归命令及性能取舍见 [验证记录](docs/refactor-validation.md)。后续模块边界重构的逐项测试见 [第二轮验证记录](docs/refactor-boundary-validation.md)。
 
 寻路的路径复用、失败退避、性能计数与对比结果见 [寻路优化与验证](docs/navigation.md)。 绕路、停滞和编队指令故障的复现、修复与测试入口见 [寻路 PoC 报告](docs/navigation-poc/README.md)。
 

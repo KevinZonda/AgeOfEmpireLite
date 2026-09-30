@@ -24,17 +24,22 @@ static func economic_site_multiplier(game: Node2D, owner_id: int, resource_kind:
 	return 1.0
 
 static func french_keep_influence(game: Node2D, producer: RtsBuilding) -> bool:
-	if game.civilizations[producer.owner_id] != "French" or producer.producer_kind() not in ["archery_range", "stable"]: return false
-	for building in game.buildings:
-		if not is_instance_valid(building) or building.owner_id != producer.owner_id or not building.is_complete(): continue
+	return training_cost_multiplier(game.civilizations[producer.owner_id], producer, game.buildings) < 1.0
+
+static func training_cost_multiplier(civilization: String, producer: Object, buildings: Array) -> float:
+	if civilization != "French" or producer.producer_kind() not in ["archery_range", "stable"]: return 1.0
+	for building in buildings:
+		if not is_instance_valid(building) or building.is_queued_for_deletion() or building.owner_id != producer.owner_id or not building.is_complete(): continue
 		if building.kind != "keep" and building.landmark_id != "fr_red_palace": continue
-		if building.position.distance_to(producer.position) <= 180.0: return true
-	return false
+		if building.position.distance_to(producer.position) <= 180.0: return 0.8
+	return 1.0
 
 static func training_cost(game: Node2D, producer: RtsBuilding, unit_kind: String) -> Dictionary:
+	return discounted_training_cost(unit_kind, 0.8 if french_keep_influence(game, producer) else 1.0)
+
+static func discounted_training_cost(unit_kind: String, multiplier := 1.0) -> Dictionary:
 	var cost: Dictionary = GameData.unit_cost(unit_kind).duplicate(true)
-	if french_keep_influence(game, producer):
-		for resource in cost: cost[resource] = ceili(float(cost[resource]) * 0.8)
+	for resource in cost: cost[resource] = ceili(float(cost[resource]) * multiplier)
 	return cost
 
 static func research_cost(civilization: String, landmark_id: String, technology: Dictionary) -> Dictionary:

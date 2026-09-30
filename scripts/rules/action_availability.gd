@@ -4,27 +4,15 @@ extends RefCounted
 # Pure validation is shared by panel descriptions and command transactions.
 # Transactions validate again immediately before spending or enqueuing.
 static func context_for(game: Node2D, owner_id: int, building: RtsBuilding = null) -> Dictionary:
-	var bank: Dictionary = game.players[owner_id]
-	var officials := 0
-	var has_wonder := false
-	for unit in game.units:
-		if is_instance_valid(unit) and unit.owner_id == owner_id and unit.kind == "imperial_official": officials += 1
-	for producer in game.buildings:
-		if not is_instance_valid(producer) or producer.owner_id != owner_id: continue
-		officials += producer.queued_unit_count("imperial_official")
-		if producer.kind == "wonder": has_wonder = true
-	return for_producer({
-		"game": game, "owner_id": owner_id, "civilization": game.civilizations[owner_id], "age": bank["age"],
-		"dynasty": bank.get("dynasty", ""), "researched": bank["researched"],
-		"landmarks": bank["landmarks"], "active_landmark": game.active_landmark_id(owner_id),
-		"resources": bank, "population_used": game.population_used(owner_id), "population_cap": game.population_cap(owner_id),
-		"queued_research": game.queued_research(owner_id), "official_count": officials, "has_wonder": has_wonder,
-	}, building)
+	return game.match_production.context_for(owner_id, building)
 
-static func for_producer(context: Dictionary, building: RtsBuilding) -> Dictionary:
+static func for_producer(context: Dictionary, building: Object) -> Dictionary:
 	var result := context.duplicate()
+	var multiplier := 1.0
+	if building != null and context.get("entity_queries") != null:
+		multiplier = context["entity_queries"].training_cost_multiplier(context.get("civilization", ""), building)
 	result.merge({
-		"producer_building": building, "producer": building.producer_kind() if building != null else "",
+		"training_cost_multiplier": multiplier, "producer": building.producer_kind() if building != null else "",
 		"production_complete": building.is_complete() if building != null else true,
 		"landmark_id": building.landmark_id if building != null else "",
 		"landmark_cooldown": building.landmark_ability_cooldown if building != null else 0.0,
@@ -86,9 +74,7 @@ static func evaluate(action_type: String, kind: String, context: Dictionary) -> 
 				if kind == "wonder" and context.get("has_wonder", false): status = {"available": false, "reason": "已有奇观"}
 		"train":
 			if GameData.UNITS.has(kind):
-				cost = GameData.unit_cost(kind)
-				if context.get("game") != null and context.get("producer_building") is RtsBuilding:
-					cost = RtsCivilizationRules.training_cost(context["game"], context["producer_building"], kind)
+				cost = RtsCivilizationRules.discounted_training_cost(kind, float(context.get("training_cost_multiplier", 1.0)))
 				status = RtsTechTree.unit_status(civilization, age, producer, kind, researched, context.get("dynasty", ""))
 		"research":
 			var technology := RtsTechTree.get_technology(kind)

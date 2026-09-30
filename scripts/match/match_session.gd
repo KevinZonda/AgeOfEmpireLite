@@ -25,8 +25,8 @@ var started := false
 var game_over := false
 var paused := false
 
-func _init(game_ref: Node2D) -> void:
-	entities = EntityRegistry.new(game_ref)
+func _init(game_ref: Node2D = null) -> void:
+	if game_ref != null: entities = EntityRegistry.new(game_ref)
 
 func configure_players(civ: String, opponent: String, mode: String, lobby: Array, resource_preset: int) -> void:
 	match_mode = mode

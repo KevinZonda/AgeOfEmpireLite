@@ -30,7 +30,7 @@ TESTS = [
 # Rendering-driver comparisons and existing HUD/range-corner failures are run
 # separately. The integration suite covers the shared state/behavior boundaries.
 REFACTOR_TESTS = list(dict.fromkeys(TESTS + [
-    "session_rules_regression", "unit_components_regression", "unit_orders_regression", "match_simulation_regression", "settings_store",
+    "match_services", "session_rules_regression", "unit_components_regression", "unit_orders_regression", "match_simulation_regression", "settings_store",
     "match_changes", "right_click_selection", "hud_command_pages", "player_input_actions_regression",
     "production_queue_regression", "hud_queue_layout", "display_settings",
     "unit_preview_page", "tech_tree_page", "typography_scale", "battle_experience",
@@ -58,6 +58,7 @@ def main():
     parser.add_argument("--suite", choices=["navigation", "refactor"], default="navigation")
     parser.add_argument("--tests", nargs="+")
     parser.add_argument("--timeout", type=float, default=300)
+    parser.add_argument("--rendering", action="store_true", help="Use a real window/rendering driver for screenshot and pixel comparisons")
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
     results = []
@@ -68,10 +69,15 @@ def main():
         timed_out = False
         terminated_on_error = False
         with log_path.open("w") as log:
+            display_args = ["--windowed", "--resolution", "1280x720"] if args.rendering else ["--headless"]
+            env = os.environ.copy()
+            if args.rendering:
+                artifact = args.output / ("farm.png" if name == "farm_rendering" else name + "-images")
+                env["RTS_RENDER_OUTPUT"] = str(artifact.resolve())
             process = subprocess.Popen(
-                [args.godot, "--headless", "--log-file", str(log_path.with_suffix(".engine.log").resolve()), "--path", str(args.path),
+                [args.godot, *display_args, "--log-file", str(log_path.with_suffix(".engine.log").resolve()), "--path", str(args.path),
                  "--script", f"res://tests/{name}.gd"],
-                stdout=log, stderr=subprocess.STDOUT,
+                stdout=log, stderr=subprocess.STDOUT, env=env,
             )
             try:
                 while process.poll() is None:
@@ -100,9 +106,9 @@ def main():
                     process.wait()
         output = log_path.read_text()
         errors = any(token in output for token in ["SCRIPT ERROR:", "ERROR:", "POC_FAIL"])
-        passed = code == 0 and not errors and ("_OK" in output or "failures=0" in output or "PERFORMANCE_" in output or "FOG_UNIT_FLASH_FIXED" in output)
+        passed = code == 0 and not errors and ("_OK" in output or "failures=0" in output or "PERFORMANCE_" in output or "FOG_UNIT_FLASH_FIXED" in output or "channels_differing_over_one=0" in output or "BALANCE_SUMMARY cases=" in output)
         results.append(dict(test=name, passed=passed, exit_code=code,
-                            timeout=timed_out, terminated_on_error=terminated_on_error, seconds=round(time.monotonic() - started, 3),
+                            timeout=timed_out, terminated_on_error=terminated_on_error, rendering=args.rendering, seconds=round(time.monotonic() - started, 3),
                             log=str(log_path.resolve())))
         print(f'{"PASS" if passed else "FAIL"} {name} ({results[-1]["seconds"]:.2f}s)', flush=True)
     (args.output / "results.json").write_text(json.dumps(results, indent=2) + "\n")

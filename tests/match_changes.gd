@@ -3,6 +3,7 @@ extends SceneTree
 const Session = preload("res://scripts/match/match_session.gd")
 const Economy = preload("res://scripts/match/match_economy.gd")
 const Production = preload("res://scripts/match/match_production.gd")
+const EntityQueries = preload("res://scripts/match/match_entity_queries.gd")
 const Changes = preload("res://scripts/match/match_changes.gd")
 
 # No HUD, notifications, camera, or scene setup. Real queue/rule/accounting code
@@ -15,11 +16,14 @@ class MatchFixture extends Node2D:
 	var units: Array[RtsUnit] = []
 	var buildings: Array[RtsBuilding] = []
 	var game_over := false
-	func population_used(owner_id: int) -> int: return Economy.population_used(self, owner_id)
-	func population_cap(owner_id: int) -> int: return Economy.population_cap(self, owner_id)
+	var match_queries = EntityQueries.new(self)
+	var match_economy = Economy.new(session, match_queries)
+	var match_production = Production.new(session, match_economy, match_queries)
+	func population_used(owner_id: int) -> int: return match_economy.population_used(owner_id)
+	func population_cap(owner_id: int) -> int: return match_economy.population_cap(owner_id)
 	func active_landmark_id(_owner_id: int) -> String: return ""
-	func queued_research(owner_id: int) -> Array[String]: return Production.queued_research(self, owner_id)
-	func spend(owner_id: int, cost: Dictionary) -> bool: return Economy.spend(self, owner_id, cost)
+	func queued_research(owner_id: int) -> Array[String]: return match_production.queued_research(owner_id)
+	func spend(owner_id: int, cost: Dictionary) -> bool: return match_economy.spend(owner_id, cost)
 
 var events: Array[Dictionary] = []
 var view_refreshes := 0
@@ -44,25 +48,25 @@ func _test_without_view() -> void:
 	var on_commit := func(owner_id: int, domains: Array[StringName]) -> void:
 		events.append({"owner_id": owner_id, "domains": domains, "food": game.players[0]["food"], "queued": center.production_queue.size(), "population": game.population_used(0)})
 	game.session.changes.changed.connect(on_commit)
-	assert(Production.train_unit(game, center, "villager"))
+	assert(game.match_production.train_unit(center, "villager"))
 	assert(events.size() == 1 and events[0]["food"] == 450 and events[0]["queued"] == 1 and events[0]["population"] == 1, "observer must see payment and population reservation together")
 	assert(events[0]["domains"].has(&"resources") and events[0]["domains"].has(&"production"))
-	assert(Production.cancel_job(game, center, 0))
+	assert(game.match_production.cancel_job(center, 0))
 	assert(events.size() == 2 and events[-1]["food"] == 500 and events[-1]["population"] == 0, "refund and population release must be one committed change")
-	assert(not Production.cancel_job(game, center, 0) and events.size() == 2)
+	assert(not game.match_production.cancel_job(center, 0) and events.size() == 2)
 	game.players[0]["food"] = 0
-	assert(not Production.train_unit(game, center, "villager") and events.size() == 2 and center.production_queue.is_empty(), "rejected orders must not publish mutations")
+	assert(not game.match_production.train_unit(center, "villager") and events.size() == 2 and center.production_queue.is_empty(), "rejected orders must not publish mutations")
 	game.players[0]["food"] = 500
 	center.kind = "barracks"
-	assert(Production.research_technology(game, center, "forged_weapons"))
+	assert(game.match_production.research_technology(center, "forged_weapons"))
 	assert(events.size() == 3 and game.queued_research(0) == ["forged_weapons"])
-	assert(not Production.research_technology(game, center, "forged_weapons") and events.size() == 3)
-	assert(Production.cancel_job(game, center, 0) and game.queued_research(0).is_empty())
+	assert(not game.match_production.research_technology(center, "forged_weapons") and events.size() == 3)
+	assert(game.match_production.cancel_job(center, 0) and game.queued_research(0).is_empty())
 	assert(game.players[0]["wood"] == 500 and game.players[0]["gold"] == 500)
-	Production.complete_research(game, 0, "forged_weapons")
+	game.match_production.complete_research(0, "forged_weapons")
 	assert(events[-1]["domains"].has(&"research") and game.players[0]["researched"] == ["forged_weapons"])
 	var count := events.size()
-	Production.complete_research(game, 0, "forged_weapons")
+	game.match_production.complete_research(0, "forged_weapons")
 	assert(events.size() == count, "duplicate completion must be silent")
 	game.session.changes.changed.disconnect(on_commit)
 	center.free()

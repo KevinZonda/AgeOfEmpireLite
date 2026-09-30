@@ -40,6 +40,10 @@ const ContextOrder = preload("res://scripts/player/context_order.gd")
 const PlayerOrders = preload("res://scripts/player/player_orders.gd")
 const MATCH_ECONOMY := preload("res://scripts/match/match_economy.gd")
 const MATCH_PRODUCTION := preload("res://scripts/match/match_production.gd")
+const MatchEntityQueries = preload("res://scripts/match/match_entity_queries.gd")
+var match_entity_queries := MatchEntityQueries.new(session.entities)
+var match_economy := MATCH_ECONOMY.new(session, match_entity_queries)
+var match_production := MATCH_PRODUCTION.new(session, match_economy, match_entity_queries)
 const FEEDBACK_AUDIO := preload("res://scripts/ui/feedback_audio.gd")
 const UNIT_ABILITY_ACTIONS := [
 	{"id": "palings", "label": "架设拒马", "kinds": ["longbow"]},
@@ -484,6 +488,9 @@ func _ready() -> void:
 	)
 	ai = RtsAiController.new(self)
 	session.changes.feedback_requested.connect(_on_match_feedback)
+	match_economy.resource_credited.connect(match_statistics.record_income)
+	match_production.age_advanced.connect(func(owner_id: int, age: int) -> void: match_statistics.record_event(owner_id, "进入时代 %d" % age))
+	match_production.unit_spawn_requested.connect(func(owner_id: int, kind: String, producer: Object) -> void: spawn_unit(owner_id, kind, find_spawn_position(producer)))
 	_create_hud()
 	get_viewport().size_changed.connect(_apply_ui_scales)
 	get_tree().node_added.connect(_on_ui_node_added)
@@ -867,13 +874,13 @@ func _show_match_report(won: bool, result_reason: String) -> void:
 	menu_ui.report_ui.show_report(won, result_reason)
 
 func credit_resource(owner_id: int, kind: String, amount: int) -> void:
-	MATCH_ECONOMY.credit_resource(self, owner_id, kind, amount)
+	match_economy.credit_resource(owner_id, kind, amount)
 
 func market_quote(resource_kind: String, buy: bool, owner_id := 0) -> int:
-	return MATCH_ECONOMY.market_quote(self, resource_kind, buy, owner_id)
+	return match_economy.market_quote(resource_kind, buy, owner_id)
 
 func exchange_resource(owner_id: int, resource_kind: String, buy: bool) -> bool:
-	return MATCH_ECONOMY.exchange_resource(self, owner_id, resource_kind, buy)
+	return match_economy.exchange_resource(owner_id, resource_kind, buy)
 
 func find_landing_pair(boat: RtsUnit, requested: Vector2) -> Dictionary:
 	navigation._ensure_current()
@@ -901,28 +908,28 @@ func find_landing_pair(boat: RtsUnit, requested: Vector2) -> Dictionary:
 	return {}
 
 func can_afford(owner_id: int, cost: Dictionary) -> bool:
-	return MATCH_ECONOMY.can_afford(self, owner_id, cost)
+	return match_economy.can_afford(owner_id, cost)
 
 func spend(owner_id: int, cost: Dictionary) -> bool:
-	return MATCH_ECONOMY.spend(self, owner_id, cost)
+	return match_economy.spend(owner_id, cost)
 
 func population_used(owner_id: int) -> int:
-	return MATCH_ECONOMY.population_used(self, owner_id)
+	return match_economy.population_used(owner_id)
 
 func population_cap(owner_id: int) -> int:
-	return MATCH_ECONOMY.population_cap(self, owner_id)
+	return match_economy.population_cap(owner_id)
 
 func train_unit(building: RtsBuilding, unit_kind: String) -> bool:
-	return MATCH_PRODUCTION.train_unit(self, building, unit_kind)
+	return match_production.train_unit(building, unit_kind)
 
 func queued_research(owner_id: int) -> Array[String]:
-	return MATCH_PRODUCTION.queued_research(self, owner_id)
+	return match_production.queued_research(owner_id)
 
 func research_technology(building: RtsBuilding, tech_id: String) -> bool:
-	return MATCH_PRODUCTION.research_technology(self, building, tech_id)
+	return match_production.research_technology(building, tech_id)
 
 func complete_research(owner_id: int, tech_id: String) -> void:
-	MATCH_PRODUCTION.complete_research(self, owner_id, tech_id)
+	match_production.complete_research(owner_id, tech_id)
 
 func is_age_queued(owner_id: int) -> bool:
 	for building in buildings:
@@ -1001,32 +1008,10 @@ func construct_landmark(owner_id: int, landmark_id: String) -> bool:
 	return false
 
 func complete_age(owner_id: int, target_age: int, landmark_id := "") -> void:
-	var current_age: int = players[owner_id]["age"]
-	var aged_up := target_age == current_age + 1
-	if not aged_up and (landmark_id.is_empty() or civilizations[owner_id] != "Chinese" or target_age > current_age): return
-	if landmark_id != "" and players[owner_id]["landmarks"].has(landmark_id): return
-	if aged_up: players[owner_id]["age"] = target_age
-	if aged_up: match_statistics.record_event(owner_id, "进入时代 %d" % target_age)
-	if aged_up and civilizations[owner_id] == "French" and target_age >= 2:
-		for upgrade_age in range(2, target_age + 1):
-			var free_upgrade := "melee_attack_%d" % upgrade_age
-			if not players[owner_id]["researched"].has(free_upgrade): players[owner_id]["researched"].append(free_upgrade)
-	if landmark_id != "": players[owner_id]["landmarks"].append(landmark_id)
-	var previous_dynasty: String = players[owner_id].get("dynasty", "")
-	players[owner_id]["dynasty"] = RtsLandmarkCatalog.dynasty_for(players[owner_id]["landmarks"]) if civilizations[owner_id] == "Chinese" else ""
-	for unit in units:
-		if is_instance_valid(unit) and unit.owner_id == owner_id: unit.refresh_stats()
-	for building in buildings:
-		if is_instance_valid(building) and building.owner_id == owner_id: building.refresh_stats()
-	if owner_id == 0:
-		if aged_up: notify_player("进入时代 %d！" % target_age)
-		if players[owner_id]["dynasty"] != previous_dynasty:
-			notify_player("进入%s朝：王朝加成已生效" % RtsLandmarkCatalog.DYNASTY_NAMES[players[owner_id]["dynasty"]])
-		_rebuild_actions()
-	_update_hud()
+	match_production.complete_age(owner_id, target_age, landmark_id)
 
 func cancel_production_job(building: RtsBuilding, index: int = 0) -> bool:
-	return MATCH_PRODUCTION.cancel_job(self, building, index)
+	return match_production.cancel_job(building, index)
 
 func build_footprint_size(kind: String, vertical := false) -> Vector2:
 	var definition: Dictionary = GameData.BUILDINGS[kind]

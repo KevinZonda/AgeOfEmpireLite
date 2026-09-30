@@ -6,6 +6,8 @@ const VisualState = preload("res://scripts/entities/visuals/unit_visual_state.gd
 class Context extends Node2D:
 	var started := false
 	var view_mode_25d := false
+	# Preview actors have no navigation service; exit still cancels their order lifecycle.
+	var navigation: RtsNavigation
 	var world_map: Node2D
 	var camera := Camera2D.new()
 	func player_color(_owner: int) -> Color: return Color("4e9bea")
