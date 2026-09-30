@@ -25,6 +25,10 @@ func add_building(building: RtsBuilding) -> void:
 	building_counts[building.kind] = int(building_counts.get(building.kind, 0)) + 1
 	if not building.is_complete(): unfinished_counts[building.kind] = int(unfinished_counts.get(building.kind, 0)) + 1
 
+func remove_building(building: RtsBuilding) -> void:
+	building_counts[building.kind] = maxi(0, int(building_counts.get(building.kind, 0)) - 1)
+	if not building.is_complete(): unfinished_counts[building.kind] = maxi(0, int(unfinished_counts.get(building.kind, 0)) - 1)
+
 func unit_count(kind: String) -> int:
 	return int(unit_counts.get(kind, 0))
 

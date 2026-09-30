@@ -112,6 +112,7 @@ func _resume_construction(workers: Array[RtsUnit]) -> void:
 				if worker.order == "build" and worker.target == building: worker.order_stop()
 			for resource in GameData.BUILDINGS[building.kind]["cost"]:
 				game.credit_resource(owner_id, resource, int(GameData.BUILDINGS[building.kind]["cost"][resource]))
+			if controller.snapshot != null: controller.snapshot.remove_building(building)
 			game.entity_destroyed(building)
 			construction_watch.erase(building_id)
 			continue

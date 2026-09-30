@@ -94,6 +94,15 @@ var _match_refresh_queued := false
 var _global_queue_signature: Array[String] = []
 var _global_queue_locators: Array[Button] = []
 
+# Match commits flush constantly (every gather credit); the live facts stay
+# current on each flush while the scan-heavy action view rides this cadence.
+const FULL_REFRESH_MIN_INTERVAL_MSEC := 150
+var _last_full_refresh_msec := 0
+var _actions_context: Dictionary = {}
+var _actions_context_frame := -1
+var _actions_context_serial := 0
+var _actions_context_cached_serial := -1
+
 func _init(game_ref: Node2D) -> void:
 	game = game_ref
 	game.player_actions.rebuilt.connect(_render_actions)
@@ -105,6 +114,7 @@ func _on_match_changed(owner_id: int, domains: Array[StringName]) -> void:
 	# Enemy entities may be inspected, but their resource/queue changes are private.
 	if owner_id != 0 and not domains.has(&"entities") and not domains.has(&"selection"): return
 	_match_dirty = true
+	_actions_context_serial += 1
 	_match_actions_dirty = _match_actions_dirty or domains.has(&"research") or domains.has(&"market") or domains.has(&"selection") or domains.has(&"age") or domains.has(&"landmarks") or domains.has(&"dynasty")
 	if _match_refresh_queued: return
 	_match_refresh_queued = true
@@ -113,6 +123,13 @@ func _on_match_changed(owner_id: int, domains: Array[StringName]) -> void:
 func _flush_match_changes() -> void:
 	_match_refresh_queued = false
 	if not _match_dirty or top_label == null: return
+	var now := Time.get_ticks_msec()
+	if _last_full_refresh_msec > 0 and now - _last_full_refresh_msec < FULL_REFRESH_MIN_INTERVAL_MSEC and not game.players.is_empty():
+		# Numbers and the selection panel stay exact on every commit; action
+		# rebuilds and availability scans wait for the next full refresh.
+		_refresh_live_hud()
+		match_view_refreshed.emit()
+		return
 	_update_hud()
 	match_view_refreshed.emit()
 
@@ -468,14 +485,24 @@ func _layout_minimap() -> void:
 
 func _update_hud() -> void:
 	if top_label == null or game.players.is_empty(): return
+	_last_full_refresh_msec = Time.get_ticks_msec()
 	if _match_actions_dirty: _rebuild_actions()
 	_match_dirty = false
 	_match_actions_dirty = false
+	_refresh_live_hud()
+	_refresh_action_buttons()
+
+# Cheap live facts, refreshed on every match commit. Rebuilds and availability
+# scans are deliberately excluded; they follow the full-refresh cadence.
+func _refresh_live_hud() -> void:
 	if global_queue_panel.visible: _refresh_global_queue_panel()
 	_update_population_hud()
-	_refresh_action_buttons()
 	_update_selection_hud()
 	queue_label.visible = not queue_label.text.is_empty()
+
+static func _set_label_text(control: Control, value: String) -> void:
+	# Assigning text re-lays out the control even when nothing changed.
+	if control.text != value: control.text = value
 
 func _update_population_hud() -> void:
 	var bank: Dictionary = game.players[0]
@@ -483,13 +510,13 @@ func _update_population_hud() -> void:
 	var used: int = game.population_used(0)
 	var capacity: int = game.population_cap(0)
 	var age_names := ["", "黑暗时代", "封建时代", "城堡时代", "帝王时代"]
-	top_label.text = "%s · %s %s%s" % [GameData.CIVILIZATIONS[game.civilizations[0]]["label"], age_names[clampi(bank["age"], 1, 4)], ["", "I", "II", "III", "IV"][clampi(bank["age"], 1, 4)], dynasty_text]
+	_set_label_text(top_label, "%s · %s %s%s" % [GameData.CIVILIZATIONS[game.civilizations[0]]["label"], age_names[clampi(bank["age"], 1, 4)], ["", "I", "II", "III", "IV"][clampi(bank["age"], 1, 4)], dynasty_text])
 	for kind in ["food", "wood", "gold", "stone"]:
-		resource_readouts[kind].text = str(bank[kind])
-	population_label.text = "%d/%d" % [used, capacity]
+		_set_label_text(resource_readouts[kind], str(bank[kind]))
+	_set_label_text(population_label, "%d/%d" % [used, capacity])
 	population_label.tooltip_text = "空余 %d" % maxi(0, capacity - used)
-	var idle_count: int = game.idle_villagers().size()
-	idle_villager_button.text = "村民 %d" % idle_count
+	var idle_count: int = game.idle_villager_count()
+	_set_label_text(idle_villager_button, "村民 %d" % idle_count)
 	idle_villager_button.disabled = idle_count == 0
 	call_deferred("_fit_top_hud")
 
@@ -507,15 +534,15 @@ func _update_selection_hud() -> void:
 		var building: RtsBuilding = subject
 		has_progress = not building.is_complete() or building.kind == "farm" or has_production_actions or not building.production_queue.is_empty()
 	selection_progress.visible = has_progress
-	queue_label.text = ""
+	_set_label_text(queue_label, "")
 	queue_scroll.visible = selected_building != null and selected_building.owner_id == 0 and (has_production_actions or not selected_building.production_queue.is_empty())
 	selection_portrait.show()
 	multi_selection_scroll.hide()
 	if game.selected.is_empty() or not is_instance_valid(game.selected[0]):
 		_clear_multi_selection_icons()
 		selection_portrait.show_subject(null)
-		info_label.text = "未选择"
-		detail_label.text = "左键选择 · 双击同型单位 · 右键下令 · Esc 暂停"
+		_set_label_text(info_label, "未选择")
+		_set_label_text(detail_label, "左键选择 · 双击同型单位 · 右键下令 · Esc 暂停")
 		_refresh_selection_summary()
 		return
 	var item: Node2D = game.selected[0]
@@ -524,56 +551,59 @@ func _update_selection_hud() -> void:
 		selection_summary.hide()
 		selection_details_scroll.hide()
 		selection_details_button.hide()
-		info_label.text = "已选中 %d 个单位 · 点击图标单独选中" % game.selected.size()
+		_set_label_text(info_label, "已选中 %d 个单位 · 点击图标单独选中" % game.selected.size())
 		_refresh_multi_selection_icons()
 		multi_selection_scroll.show()
 		return
 	_clear_multi_selection_icons()
 	selection_portrait.show_subject(item, Color("b6a877") if item is RtsResource else game.player_color(item.owner_id))
 	if item is RtsResource:
-		info_label.text = _resource_label(item)
-		detail_label.text = "资源类型  %s\n采集单位  %s" % [GameData.RESOURCE_LABELS.get(item.kind, item.kind), "渔船" if item.appearance == "fish" else "村民"]
+		_set_label_text(info_label, _resource_label(item))
+		var detail := "资源类型  %s\n采集单位  %s" % [GameData.RESOURCE_LABELS.get(item.kind, item.kind), "渔船" if item.appearance == "fish" else "村民"]
 		var status_line := "当前状态  %s" % _resource_status(item)
 		if item.has_wildlife_health():
 			# The compact summary shows only two lines. Keep wildlife health first.
-			detail_label.text = status_line + "\n" + detail_label.text
+			detail = status_line + "\n" + detail
 			if item.wildlife_hp > 0.0:
 				selection_health.max_value = item.wildlife_max_hp
 				selection_health.value = item.wildlife_hp
 				selection_health.show()
 		else:
-			detail_label.text += "\n" + status_line
+			detail += "\n" + status_line
+		_set_label_text(detail_label, detail)
 		selection_progress.max_value = maxi(1, item.initial_amount)
 		selection_progress.value = item.amount
 		selection_progress.show()
-		queue_label.text = "剩余 %d / %d" % [item.amount, item.initial_amount]
+		_set_label_text(queue_label, "剩余 %d / %d" % [item.amount, item.initial_amount])
 		_refresh_selection_summary()
 		return
 	var name: String = GameData.UNITS[item.kind]["label"] if item is RtsUnit else item.display_label()
-	info_label.text = "敌方 · %s" % name if game.is_enemy(0, item.owner_id) else name
+	_set_label_text(info_label, "敌方 · %s" % name if game.is_enemy(0, item.owner_id) else name)
 	selection_health.max_value = item.max_hp
 	selection_health.value = maxf(0.0, item.hp)
 	selection_health.show()
+	var detail := ""
 	if item is RtsUnit:
-		detail_label.text = _unit_stats_text(item)
+		detail = _unit_stats_text(item)
 		if item.field_build_remaining > 0.0:
 			selection_progress.max_value = item.field_build_total
 			selection_progress.value = item.field_build_total - item.field_build_remaining
 			selection_progress.show()
-			queue_label.text = "野外建造 %d%%" % roundi(100.0 * selection_progress.value / selection_progress.max_value)
-		if item.kind in ["transport_ship", "battering_ram", "siege_tower"]: detail_label.text += "   乘员 %d/%d" % [item.passengers.size(), 10 if item.kind == "siege_tower" else 8]
-		if item.kind == "trader": detail_label.text += "   右键贸易站往返交易"
-		if item.kind == "monk": detail_label.text += "   携带圣物" if item.carried_relic != null else "   可占圣地、拾取圣物"
-		if item.kind == "fishing_boat": detail_label.text += "   右键鱼群捕鱼"
+			_set_label_text(queue_label, "野外建造 %d%%" % roundi(100.0 * selection_progress.value / selection_progress.max_value))
+		if item.kind in ["transport_ship", "battering_ram", "siege_tower"]: detail += "   乘员 %d/%d" % [item.passengers.size(), 10 if item.kind == "siege_tower" else 8]
+		if item.kind == "trader": detail += "   右键贸易站往返交易"
+		if item.kind == "monk": detail += "   携带圣物" if item.carried_relic != null else "   可占圣地、拾取圣物"
+		if item.kind == "fishing_boat": detail += "   右键鱼群捕鱼"
 	else:
-		detail_label.text = "生命 %.0f/%.0f   %s" % [item.hp, item.max_hp, "建造中" if not item.is_complete() else "已建成"]
-		if item.kind == "farm" and item.is_complete(): detail_label.text += "\n播种 %.1f 工作量 · 收获 %.1f 工作量" % [RtsBuilding.FARM_SOW_WORK, RtsBuilding.FARM_HARVEST_WORK]
-		if item.kind == "monastery": detail_label.text += "   圣物 %d（每 4 秒每件 +12 黄金）" % item.relics.size()
-		if not item.garrisoned_units.is_empty(): detail_label.text += "   驻军 %d/%d" % [item.garrisoned_units.size(), item.garrison_capacity()]
+		detail = "生命 %.0f/%.0f   %s" % [item.hp, item.max_hp, "建造中" if not item.is_complete() else "已建成"]
+		if item.kind == "farm" and item.is_complete(): detail += "\n播种 %.1f 工作量 · 收获 %.1f 工作量" % [RtsBuilding.FARM_SOW_WORK, RtsBuilding.FARM_HARVEST_WORK]
+		if item.kind == "monastery": detail += "   圣物 %d（每 4 秒每件 +12 黄金）" % item.relics.size()
+		if not item.garrisoned_units.is_empty(): detail += "   驻军 %d/%d" % [item.garrisoned_units.size(), item.garrison_capacity()]
 		if item.can_set_rally(0):
-			detail_label.text += "   右键设置集结点"
+			detail += "   右键设置集结点"
 		_update_building_progress(item)
 		_refresh_queue_controls(item)
+	_set_label_text(detail_label, detail)
 	_refresh_selection_summary()
 
 func _toggle_selection_details() -> void:
@@ -586,7 +616,7 @@ func _refresh_selection_summary() -> void:
 	selection_summary.visible = not selection_details_expanded
 	selection_details_button.visible = not game.selected.is_empty()
 	var lines: PackedStringArray = detail_label.text.split("\n")
-	selection_summary.text = "\n".join(lines.slice(0, mini(2, lines.size())))
+	_set_label_text(selection_summary, "\n".join(lines.slice(0, mini(2, lines.size()))))
 
 func _clear_multi_selection_icons() -> void:
 	if multi_selection_ids.is_empty(): return
@@ -648,7 +678,7 @@ func _update_building_progress(building: RtsBuilding) -> void:
 		selection_progress.max_value = maxf(0.1, building.build_total)
 		selection_progress.value = building.build_total - building.build_remaining
 		selection_progress.show()
-		queue_label.text = "施工 %d%% · 村民 %d · 选村民右键继续" % [int(100.0 * selection_progress.value / selection_progress.max_value), game.count_builders(building)]
+		_set_label_text(queue_label, "施工 %d%% · 村民 %d · 选村民右键继续" % [int(100.0 * selection_progress.value / selection_progress.max_value), game.count_builders(building)])
 	elif building.kind == "farm":
 		selection_progress.max_value = building.farm_stage_work()
 		selection_progress.value = building.farm_stage_progress
@@ -656,7 +686,7 @@ func _update_building_progress(building: RtsBuilding) -> void:
 		var farmer: RtsUnit = game.farm_worker(building)
 		var stage_label := "播种" if building.farm_stage == "sowing" else "收获"
 		var remaining := (building.farm_stage_work() - building.farm_stage_progress) / farmer.farm_work_speed() if farmer != null else 0.0
-		queue_label.text = "%s %d%% · 速度 %.2f 工作量/秒 · 剩余 %.1f 秒" % [stage_label, roundi(100.0 * building.farm_stage_progress / building.farm_stage_work()), farmer.farm_work_speed(), remaining] if farmer != null else "%s %d%% · 暂停，派村民耕作" % [stage_label, roundi(100.0 * building.farm_stage_progress / building.farm_stage_work())]
+		_set_label_text(queue_label, "%s %d%% · 速度 %.2f 工作量/秒 · 剩余 %.1f 秒" % [stage_label, roundi(100.0 * building.farm_stage_progress / building.farm_stage_work()), farmer.farm_work_speed(), remaining] if farmer != null else "%s %d%% · 暂停，派村民耕作" % [stage_label, roundi(100.0 * building.farm_stage_progress / building.farm_stage_work())])
 	elif not building.production_queue.is_empty():
 		var job: Dictionary = building.current_job()
 		selection_progress.max_value = job["time"]
@@ -828,10 +858,16 @@ func _refresh_global_queue_panel() -> void:
 
 func _refresh_action_buttons() -> void:
 	if game.players.is_empty() or command_buttons.is_empty(): return
-	var context := RtsActionAvailability.context_for(game, 0, game.selected[0] if not game.selected.is_empty() and game.selected[0] is RtsBuilding else null)
+	# context_for scans units and buildings several times; it is display-only
+	# here, so reuse it until the frame advances or a match commit invalidates it.
+	var frame := Engine.get_process_frames()
+	if frame != _actions_context_frame or _actions_context_cached_serial != _actions_context_serial:
+		_actions_context_frame = frame
+		_actions_context_cached_serial = _actions_context_serial
+		_actions_context = RtsActionAvailability.context_for(game, 0, game.selected[0] if not game.selected.is_empty() and game.selected[0] is RtsBuilding else null)
 	for button in command_buttons:
 		if not is_instance_valid(button) or button.is_queued_for_deletion(): continue
-		var status: Dictionary = game.player_actions.availability(button.get_meta("action_type"), button.get_meta("action_kind"), context)
+		var status: Dictionary = game.player_actions.availability(button.get_meta("action_type"), button.get_meta("action_kind"), _actions_context)
 		button.set_availability(status["available"], status["reason"], status["cost"])
 
 func _selected_ability_availability(ability_id: String) -> Dictionary:
@@ -842,6 +878,7 @@ func _rebuild_actions() -> void:
 
 func _render_actions() -> void:
 	if action_bar == null: return
+	_actions_context_frame = -1
 	for child in action_bar.get_children():
 		action_bar.remove_child(child)
 		child.queue_free()

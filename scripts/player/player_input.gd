@@ -346,7 +346,10 @@ func _unhandled_input(event: InputEvent) -> void:
 func _gameplay_input_allowed() -> bool:
 	return game.started and not game.game_over and not game.paused and game.age_choice_overlay == null and game.unit_preview_page == null and game.tech_tree_overlay == null and (game.settings_overlay == null or not game.settings_overlay.visible)
 
-func _update_cursor() -> void:
+var _cursor_query_timer := 0.0
+var _cursor_query_point := Vector2.INF
+
+func _update_cursor(delta := 0.0) -> void:
 	var screen_point: Vector2 = game._selection_pointer_screen_position()
 	game.cursor.position = screen_point
 	if game.dragging:
@@ -354,7 +357,15 @@ func _update_cursor() -> void:
 		# sufficient feedback and avoids introducing a first-draw font cost.
 		if game._selection_drag_visible(): game.cursor.set_state("select")
 		game.cursor.set_context("")
+		_cursor_query_timer = 0.0
+		_cursor_query_point = Vector2.INF
 		return
+	# The context query scans entities under the pointer; rerun it on mouse
+	# movement or at most every 0.1s while the pointer rests.
+	_cursor_query_timer -= delta
+	if screen_point == _cursor_query_point and _cursor_query_timer > 0.0: return
+	_cursor_query_point = screen_point
+	_cursor_query_timer = 0.1
 	var over_ui: bool = game._selection_point_over_hud(screen_point)
 	var world_point := game.get_viewport().get_canvas_transform().affine_inverse() * screen_point
 	game.cursor.set_state(game._cursor_state_at(world_point, over_ui))

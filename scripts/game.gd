@@ -718,6 +718,7 @@ func start_game(civ: String, requested_seed := -1, opponent_civ := "") -> void:
 		var ai_difficulty: String = lobby_players[owner_id]["difficulty"] if use_lobby_setup else "normal"
 		ai_controllers.append(RtsAiController.new(self, owner_id, ai_difficulty))
 		ai_think_timers[owner_id] = 0.0
+	_stagger_ai_think_phases()
 	ai = ai_controllers[0]
 	if view_mode_25d != selected_view_mode_25d: _toggle_view_mode()
 	_update_hud()
@@ -782,14 +783,20 @@ func nearest_enemy_center(owner_id: int) -> RtsBuilding:
 func strategic_target_for(owner_id: int) -> Node2D:
 	# An AI first helps a nearby ally whose base is being attacked. Allied AIs
 	# then converge on the same enemy center chosen from their team's midpoint.
+	# Gather the defended centers once; the unit pass then costs O(units x centers)
+	# instead of O(units x buildings).
+	var centers: Array[RtsBuilding] = []
+	for building in buildings:
+		if is_instance_valid(building) and building.kind == "town_center" and not is_enemy(owner_id, building.owner_id):
+			centers.append(building)
 	var threat: RtsUnit
 	var threat_score := INF
-	for building in buildings:
-		if not is_instance_valid(building) or building.kind != "town_center" or is_enemy(owner_id, building.owner_id): continue
-		for unit in units:
-			if not is_instance_valid(unit) or not is_enemy(owner_id, unit.owner_id) or not unit.stats.get("tags", []).has("military"): continue
-			var distance := building.position.distance_squared_to(unit.position)
-			if distance < 340.0 * 340.0 and distance < threat_score and (not fog.active or fog.can_detect_unit(owner_id, unit)):
+	for unit in units:
+		if not is_instance_valid(unit) or not is_enemy(owner_id, unit.owner_id) or not unit.stats.get("tags", []).has("military"): continue
+		if fog.active and not fog.can_detect_unit(owner_id, unit): continue
+		for center in centers:
+			var distance := center.position.distance_squared_to(unit.position)
+			if distance < 340.0 * 340.0 and distance < threat_score:
 				threat = unit
 				threat_score = distance
 	if threat != null: return threat
@@ -1210,7 +1217,25 @@ func _tick_match_logic(delta: float) -> void:
 		ai_think_timers[owner_id] = float(ai_think_timers.get(owner_id, 0.0)) - delta
 		if ai_think_timers[owner_id] <= 0.0:
 			controller.tick()
-			ai_think_timers[owner_id] = controller.think_interval()
+			ai_think_timers[owner_id] = controller.next_think_delay()
+
+# AIs sharing a think interval spread their steady-state think times evenly
+# across it, so several same-difficulty opponents never think on the same
+# frame. The first think still happens at match start (timer 0); the phase is
+# consumed by the first reschedule and the exact interval keeps the cadence.
+func _stagger_ai_think_phases() -> void:
+	var group_sizes := {}
+	for controller in ai_controllers:
+		var interval := controller.think_interval()
+		group_sizes[interval] = int(group_sizes.get(interval, 0)) + 1
+	var group_ranks := {}
+	for controller in ai_controllers:
+		var interval := controller.think_interval()
+		var rank: int = int(group_ranks.get(interval, 0))
+		group_ranks[interval] = rank + 1
+		var group_size: int = group_sizes[interval]
+		controller.think_phase = interval * float(rank) / float(group_size) if group_size > 1 else 0.0
+		controller._think_phase_pending = controller.think_phase > 0.0
 
 func _tick_presentation(delta: float) -> void:
 	if _uses_native_selection_pointer():
@@ -1224,14 +1249,14 @@ func _tick_presentation(delta: float) -> void:
 			_update_iso_depths()
 			iso_sort_timer = 0.1
 	_pan_camera(delta)
-	_update_cursor()
+	_update_cursor(delta)
 	if notice_timer > 0.0:
 		notice_timer -= delta
 		if notice_timer <= 0.0: notice_label.text = ""
 	hud_timer -= delta
 	if hud_timer <= 0.0:
 		_update_hud()
-		hud_timer = 0.4
+		hud_timer = 0.25
 	_compact_timed_entries(hit_lines, delta)
 	_compact_timed_entries(order_markers, delta)
 	_compact_timed_entries(world_effects, delta)
@@ -1387,8 +1412,8 @@ func _complete_selection_drag(screen_point: Vector2, additive: bool) -> void:
 func _cancel_selection_drag(block_until_release := false) -> void:
 	player_input._cancel_selection_drag(block_until_release)
 
-func _update_cursor() -> void:
-	player_input._update_cursor()
+func _update_cursor(delta := 0.0) -> void:
+	player_input._update_cursor(delta)
 
 func _cursor_state_at(world_point: Vector2, over_ui := false) -> String:
 	return player_input._cursor_state_at(world_point, over_ui)
@@ -1491,6 +1516,14 @@ func idle_villagers() -> Array[RtsUnit]:
 		if is_instance_valid(unit) and not unit.is_queued_for_deletion() and unit.owner_id == 0 and unit.kind == "villager" and unit.garrisoned_in == null and unit.order == "idle" and unit.command_queue.is_empty():
 			result.append(unit)
 	return result
+
+# The HUD reads this every refresh; counting avoids the array allocation.
+func idle_villager_count() -> int:
+	var count := 0
+	for unit in units:
+		if is_instance_valid(unit) and not unit.is_queued_for_deletion() and unit.owner_id == 0 and unit.kind == "villager" and unit.garrisoned_in == null and unit.order == "idle" and unit.command_queue.is_empty():
+			count += 1
+	return count
 
 func farm_worker(farm: RtsBuilding, excluded: RtsUnit = null) -> RtsUnit:
 	for unit in units:

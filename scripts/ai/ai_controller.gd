@@ -7,6 +7,7 @@ const EconomyPlan = preload("res://scripts/ai/economy_plan.gd")
 var snapshot: Snapshot
 const TACTICS_SCRIPT = preload("res://scripts/ai/ai_tactics.gd")
 const ECONOMY_SCRIPT = preload("res://scripts/ai/ai_economy.gd")
+const IDLE_ASSIGNMENTS_PER_THINK := 4
 
 var game: Node2D
 var owner_id := 1
@@ -19,6 +20,9 @@ var tactic_cooldown := 0.0
 var push_cooldown := 0.0
 var site_cooldown := 0.0
 var attack_watch: Dictionary = {}
+var think_phase := 0.0
+var _think_phase_pending := false
+var _idle_worker_cursor := 0
 var _tactics: RefCounted
 var _economy: RefCounted
 
@@ -39,6 +43,16 @@ func attack_threshold() -> int:
 
 func think_interval() -> float:
 	return float(Profile.for_difficulty(difficulty)["interval"])
+
+# The phase shifts this controller's steady-state think times away from other
+# AIs sharing the same interval. It is consumed once; afterwards the period is
+# exactly the interval again.
+func next_think_delay() -> float:
+	var delay := think_interval()
+	if _think_phase_pending:
+		_think_phase_pending = false
+		delay += think_phase
+	return delay
 
 func _has_unfinished_house() -> bool:
 	return _economy._has_unfinished_house()
@@ -80,7 +94,8 @@ func _think() -> void:
 			if fish != null: unit.issue_command("gather", Vector2.INF, fish)
 		elif unit.kind == "monk" and unit.order == "idle": _assign_monk(unit)
 	_resume_construction(workers)
-	snapshot = Snapshot.new(game, owner_id)
+	# The snapshot from tick() stays valid through both halves of the think;
+	# _resume_construction keeps it in sync when it retires a stalled building.
 	var gathering := {"food": 0, "wood": 0, "gold": 0, "stone": 0}
 	for worker in workers:
 		if worker.order == "gather" and is_instance_valid(worker.target):
@@ -90,25 +105,19 @@ func _think() -> void:
 		if worker.order == "gather" and is_instance_valid(worker.target):
 			var reach: float = worker.target.radius + worker.radius() + 2.0 if worker.target is RtsResource else worker.target.size().x * 0.5 + worker.radius() + 2.0
 			if worker.position.distance_to(worker.target.position) > reach + 5.0 and worker.route.is_empty(): worker.order_stop()
-		if worker.order == "idle":
-			var resource_kind := _needed_resource(gathering, workers.size())
-			var resource: RtsResource = game.find_nearest_resource(worker.position, resource_kind, INF, owner_id, false, worker)
-			if resource == null:
-				for fallback in ["wood", "food", "gold"]:
-					if fallback == resource_kind: continue
-					resource = game.find_nearest_resource(worker.position, fallback, INF, owner_id, false, worker)
-					if resource != null:
-						resource_kind = fallback
-						break
-			if resource != null:
-				worker.order_gather(resource)
-				gathering[resource_kind] += 1
-			elif resource_kind == "food":
-				var farm: RtsBuilding = game.find_nearest_free_farm(owner_id, worker.position, 520.0, worker)
-				if farm != null:
-					worker.order_gather(farm)
-					gathering["food"] += 1
-			if worker.order == "idle" and economic_explorers < 2 and _explore_for_resources(worker, workers): economic_explorers += 1
+	# Idle assignment pathfinds per candidate resource; spread it over several
+	# thinks so a large idle burst cannot turn one think into a long frame.
+	var idle_workers: Array[RtsUnit] = []
+	for worker in workers:
+		if worker.order == "idle": idle_workers.append(worker)
+	if idle_workers.is_empty():
+		_idle_worker_cursor = 0
+	else:
+		var start := _idle_worker_cursor % idle_workers.size()
+		var assignments: int = mini(IDLE_ASSIGNMENTS_PER_THINK, idle_workers.size())
+		for offset in assignments:
+			economic_explorers += _assign_idle_worker(idle_workers[(start + offset) % idle_workers.size()], workers, gathering, economic_explorers)
+		_idle_worker_cursor = (start + assignments) % idle_workers.size()
 	if game.players[owner_id]["age"] == 1:
 		if game._player_center(owner_id) != null: game.advance_age(owner_id, RtsLandmarkCatalog.preferred_landmark(game.civilizations[owner_id], 1, game.map_style))
 		if army.is_empty(): return
@@ -207,6 +216,28 @@ func _production_order() -> Array[String]:
 			return ["archery_range", "stable", "barracks", "blacksmith"] if game.map_style in ["lakes", "highlands"] else ["stable", "archery_range", "barracks", "blacksmith"]
 		"Chinese": return ["barracks", "archery_range", "stable", "blacksmith"] if game.map_style == "highlands" else ["archery_range", "barracks", "stable", "blacksmith"]
 	return ["barracks", "archery_range", "stable", "blacksmith"]
+
+# Returns 1 when the worker was sent exploring so the caller can cap explorers.
+func _assign_idle_worker(worker: RtsUnit, workers: Array[RtsUnit], gathering: Dictionary, economic_explorers: int) -> int:
+	var resource_kind := _needed_resource(gathering, workers.size())
+	var resource: RtsResource = game.find_nearest_resource(worker.position, resource_kind, INF, owner_id, false, worker)
+	if resource == null:
+		for fallback in ["wood", "food", "gold"]:
+			if fallback == resource_kind: continue
+			resource = game.find_nearest_resource(worker.position, fallback, INF, owner_id, false, worker)
+			if resource != null:
+				resource_kind = fallback
+				break
+	if resource != null:
+		worker.order_gather(resource)
+		gathering[resource_kind] += 1
+	elif resource_kind == "food":
+		var farm: RtsBuilding = game.find_nearest_free_farm(owner_id, worker.position, 520.0, worker)
+		if farm != null:
+			worker.order_gather(farm)
+			gathering["food"] += 1
+	if worker.order == "idle" and economic_explorers < 2 and _explore_for_resources(worker, workers): return 1
+	return 0
 
 func _assign_official(official: RtsUnit) -> void:
 	for other in game.units:
