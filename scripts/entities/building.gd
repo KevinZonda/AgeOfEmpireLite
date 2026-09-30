@@ -3,6 +3,7 @@ extends Node2D
 
 const BuildingVisual = preload("res://scripts/entities/visuals/building_visual.gd")
 const BuildingVisualState = preload("res://scripts/entities/visuals/building_visual_state.gd")
+const IconCache = preload("res://scripts/ui/icon_cache.gd")
 
 const FARM_SOW_WORK := 2.2
 const FARM_HARVEST_WORK := 4.4
@@ -53,7 +54,7 @@ func setup(game_ref: Node2D, player_id: int, building_kind: String, under_constr
 	kind = building_kind
 	landmark_id = chosen_landmark
 	var icon_kind := landmark_id if kind == "landmark" else "scout" if kind == "scout_camp" else kind
-	building_icon = RtsCommandButton._texture_at("res://assets/ui/command_icons/%s.png" % icon_kind)
+	building_icon = IconCache.texture_at("res://assets/ui/command_icons/%s.png" % icon_kind)
 	var definition := definition()
 	stats = definition.duplicate(true)
 	stats["armor"] = definition.get("armor", {"melee": 0.0, "ranged": 0.0}).duplicate(true)

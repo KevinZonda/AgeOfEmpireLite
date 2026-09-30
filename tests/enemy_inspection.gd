@@ -40,7 +40,8 @@ func _run() -> void:
 	assert(game.command_buttons.is_empty(), "enemy building inspection must not expose commands")
 	scout.position = game.spawn_point_for(0)
 	game.fog.update_visibility()
-	var ghost: RtsBuilding = game.fog.remembered_buildings[building_id]["ghost"]
+	var ghost: Node2D = game.fog.remembered_buildings[building_id]["ghost"]
+	assert(not ghost is RtsBuilding, "building memory must use a display-only node")
 	assert(not enemy_building.visible and ghost.visible, "last-known building should remain on the map")
 	assert(game.selected.is_empty() and game.info_label.text == "未选择", "hidden building details must close immediately")
 	assert(game._entity_at(enemy_building.position) == null, "building memory must not be clickable")

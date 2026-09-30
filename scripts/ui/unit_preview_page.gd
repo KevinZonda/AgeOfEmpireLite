@@ -5,12 +5,12 @@ const UiStyle = preload("res://scripts/ui/ui_style.gd")
 const IconCache = preload("res://scripts/ui/icon_cache.gd")
 const UnitVisual = preload("res://scripts/entities/visuals/unit_visual.gd")
 const UnitVisualState = preload("res://scripts/entities/visuals/unit_visual_state.gd")
+const UnitStatText = preload("res://scripts/ui/unit_stat_text.gd")
 const RtsUiTypography = preload("res://scripts/ui/typography.gd")
 
 signal close_requested
 
 const AGE_LABELS := ["", "I 黑暗时代", "II 封建时代", "III 城堡时代", "IV 帝王时代"]
-const PROFILE_LABELS := {"melee": "近战", "ranged": "远程", "siege": "攻城", "charge": "冲锋", "structure": "对建筑", "torch": "火炬", "hunt_melee": "狩猎近战", "hunt_ranged": "狩猎远程"}
 const UNIT_INTRO := {
 	"villager": "采集资源、建造建筑并修复友方设施。",
 	"imperial_official": "中国的经济单位，可监督生产并征收税金。",
@@ -347,20 +347,16 @@ func _refresh_stats() -> void:
 	_label(stats_box, "近战护甲：%.0f%s   ·   远程护甲：%.0f%s" % [float(armor.get("melee", 0.0)), _delta(float(armor.get("melee", 0.0)), float(base_armor.get("melee", 0.0)), 0), float(armor.get("ranged", 0.0)), _delta(float(armor.get("ranged", 0.0)), float(base_armor.get("ranged", 0.0)), 0)], RtsUiTypography.BODY, Color("e2d3b0"))
 	var resistance: Dictionary = stats.get("resistance", {})
 	if float(resistance.get("ranged", 0.0)) > 0.0: _label(stats_box, "远程减伤：%.0f%%" % [float(resistance["ranged"]) * 100.0], RtsUiTypography.BODY, Color("e2d3b0"))
-	var profiles: Dictionary = stats.get("profiles", {})
-	var has_attack := false
-	for profile_id in profiles:
-		if float(profiles[profile_id].get("damage", 0.0)) > 0.0: has_attack = true
-	if has_attack:
+	var profiles := UnitStatText.active_profiles(stats)
+	if not profiles.is_empty():
 		_label(stats_box, "攻击方式", RtsUiTypography.SUBSECTION_TITLE, Color("e4bd79"))
 		for profile_id in profiles:
 			var profile: Dictionary = profiles[profile_id]
-			if float(profile.get("damage", 0.0)) <= 0.0: continue
-			var line := "%s：%d × %.0f  ·  间隔 %.2f 秒  ·  射程 %.1f 格" % [PROFILE_LABELS.get(profile_id, profile_id), int(profile.get("hits", 1)), float(profile.get("damage", 0.0)), float(profile.get("cooldown", 0.0)), float(profile.get("range", 0.0)) / 30.0]
+			var line := UnitStatText.attack_text(profile_id, profile)
 			var attack_label := _label(stats_box, line, RtsUiTypography.BODY, Color("e2d3b0"))
 			attack_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			for bonus in profile.get("bonuses", []):
-				var bonus_label := _label(stats_box, "   %s +%.0f" % [bonus.get("source_label", "额外伤害"), float(bonus.get("amount", 0.0))], RtsUiTypography.CAPTION, Color("b9d4f0"))
+				var bonus_label := _label(stats_box, "   " + UnitStatText.bonus_text(bonus), RtsUiTypography.CAPTION, Color("b9d4f0"))
 				bonus_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	else:
 		_label(stats_box, "无直接攻击", RtsUiTypography.CAPTION, Color("c4b492"))

@@ -91,7 +91,7 @@ func _draw() -> void:
 		draw_circle(world_to_map(resource.position), 1.5, resource_color)
 	if game.fog.active:
 		for memory in game.fog.remembered_buildings.values():
-			var ghost: RtsBuilding = memory["ghost"]
+			var ghost: Node2D = memory["ghost"]
 			if not ghost.visible: continue
 			var old_color: Color = game.player_color(int(memory["owner_id"])).lerp(Color.GRAY, 0.55)
 			draw_rect(Rect2(world_to_map(memory["position"]) - Vector2(3, 3), Vector2(6, 6)), old_color)

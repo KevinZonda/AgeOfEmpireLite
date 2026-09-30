@@ -20,7 +20,7 @@ var artillery_shot_ready := false
 var artillery_shot_cooldown := 0.0
 
 func availability(unit: RtsUnit, ability_id: String) -> Dictionary:
-	var cost := {"wood": 25} if ability_id == "camp" else {}
+	var cost: Dictionary = GameData.BUILDINGS["scout_camp"]["cost"] if ability_id == "camp" else {}
 	var cooldown := 0.0
 	match ability_id:
 		"palings", "volley":

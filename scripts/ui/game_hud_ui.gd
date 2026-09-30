@@ -1,5 +1,6 @@
 class_name RtsGameHudUi
 extends CanvasLayer
+const UnitStatText = preload("res://scripts/ui/unit_stat_text.gd")
 const SelectionPortrait = preload("res://scripts/ui/selection_portrait.gd")
 const SelectionDragOverlay = preload("res://scripts/ui/selection_drag_overlay.gd")
 const UiStyle = preload("res://scripts/ui/ui_style.gd")
@@ -707,13 +708,11 @@ func _unit_stats_text(unit: RtsUnit) -> String:
 	if RtsCivilizationRules.english_network_rate(game, unit) > 1.0: lines.append("城堡网络：攻击速度 +20%")
 	if unit.kind == "scout" and game.civilizations[unit.owner_id] == "Chinese" and game.players[unit.owner_id].get("dynasty", "") == "Tang": lines.append("唐朝斥候：视野 +70")
 	if is_instance_valid(unit.wall_host): lines.append("正在石墙上驻守  ·  远程护甲 +2")
-	var profiles: Dictionary = stats.get("profiles", {})
+	var profiles := UnitStatText.active_profiles(stats)
 	for profile_id in profiles:
 		var profile: Dictionary = profiles[profile_id]
-		if float(profile.get("damage", 0.0)) <= 0.0: continue
-		var label_text: String = {"melee": "近战", "ranged": "远程", "siege": "攻城", "charge": "冲锋", "structure": "对建筑", "torch": "火炬", "hunt_melee": "狩猎近战", "hunt_ranged": "狩猎远程"}.get(profile_id, str(profile_id))
-		var description := "%s %d×%.0f  ·  间隔 %.2f 秒  ·  射程 %.1f 格" % [label_text, int(profile.get("hits", 1)), float(profile["damage"]), float(profile.get("cooldown", 1.0)), float(profile.get("range", 0.0)) / 30.0]
-		for bonus in profile.get("bonuses", []): description += "  ·  %s +%.0f" % [bonus.get("source_label", "加成"), float(bonus.get("amount", 0.0))]
+		var description := UnitStatText.attack_text(profile_id, profile, true)
+		for bonus in profile.get("bonuses", []): description += "  ·  " + UnitStatText.bonus_text(bonus, true)
 		lines.append(description)
 	if unit.kind in ["villager", "fishing_boat"]:
 		# Keep work information in the first visible line of the compact details pane.

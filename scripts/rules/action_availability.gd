@@ -65,11 +65,6 @@ static func evaluate(action_type: String, kind: String, context: Dictionary) -> 
 				var total := 0
 				for amount in context.get("landmark_stockpile", {}).values(): total += int(amount)
 				status = {"available": total > 0, "reason": "尚无可提取资源" if total <= 0 else ""}
-		"unit_ability":
-			var ready: bool = context.get("ability_ready", {}).get(kind, false)
-			if kind == "camp": cost = {"wood": 25}
-			var locked_reason: String = "已达到 5 座营地上限" if kind == "camp" and int(context.get("camp_count", 0)) >= 5 else context.get("ability_reason", {}).get(kind, "技能冷却中")
-			status = {"available": ready, "reason": locked_reason if not ready else ""}
 		"convert_gate":
 			if producer.ends_with("_wall") and kind == ("stone_gate" if producer == "stone_wall" else "palisade_gate"):
 				var resource := "stone" if kind == "stone_gate" else "wood"

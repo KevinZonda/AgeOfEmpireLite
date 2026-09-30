@@ -1,34 +1,31 @@
 extends Node2D
+const SETTINGS_STORE = preload("res://scripts/ui/settings_store.gd")
+const DISPLAY_SETTINGS = preload("res://scripts/ui/display_settings.gd")
+const UI_STYLE = preload("res://scripts/ui/ui_style.gd")
+var settings_store := SETTINGS_STORE.new()
+var display_settings := DISPLAY_SETTINGS.new(self, settings_store)
 const MatchSession = preload("res://scripts/match/match_session.gd")
 var session := MatchSession.new(self)
 const RtsUiTypography = preload("res://scripts/ui/typography.gd")
 
 const WORLD_SIZE := Vector2(2400, 2400)
 const START_CAMERA_POINT := Vector2(630, 820)
-const WINDOW_RESOLUTIONS := [Vector2i(1280, 720), Vector2i(1440, 810), Vector2i(1600, 900), Vector2i(1920, 1080), Vector2i(2560, 1440)]
-const UI_SCALE_OPTIONS := [0.75, 1.0, 1.25, 1.5]
-const TEXT_SCALE_OPTIONS := [0.75, 1.0, 1.25, 1.5, 1.75, 2.0]
+const WINDOW_RESOLUTIONS = DISPLAY_SETTINGS.WINDOW_RESOLUTIONS
+const UI_SCALE_OPTIONS = SETTINGS_STORE.UI_SCALE_OPTIONS
+const TEXT_SCALE_OPTIONS = SETTINGS_STORE.TEXT_SCALE_OPTIONS
 static var base_tooltip_font_size := -1
-const MINIMAP_SIZE_OPTIONS := [160, 216, 264]
-const HEALTH_BAR_MODES := ["always", "damaged", "changed"]
+const MINIMAP_SIZE_OPTIONS = SETTINGS_STORE.MINIMAP_SIZE_OPTIONS
+const HEALTH_BAR_MODES = SETTINGS_STORE.HEALTH_BAR_MODES
 const HEALTH_BAR_CHANGE_DURATION := 3.0
 const MIN_UI_VIEWPORT_SIZE := Vector2(1280, 720)
-const SETTINGS_PATH := "user://settings.cfg"
-const LEGACY_DISPLAY_SETTINGS_PATH := "user://display.cfg"
+const SETTINGS_PATH = SETTINGS_STORE.SETTINGS_PATH
+const LEGACY_DISPLAY_SETTINGS_PATH = SETTINGS_STORE.LEGACY_DISPLAY_SETTINGS_PATH
 const CAMERA_PAN_SPEED := 570.0
 const GESTURE_PAN_PIXELS := 32.0
 const EDGE_SCROLL_MARGIN := 28.0
 const SELECTION_DRAG_THRESHOLD := 12.0
 const SELECTION_DRAG_VISUAL_THRESHOLD := 1.0
-const UNIT_SCENE := preload("res://scripts/entities/unit.gd")
-const BUILDING_SCENE := preload("res://scripts/entities/building.gd")
 const BUILD_GRID_SIZE := 25.0 # Half a terrain cell keeps existing building art near its current scale.
-const RESOURCE_SCENE := preload("res://scripts/entities/resource_node.gd")
-const SELECTION_DRAG_OVERLAY := preload("res://scripts/ui/selection_drag_overlay.gd")
-const SELECTION_PORTRAIT := preload("res://scripts/ui/selection_portrait.gd")
-const MENU_BACKDROP := preload("res://scripts/ui/menu_backdrop.gd")
-const TECH_TREE_PAGE := preload("res://scripts/ui/tech_tree_page.gd")
-const UNIT_PREVIEW_PAGE := preload("res://scripts/ui/unit_preview_page.gd")
 const MENU_UI := preload("res://scripts/ui/game_menu_ui.gd")
 const HUD_UI := preload("res://scripts/ui/game_hud_ui.gd")
 const PlayerSelection = preload("res://scripts/player/player_selection.gd")
@@ -108,16 +105,36 @@ var map_style: String:
 	set(value): session.map_style = value
 var selected_map_size := WORLD_SIZE
 var selected_map_style := "balanced"
-var map_size_choice: OptionButton
-var map_style_choice: OptionButton
-var map_seed_input: LineEdit
-var projection_choice: OptionButton
-var initial_resources_choice: OptionButton
-var fog_mode_choice: OptionButton
-var player_list: VBoxContainer
-var add_player_button: Button
-var setup_start_button: Button
-var setup_warning_label: Label
+var map_size_choice: OptionButton:
+	get: return menu_ui.map_size_choice if menu_ui != null else null
+	set(value): menu_ui.map_size_choice = value
+var map_style_choice: OptionButton:
+	get: return menu_ui.map_style_choice if menu_ui != null else null
+	set(value): menu_ui.map_style_choice = value
+var map_seed_input: LineEdit:
+	get: return menu_ui.map_seed_input if menu_ui != null else null
+	set(value): menu_ui.map_seed_input = value
+var projection_choice: OptionButton:
+	get: return menu_ui.projection_choice if menu_ui != null else null
+	set(value): menu_ui.projection_choice = value
+var initial_resources_choice: OptionButton:
+	get: return menu_ui.initial_resources_choice if menu_ui != null else null
+	set(value): menu_ui.initial_resources_choice = value
+var fog_mode_choice: OptionButton:
+	get: return menu_ui.fog_mode_choice if menu_ui != null else null
+	set(value): menu_ui.fog_mode_choice = value
+var player_list: VBoxContainer:
+	get: return menu_ui.player_list if menu_ui != null else null
+	set(value): menu_ui.player_list = value
+var add_player_button: Button:
+	get: return menu_ui.add_player_button if menu_ui != null else null
+	set(value): menu_ui.add_player_button = value
+var setup_start_button: Button:
+	get: return menu_ui.setup_start_button if menu_ui != null else null
+	set(value): menu_ui.setup_start_button = value
+var setup_warning_label: Label:
+	get: return menu_ui.setup_warning_label if menu_ui != null else null
+	set(value): menu_ui.setup_warning_label = value
 var lobby_players: Array[Dictionary] = [
 	{"civilization": "English", "difficulty": "human", "team": 1, "color": 0},
 	{"civilization": "French", "difficulty": "normal", "team": 2, "color": 1},
@@ -125,7 +142,9 @@ var lobby_players: Array[Dictionary] = [
 var use_lobby_setup := false
 var selected_initial_resources := 1
 var selected_fog_mode := "enabled"
-var selected_view_mode_25d := false
+var selected_view_mode_25d: bool:
+	get: return settings_store.selected_view_mode_25d if settings_store != null else false
+	set(value): settings_store.selected_view_mode_25d = value
 var started: bool:
 	get: return session.started
 	set(value): session.started = value
@@ -166,77 +185,213 @@ var world_effects: Array[Dictionary] = []
 var feedback_audio: Node
 var match_statistics := RtsMatchStatistics.new()
 
-var top_label: Label
-var fps_label: Label
-var fps_update_timer := 0.0
-var resource_readouts: Dictionary = {}
-var population_label: Label
-var hud_top: PanelContainer
-var hud_bottom: PanelContainer
-var menu_backdrop: Control
-var idle_villager_button: Button
-var info_label: Label
-var detail_label: Label
-var selection_portrait
-var selection_health: ProgressBar
-var selection_progress: ProgressBar
-var queue_label: Label
-var queue_controls: HBoxContainer
-var global_queue_panel: PanelContainer
-var global_queue_list: VBoxContainer
-var view_button: Button
-var command_title: Label
-var notice_label: Label
-var action_bar: GridContainer
-var command_buttons: Array[RtsCommandButton] = []
-var hotkey_buttons: Dictionary = {}
-var minimap: RtsMinimap
+var top_label: Label:
+	get: return hud_ui.top_label if hud_ui != null else null
+	set(value): hud_ui.top_label = value
+var fps_label: Label:
+	get: return hud_ui.fps_label if hud_ui != null else null
+	set(value): hud_ui.fps_label = value
+var fps_update_timer: float:
+	get: return hud_ui.fps_update_timer if hud_ui != null else 0.0
+	set(value): hud_ui.fps_update_timer = value
+var resource_readouts: Dictionary:
+	get: return hud_ui.resource_readouts if hud_ui != null else {}
+	set(value): hud_ui.resource_readouts = value
+var population_label: Label:
+	get: return hud_ui.population_label if hud_ui != null else null
+	set(value): hud_ui.population_label = value
+var hud_top: PanelContainer:
+	get: return hud_ui.hud_top if hud_ui != null else null
+	set(value): hud_ui.hud_top = value
+var hud_bottom: PanelContainer:
+	get: return hud_ui.hud_bottom if hud_ui != null else null
+	set(value): hud_ui.hud_bottom = value
+var menu_backdrop: Control:
+	get: return menu_ui.menu_backdrop if menu_ui != null else null
+	set(value): menu_ui.menu_backdrop = value
+var idle_villager_button: Button:
+	get: return hud_ui.idle_villager_button if hud_ui != null else null
+	set(value): hud_ui.idle_villager_button = value
+var info_label: Label:
+	get: return hud_ui.info_label if hud_ui != null else null
+	set(value): hud_ui.info_label = value
+var detail_label: Label:
+	get: return hud_ui.detail_label if hud_ui != null else null
+	set(value): hud_ui.detail_label = value
+var selection_portrait: Variant:
+	get: return hud_ui.selection_portrait if hud_ui != null else null
+	set(value): hud_ui.selection_portrait = value
+var selection_health: ProgressBar:
+	get: return hud_ui.selection_health if hud_ui != null else null
+	set(value): hud_ui.selection_health = value
+var selection_progress: ProgressBar:
+	get: return hud_ui.selection_progress if hud_ui != null else null
+	set(value): hud_ui.selection_progress = value
+var queue_label: Label:
+	get: return hud_ui.queue_label if hud_ui != null else null
+	set(value): hud_ui.queue_label = value
+var queue_controls: HBoxContainer:
+	get: return hud_ui.queue_controls if hud_ui != null else null
+	set(value): hud_ui.queue_controls = value
+var global_queue_panel: PanelContainer:
+	get: return hud_ui.global_queue_panel if hud_ui != null else null
+	set(value): hud_ui.global_queue_panel = value
+var global_queue_list: VBoxContainer:
+	get: return hud_ui.global_queue_list if hud_ui != null else null
+	set(value): hud_ui.global_queue_list = value
+var view_button: Button:
+	get: return hud_ui.view_button if hud_ui != null else null
+	set(value): hud_ui.view_button = value
+var command_title: Label:
+	get: return hud_ui.command_title if hud_ui != null else null
+	set(value): hud_ui.command_title = value
+var notice_label: Label:
+	get: return hud_ui.notice_label if hud_ui != null else null
+	set(value): hud_ui.notice_label = value
+var action_bar: GridContainer:
+	get: return hud_ui.action_bar if hud_ui != null else null
+	set(value): hud_ui.action_bar = value
+var command_buttons: Array[RtsCommandButton]:
+	get: return hud_ui.command_buttons if hud_ui != null else []
+	set(value): hud_ui.command_buttons = value
+var hotkey_buttons: Dictionary:
+	get: return hud_ui.hotkey_buttons if hud_ui != null else {}
+	set(value): hud_ui.hotkey_buttons = value
+var minimap: RtsMinimap:
+	get: return hud_ui.minimap if hud_ui != null else null
+	set(value): hud_ui.minimap = value
 var menu_ui: MENU_UI
 var hud_ui: HUD_UI
-var ui_root: Control
-var ui_scale := 1.0
-var text_scale := 1.0
+var ui_root: Control:
+	get: return hud_ui.ui_root if hud_ui != null else null
+	set(value): hud_ui.ui_root = value
+var ui_scale: float:
+	get: return settings_store.ui_scale if settings_store != null else 0.0
+	set(value): settings_store.ui_scale = value
+var text_scale: float:
+	get: return settings_store.text_scale if settings_store != null else 0.0
+	set(value): settings_store.text_scale = value
 var applied_world_text_scale := -1.0
-var minimap_size := 216
-var show_building_icons := true
-var show_building_names := true
-var show_fps := false
-var health_bar_mode := "damaged"
-var building_icons_toggle: CheckButton
-var building_names_toggle: CheckButton
-var fps_toggle: CheckButton
-var health_bar_choice: OptionButton
-var ui_scale_choice: OptionButton
-var text_scale_choice: OptionButton
-var minimap_size_choice: OptionButton
-var ui_scale_values: Array[float] = []
-var ui_scale_update_pending := false
-var menu_panel: PanelContainer
-var tech_tree_overlay: ColorRect
-var tech_tree_civilization_choice: OptionButton
-var tech_tree_page
-var unit_preview_page
-var age_choice_overlay: ColorRect
-var result_panel: PanelContainer
-var pause_overlay: ColorRect
-var settings_overlay: ColorRect
-var settings_tabs: TabContainer
-var settings_tab_buttons: Array[Button] = []
-var window_mode_choice: OptionButton
-var resolution_choice: OptionButton
-var resolution_values: Array[Vector2i] = []
-var windowed_resolution := Vector2i.ZERO
-var adaptive_resolution_enabled := false
-var adaptive_usable_rect := Rect2i()
-var adaptive_resolution_check_timer := 0.0
-var fullscreen_enabled := false
-var edge_scroll_toggle: CheckButton
-var edge_scroll_enabled := true
-var zoom_gesture_toggle: CheckButton
-var zoom_gesture_enabled := true
-var settings_from_pause := false
-var cursor: GameCursor
-var selection_drag_overlay: Variant
+var minimap_size: int:
+	get: return settings_store.minimap_size if settings_store != null else 0
+	set(value): settings_store.minimap_size = value
+var show_building_icons: bool:
+	get: return settings_store.show_building_icons if settings_store != null else false
+	set(value): settings_store.show_building_icons = value
+var show_building_names: bool:
+	get: return settings_store.show_building_names if settings_store != null else false
+	set(value): settings_store.show_building_names = value
+var show_fps: bool:
+	get: return settings_store.show_fps if settings_store != null else false
+	set(value): settings_store.show_fps = value
+var health_bar_mode: String:
+	get: return settings_store.health_bar_mode if settings_store != null else ""
+	set(value): settings_store.health_bar_mode = value
+var building_icons_toggle: CheckButton:
+	get: return menu_ui.building_icons_toggle if menu_ui != null else null
+	set(value): menu_ui.building_icons_toggle = value
+var building_names_toggle: CheckButton:
+	get: return menu_ui.building_names_toggle if menu_ui != null else null
+	set(value): menu_ui.building_names_toggle = value
+var fps_toggle: CheckButton:
+	get: return menu_ui.fps_toggle if menu_ui != null else null
+	set(value): menu_ui.fps_toggle = value
+var health_bar_choice: OptionButton:
+	get: return menu_ui.health_bar_choice if menu_ui != null else null
+	set(value): menu_ui.health_bar_choice = value
+var ui_scale_choice: OptionButton:
+	get: return menu_ui.ui_scale_choice if menu_ui != null else null
+	set(value): menu_ui.ui_scale_choice = value
+var text_scale_choice: OptionButton:
+	get: return menu_ui.text_scale_choice if menu_ui != null else null
+	set(value): menu_ui.text_scale_choice = value
+var minimap_size_choice: OptionButton:
+	get: return menu_ui.minimap_size_choice if menu_ui != null else null
+	set(value): menu_ui.minimap_size_choice = value
+var ui_scale_values: Array[float]:
+	get: return menu_ui.ui_scale_values if menu_ui != null else []
+	set(value): menu_ui.ui_scale_values = value
+var ui_scale_update_pending: bool:
+	get: return hud_ui.ui_scale_update_pending if hud_ui != null else false
+	set(value): hud_ui.ui_scale_update_pending = value
+var menu_panel: PanelContainer:
+	get: return menu_ui.menu_panel if menu_ui != null else null
+	set(value): menu_ui.menu_panel = value
+var tech_tree_overlay: ColorRect:
+	get: return menu_ui.tech_tree_overlay if menu_ui != null else null
+	set(value): menu_ui.tech_tree_overlay = value
+var tech_tree_civilization_choice: OptionButton:
+	get: return menu_ui.tech_tree_civilization_choice if menu_ui != null else null
+	set(value): menu_ui.tech_tree_civilization_choice = value
+var tech_tree_page: Variant:
+	get: return menu_ui.tech_tree_page if menu_ui != null else null
+	set(value): menu_ui.tech_tree_page = value
+var unit_preview_page: Variant:
+	get: return menu_ui.unit_preview_page if menu_ui != null else null
+	set(value): menu_ui.unit_preview_page = value
+var age_choice_overlay: ColorRect:
+	get: return hud_ui.age_choice_overlay if hud_ui != null else null
+	set(value): hud_ui.age_choice_overlay = value
+var result_panel: PanelContainer:
+	get: return menu_ui.report_ui.panel if menu_ui != null else null
+	set(value): menu_ui.report_ui.panel = value
+var pause_overlay: ColorRect:
+	get: return menu_ui.pause_overlay if menu_ui != null else null
+	set(value): menu_ui.pause_overlay = value
+var settings_overlay: ColorRect:
+	get: return menu_ui.settings_overlay if menu_ui != null else null
+	set(value): menu_ui.settings_overlay = value
+var settings_tabs: TabContainer:
+	get: return menu_ui.settings_tabs if menu_ui != null else null
+	set(value): menu_ui.settings_tabs = value
+var settings_tab_buttons: Array[Button]:
+	get: return menu_ui.settings_tab_buttons if menu_ui != null else []
+	set(value): menu_ui.settings_tab_buttons = value
+var window_mode_choice: OptionButton:
+	get: return menu_ui.window_mode_choice if menu_ui != null else null
+	set(value): menu_ui.window_mode_choice = value
+var resolution_choice: OptionButton:
+	get: return menu_ui.resolution_choice if menu_ui != null else null
+	set(value): menu_ui.resolution_choice = value
+var resolution_values: Array[Vector2i]:
+	get: return menu_ui.resolution_values if menu_ui != null else []
+	set(value): menu_ui.resolution_values = value
+var windowed_resolution: Vector2i:
+	get: return settings_store.windowed_resolution if settings_store != null else Vector2i.ZERO
+	set(value): settings_store.windowed_resolution = value
+var adaptive_resolution_enabled: bool:
+	get: return settings_store.adaptive_resolution_enabled if settings_store != null else false
+	set(value): settings_store.adaptive_resolution_enabled = value
+var adaptive_usable_rect: Rect2i:
+	get: return display_settings.adaptive_usable_rect if display_settings != null else Rect2i()
+	set(value): display_settings.adaptive_usable_rect = value
+var adaptive_resolution_check_timer: float:
+	get: return display_settings.adaptive_resolution_check_timer if display_settings != null else 0.0
+	set(value): display_settings.adaptive_resolution_check_timer = value
+var fullscreen_enabled: bool:
+	get: return settings_store.fullscreen_enabled if settings_store != null else false
+	set(value): settings_store.fullscreen_enabled = value
+var edge_scroll_toggle: CheckButton:
+	get: return menu_ui.edge_scroll_toggle if menu_ui != null else null
+	set(value): menu_ui.edge_scroll_toggle = value
+var edge_scroll_enabled: bool:
+	get: return settings_store.edge_scroll_enabled if settings_store != null else false
+	set(value): settings_store.edge_scroll_enabled = value
+var zoom_gesture_toggle: CheckButton:
+	get: return menu_ui.zoom_gesture_toggle if menu_ui != null else null
+	set(value): menu_ui.zoom_gesture_toggle = value
+var zoom_gesture_enabled: bool:
+	get: return settings_store.zoom_gesture_enabled if settings_store != null else false
+	set(value): settings_store.zoom_gesture_enabled = value
+var settings_from_pause: bool:
+	get: return menu_ui.settings_from_pause if menu_ui != null else false
+	set(value): menu_ui.settings_from_pause = value
+var cursor: GameCursor:
+	get: return hud_ui.cursor if hud_ui != null else null
+	set(value): hud_ui.cursor = value
+var selection_drag_overlay: Variant:
+	get: return hud_ui.selection_drag_overlay if hud_ui != null else null
+	set(value): hud_ui.selection_drag_overlay = value
 
 func _ready() -> void:
 	_load_ui_font()
@@ -293,19 +448,7 @@ func _ready() -> void:
 	queue_redraw()
 
 func _load_ui_font() -> void:
-	var font_data := FileAccess.get_file_as_bytes("res://assets/fonts/NotoSansSC-Regular.otf")
-	if font_data.is_empty():
-		push_error("Unable to read the bundled UI font")
-		return
-	var font := FontFile.new()
-	font.data = font_data
-	ThemeDB.fallback_font = font
-	var default_theme := ThemeDB.get_default_theme()
-	default_theme.default_font = font
-	for font_name in ["bold_font", "italics_font", "bold_italics_font"]:
-		var variation := default_theme.get_font(font_name, "RichTextLabel") as FontVariation
-		if variation != null:
-			variation.base_font = font
+	UI_STYLE.load_font()
 
 func _exit_tree() -> void:
 	if navigation != null: navigation.background_jobs.shutdown()
@@ -322,152 +465,51 @@ func _notification(what: int) -> void:
 		_reset_selection_pointer()
 
 func _create_cursor() -> void:
-	var layer := CanvasLayer.new()
-	layer.layer = 10
-	add_child(layer)
-	selection_drag_overlay = SELECTION_DRAG_OVERLAY.new()
-	layer.add_child(selection_drag_overlay)
-	cursor = GameCursor.new()
-	cursor.text_scale = text_scale
-	layer.add_child(cursor)
-	cursor.hide()
+	hud_ui._create_cursor()
 
 func _create_hud() -> void:
 	menu_ui = MENU_UI.new(self)
 	menu_ui.match_requested.connect(_start_lobby_match)
+	menu_ui.report_ui.return_requested.connect(_return_to_menu)
+	menu_ui.pause_requested.connect(_set_paused)
+	menu_ui.restart_requested.connect(func() -> void: start_game(selected_civ, -1, selected_opponent_civ))
+	menu_ui.return_requested.connect(_return_to_menu)
+	menu_ui.quit_requested.connect(func() -> void: get_tree().quit())
 	hud_ui = HUD_UI.new(self)
+	hud_ui.view_mode_requested.connect(func() -> void: _toggle_view_mode(true))
+	hud_ui.idle_villager_requested.connect(_select_next_idle_villager)
 	add_child(hud_ui)
 	hud_ui._create_hud()
 
 func _on_ui_node_added(node: Node) -> void:
-	if ui_root == null or not (node is Control or node is PopupMenu) or not ui_root.is_ancestor_of(node) or ui_scale_update_pending: return
-	ui_scale_update_pending = true
-	call_deferred("_apply_ui_scales")
+	hud_ui._on_ui_node_added(node)
 
 func _apply_ui_scales() -> void:
-	ui_scale_update_pending = false
-	if ui_root == null or not is_instance_valid(ui_root): return
-	var viewport_size := get_viewport_rect().size
-	var max_scale := minf(viewport_size.x / MIN_UI_VIEWPORT_SIZE.x, viewport_size.y / MIN_UI_VIEWPORT_SIZE.y)
-	var effective_scale := maxf(0.5, minf(ui_scale, max_scale))
-	# CanvasItem font oversampling sees Control transforms, but not CanvasLayer transforms.
-	ui_root.scale = Vector2.ONE * effective_scale
-	ui_root.size = viewport_size / effective_scale
-	RtsUiTypography.apply_tree(ui_root, text_scale, effective_scale, base_tooltip_font_size)
-	hud_ui.call_deferred("_fit_top_hud")
-	hud_ui.call_deferred("_fit_bottom_hud")
-	if cursor != null:
-		cursor.text_scale = text_scale
-		cursor.queue_redraw()
-	if not is_equal_approx(applied_world_text_scale, text_scale):
-		applied_world_text_scale = text_scale
-		_redraw_projected_entities()
-		if objectives != null: objectives.queue_redraw()
-		queue_redraw()
+	hud_ui._apply_ui_scales()
 
 func _hud_panel_style(color: Color, margin: float) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = color
-	style.border_color = Color("a7894f")
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(3)
-	style.shadow_color = Color(0.0, 0.0, 0.0, 0.38)
-	style.shadow_size = 5
-	style.content_margin_left = margin
-	style.content_margin_right = margin
-	style.content_margin_top = margin
-	style.content_margin_bottom = margin
-	return style
+	return UI_STYLE._hud_panel_style(color, margin)
 
 func _add_resource_readout(parent: HBoxContainer, kind: String) -> void:
-	var chip := PanelContainer.new()
-	chip.custom_minimum_size.x = 92
-	chip.add_theme_stylebox_override("panel", _hud_panel_style(Color("352b1e"), 5))
-	parent.add_child(chip)
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 4)
-	chip.add_child(row)
-	var icon := TextureRect.new()
-	icon.texture = RtsCommandButton._texture_at("res://assets/ui/resource_icons/%s.png" % kind)
-	icon.custom_minimum_size = Vector2(30, 28)
-	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
-	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	row.add_child(icon)
-	var value := Label.new()
-	value.text = "0"
-	value.add_theme_font_size_override("font_size", RtsUiTypography.BODY)
-	value.add_theme_color_override("font_color", Color("f4e6c4"))
-	value.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	row.add_child(value)
-	resource_readouts[kind] = value
-	chip.tooltip_text = GameData.RESOURCE_LABELS[kind]
+	hud_ui._add_resource_readout(parent, kind)
 
 func _button_style(fill: Color, border: Color) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = fill
-	style.border_color = border
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(2)
-	style.content_margin_left = 10
-	style.content_margin_right = 10
-	style.content_margin_top = 6
-	style.content_margin_bottom = 6
-	return style
+	return UI_STYLE._button_style(fill, border)
 
 func _parchment_style(fill: Color, margin: float) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = fill
-	style.border_color = Color("4a321d")
-	style.set_border_width_all(5)
-	style.set_corner_radius_all(3)
-	style.shadow_color = Color(0, 0, 0, 0.55)
-	style.shadow_size = 12
-	style.content_margin_left = margin
-	style.content_margin_right = margin
-	style.content_margin_top = margin
-	style.content_margin_bottom = margin
-	return style
+	return UI_STYLE._parchment_style(fill, margin)
 
 func _style_menu_button(button: BaseButton, selected := false) -> void:
-	var fill := Color("5a3b22") if selected else Color("e5d4a9")
-	var edge := Color("b98c48") if selected else Color("9b784b")
-	button.add_theme_stylebox_override("normal", _button_style(fill, edge))
-	button.add_theme_stylebox_override("hover", _button_style(fill.lightened(0.08), Color("d3a85f")))
-	button.add_theme_stylebox_override("pressed", _button_style(fill.darkened(0.12), Color("ad854e")))
-	button.add_theme_color_override("font_color", Color("f7e8bd") if selected else Color("3d2b1d"))
-	button.add_theme_color_override("font_hover_color", Color("fff1cf") if selected else Color("3d2b1d"))
-	button.add_theme_color_override("font_pressed_color", Color("f7e8bd") if selected else Color("3d2b1d"))
+	UI_STYLE._style_menu_button(button, selected)
 
 func _style_button(button: BaseButton, primary := false) -> void:
-	var base := Color("715028") if primary else Color("3d3224")
-	button.add_theme_stylebox_override("normal", _button_style(base, Color("a88b56")))
-	button.add_theme_stylebox_override("hover", _button_style(base.lightened(0.14), Color("dfc584")))
-	button.add_theme_stylebox_override("pressed", _button_style(base.darkened(0.16), Color("f0d791")))
-	button.add_theme_stylebox_override("disabled", _button_style(Color("302b24"), Color("615844")))
-	button.add_theme_color_override("font_color", Color("f5e4bf"))
-	button.add_theme_color_override("font_hover_color", Color("fff2d2"))
-	button.add_theme_color_override("font_pressed_color", Color("ffe4a3"))
-	button.add_theme_color_override("font_disabled_color", Color("948876"))
+	UI_STYLE._style_button(button, primary)
 
 func _style_progress_bar(bar: ProgressBar, fill_color: Color) -> void:
-	var background := StyleBoxFlat.new()
-	background.bg_color = Color("1a1712")
-	background.border_color = Color("8d7448")
-	background.set_border_width_all(1)
-	var fill := StyleBoxFlat.new()
-	fill.bg_color = fill_color
-	bar.add_theme_stylebox_override("background", background)
-	bar.add_theme_stylebox_override("fill", fill)
+	UI_STYLE._style_progress_bar(bar, fill_color)
 
 func _add_pause_button(parent: Node, label_text: String, action: Callable) -> void:
-	var button := Button.new()
-	button.text = label_text
-	button.custom_minimum_size.y = 36
-	_style_button(button)
-	button.pressed.connect(action)
-	parent.add_child(button)
+	menu_ui._add_pause_button(parent, label_text, action)
 
 func _create_settings(parent: Control) -> void:
 	menu_ui._create_settings(parent)
@@ -485,92 +527,25 @@ func _refresh_resolution_options() -> void:
 	menu_ui._refresh_resolution_options()
 
 static func _fit_window_size_to_screen(usable_size: Vector2i) -> Vector2i:
-	var minimum := Vector2i(MIN_UI_VIEWPORT_SIZE * UI_SCALE_OPTIONS[0])
-	return Vector2i(
-		mini(usable_size.x, maxi(minimum.x, floori(usable_size.x * 0.9))),
-		mini(usable_size.y, maxi(minimum.y, floori(usable_size.y * 0.9)))
-	)
+	return DISPLAY_SETTINGS._fit_window_size_to_screen(usable_size)
 
 func _adaptive_window_resolution() -> Vector2i:
-	if DisplayServer.get_name() == "headless": return get_window().size
-	return _fit_window_size_to_screen(DisplayServer.screen_get_usable_rect(get_window().current_screen).size)
+	return display_settings._adaptive_window_resolution()
 
 func _apply_window_resolution(resolution: Vector2i, save_setting := true) -> void:
-	var adaptive := resolution == Vector2i.ZERO
-	if not adaptive and not WINDOW_RESOLUTIONS.has(resolution) and resolution != windowed_resolution and resolution != get_window().size: return
-	var target := _adaptive_window_resolution() if adaptive else resolution
-	var window := get_window()
-	window.mode = Window.MODE_WINDOWED
-	window.size = target
-	windowed_resolution = target
-	adaptive_resolution_enabled = adaptive
-	fullscreen_enabled = false
-	if DisplayServer.get_name() != "headless":
-		var usable := DisplayServer.screen_get_usable_rect(window.current_screen)
-		window.position = usable.position + (usable.size - target) / 2
-		adaptive_usable_rect = usable if adaptive else Rect2i()
-	if started: call_deferred("_clamp_camera_position")
-	if save_setting: _save_settings()
+	display_settings._apply_window_resolution(resolution, save_setting)
 
 func _window_is_fullscreen() -> bool:
-	if DisplayServer.get_name() == "headless": return fullscreen_enabled
-	return get_window().mode in [Window.MODE_FULLSCREEN, Window.MODE_EXCLUSIVE_FULLSCREEN]
+	return display_settings._window_is_fullscreen()
 
 func _apply_window_mode(fullscreen: bool, save_setting := true) -> void:
-	fullscreen_enabled = fullscreen
-	if fullscreen:
-		get_window().mode = Window.MODE_FULLSCREEN
-	else:
-		_apply_window_resolution(Vector2i.ZERO if adaptive_resolution_enabled else windowed_resolution, false)
-	if started: call_deferred("_clamp_camera_position")
-	if save_setting: _save_settings()
+	display_settings._apply_window_mode(fullscreen, save_setting)
 
 func _save_settings() -> void:
-	var config := ConfigFile.new()
-	config.set_value("display", "window_size", windowed_resolution)
-	config.set_value("display", "adaptive_resolution", adaptive_resolution_enabled)
-	config.set_value("display", "fullscreen", _window_is_fullscreen())
-	config.set_value("display", "view_mode_25d", selected_view_mode_25d)
-	config.set_value("display", "ui_scale", ui_scale)
-	config.set_value("display", "text_scale", text_scale)
-	config.set_value("display", "minimap_size", minimap_size)
-	config.set_value("display", "show_building_icons", show_building_icons)
-	config.set_value("display", "show_building_names", show_building_names)
-	config.set_value("display", "show_fps", show_fps)
-	config.set_value("display", "health_bar_mode", health_bar_mode)
-	config.set_value("controls", "edge_scroll_enabled", edge_scroll_enabled)
-	config.set_value("controls", "zoom_gesture_enabled", zoom_gesture_enabled)
-	config.save(SETTINGS_PATH)
+	settings_store.save(display_settings._window_is_fullscreen())
 
 func _load_settings() -> void:
-	windowed_resolution = get_window().size
-	if DisplayServer.get_name() == "headless": return
-	var config := ConfigFile.new()
-	if config.load(SETTINGS_PATH) != OK and config.load(LEGACY_DISPLAY_SETTINGS_PATH) != OK: return
-	selected_view_mode_25d = bool(config.get_value("display", "view_mode_25d", false))
-	show_building_icons = bool(config.get_value("display", "show_building_icons", true))
-	show_building_names = bool(config.get_value("display", "show_building_names", true))
-	show_fps = bool(config.get_value("display", "show_fps", false))
-	var saved_health_bar_mode: String = str(config.get_value("display", "health_bar_mode", "damaged"))
-	health_bar_mode = saved_health_bar_mode if HEALTH_BAR_MODES.has(saved_health_bar_mode) else "damaged"
-	var saved_ui_scale: float = float(config.get_value("display", "ui_scale", 1.0))
-	var saved_text_scale: float = float(config.get_value("display", "text_scale", 1.0))
-	var saved_minimap_size: int = int(config.get_value("display", "minimap_size", 216))
-	ui_scale = saved_ui_scale if UI_SCALE_OPTIONS.has(saved_ui_scale) else 1.0
-	text_scale = saved_text_scale if TEXT_SCALE_OPTIONS.has(saved_text_scale) else 1.0
-	minimap_size = saved_minimap_size if MINIMAP_SIZE_OPTIONS.has(saved_minimap_size) else 216
-	edge_scroll_enabled = bool(config.get_value("controls", "edge_scroll_enabled", true))
-	zoom_gesture_enabled = bool(config.get_value("controls", "zoom_gesture_enabled", true))
-	var resolution: Variant = config.get_value("display", "window_size", Vector2i.ZERO)
-	if bool(config.get_value("display", "adaptive_resolution", false)):
-		_apply_window_resolution(Vector2i.ZERO, false)
-	elif resolution is Vector2i and resolution.x > 0 and resolution.y > 0:
-		var usable := DisplayServer.screen_get_usable_rect(get_window().current_screen).size
-		if resolution.x <= usable.x and resolution.y <= usable.y:
-			windowed_resolution = resolution
-			_apply_window_resolution(resolution, false)
-	if bool(config.get_value("display", "fullscreen", false)):
-		_apply_window_mode(true, false)
+	settings_store.load_preferences(display_settings)
 
 func _show_menu() -> void:
 	menu_ui._show_menu()
@@ -841,134 +816,10 @@ func _finish_game(won: bool, reason := "landmarks") -> void:
 	game_over = true
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	cursor.hide()
-	for child in result_panel.get_children(): child.queue_free()
-	result_panel.custom_minimum_size = Vector2(400, 220)
-	result_panel.offset_left = -200
-	result_panel.offset_top = -110
-	result_panel.offset_right = 200
-	result_panel.offset_bottom = 110
-	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 18)
-	result_panel.add_child(box)
-	_add_menu_label(box, "胜利！" if won else "战败", RtsUiTypography.PAGE_TITLE)
-	var result_reason: String = {"landmarks": "城镇中心与地标全部摧毁", "sacred": "控制全部圣地", "wonder": "奇观守护成功"}.get(reason, reason)
-	_add_menu_label(box, result_reason, RtsUiTypography.BODY)
-	var button := Button.new()
-	button.text = "返回文明选择"
-	button.pressed.connect(func() -> void: _return_to_menu())
-	box.add_child(button)
-	var report := Button.new()
-	report.text = "查看战后统计与战局回看"
-	report.pressed.connect(func() -> void: _show_match_report(won, result_reason))
-	box.add_child(report)
-	result_panel.show()
+	menu_ui.report_ui.show_result(won, reason)
 
 func _show_match_report(won: bool, result_reason: String) -> void:
-	for child in result_panel.get_children(): child.queue_free()
-	result_panel.custom_minimum_size = Vector2(820, 620)
-	result_panel.offset_left = -410
-	result_panel.offset_top = -310
-	result_panel.offset_right = 410
-	result_panel.offset_bottom = 310
-	var layout := VBoxContainer.new()
-	layout.add_theme_constant_override("separation", 8)
-	result_panel.add_child(layout)
-	_add_menu_label(layout, ("胜利" if won else "战败") + " · " + result_reason, RtsUiTypography.PAGE_TITLE)
-	var legend := HBoxContainer.new()
-	layout.add_child(legend)
-	var colors: Array[Color] = []
-	for owner_id in players.size():
-		var color := player_color(owner_id)
-		colors.append(color)
-		var caption := Label.new()
-		caption.text = "%s  %s    " % ["●", civilizations[owner_id]]
-		caption.add_theme_color_override("font_color", color)
-		legend.add_child(caption)
-	var tabs := TabContainer.new()
-	tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	layout.add_child(tabs)
-	var trend_tab := VBoxContainer.new()
-	trend_tab.name = "数据走势"
-	tabs.add_child(trend_tab)
-	var metric_picker := OptionButton.new()
-	for metric_name in ["资源库存", "累计收入", "人口", "军队", "科技", "地图控制率"]: metric_picker.add_item(metric_name)
-	trend_tab.add_child(metric_picker)
-	var chart := RtsStatisticsChart.new()
-	chart.statistics = match_statistics
-	chart.player_colors = colors
-	chart.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	trend_tab.add_child(chart)
-	metric_picker.item_selected.connect(func(index: int) -> void:
-		chart.show_metric(["stock", "income", "population", "military", "technology", "control"][index])
-	)
-	var last_sample: Dictionary = match_statistics.samples.back()
-	var summary := Label.new()
-	var details: Array[String] = []
-	for owner_id in players.size():
-		var row: Dictionary = last_sample["players"][owner_id]
-		details.append("%s：人口 %d · 军队 %d · 科技 %d · 控图 %.0f%%" % [civilizations[owner_id], row["population"], row["military"], row["technology"], row["control"]])
-	summary.text = "\n".join(details)
-	trend_tab.add_child(summary)
-	var replay_tab := VBoxContainer.new()
-	replay_tab.name = "战局回看"
-	tabs.add_child(replay_tab)
-	var replay_map := RtsBattleReplayMap.new()
-	replay_map.statistics = match_statistics
-	replay_map.player_colors = colors
-	replay_map.prepare(world_map)
-	replay_map.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	replay_tab.add_child(replay_map)
-	var replay_time := Label.new()
-	replay_tab.add_child(replay_time)
-	var timeline := HSlider.new()
-	timeline.min_value = 0
-	timeline.max_value = maxi(0, match_statistics.samples.size() - 1)
-	timeline.step = 1
-	timeline.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	replay_tab.add_child(timeline)
-	var playback := Timer.new()
-	playback.wait_time = 0.35
-	playback.autostart = false
-	replay_tab.add_child(playback)
-	var controls := HBoxContainer.new()
-	replay_tab.add_child(controls)
-	var play_button := Button.new()
-	play_button.text = "播放"
-	controls.add_child(play_button)
-	var event_picker := OptionButton.new()
-	event_picker.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	event_picker.add_item("跳到关键事件")
-	for event in match_statistics.events:
-		event_picker.add_item("%02d:%02d  %s · %s" % [int(event["time"]) / 60, int(event["time"]) % 60, civilizations[event["owner"]], event["label"]])
-	controls.add_child(event_picker)
-	timeline.value_changed.connect(func(value: float) -> void:
-		replay_map.seek(roundi(value))
-		var current: Dictionary = match_statistics.samples[replay_map.sample_index]
-		replay_time.text = "战局时间 %02d:%02d · 单位 %d · 建筑 %d" % [int(current["time"]) / 60, int(current["time"]) % 60, current["units"].size(), current["buildings"].size()]
-	)
-	event_picker.item_selected.connect(func(index: int) -> void:
-		if index > 0: timeline.value = match_statistics.nearest_sample_index(float(match_statistics.events[index - 1]["time"]))
-	)
-	play_button.pressed.connect(func() -> void:
-		if playback.is_stopped():
-			if timeline.value >= timeline.max_value: timeline.value = 0
-			playback.start()
-			play_button.text = "暂停"
-		else:
-			playback.stop()
-			play_button.text = "播放"
-	)
-	playback.timeout.connect(func() -> void:
-		if timeline.value < timeline.max_value: timeline.value += 1
-		else:
-			playback.stop()
-			play_button.text = "播放"
-	)
-	timeline.value = timeline.max_value
-	var back := Button.new()
-	back.text = "返回文明选择"
-	back.pressed.connect(func() -> void: _return_to_menu())
-	layout.add_child(back)
+	menu_ui.report_ui.show_report(won, result_reason)
 
 func credit_resource(owner_id: int, kind: String, amount: int) -> void:
 	MATCH_ECONOMY.credit_resource(self, owner_id, kind, amount)
@@ -1293,17 +1144,8 @@ func notify_player(message: String) -> void:
 
 func _process(delta: float) -> void:
 	if navigation != null and navigation.background_recovery_enabled: navigation.background_jobs.tick(navigation)
-	if show_fps and fps_label != null:
-		fps_update_timer -= delta
-		if fps_update_timer <= 0.0:
-			fps_label.text = "FPS: %d" % Engine.get_frames_per_second()
-			fps_update_timer = 0.5
-	if adaptive_resolution_enabled and not _window_is_fullscreen() and DisplayServer.get_name() != "headless":
-		adaptive_resolution_check_timer -= delta
-		if adaptive_resolution_check_timer <= 0.0:
-			adaptive_resolution_check_timer = 1.0
-			if DisplayServer.screen_get_usable_rect(get_window().current_screen) != adaptive_usable_rect:
-				_apply_window_resolution(Vector2i.ZERO, false)
+	if hud_ui != null: hud_ui.tick_fps(delta)
+	display_settings.tick(delta)
 	if not started or game_over or paused: return
 	if _uses_native_selection_pointer():
 		_poll_selection_pointer()
