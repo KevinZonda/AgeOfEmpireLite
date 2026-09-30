@@ -14,6 +14,7 @@ var geometry
 var geometry_key := ""
 var flag_color := NEUTRAL_FLAG_COLOR
 var _visual_signature: Array = []
+var _sync_timer := 0.0
 
 func setup(game_ref: Node2D, site_dictionary: Dictionary, index: int) -> void:
 	game = game_ref
@@ -44,7 +45,12 @@ static func owner_color(game_ref: Node2D, owner_id: int) -> Color:
 		return GameData.CIVILIZATIONS.get(civilizations[owner_id], {}).get("color", NEUTRAL_FLAG_COLOR)
 	return NEUTRAL_FLAG_COLOR
 
-func _process(_delta: float) -> void:
+const SYNC_INTERVAL := 0.15
+
+func _process(delta: float) -> void:
+	_sync_timer -= delta
+	if _sync_timer > 0.0: return
+	_sync_timer = SYNC_INTERVAL
 	sync_visual()
 
 func sync_visual() -> void:

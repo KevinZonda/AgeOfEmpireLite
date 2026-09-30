@@ -8,6 +8,7 @@ var weather_remaining := 12.0
 var elapsed := 0.0
 var drops := PackedVector2Array()
 var speeds := PackedFloat32Array()
+var _segments := PackedVector2Array()
 var rng := RandomNumberGenerator.new()
 
 func setup(game_ref: Node2D, seed_value: int, map_size: Vector2) -> void:
@@ -22,6 +23,7 @@ func setup(game_ref: Node2D, seed_value: int, map_size: Vector2) -> void:
 	for i in 520:
 		drops.append(Vector2(rng.randf_range(0, world_size.x), rng.randf_range(0, world_size.y)))
 		speeds.append(rng.randf_range(360.0, 580.0))
+	_segments.resize(drops.size() * 2)
 	queue_redraw()
 
 func _process(delta: float) -> void:
@@ -36,9 +38,11 @@ func _process(delta: float) -> void:
 	if rain_active or changed: queue_redraw()
 
 func _draw() -> void:
-	if not rain_active: return
+	if not rain_active or drops.is_empty(): return
 	draw_rect(Rect2(Vector2.ZERO, world_size), Color(0.27, 0.40, 0.51, 0.07))
 	for i in drops.size():
 		var origin := drops[i]
 		var point := Vector2(fposmod(origin.x - elapsed * speeds[i] * 0.27, world_size.x), fposmod(origin.y + elapsed * speeds[i], world_size.y))
-		draw_line(point, point + Vector2(-5, 16), Color(0.72, 0.86, 0.96, 0.38), 1.3)
+		_segments[i * 2] = point
+		_segments[i * 2 + 1] = point + Vector2(-5, 16)
+	draw_multiline(_segments, Color(0.72, 0.86, 0.96, 0.38), 1.3)

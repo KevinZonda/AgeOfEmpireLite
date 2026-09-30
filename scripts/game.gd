@@ -228,6 +228,7 @@ var ai: RtsAiController
 var ai_controllers: Array[RtsAiController] = []
 var hud_timer := 0.0
 var notice_timer := 0.0
+var _effects_redraw_timer := 0.0
 var hit_lines: Array[Dictionary] = []
 var order_markers: Array[Dictionary] = []
 var world_effects: Array[Dictionary] = []
@@ -1231,14 +1232,36 @@ func _tick_presentation(delta: float) -> void:
 	if hud_timer <= 0.0:
 		_update_hud()
 		hud_timer = 0.4
-	for line in hit_lines:
-		line["time"] -= delta
-	hit_lines = hit_lines.filter(func(line: Dictionary) -> bool: return line["time"] > 0.0)
-	for marker in order_markers: marker["time"] -= delta
-	order_markers = order_markers.filter(func(marker: Dictionary) -> bool: return marker["time"] > 0.0)
-	for effect in world_effects: effect["time"] -= delta
-	world_effects = world_effects.filter(func(effect: Dictionary) -> bool: return effect["time"] > 0.0)
-	if build_mode != "" or not hit_lines.is_empty() or not order_markers.is_empty() or not world_effects.is_empty() or selected.any(func(entity: Node2D) -> bool: return is_instance_valid(entity) and entity is RtsUnit): queue_redraw()
+	_compact_timed_entries(hit_lines, delta)
+	_compact_timed_entries(order_markers, delta)
+	_compact_timed_entries(world_effects, delta)
+	if build_mode != "":
+		# Build and wall previews must track the mouse every frame.
+		queue_redraw()
+	else:
+		var effects_active := not hit_lines.is_empty() or not order_markers.is_empty() or not world_effects.is_empty()
+		if not effects_active:
+			for entity in selected:
+				if is_instance_valid(entity) and entity is RtsUnit:
+					effects_active = true
+					break
+		if effects_active:
+			_effects_redraw_timer -= delta
+			if _effects_redraw_timer <= 0.0:
+				queue_redraw()
+				_effects_redraw_timer = 0.1
+		else:
+			_effects_redraw_timer = 0.0
+
+static func _compact_timed_entries(entries: Array[Dictionary], delta: float) -> void:
+	var write := 0
+	for index in entries.size():
+		var entry: Dictionary = entries[index]
+		entry["time"] = float(entry["time"]) - delta
+		if entry["time"] > 0.0:
+			entries[write] = entry
+			write += 1
+	entries.resize(write)
 
 func _pan_camera(delta: float) -> void:
 	player_input._pan_camera(delta)

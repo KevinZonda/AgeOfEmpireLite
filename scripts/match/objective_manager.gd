@@ -19,6 +19,8 @@ var sacred_remaining := SACRED_VICTORY_TIME
 var wonder_remaining := {0: WONDER_VICTORY_TIME, 1: WONDER_VICTORY_TIME}
 var wonder_instance_ids := {0: 0, 1: 0}
 var _victory_emitted := false
+var _visuals_timer := 0.0
+const VISUALS_INTERVAL := 0.15
 
 
 func _player_count() -> int:
@@ -77,7 +79,10 @@ func reset() -> void:
 
 
 func _process(delta: float) -> void:
-	_refresh_site_visuals()
+	_visuals_timer -= delta
+	if _visuals_timer <= 0.0:
+		_visuals_timer = VISUALS_INTERVAL
+		_refresh_site_visuals()
 	if game == null or not game.started or game.paused or game.game_over or _victory_emitted: return
 	var changed := false
 	for index in sacred_sites.size():
@@ -85,6 +90,7 @@ func _process(delta: float) -> void:
 	_tick_sacred_victory(delta)
 	_tick_wonder_victory(delta)
 	if changed:
+		_visuals_timer = VISUALS_INTERVAL
 		_refresh_site_visuals()
 		queue_redraw()
 
