@@ -9,6 +9,7 @@ const RtsUiTypography = preload("res://scripts/ui/typography.gd")
 
 signal view_mode_requested
 signal idle_villager_requested
+signal match_view_refreshed
 
 # Owns the HUD tree and renders command state from the game root.
 const BUILD_HELP := {
@@ -181,8 +182,30 @@ var selection_details_expanded := false
 var command_page := 0
 var command_selection_id := 0
 
+var _match_dirty := false
+var _match_actions_dirty := false
+var _match_refresh_queued := false
+var _global_queue_signature: Array[String] = []
+var _global_queue_locators: Array[Button] = []
+
 func _init(game_ref: Node2D) -> void:
 	game = game_ref
+	game.session.changes.changed.connect(_on_match_changed)
+
+func _on_match_changed(owner_id: int, domains: Array[StringName]) -> void:
+	# Enemy entities may be inspected, but their resource/queue changes are private.
+	if owner_id != 0 and not domains.has(&"entities"): return
+	_match_dirty = true
+	_match_actions_dirty = _match_actions_dirty or domains.has(&"research") or domains.has(&"market") or domains.has(&"entities")
+	if _match_refresh_queued: return
+	_match_refresh_queued = true
+	call_deferred("_flush_match_changes")
+
+func _flush_match_changes() -> void:
+	_match_refresh_queued = false
+	if not _match_dirty or top_label == null: return
+	_update_hud()
+	match_view_refreshed.emit()
 
 func _create_hud() -> void:
 	var root := Control.new()
@@ -510,7 +533,9 @@ func _layout_minimap() -> void:
 
 func _update_hud() -> void:
 	if top_label == null or game.players.is_empty(): return
-	game._prune_hidden_enemy_selection()
+	if _match_actions_dirty: _rebuild_actions()
+	_match_dirty = false
+	_match_actions_dirty = false
 	if global_queue_panel.visible: _refresh_global_queue_panel()
 	_update_population_hud()
 	_refresh_action_buttons()
@@ -795,22 +820,32 @@ func _toggle_global_queue() -> void:
 	if global_queue_panel.visible: _refresh_global_queue_panel()
 
 func _refresh_global_queue_panel() -> void:
-	for child in global_queue_list.get_children(): child.queue_free()
-	var heading := Label.new()
-	heading.text = "全局生产队列 · 点击定位建筑"
-	global_queue_list.add_child(heading)
-	var count := 0
+	var jobs: Array[Dictionary] = []
+	var signature: Array[String] = []
 	for building in game.buildings:
-		if not is_instance_valid(building) or building.owner_id != 0 or building.production_queue.is_empty(): continue
+		if not is_instance_valid(building) or building.owner_id != 0: continue
 		for index in building.production_queue.size():
 			var job: Dictionary = building.production_queue[index]
+			jobs.append({"building": building, "index": index, "job": job})
+			signature.append("%s:%s:%s" % [building.get_instance_id(), job["type"], job["kind"]])
+	if signature != _global_queue_signature or global_queue_list.get_child_count() == 0:
+		_global_queue_signature = signature
+		_global_queue_locators.clear()
+		for child in global_queue_list.get_children():
+			global_queue_list.remove_child(child)
+			child.queue_free()
+		var heading := Label.new()
+		heading.text = "全局生产队列 · 点击定位建筑"
+		global_queue_list.add_child(heading)
+		for entry in jobs:
+			var building: RtsBuilding = entry["building"]
+			var index: int = entry["index"]
 			var row := HBoxContainer.new()
 			global_queue_list.add_child(row)
 			var locate := Button.new()
-			locate.text = "%s · %s%s" % [building.display_label(), _job_label(job), " %.0fs" % building.production_remaining if index == 0 else ""]
 			locate.custom_minimum_size.x = 275
 			locate.pressed.connect(func() -> void:
-				if not is_instance_valid(building): return
+				if not is_instance_valid(building) or building.is_queued_for_deletion(): return
 				game.selected.clear()
 				game.selected.append(building)
 				game.camera.position = building.position
@@ -818,18 +853,22 @@ func _refresh_global_queue_panel() -> void:
 				_update_hud()
 			)
 			row.add_child(locate)
+			_global_queue_locators.append(locate)
 			var cancel := Button.new()
 			cancel.text = "×"
 			cancel.pressed.connect(func() -> void:
 				if is_instance_valid(building): game.cancel_production_job(building, index)
-				_refresh_global_queue_panel()
 			)
 			row.add_child(cancel)
-			count += 1
-	if count == 0:
-		var empty := Label.new()
-		empty.text = "当前没有训练、研究或升级任务"
-		global_queue_list.add_child(empty)
+		if jobs.is_empty():
+			var empty := Label.new()
+			empty.text = "当前没有训练、研究或升级任务"
+			global_queue_list.add_child(empty)
+	# Update countdown text in place; a timer tick must not replace a hovered row.
+	for index in jobs.size():
+		var entry: Dictionary = jobs[index]
+		var building: RtsBuilding = entry["building"]
+		_global_queue_locators[index].text = "%s · %s%s" % [building.display_label(), _job_label(entry["job"]), " %.0fs" % building.production_remaining if entry["index"] == 0 else ""]
 
 func _refresh_action_buttons() -> void:
 	if game.players.is_empty() or command_buttons.is_empty(): return

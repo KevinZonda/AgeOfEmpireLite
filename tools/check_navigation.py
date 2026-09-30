@@ -31,6 +31,7 @@ TESTS = [
 # separately. The integration suite covers the shared state/behavior boundaries.
 REFACTOR_TESTS = list(dict.fromkeys(TESTS + [
     "session_rules_regression", "unit_components_regression", "settings_store",
+    "match_changes", "right_click_selection", "hud_command_pages",
     "production_queue_regression", "hud_queue_layout", "display_settings",
     "unit_preview_page", "tech_tree_page", "typography_scale", "battle_experience",
     "enemy_inspection", "health_bar_visibility", "map_setup_preview",

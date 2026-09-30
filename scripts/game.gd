@@ -439,6 +439,7 @@ func _ready() -> void:
 		if owner_id == 0: notify_player("圣地已占领")
 	)
 	ai = RtsAiController.new(self)
+	session.changes.feedback_requested.connect(_on_match_feedback)
 	_create_hud()
 	get_viewport().size_changed.connect(_apply_ui_scales)
 	get_tree().node_added.connect(_on_ui_node_added)
@@ -1138,6 +1139,9 @@ func _show_order_feedback(point: Vector2, kind: String, queued := false) -> void
 	play_feedback("invalid" if kind == "invalid" else "attack" if kind == "attack" else "gather" if kind == "gather" else "build" if kind == "build" else "move")
 	queue_redraw()
 
+func _on_match_feedback(owner_id: int, message: String) -> void:
+	if owner_id == 0: notify_player(message)
+
 func notify_player(message: String) -> void:
 	notice_label.text = message
 	notice_timer = 3.5
@@ -1151,6 +1155,7 @@ func _process(delta: float) -> void:
 		_poll_selection_pointer()
 	elif dragging:
 		_update_selection_drag(get_viewport().get_mouse_position())
+	_prune_hidden_enemy_selection()
 	match_statistics.tick(delta)
 	if view_mode_25d:
 		iso_sort_timer -= delta

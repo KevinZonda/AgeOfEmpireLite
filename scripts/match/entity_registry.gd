@@ -81,7 +81,7 @@ func spawn_unit(owner_id: int, kind: String, world_point: Vector2, rally := Vect
 			if replacement != null: unit.issue_command("gather", Vector2.INF, replacement)
 			else: unit.issue_command("move", rally)
 		else: unit.issue_command("move", rally)
-	game._update_hud()
+	game.session.changes.mark(owner_id, &"entities")
 	return unit
 
 func spawn_building(owner_id: int, kind: String, world_point: Vector2, under_construction := false, landmark_id := "", vertical := false) -> RtsBuilding:
@@ -91,7 +91,7 @@ func spawn_building(owner_id: int, kind: String, world_point: Vector2, under_con
 	game.add_child(building)
 	building.setup(game, owner_id, kind, under_construction, landmark_id)
 	register(building)
-	game._update_hud()
+	game.session.changes.mark(owner_id, &"entities")
 	return building
 
 func entity_destroyed(entity: Node2D) -> void:
@@ -132,8 +132,7 @@ func entity_destroyed(entity: Node2D) -> void:
 				eliminate_player(entity.owner_id)
 				game._check_match_end()
 	entity.queue_free()
-	game._rebuild_actions()
-	game._update_hud()
+	game.session.changes.mark(entity.owner_id, &"entities")
 
 func eliminate_player(owner_id: int) -> void:
 	for unit in units.duplicate():

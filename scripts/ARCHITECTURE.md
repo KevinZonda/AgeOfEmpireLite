@@ -8,6 +8,7 @@
 | `match/player_state.gd` | 玩家资源与研究；`bank` 和兼容 `game.players` 指向同一字典 |
 | `match/entity_registry.gd` | 单位、建筑、资源、贸易站与圣物集合；创建、移除、重开及玩家淘汰 |
 | `match/match_economy.gd` / `match_production.gd` | 经济、生产与退款事务；生产队列由建筑拥有 |
+| `match/match_changes.gd` | 事务结束后的状态变化与反馈通知；嵌套事务合并发布，不持有界面 |
 | `rules/action_availability.gd` | 建造、训练、研究等公共验证与费用；UI 读取结果，事务执行前再次验证 |
 | `player/context_order.gd` | 右键目标与命令优先级；鼠标提示和实际命令共享分类 |
 | `player/player_selection.gd` / `player_orders.gd` | 选择、编组与下令；输入事件入口仍在 `game.gd` |
@@ -26,6 +27,7 @@
 ## 边界约定
 
 - `game.session` 拥有对局状态，`game.players`、`game.units` 等旧接口只作代理。正常实体创建使用注册表；实体离开场景树时自动注销。淘汰和普通摧毁仍分别保留各自的游戏规则与反馈。
+- 经济与生产通过 `session.changes` 发布资源、生产、研究等变化。训练／研究的扣费和入队、取消退款在同一事务结束后发布；HUD 合并同一帧通知，读取最终状态。反馈由游戏装配层订阅并显示。周期刷新继续覆盖进度与兼容字典写入。全局队列只有结构变化才重建控件，倒计时原位更新。HUD 更新不修改选择；迷雾更新和玩家选择系统维护选择有效性。
 - 建筑的 `production_queue` 是任务的唯一数据源，人口预留、研究去重、命官上限、AI 和 HUD 都据此判断。公共验证返回 `{available, reason, cost}`，执行时不信任较早的 UI 判断。
 - 单位旧移动／技能字段代理组件。新命令、停止与驻扎统一取消旧异步路线和临时命令状态；无效命令先拒绝，保留正在执行的命令。
 - 属性每次从定义、研究、文明和临时效果重新解析。模拟通过 profile 查询攻击值；兼容字段不得反向覆盖 profile。

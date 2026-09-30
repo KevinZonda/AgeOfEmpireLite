@@ -2,6 +2,7 @@ extends RefCounted
 
 const PlayerState = preload("res://scripts/match/player_state.gd")
 const EntityRegistry = preload("res://scripts/match/entity_registry.gd")
+const MatchChanges = preload("res://scripts/match/match_changes.gd")
 const INITIAL_RESOURCES := [
 	{"food": 200, "wood": 220, "gold": 100, "stone": 0},
 	{"food": 340, "wood": 360, "gold": 150, "stone": 100},
@@ -9,6 +10,7 @@ const INITIAL_RESOURCES := [
 ]
 
 var entities: EntityRegistry
+var changes := MatchChanges.new()
 var world_size := Vector2(2400, 2400)
 var civilizations := ["English", "French"]
 var teams: Array[int] = [0, 1]

@@ -5,7 +5,7 @@ extends RefCounted
 static func credit_resource(game: Node2D, owner_id: int, kind: String, amount: int) -> void:
 	game.session.player(owner_id).credit(kind, amount)
 	game.match_statistics.record_income(owner_id, kind, amount)
-	if owner_id == 0: game._update_hud()
+	game.session.changes.mark(owner_id, &"resources")
 
 static func market_quote(game: Node2D, resource_kind: String, buy: bool, owner_id: int) -> int:
 	if not game.market_supply.has(resource_kind): return 0
@@ -18,22 +18,23 @@ static func exchange_resource(game: Node2D, owner_id: int, resource_kind: String
 	var price: int = game.market_quote(resource_kind, buy, owner_id)
 	if buy:
 		if game.players[owner_id]["gold"] < price:
-			if owner_id == 0: game.notify_player("黄金不足，无法买入")
+			game.session.changes.feedback(owner_id, "黄金不足，无法买入")
 			return false
 		game.players[owner_id]["gold"] -= price
 		game.players[owner_id][resource_kind] += 100
 		game.market_supply[resource_kind] = int(game.market_supply[resource_kind]) - 1
 	else:
 		if game.players[owner_id][resource_kind] < 100:
-			if owner_id == 0: game.notify_player("%s不足 100" % GameData.RESOURCE_LABELS[resource_kind])
+			game.session.changes.feedback(owner_id, "%s不足 100" % GameData.RESOURCE_LABELS[resource_kind])
 			return false
 		game.players[owner_id][resource_kind] -= 100
 		game.players[owner_id]["gold"] += price
 		game.market_supply[resource_kind] = int(game.market_supply[resource_kind]) + 1
-	if owner_id == 0:
-		game.notify_player("买入 100 %s" % GameData.RESOURCE_LABELS[resource_kind] if buy else "卖出 100 %s" % GameData.RESOURCE_LABELS[resource_kind])
-		game._rebuild_actions()
-		game._update_hud()
+	game.session.changes.begin_transaction()
+	game.session.changes.mark(owner_id, &"resources")
+	game.session.changes.mark(owner_id, &"market")
+	game.session.changes.feedback(owner_id, "买入 100 %s" % GameData.RESOURCE_LABELS[resource_kind] if buy else "卖出 100 %s" % GameData.RESOURCE_LABELS[resource_kind])
+	game.session.changes.end_transaction()
 	return true
 
 static func can_afford(game: Node2D, owner_id: int, cost: Dictionary) -> bool:
@@ -41,7 +42,7 @@ static func can_afford(game: Node2D, owner_id: int, cost: Dictionary) -> bool:
 
 static func spend(game: Node2D, owner_id: int, cost: Dictionary) -> bool:
 	if not game.session.player(owner_id).spend(cost): return false
-	game._update_hud()
+	game.session.changes.mark(owner_id, &"resources")
 	return true
 
 static func population_used(game: Node2D, owner_id: int) -> int:
