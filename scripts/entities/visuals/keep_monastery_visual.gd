@@ -5,6 +5,9 @@ const Geometry = preload("res://scripts/entities/visuals/building_geometry.gd")
 const FilledPolygon = preload("res://scripts/entities/visuals/filled_polygon.gd")
 
 const FOUNDATION_HEIGHT := 2.0
+const OUTPOST_GALLERY_HEIGHT := 12.0
+const OUTPOST_ROOF_RISE := 11.0
+const OUTPOST_CHINESE_ROOF_RISE := 14.0
 
 # Finished defenses share a shallow stone foundation with their map portraits.
 static func draw_topdown(c: CanvasItem, kind: String, bounds: Rect2, palette: Dictionary, accent: Color, civ: String) -> void:
@@ -38,8 +41,8 @@ static func selection_hull(snapshot, canvas: Transform2D) -> PackedVector2Array:
 					points.append(Geometry.point(nw, ne, sw, u + offset.x, v + offset.y) + floor + Geometry.up(canvas, snapshot.zoom, 29.0 if snapshot.civilization == "Chinese" else 33.1))
 	elif snapshot.kind == "outpost":
 		for uv in [Vector2(0.0882, 0.1015), Vector2(0.9118, 0.1015), Vector2(0.9118, 0.8985), Vector2(0.0882, 0.8985)]:
-			points.append(Geometry.point(nw, ne, sw, uv.x, uv.y) + floor + Geometry.up(canvas, snapshot.zoom, 36.0))
-		points.append(Geometry.point(nw, ne, sw, 0.5, 0.5) + floor + Geometry.up(canvas, snapshot.zoom, 46.0 if snapshot.civilization == "Chinese" else 42.0))
+			points.append(Geometry.point(nw, ne, sw, uv.x, uv.y) + floor + Geometry.up(canvas, snapshot.zoom, 27.0 + OUTPOST_GALLERY_HEIGHT))
+		points.append(Geometry.point(nw, ne, sw, 0.5, 0.5) + floor + Geometry.up(canvas, snapshot.zoom, 27.0 + OUTPOST_GALLERY_HEIGHT + (OUTPOST_CHINESE_ROOF_RISE if snapshot.civilization == "Chinese" else OUTPOST_ROOF_RISE)))
 	if snapshot.civilization == "Chinese":
 		for face in chinese_roof_faces(snapshot, canvas):
 			for point in face["points"]: points.append(point)
@@ -88,10 +91,13 @@ static func _stone_face(c: CanvasItem, a: Vector2, b: Vector2, up: Vector2, colo
 		var fraction := float(row) / float(rows)
 		var line_up := up * fraction
 		c.draw_line(a + line_up, b + line_up, Color(color.darkened(0.2), 0.42), 0.6)
-		for joint in range(1, 5):
-			var x := (float(joint) - (0.5 if row % 2 else 0.0)) / 5.0
+		var blocks := clampi(floori(a.distance_to(b) / 12.0), 1, 5)
+		for joint in range(1, blocks):
+			var x := (float(joint) - (0.5 if row % 2 else 0.0)) / float(blocks)
 			c.draw_line(a.lerp(b, x) + line_up, a.lerp(b, x) + up * (fraction + 1.0 / float(rows)), Color(color.darkened(0.22), 0.35), 0.6)
-	# Alternating end quoins frame the corners without heavy black outlines.
+	# Tiny tower facets need solid masonry rather than repeating bright
+	# edge strips that wash out the shaft at normal camera zoom.
+	if a.distance_to(b) < 15.0: return
 	for row in rows:
 		var low := up * (float(row) / float(rows))
 		var high := up * (float(row + 1) / float(rows))
@@ -99,12 +105,16 @@ static func _stone_face(c: CanvasItem, a: Vector2, b: Vector2, up: Vector2, colo
 		for edge in [0, 1]:
 			var x := a if edge == 0 else b
 			var y := a.lerp(b, extent if edge == 0 else 1.0 - extent)
-			c.draw_colored_polygon(PackedVector2Array([x + low, y + low, y + high, x + high]), Color(trim.darkened(0.08), 0.5))
+			c.draw_colored_polygon(PackedVector2Array([x + low, y + low, y + high, x + high]), color.lightened(0.045))
 
 
-static func _slit(c: CanvasItem, bottom: Vector2, up: Vector2, trim: Color) -> void:
-	c.draw_line(bottom - up * 0.04, bottom + up, trim.darkened(0.18), 3.4)
-	c.draw_line(bottom, bottom + up * 0.88, Color("313a38"), 1.6)
+static func _slit(c: CanvasItem, bottom: Vector2, up: Vector2, trim: Color, along: Vector2) -> void:
+	# Window edges follow the facade plane rather than an upright stroke
+	# that can extend outside a narrow octagonal facet.
+	var half := along.normalized() * 1.15
+	c.draw_colored_polygon(PackedVector2Array([bottom - half - up * 0.035, bottom + half - up * 0.035, bottom + half + up, bottom - half + up]), trim.darkened(0.20))
+	half *= 0.52
+	c.draw_colored_polygon(PackedVector2Array([bottom - half, bottom + half, bottom + half + up * 0.91, bottom - half + up * 0.91]), Color("303938"))
 
 
 static func _crenels(c: CanvasItem, a: Vector2, b: Vector2, up: Vector2, trim: Color, count: int, inset: Vector2 = Vector2.ZERO) -> void:
@@ -122,8 +132,6 @@ static func _curtain(c: CanvasItem, a: Vector2, b: Vector2, up: Vector2, thickne
 	_stone_face(c, a, b, up, wall, trim, 3)
 	c.draw_colored_polygon(PackedVector2Array([a + up, b + up, b + up + thickness, a + up + thickness]), trim.darkened(0.12))
 	_crenels(c, a + up, b + up, up * 0.2, trim, teeth, thickness * 0.45)
-	for fraction in [0.27, 0.72]:
-		_slit(c, a.lerp(b, fraction) + up * 0.39, up * 0.22, trim)
 
 
 static func _arch(c: CanvasItem, bottom: Vector2, half: Vector2, rise: Vector2, stone: Color, timber: Color) -> void:
@@ -163,8 +171,8 @@ static func _keep_iso(c: CanvasItem, nw: Vector2, ne: Vector2, sw: Vector2, _lif
 	_stone_face(c, b, f, donjon_up, wall.darkened(0.22), trim, 7)
 	_stone_face(c, d, f, donjon_up, wall, trim, 7)
 	for fraction in [0.33, 0.68]:
-		_slit(c, d.lerp(f, fraction) + donjon_up * 0.67, donjon_up * 0.16, trim)
-		_slit(c, b.lerp(f, fraction) + donjon_up * 0.69, donjon_up * 0.13, trim)
+		_slit(c, d.lerp(f, fraction) + donjon_up * 0.64, donjon_up * 0.14, trim, f - d)
+	_slit(c, b.lerp(f, 0.5) + donjon_up * 0.64, donjon_up * 0.14, trim, f - b)
 	# Projecting machicolation ledge and dark brackets under the parapet.
 	for edge in [[d, f], [b, f]]:
 		var first: Vector2 = edge[0]
@@ -189,6 +197,8 @@ static func _keep_iso(c: CanvasItem, nw: Vector2, ne: Vector2, sw: Vector2, _lif
 	# Near curtains are low enough to expose the main tower and court.
 	_curtain(c, Geometry.point(nw, ne, sw, 0.13, 0.13) + ground, Geometry.point(nw, ne, sw, 0.13, 0.88) + ground, up, (ne - nw) * 0.055, wall.darkened(0.06), trim)
 	_curtain(c, Geometry.point(nw, ne, sw, 0.13, 0.88) + ground, Geometry.point(nw, ne, sw, 0.87, 0.88) + ground, up, (nw - sw) * 0.055, wall, trim)
+	for u in [0.31, 0.69]:
+		_slit(c, Geometry.point(nw, ne, sw, u, 0.883) + ground + up * 0.40, up * 0.22, trim, ne - nw)
 	var entrance := Geometry.point(nw, ne, sw, 0.5, 0.883) + ground
 	_arch(c, entrance, (ne - nw) * 0.076, up * 0.87, trim, palette["timber"])
 	for fraction in [0.0, 0.035, 0.07]:
@@ -205,7 +215,9 @@ static func _turret(c: CanvasItem, nw: Vector2, ne: Vector2, sw: Vector2, floor:
 	var up := Geometry.up(canvas, zoom, 29.0)
 	var wall: Color = palette["wall"]
 	var trim: Color = palette["trim"]
-	for index in [2, 3, 4, 5, 6]:
+	# Only facets whose outward normals face (+x,+y) are visible.
+	# Drawing 5/6 painted the hidden rear skin over the front shaft.
+	for index in [1, 2, 3, 4]:
 		var next: int = (index + 1) % 8
 		var a := corners[index]
 		var b := corners[next]
@@ -220,8 +232,8 @@ static func _turret(c: CanvasItem, nw: Vector2, ne: Vector2, sw: Vector2, floor:
 	for index in 8:
 		var next: int = (index + 1) % 8
 		_crenels(c, top[index], top[next], up * 0.14, trim, 1, (center + up - top[index]) * 0.22)
-	for index in [3, 5]:
-		_slit(c, corners[index].lerp(corners[index + 1], 0.5) + up * 0.45, up * 0.2, trim)
+	for index in [2, 4]:
+		_slit(c, corners[index].lerp(corners[index + 1], 0.5) + up * 0.45, up * 0.19, trim, corners[index + 1] - corners[index])
 	if civ == "Chinese":
 		var cap: Array[Vector2] = []
 		for offset in [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]:
@@ -298,7 +310,7 @@ static func _outpost_iso(c: CanvasItem, nw: Vector2, ne: Vector2, sw: Vector2, _
 		c.draw_colored_polygon(PackedVector2Array([center + (first - center) * 1.18, center + (last - center) * 1.18, last + up * 0.18, first + up * 0.18]), wall.darkened(0.15))
 	_stone_face(c, b + up * 0.18, f + up * 0.18, up * 0.82, wall.darkened(0.24), trim, 4)
 	_stone_face(c, d + up * 0.18, f + up * 0.18, up * 0.82, wall, trim, 4)
-	_slit(c, b.lerp(f, 0.5) + up * 0.49, up * 0.23, trim)
+	_slit(c, b.lerp(f, 0.5) + up * 0.49, up * 0.23, trim, f - b)
 	_arch(c, d.lerp(f, 0.5), (f - d) * 0.18, up * 0.42, trim, timber)
 	# Open timber gallery sits on cantilever brackets, with a separate hip roof.
 	var gallery: Array[Vector2] = []
@@ -313,7 +325,7 @@ static func _outpost_iso(c: CanvasItem, nw: Vector2, ne: Vector2, sw: Vector2, _
 		var lower: Array[Vector2] = []
 		for corner in gallery: lower.append(center + (corner - up - center) * 1.15 + up + Geometry.up(canvas, zoom, 3.0))
 		_hip_roof(c, lower, Geometry.up(canvas, zoom, 5.0), palette, canvas, zoom)
-	var gallery_up := Geometry.up(canvas, zoom, 9.0)
+	var gallery_up := Geometry.up(canvas, zoom, OUTPOST_GALLERY_HEIGHT)
 	for corner in gallery: c.draw_line(corner, corner + gallery_up, timber, 2.5)
 	for edge in [[gallery[1], gallery[2]], [gallery[3], gallery[2]]]:
 		c.draw_line(edge[0] + gallery_up * 0.38, edge[1] + gallery_up * 0.38, timber.lightened(0.25), 1.5)
@@ -322,14 +334,14 @@ static func _outpost_iso(c: CanvasItem, nw: Vector2, ne: Vector2, sw: Vector2, _
 			c.draw_line(rail, rail + gallery_up * 0.38, timber, 1.0)
 	var roof := PackedVector2Array()
 	for corner in gallery: roof.append(center + (corner - up - center) * 1.08 + up + gallery_up)
-	var peak := center + up + gallery_up + Geometry.up(canvas, zoom, 6.0)
+	var peak := center + up + gallery_up + Geometry.up(canvas, zoom, OUTPOST_ROOF_RISE)
 	for index in 4:
 		c.draw_colored_polygon(PackedVector2Array([roof[index], roof[(index + 1) % 4], peak]), palette["roof"].lightened(0.1) if index in [0, 3] else palette["roof_dark"])
 	c.draw_polyline(PackedVector2Array([roof[1], roof[2], roof[3]]), palette["roof_dark"].darkened(0.25), 1.5)
 	if civ == "Chinese":
 		var upper: Array[Vector2] = []
 		for corner in roof: upper.append(corner)
-		_hip_roof(c, upper, Geometry.up(canvas, zoom, 10.0), palette, canvas, zoom)
+		_hip_roof(c, upper, Geometry.up(canvas, zoom, OUTPOST_CHINESE_ROOF_RISE), palette, canvas, zoom)
 	var banner := gallery[2] + gallery_up * 0.88
 	c.draw_colored_polygon(PackedVector2Array([banner, banner - (ne - nw) * 0.13, banner - (ne - nw) * 0.13 - gallery_up * 0.8, banner - gallery_up * 0.68]), accent)
 
@@ -514,7 +526,7 @@ static func chinese_roof_faces(snapshot, canvas: Transform2D) -> Array[Dictionar
 	else:
 		# Gallery expands the stone shaft by 1.23; the two roofs have
 		# independent overhangs before the common curled roof lip.
-		for tier in [[1.15, 30.0, 5.0], [1.08, 36.0, 10.0]]:
+		for tier in [[1.15, 30.0, 5.0], [1.08, 27.0 + OUTPOST_GALLERY_HEIGHT, OUTPOST_CHINESE_ROOF_RISE]]:
 			var width: float = 0.62 * 1.23 * tier[0]
 			var depth: float = 0.60 * 1.23 * tier[0]
 			specs.append([0.5 - width * 0.5, 0.5 - depth * 0.5, width, depth, tier[1], tier[2]])

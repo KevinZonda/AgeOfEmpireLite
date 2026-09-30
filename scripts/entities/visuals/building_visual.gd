@@ -72,6 +72,10 @@ func contains_isometric_visual(snapshot: VisualState, world_point: Vector2, canv
 	var local_point := world_point - state.world_position
 	if state.kind in ["keep", "outpost"] and construction_ratio >= 0.65:
 		if Geometry2D.is_point_in_polygon(local_point - terrain_lift, KeepMonasteryVisual.selection_hull(state, canvas)): return true
+	if state.kind == "stone_gate" and construction_ratio >= 0.65:
+		for polygon in _civic_display_geometry().projected_faces(canvas, state.zoom, terrain_lift):
+			if Geometry2D.is_point_in_polygon(local_point, polygon["points"]): return true
+		return false
 	if (state.kind.ends_with("_gate") or state.kind.ends_with("_wall")) and construction_ratio >= 0.65:
 		var top := terrain_lift + RtsIsoProjection.world_delta(canvas, Vector2(0, -(height + state.visual_feature_height()) * state.zoom))
 		var hull := Geometry2D.convex_hull(PackedVector2Array([nw + terrain_lift, ne + terrain_lift, se + terrain_lift, sw + terrain_lift, nw + top, ne + top, se + top, sw + top]))
@@ -1043,6 +1047,7 @@ func draw_refined_portrait(item: CanvasItem, snapshot: VisualState, frame: Rect2
 
 func _visible_height(construction_ratio: float) -> float:
 	if (state.kind in ["farm", "dock"] or CivicGeometry.handles(state.kind) or state.kind == "wonder") and construction_ratio >= 0.65: return _civic_display_geometry().height_above_origin
+	if state.kind == "stone_gate" and construction_ratio >= 0.65: return _civic_display_geometry().height_above_origin
 	if state.kind in ["keep", "outpost"] and construction_ratio >= 0.65: return maxf(0.0, -defense_portrait_bounds(state).position.y)
 	# Finished geometry appears at this stage without height scaling.
 	if RefinedGeometry.handles(state.kind) and construction_ratio >= 0.65:
@@ -1062,6 +1067,7 @@ func _civic_geometry():
 	return civic_geometry
 
 func _civic_display_geometry():
+	if state.kind == "stone_gate": return FortificationVisual.geometry(state.dimensions, _architecture_palette(), state.player_color, state.wall_vertical)
 	if state.kind == "dock": return DockBuildingVisual.geometry(state.dimensions, _architecture_palette(), state.civilization, state.player_color)
 	if state.kind == "farm": return _farm_geometry()
 	if state.kind in ["wonder", "landmark"]: return _landmark_geometry()
@@ -1106,6 +1112,9 @@ func _draw_defense_foundation(item: CanvasItem, bounds: Rect2, palette: Dictiona
 # The procedural defenses use the same projection and draw calls as the map.
 # Fit their visual hull in canonical screen space without camera or UI overlays.
 func defense_portrait_bounds(snapshot: VisualState) -> Rect2:
+	if snapshot.kind == "stone_gate":
+		_cache_civic_portrait(snapshot)
+		return civic_portrait_bounds.grow(2.0)
 	var projection := Transform2D(Vector2(0.70710678, 0.35355339), Vector2(-0.70710678, 0.35355339), Vector2.ZERO)
 	var hull: PackedVector2Array
 	if snapshot.kind in ["keep", "outpost"]:
@@ -1126,6 +1135,9 @@ func defense_portrait_bounds(snapshot: VisualState) -> Rect2:
 
 
 func draw_defense_portrait(item: CanvasItem, snapshot: VisualState, frame: Rect2) -> void:
+	if snapshot.kind == "stone_gate":
+		draw_civic_portrait(item, snapshot, frame)
+		return
 	state = snapshot
 	var projection := Transform2D(Vector2(0.70710678, 0.35355339), Vector2(-0.70710678, 0.35355339), Vector2.ZERO)
 	var bounds := defense_portrait_bounds(snapshot)

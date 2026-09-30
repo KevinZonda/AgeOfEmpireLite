@@ -1,9 +1,17 @@
 class_name RtsFortificationVisual
 extends RefCounted
 
+const StoneGate = preload("res://scripts/entities/visuals/stone_gate_geometry.gd")
+const FilledPolygon = preload("res://scripts/entities/visuals/filled_polygon.gd")
+
 # The narrow footprint is a single wall section. The long edge changes with
 # wall_vertical, while the gate opening always cuts through its middle.
 static func draw_topdown(c: CanvasItem, kind: String, bounds: Rect2, palette: Dictionary, accent: Color, _civ: String, wall_vertical: bool) -> void:
+	if kind == "stone_gate":
+		for polygon in geometry(bounds.size, palette, accent, wall_vertical).flat_faces:
+			var points: PackedVector2Array = polygon["points"]
+			FilledPolygon.draw(c, Transform2D(0.0, bounds.get_center()) * points, polygon["color"])
+		return
 	var stone := kind.begins_with("stone")
 	var gate := kind.ends_with("_gate")
 	var face: Color = palette["wall"] if stone else palette["timber"]
@@ -40,6 +48,11 @@ static func draw_topdown(c: CanvasItem, kind: String, bounds: Rect2, palette: Di
 		_gate_topdown(c, bounds, face, light, accent, stone, wall_vertical)
 
 static func draw_iso(c: CanvasItem, kind: String, nw: Vector2, ne: Vector2, se: Vector2, sw: Vector2, lift: Vector2, palette: Dictionary, accent: Color, _civ: String, wall_vertical: bool, _canvas: Transform2D, _zoom: float) -> void:
+	if kind == "stone_gate":
+		var size := Vector2(nw.distance_to(ne), nw.distance_to(sw))
+		for polygon in geometry(size, palette, accent, wall_vertical).projected_faces(_canvas, _zoom, (nw + se) * 0.5):
+			FilledPolygon.draw(c, polygon["points"], polygon["color"])
+		return
 	var far_a := nw
 	var far_b := sw if wall_vertical else ne
 	var near_a := ne if wall_vertical else sw
@@ -363,3 +376,7 @@ static func _top_quad(c: CanvasItem, bounds: Rect2, t0: float, t1: float, n0: fl
 
 static func _poly(c: CanvasItem, points: Array, color: Color) -> void:
 	c.draw_colored_polygon(PackedVector2Array(points), color)
+
+
+static func geometry(size: Vector2, palette: Dictionary, accent: Color, vertical: bool):
+	return StoneGate.geometry(size, palette, accent, vertical)
