@@ -45,6 +45,8 @@ func load_preferences(display) -> void:
 	var config := read_config()
 	if config == null: return
 	apply_preferences(config)
+	# The browser owns the canvas size; fullscreen needs a fresh user gesture.
+	if OS.has_feature("web"): return
 	var resolution: Variant = config.get_value("display", "window_size", Vector2i.ZERO)
 	if bool(config.get_value("display", "adaptive_resolution", false)):
 		display._apply_window_resolution(Vector2i.ZERO, false)

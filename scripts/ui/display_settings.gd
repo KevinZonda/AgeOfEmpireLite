@@ -19,10 +19,17 @@ static func _fit_window_size_to_screen(usable_size: Vector2i) -> Vector2i:
 	)
 
 func _adaptive_window_resolution() -> Vector2i:
-	if DisplayServer.get_name() == "headless": return game.get_window().size
+	if OS.has_feature("web") or DisplayServer.get_name() == "headless": return game.get_window().size
 	return _fit_window_size_to_screen(DisplayServer.screen_get_usable_rect(game.get_window().current_screen).size)
 
 func _apply_window_resolution(resolution: Vector2i, save_setting := true) -> void:
+	if OS.has_feature("web"):
+		game.get_window().mode = Window.MODE_WINDOWED
+		settings.windowed_resolution = game.get_window().size
+		settings.adaptive_resolution_enabled = false
+		settings.fullscreen_enabled = false
+		if save_setting: settings.save(_window_is_fullscreen())
+		return
 	var adaptive := resolution == Vector2i.ZERO
 	if not adaptive and not WINDOW_RESOLUTIONS.has(resolution) and resolution != settings.windowed_resolution and resolution != game.get_window().size: return
 	var target := _adaptive_window_resolution() if adaptive else resolution
@@ -53,6 +60,7 @@ func _apply_window_mode(fullscreen: bool, save_setting := true) -> void:
 	if save_setting: settings.save(_window_is_fullscreen())
 
 func tick(delta: float) -> void:
+	if OS.has_feature("web"): return
 	if settings.adaptive_resolution_enabled and not _window_is_fullscreen() and DisplayServer.get_name() != "headless":
 		adaptive_resolution_check_timer -= delta
 		if adaptive_resolution_check_timer <= 0.0:

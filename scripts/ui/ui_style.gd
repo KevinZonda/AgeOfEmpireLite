@@ -83,12 +83,17 @@ static func page_panel(fill: Color, border: Color, margin: float, radius := 3) -
 	return box
 
 static func load_font() -> void:
-	var font_data := FileAccess.get_file_as_bytes("res://assets/fonts/NotoSansSC-Regular.otf")
-	if font_data.is_empty():
+	const FONT_PATH := "res://assets/fonts/NotoSansSC-Regular.otf"
+	var font: FontFile
+	# Local runtimes can read the source font; exports contain its imported resource.
+	if FileAccess.file_exists(FONT_PATH):
+		font = FontFile.new()
+		font.data = FileAccess.get_file_as_bytes(FONT_PATH)
+	elif ResourceLoader.exists(FONT_PATH):
+		font = load(FONT_PATH) as FontFile
+	if font == null:
 		push_error("Unable to read the bundled UI font")
 		return
-	var font := FontFile.new()
-	font.data = font_data
 	ThemeDB.fallback_font = font
 	var default_theme := ThemeDB.get_default_theme()
 	default_theme.default_font = font

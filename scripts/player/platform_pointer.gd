@@ -10,7 +10,8 @@ func _uses_native_selection_pointer() -> bool:
 	return OS.get_name() == "macOS" and DisplayServer.get_name() != "headless"
 
 func _gameplay_mouse_mode():
-	if game._uses_native_selection_pointer():
+	# Browsers support hiding the cursor, but cannot confine it to the canvas.
+	if OS.has_feature("web") or game._uses_native_selection_pointer():
 		return Input.MOUSE_MODE_HIDDEN
 	return Input.MOUSE_MODE_CONFINED_HIDDEN
 
@@ -28,4 +29,3 @@ func _selection_pointer_screen_position() -> Vector2:
 
 func _selection_native_left_down() -> bool:
 	return (DisplayServer.mouse_get_button_state() & MOUSE_BUTTON_MASK_LEFT) != 0
-

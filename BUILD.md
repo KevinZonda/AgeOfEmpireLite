@@ -121,3 +121,32 @@ make run GODOT=/你的/Godot/路径
 4. 使用实际导出的应用，在 Magnet 开启时复测拖框响应。
 
 当前 `make build-macos` 和 `make run` 完成的是本地开发流程，不会生成可分发的 `.app`／`.dmg`，也不会执行签名或公证。
+
+## Web 构建、导出与预览
+
+Web 使用同一份 `docs/godot` 源码（固定为 Godot 4.7.2），通过 Emscripten 编译独立的 WebAssembly 模板。macOS 主循环补丁不参与 Web 平台编译。
+
+先安装 Emscripten 4.0.0 或更新版本，并确保 `emcc` 在 PATH 中。macOS 可执行 `brew install emscripten`；其他系统可安装并激活 emsdk。Python 3 和 SCons 的准备方式与 macOS 构建相同。
+
+```sh
+make run-web
+```
+
+`make run-web` 每次先增量构建引擎模板、重新导出当前游戏，再启动预览服务器。然后访问 <http://127.0.0.1:8060>。可以通过 `make run-web WEB_PORT=8080` 更换端口。按 Ctrl+C 停止预览服务器。只需重新启动已有导出产物的服务器时，执行 `make serve-web`；只构建和导出而不启动服务器时，执行 `make export-web`。
+
+`make export-web` 先增量编译 Web release 模板，再导入并导出游戏。模板位于 `docs/godot/bin/godot.web.template_release.wasm32.zip`，网页产物位于 `build/web/`。需要单独编译模板时执行 `make build-web`；只重新导出游戏时执行 `tools/export_web.sh`。可用 `BUILD_JOBS=4 make export-web` 调整编译并行数。
+
+导出必须使用 **普通版 Godot 4.7.2 编辑器**。本机已安装的 Mono 编辑器会拒绝 Web 导出，即使游戏只使用 GDScript。macOS 导出脚本会自动下载官方普通版编辑器、验证固定的 SHA-256，并解压到 `.godot/tools/web-export/`。它不会替换 `/Applications/Godot_mono.app`。其他平台需设置 `GODOT_EDITOR=/普通版/Godot/路径`，macOS 也可用此变量指定已有编辑器。
+
+Web 预设启用多线程，以支持当前的后台寻路任务。预览服务器提供以下响应头：
+
+```http
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Embedder-Policy: require-corp
+```
+
+正式部署时，上传整个 `build/web/` 目录，通过 HTTPS 提供这些响应头，并将 `.wasm` 的 MIME 类型设为 `application/wasm`。不能通过双击 `index.html` 来运行。该目录包含游戏数据包，不包含开发文档与测试资源。
+
+浏览器决定画布尺寸，游戏的分辨率选项显示「跟随浏览器」；全屏仍通过玩家点击设置按钮触发，刷新网页时不会自动恢复全屏。浏览器对局隐藏系统鼠标并使用游戏光标，不锁定鼠标到画布内。其他显示与操作偏好继续存入 `user://`。此流程生成 Web release 版本，尚未提供 Web debug 模板。
+
+2026-09-30 已完成源码模板编译与 release 导出，并在 Chrome 验证开始菜单、设置保存及刷新、1v1 对局、资源增长、图标与中文字体、2D／2.5D 切换和 1280×720 画布尺寸变化。浏览器确认 `crossOriginIsolated=true`，引擎报告多线程构建，最终运行日志无错误或警告。本机 `smoke.gd`、`settings_store.gd`、`display_settings.gd` 与 `player_input_actions_regression.gd` 均通过。此记录覆盖基本运行与平台适配，不代表大规模战斗性能基准。

@@ -5,7 +5,7 @@ GODOT ?= godot
 endif
 RUN_ARGS ?=
 
-.PHONY: run build-macos
+.PHONY: run run-web build-macos build-web export-web serve-web
 
 run:
 	@command -v "$(GODOT)" >/dev/null || { echo 'Godot not found. On macOS, run make build-macos first; or set GODOT=/path/to/Godot.'; exit 1; }
@@ -13,3 +13,15 @@ run:
 
 build-macos:
 	tools/build_godot_macos.sh
+
+build-web:
+	tools/build_godot_web.sh
+
+export-web: build-web
+	tools/export_web.sh
+
+run-web: export-web
+	$(MAKE) serve-web
+
+serve-web:
+	python3 tools/serve_web.py --port $(or $(WEB_PORT),8060)

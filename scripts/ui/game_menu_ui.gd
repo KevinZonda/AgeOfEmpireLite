@@ -272,6 +272,13 @@ func _close_settings() -> void:
 func _refresh_resolution_options() -> void:
 	resolution_choice.clear()
 	resolution_values.clear()
+	if OS.has_feature("web"):
+		var canvas_size := game.get_window().size
+		resolution_values.append(Vector2i.ZERO)
+		resolution_choice.add_item("跟随浏览器（%d × %d）" % [canvas_size.x, canvas_size.y])
+		resolution_choice.select(0)
+		resolution_choice.disabled = true
+		return
 	var adaptive_size: Vector2i = game.display_settings._adaptive_window_resolution()
 	resolution_values.append(Vector2i.ZERO)
 	resolution_choice.add_item("自动（%d × %d）" % [adaptive_size.x, adaptive_size.y])
