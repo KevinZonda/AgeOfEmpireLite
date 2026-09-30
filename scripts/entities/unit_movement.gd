@@ -37,7 +37,9 @@ var yield_request_cooldown := 0.0
 
 func reset_route(unit: RtsUnit) -> void:
 	route_generation += 1
-	if unit.game != null and unit.game.navigation != null: unit.game.navigation.background_jobs.cancel(unit)
+	if unit.game != null and unit.game.navigation != null:
+		unit.game.navigation.background_jobs.cancel(unit)
+		unit.game.navigation.cancel_route_request(unit)
 	yield_timer = 0.0
 	route.clear()
 	route_index = 0
@@ -63,19 +65,24 @@ func move_to(unit: RtsUnit, point: Vector2, delta: float, stop_distance: float) 
 		yield_timer = maxf(0.0, yield_timer - delta)
 		return false
 	var distance := position.distance_to(point)
-	if distance <= stop_distance + 0.5 and (unit.order != "board_transport" or navigation.boarding_clear(position, point, unit)): return true
+	if distance <= stop_distance + 0.5 and (unit.order != "board_transport" or navigation.boarding_clear(position, point, unit)):
+		if navigation.route_budget_enabled and navigation.route_jobs.has_request(unit): navigation.cancel_route_request(unit)
+		return true
 	unit.abilities.interrupt_movement(unit)
 	var speed: float = unit.effective_speed()
 	route_retry = maxf(0.0, route_retry - delta)
 	navigation._ensure_current()
-	if route_obstacle_revision != navigation.obstacle_revision:
-		route_obstacle_revision = navigation.obstacle_revision
+	if route_obstacle_revision != navigation.geometry_cache.obstacle_revision:
+		route_obstacle_revision = navigation.geometry_cache.obstacle_revision
 		route_check_pending = true
 		# Structural changes wake unreachable units immediately. Moving wildlife
 		# still invalidates collision checks, but preserves failure backoff.
-		if route.is_empty() and route_retry_obstacle_revision != navigation.retry_obstacle_revision: route_retry = 0.0
-		route_retry_obstacle_revision = navigation.retry_obstacle_revision
+		if route.is_empty() and route_retry_obstacle_revision != navigation.geometry_cache.retry_obstacle_revision: route_retry = 0.0
+		route_retry_obstacle_revision = navigation.geometry_cache.retry_obstacle_revision
 	while route_index < route.size() - 1 and position.distance_to(route[route_index]) < 2.0:
+		# A subpixel fine-grid connector can be a necessary corner turn. In
+		# budgeted routes, only skip it when the advancing shortcut is safe.
+		if navigation.route_budget_enabled and not navigation._static_segment_clear(position, route[route_index + 1], radius, unit): break
 		route_index += 1
 		route_best_distance = INF
 		route_stalled_time = 0.0
@@ -117,12 +124,25 @@ func move_to(unit: RtsUnit, point: Vector2, delta: float, stop_distance: float) 
 			point = navigation.nearest_walkable_point(point, radius, unit, true)
 			destination = point
 			distance = position.distance_to(point)
-			if distance <= stop_distance + 0.5 and (unit.order != "board_transport" or navigation.boarding_clear(position, point, unit)): return true
+			if distance <= stop_distance + 0.5 and (unit.order != "board_transport" or navigation.boarding_clear(position, point, unit)):
+				if navigation.route_budget_enabled and navigation.route_jobs.has_request(unit): navigation.cancel_route_request(unit)
+				return true
+		var use_range := ["gather", "build", "field_build", "repair", "attack", "attack_ground", "garrison", "board_transport", "trade", "deposit_relic", "relic", "supervise", "collect_tax", "board_wall", "assault_wall"].has(unit.order)
+		var output: Dictionary = {}
+		if navigation.route_budget_enabled:
+			output = navigation.take_route(unit, point, stop_distance, use_range)
+			if output.is_empty():
+				navigation.request_route(unit, point, stop_distance, use_range)
+				# Queue admission is not a failed route. Wait in place without
+				# increasing failures/backoff or following a superseded route.
+				return false
 		if target_changed:
 			route_failures = 0
 		elif stalled or exhausted:
 			route_failures += 1
-		if ["gather", "build", "field_build", "repair", "attack", "attack_ground", "garrison", "board_transport", "trade", "deposit_relic", "relic", "supervise", "collect_tax", "board_wall", "assault_wall"].has(unit.order):
+		if navigation.route_budget_enabled:
+			route = output.path
+		elif use_range:
 			route = navigation.path_to_range(position, point, stop_distance, unit)
 		else:
 			route = navigation.path_between(position, point, unit)

@@ -40,7 +40,7 @@ func _valid(job: Dictionary) -> bool:
 	var unit: RtsUnit = job.unit.get_ref()
 	return unit != null and not unit.is_queued_for_deletion() and unit.garrisoned_in == null and unit.route_generation == job.generation and unit.order == job.order and unit.owner_id == job.owner and Time.get_ticks_msec() - job.created_ms <= MAX_REQUEST_AGE_MS and current.get(job.id, -1) == job.ticket
 
-func tick(navigation) -> void:
+func tick(navigation, allow_dispatch := true) -> void:
 	# Never join incomplete work in the frame loop. Reaping a completed task
 	# establishes ownership of its output and releases the engine task record.
 	for i in range(active.size() - 1, -1, -1):
@@ -58,6 +58,7 @@ func tick(navigation) -> void:
 		if not _valid(completed[id]):
 			completed.erase(id)
 			current.erase(id)
+	if not allow_dispatch: return
 	var started := Time.get_ticks_usec()
 	while active.size() < MAX_ACTIVE and not pending.is_empty():
 		var job: Dictionary = pending.pop_front()

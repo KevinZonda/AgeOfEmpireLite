@@ -17,7 +17,7 @@ import time
 
 ROOT = Path(__file__).resolve().parents[1]
 TESTS = [
-    "navigation_destination_poc",
+    "navigation_destination_poc", "navigation_boundaries",
     "navigation_async_poc", "deer_movement_poc", "navigation_battle_static_grid_poc",
     "navigation_battle_raster_poc", "navigation_battle_native_poc", "navigation_battle_goal_poc", "navigation_battle_recovery_poc", "navigation_battle_retry_poc", "navigation_search_work", "navigation_grid_raster", "navigation_dense_poc", "navigation_tasks_poc",
     "navigation_corner_poc", "navigation_state_poc", "navigation_wildlife_churn_poc",
@@ -30,7 +30,7 @@ TESTS = [
 # Rendering-driver comparisons and existing HUD/range-corner failures are run
 # separately. The integration suite covers the shared state/behavior boundaries.
 REFACTOR_TESTS = list(dict.fromkeys(TESTS + [
-    "session_rules_regression", "unit_components_regression", "unit_orders_regression", "settings_store",
+    "session_rules_regression", "unit_components_regression", "unit_orders_regression", "match_simulation_regression", "settings_store",
     "match_changes", "right_click_selection", "hud_command_pages", "player_input_actions_regression",
     "production_queue_regression", "hud_queue_layout", "display_settings",
     "unit_preview_page", "tech_tree_page", "typography_scale", "battle_experience",

@@ -451,6 +451,7 @@ func _ready() -> void:
 	world_map.hide()
 	navigation = RtsNavigation.new(self, world_map)
 	navigation.background_recovery_enabled = OS.get_environment("RTS_ASYNC_NAV") != "0"
+	navigation.route_budget_enabled = OS.get_environment("RTS_ROUTE_BUDGET") == "1"
 	camera = Camera2D.new()
 	camera.position = START_CAMERA_POINT
 	# We clamp the rotated viewport ourselves. Camera2D's axis-aligned limits
@@ -495,7 +496,7 @@ func _load_ui_font() -> void:
 	UI_STYLE.load_font()
 
 func _exit_tree() -> void:
-	if navigation != null: navigation.background_jobs.shutdown()
+	if navigation != null: navigation.shutdown_jobs()
 	if get_tree().node_added.is_connected(_on_ui_node_added): get_tree().node_added.disconnect(_on_ui_node_added)
 	_cancel_selection_drag()
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
@@ -707,7 +708,7 @@ func start_game(civ: String, requested_seed := -1, opponent_civ := "") -> void:
 	queue_redraw()
 
 func _clear_world() -> void:
-	if navigation != null: navigation.background_jobs.shutdown()
+	if navigation != null: navigation.shutdown_jobs()
 	_close_age_choice()
 	_cancel_selection_drag()
 	if world_map != null: world_map.hide()
@@ -1190,7 +1191,7 @@ func notify_player(message: String) -> void:
 	notice_timer = 3.5
 
 func _process(delta: float) -> void:
-	if navigation != null and navigation.background_recovery_enabled: navigation.background_jobs.tick(navigation)
+	if navigation != null: navigation.tick_jobs(started and not paused and not game_over)
 	if hud_ui != null: hud_ui.tick_fps(delta)
 	display_settings.tick(delta)
 	if not started or game_over or paused: return

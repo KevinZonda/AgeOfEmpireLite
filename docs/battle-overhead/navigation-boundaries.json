@@ -1,0 +1,64 @@
+{
+  "original_source": "23dab46aecfba0fc9e3cb02b12019ea8f5f33718",
+  "seed400": 4242,
+  "steps": 180,
+  "engine": "Godot v4.7.2.stable.custom_build.ed1daf0bf debug arm64",
+  "method": "Serial baseline/final/final/baseline then final real-army off/on; no parallel engine sessions",
+  "results": [
+    {
+      "mode": "baseline",
+      "test": "performance_navigation",
+      "budget": 0,
+      "exit": 0,
+      "output": "Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org\n\nPERFORMANCE_NAVIGATION units=400 steps=180 avg_ms=5.67 p95_ms=5.97 p99_ms=6.24 first_step_ms=18.47 steady_peak_ms=6.24\nNAV_PROFILE {}\n"
+    },
+    {
+      "mode": "final",
+      "test": "performance_navigation",
+      "budget": 0,
+      "exit": 0,
+      "output": "Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org\n\nPERFORMANCE_NAVIGATION units=400 steps=180 avg_ms=5.86 p95_ms=6.30 p99_ms=10.43 first_step_ms=16.18 steady_peak_ms=10.43\nROUTE_BUDGET_PROFILE enabled=false metrics={\"discarded\":0,\"finished\":0,\"max_pending\":0,\"max_query_us\":0,\"max_tick_us\":0,\"rejected\":0,\"requested\":0,\"search_us\":0,\"updated\":0} pending=0\nNAV_PROFILE {}\nNAVIGATION_PROGRESS sample_steps=180 remaining_median=520.0 remaining_max=520.0\n"
+    },
+    {
+      "mode": "final",
+      "test": "performance_navigation",
+      "budget": 0,
+      "exit": 0,
+      "output": "Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org\n\nPERFORMANCE_NAVIGATION units=400 steps=180 avg_ms=5.88 p95_ms=6.14 p99_ms=6.75 first_step_ms=16.56 steady_peak_ms=6.75\nROUTE_BUDGET_PROFILE enabled=false metrics={\"discarded\":0,\"finished\":0,\"max_pending\":0,\"max_query_us\":0,\"max_tick_us\":0,\"rejected\":0,\"requested\":0,\"search_us\":0,\"updated\":0} pending=0\nNAV_PROFILE {}\nNAVIGATION_PROGRESS sample_steps=180 remaining_median=520.0 remaining_max=520.0\n"
+    },
+    {
+      "mode": "baseline",
+      "test": "performance_navigation",
+      "budget": 0,
+      "exit": 0,
+      "output": "Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org\n\nPERFORMANCE_NAVIGATION units=400 steps=180 avg_ms=5.69 p95_ms=5.96 p99_ms=9.21 first_step_ms=16.42 steady_peak_ms=9.21\nNAV_PROFILE {}\n"
+    },
+    {
+      "mode": "final",
+      "test": "performance_400",
+      "budget": 0,
+      "exit": 0,
+      "output": "Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org\n\nPERFORMANCE_400 command_ms=297.2 paths_ms=37.7 destinations_ms=14.8 target_ms=39.4 collision_ms=37.3 simulation_avg_ms=70.7 simulation_peak_ms=1001.2 fog_ms=16.9 squads=34 steps=180 p95_ms=99.4\nROUTE_BUDGET_PROFILE enabled=false moved_units=323/400 metrics={\"discarded\":0,\"finished\":0,\"max_pending\":0,\"max_query_us\":0,\"max_tick_us\":0,\"rejected\":0,\"requested\":0,\"search_us\":0,\"updated\":0} pending=0\n"
+    },
+    {
+      "mode": "final",
+      "test": "performance_400",
+      "budget": 1,
+      "exit": 0,
+      "output": "Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org\n\nPERFORMANCE_400 command_ms=300.7 paths_ms=37.5 destinations_ms=14.9 target_ms=39.3 collision_ms=37.8 simulation_avg_ms=60.4 simulation_peak_ms=930.2 fog_ms=17.0 squads=34 steps=180 p95_ms=106.6\nROUTE_BUDGET_PROFILE enabled=true moved_units=311/400 metrics={\"discarded\":32,\"finished\":566,\"max_pending\":283,\"max_query_us\":82681,\"max_tick_us\":82689,\"rejected\":0,\"requested\":571,\"search_us\":643788,\"updated\":322} pending=5\n"
+    }
+  ],
+  "recorded_at_utc": "2026-09-30T02:26:18.374802+00:00",
+  "architecture": "arm64",
+  "scope": "Isolated navigation branch; other parallel refactors not included. Original source restored for A/B/B/A pure movement comparison.",
+  "final_source_sha256": {
+    "scripts/world/navigation.gd": "d651d43d15cd3199b5f84993432b13fbcdd670e0746af513ce45e626043a7747",
+    "scripts/world/navigation_cache.gd": "8472a9326f474136a827b94631872af809801c2b78bb6ad9940224e56cc92a7b",
+    "scripts/world/navigation_spatial_index.gd": "a8a5f195f5c61317af9472a82b3230afe2e7f2cd82a6eeb39f1f9c7d0fe6de6a",
+    "scripts/world/navigation_route_jobs.gd": "0910400e90fbb1fc36f72e93486fd2f146b974d2bb102a531180dcdf69183586",
+    "scripts/world/navigation_jobs.gd": "d06cb8280c556d56572a4480b7d179e43d74964b01389b8c630409744c3037b3",
+    "scripts/entities/unit_movement.gd": "fa00279b541791cd0f3a830c7760e3e7777e60835aa135c45c80e4253539e8ef",
+    "tests/performance_navigation.gd": "85d26e9bd12bdc8d2206304616f7d686cc09ad5e61c2e52bf911e0a4552bb2c4",
+    "tests/performance_400.gd": "e3744ecb2fcbc4fb67249f131bfe703be1df1a8fac3156d758cb05a2cf83c719"
+  }
+}

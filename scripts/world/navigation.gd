@@ -3,16 +3,24 @@ extends RefCounted
 
 # Terrain is owned by RtsWorldMap. This layer adds changing entity footprints.
 const CLEARANCE := 16.0
-const SPATIAL_CELL_SIZE := 64.0
+const SPATIAL_CELL_SIZE := preload("res://scripts/world/navigation_spatial_index.gd").CELL_SIZE
 const SMOOTH_LOOKAHEAD := 8
 const MAX_FINE_GRIDS := 4
 const MAX_CORNER_ATTACHMENTS := 64
 const MAX_RANGE_CORNER_ATTEMPTS := 4
 const MAX_RANGE_SEGMENTS := 8192
 const RecoveryKernel = preload("res://scripts/world/navigation_recovery.gd")
+const GeometryCache = preload("res://scripts/world/navigation_cache.gd")
+const SpatialIndex = preload("res://scripts/world/navigation_spatial_index.gd")
+var geometry_cache := GeometryCache.new()
+var spatial_index := SpatialIndex.new()
 const BackgroundJobs = preload("res://scripts/world/navigation_jobs.gd")
 var background_jobs = BackgroundJobs.new()
 var background_recovery_enabled := false
+const RouteJobs = preload("res://scripts/world/navigation_route_jobs.gd")
+var route_jobs := RouteJobs.new()
+# Immediate queries are the default; live matches may opt into admission.
+var route_budget_enabled := false
 
 var game: Node2D
 # Query the live owner directly; fixture worlds provide the same collections.
@@ -24,13 +32,17 @@ var pathfinder: AStarGrid2D:
 		_ensure_current()
 		if _default_grid == null: _default_grid = _make_default_grid()
 		return _default_grid
-var _default_grid: AStarGrid2D
-var clearance_grids: Dictionary = {}
-var fine_grids: Dictionary = {}
-var local_fine_grids: Array[Dictionary] = []
-var grid_components: Dictionary = {}
-var grid_component_sizes: Dictionary = {}
-var corner_graphs: Dictionary = {}
+var _default_grid: AStarGrid2D:
+	get: return geometry_cache._default_grid
+	set(value): geometry_cache._default_grid = value
+# Shared containers retain identity when their owner clears/rebuilds them.
+# Direct aliases avoid a property call for every cell in hot collision loops.
+var clearance_grids: Dictionary = geometry_cache.clearance_grids
+var fine_grids: Dictionary = geometry_cache.fine_grids
+var local_fine_grids: Array[Dictionary] = geometry_cache.local_fine_grids
+var grid_components: Dictionary = geometry_cache.grid_components
+var grid_component_sizes: Dictionary = geometry_cache.grid_component_sizes
+var corner_graphs: Dictionary = geometry_cache.corner_graphs
 # Valid only within a single synchronous range query. It avoids repeating
 # identical geometry sweeps while comparing candidate approaches, and is
 # discarded before returning so moving deer never reuse stale segment results.
@@ -41,23 +53,60 @@ var destination_query_unit: RtsUnit
 var destination_origin_cells: Dictionary = {}
 var destination_origin_connections: Dictionary = {}
 var destination_origin_components: Dictionary = {}
-var obstacle_signature := -1
-var obstacle_revision := 0
+var obstacle_signature: int:
+	get: return geometry_cache.obstacle_signature
+	set(value): geometry_cache.obstacle_signature = value
+var obstacle_revision: int:
+	get: return geometry_cache.obstacle_revision
+	set(value): geometry_cache.obstacle_revision = value
 # Resource motion changes collision geometry, but must not wake every failed
 # route in the match. Structural edits still interrupt retry backoff.
-var retry_obstacle_revision := 0
-var retry_obstacle_signature := -1
-var obstacle_check_frame := -1
-var spatial_frame := -1
-var indexed_unit_count := -1
-var indexed_resource_count := -1
-var indexed_building_count := -1
-var max_dynamic_radius := 0.0
-var units_by_cell: Dictionary = {}
-var resources_by_cell: Dictionary = {}
-var buildings_by_cell: Dictionary = {}
+var retry_obstacle_revision: int:
+	get: return geometry_cache.retry_obstacle_revision
+	set(value): geometry_cache.retry_obstacle_revision = value
+var retry_obstacle_signature: int:
+	get: return geometry_cache.retry_obstacle_signature
+	set(value): geometry_cache.retry_obstacle_signature = value
+var obstacle_check_frame: int:
+	get: return geometry_cache.obstacle_check_frame
+	set(value): geometry_cache.obstacle_check_frame = value
+var spatial_frame: int:
+	get: return spatial_index.spatial_frame
+	set(value): spatial_index.spatial_frame = value
+var indexed_unit_count: int:
+	get: return spatial_index.indexed_unit_count
+	set(value): spatial_index.indexed_unit_count = value
+var indexed_resource_count: int:
+	get: return spatial_index.indexed_resource_count
+	set(value): spatial_index.indexed_resource_count = value
+var indexed_building_count: int:
+	get: return spatial_index.indexed_building_count
+	set(value): spatial_index.indexed_building_count = value
+var max_dynamic_radius: float:
+	get: return spatial_index.max_dynamic_radius
+	set(value): spatial_index.max_dynamic_radius = value
+var units_by_cell: Dictionary = spatial_index.units_by_cell
+var resources_by_cell: Dictionary = spatial_index.resources_by_cell
+var buildings_by_cell: Dictionary = spatial_index.buildings_by_cell
 var profiling_enabled := OS.get_environment("RTS_NAV_PROFILE") == "1"
 var profile: Dictionary = {}
+
+func tick_jobs(allow_dispatch := true, simulation_frame := -1) -> void:
+	if route_budget_enabled and allow_dispatch: route_jobs.tick(self, simulation_frame)
+	if background_recovery_enabled: background_jobs.tick(self, allow_dispatch)
+
+func shutdown_jobs() -> void:
+	route_jobs.reset()
+	background_jobs.shutdown()
+
+func request_route(unit: RtsUnit, target: Vector2, reach: float, use_range: bool) -> bool:
+	return route_jobs.request(unit, target, reach, use_range)
+
+func take_route(unit: RtsUnit, target: Vector2, reach: float, use_range: bool) -> Dictionary:
+	return route_jobs.take(unit, target, reach, use_range, self)
+
+func cancel_route_request(unit: RtsUnit) -> void:
+	route_jobs.cancel(unit)
 
 func reset_profile() -> void:
 	profile.clear()
@@ -93,21 +142,8 @@ func refresh(wake_failed_routes := true) -> void:
 	if profiling_enabled: _record_profile(&"grid_refresh", started)
 
 func _refresh_grids() -> void:
-	clearance_grids.clear()
-	fine_grids.clear()
-	local_fine_grids.clear()
-	grid_components.clear()
-	grid_component_sizes.clear()
-	corner_graphs.clear()
-	obstacle_revision += 1
-	obstacle_signature = _obstacle_signature()
-	var retry_signature := _obstacle_signature(true)
-	if retry_signature != retry_obstacle_signature:
-		retry_obstacle_signature = retry_signature
-		retry_obstacle_revision += 1
-	obstacle_check_frame = Engine.get_process_frames()
+	geometry_cache.rebuild(_entities)
 	invalidate_spatial_index()
-	_default_grid = null
 
 func _make_default_grid() -> AStarGrid2D:
 	var grid := AStarGrid2D.new()
@@ -144,72 +180,32 @@ func _make_default_grid() -> AStarGrid2D:
 	return grid
 
 func _obstacle_signature(ignore_resource_positions := false) -> int:
-	var signature := 0
-	for building in _entities.buildings:
-		if is_instance_valid(building) and not building.is_queued_for_deletion():
-			signature = hash([signature, building.get_instance_id(), building.position, building.size(), building.owner_id, building.kind, building.is_complete()])
-	for resource in _entities.resources:
-		if is_instance_valid(resource) and not resource.is_queued_for_deletion():
-			# Living wildlife wanders every frame; animals are dynamic obstacles
-			# tracked by the spatial index, not cached geometry.
-			var mobile := _is_mobile_wildlife(resource)
-			signature = hash([signature, resource.get_instance_id(), Vector2.ZERO if ignore_resource_positions or mobile else resource.position, resource.radius])
-	return signature
+	return geometry_cache.signature(_entities, ignore_resource_positions)
 
 func _is_mobile_wildlife(resource: RtsResource) -> bool:
-	return resource.appearance in ["deer", "boar", "sheep"] and resource.wildlife_hp > 0.0
+	return GeometryCache.is_mobile_wildlife(resource)
 
 func _ensure_current() -> void:
 	var frame := Engine.get_process_frames()
-	if obstacle_check_frame == frame: return
-	obstacle_check_frame = frame
-	if obstacle_signature != _obstacle_signature(): refresh(false)
+	if geometry_cache.obstacle_check_frame == frame: return
+	geometry_cache.obstacle_check_frame = frame
+	if geometry_cache.obstacle_signature != geometry_cache.signature(_entities): refresh(false)
 
 func invalidate_spatial_index() -> void:
-	spatial_frame = -1
+	spatial_index.invalidate()
 
 func invalidate_obstacles(wake_failed_routes := true) -> void:
-	if wake_failed_routes: retry_obstacle_signature = -1
-	obstacle_signature = -1
-	obstacle_check_frame = -1
+	geometry_cache.invalidate(wake_failed_routes)
 	invalidate_spatial_index()
 
 func _spatial_cell(point: Vector2) -> Vector2i:
 	return Vector2i(floori(point.x / SPATIAL_CELL_SIZE), floori(point.y / SPATIAL_CELL_SIZE))
 
 func _ensure_spatial_index() -> void:
-	var frame := Engine.get_process_frames()
-	if spatial_frame == frame and indexed_unit_count == _entities.units.size() and indexed_resource_count == _entities.resources.size() and indexed_building_count == _entities.buildings.size(): return
-	units_by_cell.clear()
-	resources_by_cell.clear()
-	buildings_by_cell.clear()
-	max_dynamic_radius = 0.0
-	for unit in _entities.units:
-		if not is_instance_valid(unit) or unit.is_queued_for_deletion() or unit.garrisoned_in != null: continue
-		max_dynamic_radius = maxf(max_dynamic_radius, unit.radius())
-		var cell := _spatial_cell(unit.position)
-		if not units_by_cell.has(cell): units_by_cell[cell] = []
-		units_by_cell[cell].append(unit)
-	for resource in _entities.resources:
-		if not is_instance_valid(resource) or resource.is_queued_for_deletion(): continue
-		max_dynamic_radius = maxf(max_dynamic_radius, resource.radius)
-		var cell := _spatial_cell(resource.position)
-		if not resources_by_cell.has(cell): resources_by_cell[cell] = []
-		resources_by_cell[cell].append(resource)
-	for building in _entities.buildings:
-		if not is_instance_valid(building) or building.is_queued_for_deletion(): continue
-		var bounds := Rect2(building.position - building.size() * 0.5, building.size()).grow(48.0)
-		var first := _spatial_cell(bounds.position)
-		var last := _spatial_cell(bounds.end)
-		for y in range(first.y, last.y + 1):
-			for x in range(first.x, last.x + 1):
-				var cell := Vector2i(x, y)
-				if not buildings_by_cell.has(cell): buildings_by_cell[cell] = []
-				buildings_by_cell[cell].append(building)
-	spatial_frame = frame
-	indexed_unit_count = _entities.units.size()
-	indexed_resource_count = _entities.resources.size()
-	indexed_building_count = _entities.buildings.size()
+	# Avoid another function call on every hot collision query. Only the index
+	# owner rebuilds buckets; this read-only guard mirrors its admission check.
+	if spatial_index.spatial_frame == Engine.get_process_frames() and spatial_index.indexed_unit_count == _entities.units.size() and spatial_index.indexed_resource_count == _entities.resources.size() and spatial_index.indexed_building_count == _entities.buildings.size(): return
+	spatial_index.ensure_current(_entities)
 
 func nearby_units(point: Vector2, radius: float) -> Array[RtsUnit]:
 	_ensure_spatial_index()
@@ -249,8 +245,7 @@ func nearby_buildings(point: Vector2, radius: float) -> Array[RtsBuilding]:
 	return result
 
 func unit_moved(unit: RtsUnit, previous_position: Vector2) -> void:
-	if spatial_frame != Engine.get_process_frames(): return
-	_move_in_index(units_by_cell, unit, previous_position)
+	spatial_index.unit_moved(unit, previous_position)
 
 func resource_moved(resource: RtsResource, previous_position: Vector2) -> void:
 	if previous_position == resource.position: return
@@ -258,17 +253,9 @@ func resource_moved(resource: RtsResource, previous_position: Vector2) -> void:
 		# Wildlife move constantly; rebuilding world geometry for every step
 		# stalled frames whenever a stuck order retried. Collision queries read
 		# live positions through the spatial index, so a bucket move suffices.
-		if spatial_frame == Engine.get_process_frames(): _move_in_index(resources_by_cell, resource, previous_position)
+		spatial_index.resource_moved(resource, previous_position)
 		return
 	invalidate_obstacles(false)
-
-func _move_in_index(index: Dictionary, entity: Node2D, previous_position: Vector2) -> void:
-	var old_cell := _spatial_cell(previous_position)
-	var new_cell := _spatial_cell(entity.position)
-	if old_cell == new_cell: return
-	if index.has(old_cell): index[old_cell].erase(entity)
-	if not index.has(new_cell): index[new_cell] = []
-	index[new_cell].append(entity)
 
 func _mark_rect(area: Rect2, grid: AStarGrid2D) -> void:
 	var first := world_map.cell_at(area.position)
@@ -846,8 +833,8 @@ func _compute_static_segment_clear(from: Vector2, to: Vector2, radius: float, un
 		if _segment_hits_rect(from, to, bounds):
 			for i in range(samples + 1):
 				if bounds.has_point(from.lerp(to, float(i) / samples)): return false
-	var resource_span := ceili((extent + radius + max_dynamic_radius) * 2.0 / SPATIAL_CELL_SIZE) + 1
-	var resource_candidates: Array[RtsResource] = _entities.resources if resource_span * resource_span > _entities.resources.size() * 4 else nearby_resources(center, extent + radius + max_dynamic_radius)
+	var resource_span := ceili((extent + radius + spatial_index.max_dynamic_radius) * 2.0 / SPATIAL_CELL_SIZE) + 1
+	var resource_candidates: Array[RtsResource] = _entities.resources if resource_span * resource_span > _entities.resources.size() * 4 else nearby_resources(center, extent + radius + spatial_index.max_dynamic_radius)
 	for obstacle in resource_candidates:
 		if not is_instance_valid(obstacle) or obstacle.is_queued_for_deletion(): continue
 		var limit := radius + obstacle.radius
@@ -1070,7 +1057,7 @@ func _valid_destination(point: Vector2, radius: float, self_unit: RtsUnit, requi
 func _segment_clear(from: Vector2, to: Vector2, radius: float, self_unit: RtsUnit) -> bool:
 	if not _static_segment_clear(from, to, radius, self_unit): return false
 	var center := (from + to) * 0.5
-	for other in nearby_units(center, from.distance_to(to) * 0.5 + radius + max_dynamic_radius):
+	for other in nearby_units(center, from.distance_to(to) * 0.5 + radius + spatial_index.max_dynamic_radius):
 		if other == self_unit: continue
 		var limit := radius + other.radius()
 		var closest := Geometry2D.get_closest_point_to_segment(other.position, from, to)
@@ -1112,7 +1099,7 @@ func _local_unit_grid(unit: RtsUnit, step: float, half: int) -> AStarGrid2D:
 	# neighborhood for each of the up to 37,249 recovery-grid cells.
 	_ensure_spatial_index()
 	var extent := float(half) * step
-	for other in nearby_units(unit.position, sqrt(2.0) * extent + unit.radius() + max_dynamic_radius):
+	for other in nearby_units(unit.position, sqrt(2.0) * extent + unit.radius() + spatial_index.max_dynamic_radius):
 		if other == unit: continue
 		_rasterize_unit_circle(grid, other.position, unit.radius() + other.radius(), unit.position.distance_squared_to(other.position))
 	return grid
@@ -1167,7 +1154,7 @@ func _yield_allies(unit: RtsUnit, destination: Vector2, yielding: Array[int] = [
 	if not _static_segment_clear(unit.position, destination, unit.radius(), unit): return false
 	var forward := (destination - unit.position).normalized()
 	var changed := false
-	for other in nearby_units(destination, unit.radius() + max_dynamic_radius + 2.0):
+	for other in nearby_units(destination, unit.radius() + spatial_index.max_dynamic_radius + 2.0):
 		if yielding.has(other.get_instance_id()) or other.stance == "hold" or game.is_enemy(unit.owner_id, other.owner_id): continue
 		var stalled := other.order in ["move", "attack_move"] and (other.movement.route_stalled_time >= RtsUnit.ROUTE_STALL_SECONDS or other.movement.group_stuck_time >= 0.9)
 		if other.order != "idle" and not (stalled and unit.get_instance_id() < other.get_instance_id()): continue
@@ -1255,7 +1242,7 @@ func _can_occupy(point: Vector2, radius: float, self_unit: RtsUnit, include_unit
 			# Ordinary collision checks and cached pathfinding grids remain strict.
 			if escape_from == Vector2.INF or not bounds.has_point(escape_from): return false
 			if _rect_depth(bounds, point) > _rect_depth(bounds, escape_from) + 0.001: return false
-	var reach := Vector2.ONE * (radius + max_dynamic_radius)
+	var reach := Vector2.ONE * (radius + spatial_index.max_dynamic_radius)
 	var first := _spatial_cell(point - reach)
 	var last := _spatial_cell(point + reach)
 	for y in range(first.y, last.y + 1):

@@ -5,6 +5,7 @@ var game: Node2D
 var failures := 0
 var checks := 0
 var max_step := 0.0
+var simulation_frame := 0
 
 func _initialize() -> void:
 	call_deferred("_run")
@@ -36,7 +37,8 @@ func tick(units: Array[RtsUnit], steps: int) -> void:
 	for step in steps:
 		# Manual simulation replaces the game frame, including recovery dispatch
 		# and completion reaping. Pending jobs cannot progress on unit ticks alone.
-		if game.navigation.background_recovery_enabled: game.navigation.background_jobs.tick(game.navigation)
+		game.navigation.tick_jobs(true, simulation_frame)
+		simulation_frame += 1
 		for unit in units:
 			var previous := unit.position
 			unit._process(0.05)

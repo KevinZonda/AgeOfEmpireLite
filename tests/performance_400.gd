@@ -11,10 +11,12 @@ func _run() -> void:
 	root.add_child(game)
 	await process_frame
 	game.start_game("English", 4242)
+	game.navigation.route_budget_enabled = OS.get_environment("RTS_ROUTE_BUDGET") == "1"
 	var army_size := int(OS.get_environment("RTS_BENCH_UNITS"))
 	if army_size <= 0: army_size = 400
 	army_size = clampi(army_size, 100, 400)
 	var army: Array[RtsUnit] = []
+	var origins: Array[Vector2] = []
 	for i in army_size:
 		var unit := RtsUnit.new()
 		unit.position = Vector2(470 + (i % 25) * 25, 600 + (i / 25) * 25)
@@ -23,6 +25,7 @@ func _run() -> void:
 		game.units.append(unit)
 		unit.order_stop()
 		army.append(unit)
+		origins.append(unit.position)
 	game.navigation.invalidate_spatial_index()
 	var start := Time.get_ticks_usec()
 	game.issue_group_order(army, Vector2(1660, 760))
@@ -53,6 +56,7 @@ func _run() -> void:
 		for group in platoons: group.last_frame = -1
 		game.navigation.invalidate_spatial_index()
 		start = Time.get_ticks_usec()
+		game.navigation.tick_jobs(true, frame)
 		for unit in army:
 			if unit.order != "idle": unit._process(1.0 / 30.0)
 		var frame_us := Time.get_ticks_usec() - start
@@ -64,6 +68,10 @@ func _run() -> void:
 	var fog_us := Time.get_ticks_usec() - start
 	frame_times.sort()
 	print("PERFORMANCE_%d command_ms=%.1f paths_ms=%.1f destinations_ms=%.1f target_ms=%.1f collision_ms=%.1f simulation_avg_ms=%.1f simulation_peak_ms=%.1f fog_ms=%.1f squads=%d steps=%d p95_ms=%.1f" % [army_size, command_us / 1000.0, paths_us / 1000.0, destinations_us / 1000.0, target_us / 1000.0, collision_us / 1000.0, total_us / (steps * 1000.0), peak_us / 1000.0, fog_us / 1000.0, platoons.size(), steps, frame_times[ceili(steps * 0.95) - 1] / 1000.0])
+	var progressed := 0
+	for i in army.size():
+		if origins[i].distance_to(army[i].position) > 10.0: progressed += 1
+	print("ROUTE_BUDGET_PROFILE enabled=%s moved_units=%d/%d metrics=%s pending=%d" % [game.navigation.route_budget_enabled, progressed, army.size(), JSON.stringify(game.navigation.route_jobs.metrics), game.navigation.route_jobs.pending.size()])
 	if game.navigation.profiling_enabled: print("NAV_PROFILE ", JSON.stringify(game.navigation.profile_snapshot()))
 	assert(platoons.size() >= ceili(army_size / 12.0) and platoons.size() <= army_size)
 	quit()
