@@ -52,4 +52,3 @@ func signature(entities: Object, ignore_resource_positions := false) -> int:
 
 static func is_mobile_wildlife(resource: RtsResource) -> bool:
 	return resource.appearance in ["deer", "boar", "sheep"] and resource.wildlife_hp > 0.0
-

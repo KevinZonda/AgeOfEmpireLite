@@ -52,6 +52,8 @@ python3 tools/check_navigation.py --suite refactor --output /tmp/refactor-checks
 
 默认仍只运行导航回归；`--tests` 可指定子集。集成套件覆盖对局状态、共享规则、单位命令与技能、UI、AI、地图、迷雾及导航。`unit_snapshot_rendering`、农田／地标等截图测试需要真实渲染驱动，应单独运行。`hud_resolution` 的布局断言及 `navigation_range_corner_poc` 的负路径缓存性能断言在基线中也失败，单独记录，不归入通过的集成套件。需直接加载字体的 PoC 还需要引擎生成的字体导入缓存。
 
+2026-09-30 四项重构的实现提交、89 个集成测试和 11 个预算模式回归结果见 [验证记录](../docs/refactor-validation.md)。
+
 性能比较使用相同引擎和固定种子的 `performance_navigation`／`performance_400`，交替运行基线和重构版本；CPU 模拟耗时与真实渲染帧率分别判断。
 
 进一步删除兼容字段前，应先迁移直接访问这些字段的调用方和测试。输入／快捷键、选择状态已迁移到玩家模块；旧入口仅作为场景与测试适配。
