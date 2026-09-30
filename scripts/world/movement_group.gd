@@ -5,6 +5,18 @@ extends RefCounted
 const SPACING := 34.0
 const CLUSTER_DISTANCE := 240.0
 const MAX_MEMBERS := 12
+# A mass order activates dozens of squads in one frame. The first few replans
+# (leader search, per-member reachability, slot assignment) run synchronously so
+# small commands stay instant; later squads defer and each replans from its own
+# _tick once its wait target passes, so at most MAX_REPLANS_PER_FRAME squads
+# start planning in any one simulation step. Waiting members steer straight at
+# the requested goal in the meantime.
+const MAX_REPLANS_PER_FRAME := 4
+
+static var _replan_nav: RtsNavigation
+static var _replan_frame := -1
+static var _replans_this_frame := 0
+static var _pending_count := 0
 
 var game: Node2D
 var members: Array[RtsUnit] = []
@@ -26,6 +38,9 @@ var requested_goal: Vector2
 var member_goals: Dictionary = {}
 var independent_members: Dictionary = {}
 var slot_reachability: Dictionary = {}
+var replan_pending := false
+var replan_wait_steps := 0
+var replan_wait_target := 0
 
 func _init(game_ref: Node2D, squad: Array[RtsUnit], world_goal: Vector2, chosen_formation := "balanced", chosen_width := 5) -> void:
 	game = game_ref
@@ -69,13 +84,38 @@ static func split_squads(units: Array[RtsUnit]) -> Array[Array]:
 		for start_index in range(0, squad.size(), MAX_MEMBERS): squads.append(squad.slice(start_index, mini(start_index + MAX_MEMBERS, squad.size())))
 	return squads
 
+func _replan_budget_open() -> bool:
+	if game.navigation != _replan_nav or game.navigation.frame_id() != _replan_frame:
+		_replan_nav = game.navigation
+		_replan_frame = game.navigation.frame_id()
+		_replans_this_frame = 0
+	return _replans_this_frame < MAX_REPLANS_PER_FRAME
+
 func activate() -> void:
 	if active: return
 	active = true
-	_replan()
+	if _replan_budget_open():
+		_replans_this_frame += 1
+		_replan()
+	else:
+		# Plan the shared route immediately so the squad can follow it in
+		# single file; only the expensive slot assignment is deferred and
+		# lands a few simulation steps later, a few squads per step.
+		replan_pending = true
+		replan_wait_steps = 0
+		replan_wait_target = 1 + _pending_count / MAX_REPLANS_PER_FRAME
+		_pending_count += 1
+		_replan_route()
 
 func _replan() -> void:
+	if replan_pending:
+		replan_pending = false
+		_pending_count = maxi(0, _pending_count - 1)
 	var previous_goal := goal
+	_replan_route()
+	_replan_slots(previous_goal)
+
+func _replan_route() -> void:
 	var survivors: Array[RtsUnit] = []
 	for member in members:
 		if is_instance_valid(member) and not member.is_queued_for_deletion(): survivors.append(member)
@@ -122,7 +162,18 @@ func _replan() -> void:
 	member_segments.clear()
 	heading = (goal - center).normalized()
 	if heading.is_zero_approx(): heading = Vector2.RIGHT
-	if slots.is_empty(): _assign_slots(center)
+
+func _replan_slots(previous_goal: Vector2) -> void:
+	if members.is_empty(): return
+	var center := _center(not slots.is_empty())
+	if slots.is_empty():
+		_assign_slots(center)
+		# A deferred slot assignment must publish the slots to members that
+		# started following the shared route while waiting.
+		for unit in members:
+			if unit.movement.movement_group != self: continue
+			var id: int = unit.get_instance_id()
+			if final_destinations.has(id): unit.movement.destination = final_destinations[id]
 	else:
 		for unit in members:
 			if unit.movement.movement_group != self: continue
@@ -197,6 +248,22 @@ func _match_slots(ordered: Array) -> void:
 		for j in count:
 			row.append(is_equal_approx(unit.radius(), ordered[j].radius()) and (not source_valid or _slot_reachable(unit, points[j])))
 		compatible.append(row)
+	# Precompute the full cost matrix: the augmenting loop below re-reads every
+	# entry O(n) times, and distance/role lookups dominated the search.
+	var ranks: Array[int] = []
+	ranks.resize(count)
+	for i in count:
+		ranks[i] = _role_rank(ordered[i])
+	var travel_costs: Array[PackedFloat64Array] = []
+	for i in count:
+		var row_costs := PackedFloat64Array()
+		row_costs.resize(count)
+		for j in count:
+			var entry: float = ordered[i].position.distance_to(points[j])
+			if not compatible[i][j]: entry += 1.0e12
+			if ranks[i] != ranks[j]: entry += 10000.0
+			row_costs[j] = entry
+		travel_costs.append(row_costs)
 	for i in range(1, count + 1):
 		occupants[0] = i
 		var column := 0
@@ -210,11 +277,10 @@ func _match_slots(ordered: Array) -> void:
 			var row := occupants[column]
 			var delta := INF
 			var next := 0
+			var row_travel := travel_costs[row - 1]
 			for j in range(1, count + 1):
 				if used[j]: continue
-				var cost: float = ordered[row - 1].position.distance_to(points[j - 1])
-				if not compatible[row - 1][j - 1]: cost += 1.0e12
-				if _role_rank(ordered[row - 1]) != _role_rank(ordered[j - 1]): cost += 10000.0
+				var cost: float = row_travel[j - 1]
 				cost -= potentials[row] + slot_potentials[j]
 				if cost < minimum[j]:
 					minimum[j] = cost
@@ -245,16 +311,21 @@ func _free_slot(unit: RtsUnit, desired: Vector2) -> Vector2:
 	var candidate: Vector2 = game.navigation.nearest_walkable_point(desired, unit.radius(), unit, false, false)
 	if source_valid and not _slot_reachable(unit, candidate):
 		candidate = member_goals[unit.get_instance_id()]
+	var radius := unit.radius()
 	for ring in range(25):
 		for i in (1 if ring == 0 else 16):
 			var point := candidate + Vector2.from_angle(TAU * i / 16.0) * ring * 12.0
 			var free := true
 			for other in members:
 				if other == unit or not final_destinations.has(other.get_instance_id()): continue
-				if point.distance_to(final_destinations[other.get_instance_id()]) < unit.radius() + other.radius() + 8.0:
+				# Slots sit exactly one exclusion diameter apart; shave an
+				# epsilon so float rounding at the boundary does not force a
+				# full ring scan for every neighbor.
+				var limit := radius + other.radius() + 7.99
+				if point.distance_squared_to(final_destinations[other.get_instance_id()]) < limit * limit:
 					free = false
 					break
-			if free and game.navigation.can_occupy(point, unit.radius(), unit, false, false) and (not source_valid or _slot_reachable(unit, point)): return point
+			if free and game.navigation.can_occupy(point, radius, unit, false, false) and (not source_valid or _slot_reachable(unit, point)): return point
 	return candidate
 
 func _slot_reachable(unit: RtsUnit, point: Vector2) -> bool:
@@ -307,6 +378,13 @@ func _tick() -> void:
 	if frame == last_frame: return
 	last_frame = frame
 	if not active: activate()
+	if replan_pending:
+		replan_wait_steps += 1
+		if replan_wait_steps >= replan_wait_target:
+			replan_pending = false
+			_pending_count = maxi(0, _pending_count - 1)
+			# The shared route is already planned; only slots were deferred.
+			_replan_slots(goal)
 	if members.is_empty(): return
 	game.navigation._ensure_current()
 	if game.navigation.obstacle_revision != last_obstacle_revision:

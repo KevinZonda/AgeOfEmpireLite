@@ -4,6 +4,17 @@ extends RefCounted
 const ROUTE_STALL_SECONDS := 0.9
 const ROUTE_RETRY_BASE := 0.7
 const ROUTE_RETRY_MAX := 4.0
+# Inline searches (route budget queue disabled) share a per-frame cost cap so a
+# mass order spreads pathfinding across simulation steps. A unit denied by the
+# cap retries shortly; after a few denials it searches anyway so drivers that
+# never advance the navigation frame (headless probes) cannot starve it.
+const SYNC_ROUTE_FRAME_BUDGET_US := 8000
+const ROUTE_DENIAL_MIN := 3
+const ROUTE_DENIAL_STAGGER := 8
+
+static var _sync_route_nav: RtsNavigation
+static var _sync_route_frame := -1
+static var _sync_route_spent_us := 0
 
 var destination := Vector2.ZERO
 var charging := false
@@ -27,6 +38,7 @@ var route_blocked := false
 var route_best_distance := INF
 var route_recovery_distance := INF
 var route_stalled_time := 0.0
+var route_denials := 0
 var group_stuck_time := 0.0
 var group_progress_target := Vector2.INF
 var group_best_distance := INF
@@ -118,6 +130,19 @@ func move_to(unit: RtsUnit, point: Vector2, delta: float, stop_distance: float) 
 				navigation.request_passage(unit, recovery.target)
 	var needs_route := target_changed or route.is_empty() or route_blocked or exhausted or stalled
 	if needs_route and route_retry <= 0.0 and not (navigation.background_recovery_enabled and navigation.background_jobs.has_request(unit)):
+		var budgeted := not navigation.route_budget_enabled
+		var search_started := 0
+		if budgeted:
+			if navigation != _sync_route_nav or navigation.frame_id() != _sync_route_frame:
+				_sync_route_nav = navigation
+				_sync_route_frame = navigation.frame_id()
+				_sync_route_spent_us = 0
+			if _sync_route_spent_us >= SYNC_ROUTE_FRAME_BUDGET_US and route_denials < ROUTE_DENIAL_MIN + unit.get_instance_id() % ROUTE_DENIAL_STAGGER:
+				# Defer to a later step without growing failure backoff.
+				route_denials += 1
+				route_retry = 0.05 + stagger
+				return false
+			search_started = Time.get_ticks_usec()
 		if (stalled or exhausted or route_failures > 0) and unit.order in ["move", "attack_move"] and point == destination and not navigation.can_occupy(point, radius, unit):
 			# A slot can become occupied after the order was issued. Finish at
 			# the nearest reachable free point instead of retrying it forever.
@@ -126,6 +151,9 @@ func move_to(unit: RtsUnit, point: Vector2, delta: float, stop_distance: float) 
 			distance = position.distance_to(point)
 			if distance <= stop_distance + 0.5 and (unit.order != "board_transport" or navigation.boarding_clear(position, point, unit)):
 				if navigation.route_budget_enabled and navigation.route_jobs.has_request(unit): navigation.cancel_route_request(unit)
+				if budgeted:
+					_charge_sync_route(navigation, search_started)
+					route_denials = 0
 				return true
 		var use_range := ["gather", "build", "field_build", "repair", "attack", "attack_ground", "garrison", "board_transport", "trade", "deposit_relic", "relic", "supervise", "collect_tax", "board_wall", "assault_wall"].has(unit.order)
 		var output: Dictionary = {}
@@ -172,6 +200,9 @@ func move_to(unit: RtsUnit, point: Vector2, delta: float, stop_distance: float) 
 		route_retry = 0.15 + stagger
 		if route_failures > 0:
 			route_retry = minf(ROUTE_RETRY_MAX, ROUTE_RETRY_BASE * pow(2.0, mini(route_failures - 1, 3))) + stagger
+		if budgeted:
+			_charge_sync_route(navigation, search_started)
+			route_denials = 0
 	if route.is_empty(): return false
 	var waypoint: Vector2 = route[route_index]
 	var remaining := position.distance_to(waypoint)
@@ -251,3 +282,10 @@ func begin_command() -> void:
 	movement_group = null
 	charging = false
 	resume_destination = Vector2.INF
+
+static func _charge_sync_route(navigation: RtsNavigation, started: int) -> void:
+	if navigation != _sync_route_nav or navigation.frame_id() != _sync_route_frame:
+		_sync_route_nav = navigation
+		_sync_route_frame = navigation.frame_id()
+		_sync_route_spent_us = 0
+	_sync_route_spent_us += Time.get_ticks_usec() - started
