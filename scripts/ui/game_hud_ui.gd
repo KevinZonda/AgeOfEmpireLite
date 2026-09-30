@@ -531,7 +531,17 @@ func _update_selection_hud() -> void:
 	selection_portrait.show_subject(item, Color("b6a877") if item is RtsResource else game.player_color(item.owner_id))
 	if item is RtsResource:
 		info_label.text = _resource_label(item)
-		detail_label.text = "资源类型  %s\n采集单位  %s\n当前状态  %s" % [GameData.RESOURCE_LABELS.get(item.kind, item.kind), "渔船" if item.appearance == "fish" else "村民", _resource_status(item)]
+		detail_label.text = "资源类型  %s\n采集单位  %s" % [GameData.RESOURCE_LABELS.get(item.kind, item.kind), "渔船" if item.appearance == "fish" else "村民"]
+		var status_line := "当前状态  %s" % _resource_status(item)
+		if item.appearance in ["deer", "boar"]:
+			# The compact summary shows only two lines. Keep wildlife health first.
+			detail_label.text = status_line + "\n" + detail_label.text
+			if item.wildlife_hp > 0.0:
+				selection_health.max_value = 90.0 if item.appearance == "boar" else 12.0
+				selection_health.value = item.wildlife_hp
+				selection_health.show()
+		else:
+			detail_label.text += "\n" + status_line
 		selection_progress.max_value = maxi(1, item.initial_amount)
 		selection_progress.value = item.amount
 		selection_progress.show()
