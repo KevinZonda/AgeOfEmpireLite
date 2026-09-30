@@ -47,6 +47,14 @@ func _initialize() -> void:
 								for point in points:
 									assert(portrait.has_point(canvas.basis_xform(point) / zoom), "curved roof clipped in HUD")
 								probes += 1
+						if civ != "Chinese" and kind == "outpost":
+							for face in Defense.outpost_roof_faces(state, canvas):
+								var points: PackedVector2Array = face["points"]
+								assert(not Geometry2D.triangulate_polygon(points).is_empty(), "hip roof must triangulate")
+								var center := (points[0] + points[1] + points[2]) / 3
+								assert(visual.contains_isometric_visual(state, state.world_position + terrain + center, canvas), "taller hip roof must be selectable")
+								for point in points: assert(portrait.has_point(canvas.basis_xform(point) / zoom), "taller hip roof clipped in HUD")
+								probes += 1
 						if kind.ends_with("_wall"):
 							var footprint := Rect2(-state.dimensions * 0.5, state.dimensions)
 							var depth := Vector2(state.dimensions.x, 0) if vertical else Vector2(0, state.dimensions.y)

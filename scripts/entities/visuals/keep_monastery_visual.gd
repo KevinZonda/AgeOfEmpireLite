@@ -357,9 +357,11 @@ static func _outpost_2d(c: CanvasItem, bounds: Rect2, palette: Dictionary, accen
 	var b := Vector2(roof.end.x, roof.position.y)
 	var f := roof.end
 	var d := Vector2(roof.position.x, roof.end.y)
-	for face in [[a, b], [b, f], [f, d], [d, a]]:
-		c.draw_colored_polygon(PackedVector2Array([face[0], face[1], center]), palette["roof"] if face[0] in [a, d] else palette["roof_dark"])
-		c.draw_line(face[0], center, Color(palette["roof_dark"], 0.55), 0.8)
+	if civ != "Chinese":
+		var corners: Array[Vector2] = [a, b, f, d]
+		for face in ridge_roof_faces(corners, Vector2.ZERO):
+			c.draw_colored_polygon(face["points"], palette["roof"] if face["side"] in [0, 2] else palette["roof_dark"])
+		c.draw_line(center - Vector2(roof.size.x * 0.28, 0), center + Vector2(roof.size.x * 0.28, 0), palette["roof"].lightened(0.18), 1.5)
 	c.draw_rect(roof, palette["timber"].darkened(0.3), false, 1.8)
 	c.draw_line(Geometry.point_rect(area, 0.22, 0.94), Geometry.point_rect(area, 0.78, 0.94), palette["trim"], 1.5)
 	c.draw_rect(Geometry.rect(area, 0.42, 0.85, 0.16, 0.13), palette["timber"].darkened(0.4))
