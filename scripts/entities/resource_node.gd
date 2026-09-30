@@ -7,6 +7,7 @@ const DEER_WALK_SPEED := 18.0
 const DEER_FLEE_SPEED := 80.0
 const DEER_THREAT_RADIUS := 75.0
 const DEER_WANDER_RADIUS := 32.0
+const HEALTH_BAR_CHANGE_DURATION := 3.0
 
 var game: Node2D
 var kind: String
@@ -20,6 +21,8 @@ var claimed_by := -1
 var shepherd: RtsUnit
 var claim_timer := 0.0
 var wildlife_hp := 0.0
+var wildlife_max_hp := 1.0
+var health_bar_timer := 0.0
 var wildlife_scan := 0.0
 var wildlife_attack := 0.0
 var deer_flee_target := Vector2.INF
@@ -37,7 +40,9 @@ func setup(resource_kind: String, quantity: int, visual_kind := "") -> void:
 	amount = quantity
 	initial_amount = quantity
 	appearance = visual_kind
-	wildlife_hp = 90.0 if appearance == "boar" else 12.0 if appearance == "deer" else 1.0
+	wildlife_max_hp = 90.0 if appearance == "boar" else 12.0 if appearance == "deer" else 1.0
+	wildlife_hp = wildlife_max_hp
+	health_bar_timer = 0.0
 	home_position = position
 	deer_flee_target = Vector2.INF
 	deer_walk_target = Vector2.INF
@@ -54,6 +59,9 @@ func setup(resource_kind: String, quantity: int, visual_kind := "") -> void:
 
 func _process(delta: float) -> void:
 	if game == null or not game.started or game.paused or game.game_over: return
+	if health_bar_timer > 0.0:
+		health_bar_timer = maxf(0.0, health_bar_timer - delta)
+		if health_bar_timer == 0.0: queue_redraw()
 	if appearance == "sheep":
 		_process_sheep(delta)
 		return
@@ -174,8 +182,13 @@ func _process_boar(delta: float) -> void:
 
 func take_damage(damage: float) -> void:
 	if appearance not in ["boar", "deer"] or wildlife_hp <= 0.0: return
+	var previous_hp := wildlife_hp
 	wildlife_hp = maxf(0.0, wildlife_hp - damage)
+	if not is_equal_approx(wildlife_hp, previous_hp): health_bar_timer = HEALTH_BAR_CHANGE_DURATION
 	queue_redraw()
+
+func should_show_health_bar() -> bool:
+	return appearance in ["deer", "boar"] and wildlife_hp > 0.0 and game != null and game.has_method("should_show_health_bar") and game.should_show_health_bar(wildlife_hp, wildlife_max_hp, health_bar_timer)
 
 func _process_sheep(delta: float) -> void:
 	claim_timer -= delta
@@ -283,4 +296,10 @@ func _draw() -> void:
 		draw_colored_polygon(points, color)
 		draw_polyline(points + PackedVector2Array([points[0]]), outline, 2.0)
 		draw_line(Vector2(-16, -10), Vector2(2, -20), color.lightened(0.25), 2)
-	if isometric: draw_set_transform_matrix(Transform2D.IDENTITY)
+	if should_show_health_bar():
+		var bar_transform := RtsIsoProjection.upright(canvas, RtsIsoProjection.ground_lift(game, position), game.camera.zoom.x) if isometric else Transform2D.IDENTITY
+		draw_set_transform_matrix(bar_transform)
+		var bar_y := -58.0 if appearance == "deer" else -24.0
+		draw_rect(Rect2(-16, bar_y, 32, 4), Color("422f2d"))
+		draw_rect(Rect2(-16, bar_y, 32 * clampf(wildlife_hp / wildlife_max_hp, 0.0, 1.0), 4), Color("82dd8b"))
+	draw_set_transform_matrix(Transform2D.IDENTITY)
