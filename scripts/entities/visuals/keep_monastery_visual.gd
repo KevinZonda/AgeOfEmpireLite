@@ -43,6 +43,9 @@ static func selection_hull(snapshot, canvas: Transform2D) -> PackedVector2Array:
 		for uv in [Vector2(0.0882, 0.1015), Vector2(0.9118, 0.1015), Vector2(0.9118, 0.8985), Vector2(0.0882, 0.8985)]:
 			points.append(Geometry.point(nw, ne, sw, uv.x, uv.y) + floor + Geometry.up(canvas, snapshot.zoom, 27.0 + OUTPOST_GALLERY_HEIGHT))
 		points.append(Geometry.point(nw, ne, sw, 0.5, 0.5) + floor + Geometry.up(canvas, snapshot.zoom, 27.0 + OUTPOST_GALLERY_HEIGHT + (OUTPOST_CHINESE_ROOF_RISE if snapshot.civilization == "Chinese" else OUTPOST_ROOF_RISE)))
+	if snapshot.kind == "outpost" and snapshot.civilization != "Chinese":
+		for face in outpost_roof_faces(snapshot, canvas):
+			for point in face["points"]: points.append(point)
 	if snapshot.civilization == "Chinese":
 		for face in chinese_roof_faces(snapshot, canvas):
 			for point in face["points"]: points.append(point)
@@ -334,14 +337,12 @@ static func _outpost_iso(c: CanvasItem, nw: Vector2, ne: Vector2, sw: Vector2, _
 			c.draw_line(rail, rail + gallery_up * 0.38, timber, 1.0)
 	var roof := PackedVector2Array()
 	for corner in gallery: roof.append(center + (corner - up - center) * 1.08 + up + gallery_up)
-	var peak := center + up + gallery_up + Geometry.up(canvas, zoom, OUTPOST_ROOF_RISE)
-	for index in 4:
-		c.draw_colored_polygon(PackedVector2Array([roof[index], roof[(index + 1) % 4], peak]), palette["roof"].lightened(0.1) if index in [0, 3] else palette["roof_dark"])
-	c.draw_polyline(PackedVector2Array([roof[1], roof[2], roof[3]]), palette["roof_dark"].darkened(0.25), 1.5)
+	var cap: Array[Vector2] = []
+	for corner in roof: cap.append(corner)
 	if civ == "Chinese":
-		var upper: Array[Vector2] = []
-		for corner in roof: upper.append(corner)
-		_hip_roof(c, upper, Geometry.up(canvas, zoom, OUTPOST_CHINESE_ROOF_RISE), palette, canvas, zoom)
+		_hip_roof(c, cap, Geometry.up(canvas, zoom, OUTPOST_CHINESE_ROOF_RISE), palette, canvas, zoom)
+	else:
+		_ridge_roof(c, cap, Geometry.up(canvas, zoom, OUTPOST_ROOF_RISE), palette, canvas, zoom)
 	var banner := gallery[2] + gallery_up * 0.88
 	c.draw_colored_polygon(PackedVector2Array([banner, banner - (ne - nw) * 0.13, banner - (ne - nw) * 0.13 - gallery_up * 0.8, banner - gallery_up * 0.68]), accent)
 
@@ -537,3 +538,45 @@ static func chinese_roof_faces(snapshot, canvas: Transform2D) -> Array[Dictionar
 			corners.append(Geometry.point(nw, ne, sw, spec[0] + offset.x * spec[2], spec[1] + offset.y * spec[3]) + Geometry.up(canvas, snapshot.zoom, FOUNDATION_HEIGHT + spec[4]))
 		result.append_array(hip_roof_faces(corners, Geometry.up(canvas, snapshot.zoom, spec[5]), canvas, snapshot.zoom))
 	return result
+
+
+static func ridge_roof_faces(corners: Array[Vector2], rise: Vector2) -> Array[Dictionary]:
+	var a := corners[0]
+	var b := corners[1]
+	var c := corners[2]
+	var d := corners[3]
+	var left := a.lerp(d, 0.5).lerp(b.lerp(c, 0.5), 0.22) + rise
+	var right := b.lerp(c, 0.5).lerp(a.lerp(d, 0.5), 0.22) + rise
+	return [
+		{"points": PackedVector2Array([a, b, right, left]), "side": 0},
+		{"points": PackedVector2Array([left, right, c, d]), "side": 1},
+		{"points": PackedVector2Array([a, left, d]), "side": 2},
+		{"points": PackedVector2Array([b, c, right]), "side": 3}]
+
+
+static func _ridge_roof(c: CanvasItem, corners: Array[Vector2], rise: Vector2, palette: Dictionary, canvas: Transform2D, zoom: float) -> void:
+	var thickness := Geometry.up(canvas, zoom, 1.5)
+	for edge in [[corners[1], corners[2]], [corners[3], corners[2]]]:
+		c.draw_colored_polygon(PackedVector2Array([edge[0], edge[1], edge[1] - thickness, edge[0] - thickness]), palette["roof_dark"].darkened(0.25))
+	var surfaces := ridge_roof_faces(corners, rise)
+	var roof: Color = palette["roof"]
+	for face in surfaces:
+		var tones := [roof.lightened(0.10), roof.darkened(0.06), roof.lightened(0.03), palette["roof_dark"]]
+		FilledPolygon.draw(c, face["points"], tones[face["side"]])
+	var ridge_a: Vector2 = surfaces[0]["points"][3]
+	var ridge_b: Vector2 = surfaces[0]["points"][2]
+	# Tile courses follow both roof planes and diminish toward the ridge.
+	for t in [0.18, 0.36, 0.54, 0.72]:
+		c.draw_line(corners[0].lerp(ridge_a, t), corners[1].lerp(ridge_b, t), Color(roof.darkened(0.18), 0.38), 0.55)
+		c.draw_line(corners[3].lerp(ridge_a, t), corners[2].lerp(ridge_b, t), Color(roof.darkened(0.25), 0.38), 0.55)
+	c.draw_line(ridge_a, ridge_b, roof.lightened(0.19), 1.7)
+	c.draw_polyline(PackedVector2Array([corners[1], corners[2], corners[3]]), palette["roof_dark"].darkened(0.22), 1.2)
+
+
+static func outpost_roof_faces(snapshot, canvas: Transform2D) -> Array[Dictionary]:
+	var bounds := Rect2(-snapshot.dimensions * 0.5, snapshot.dimensions)
+	var extent := Vector2(0.62, 0.60) * 1.23 * 1.08
+	var corners: Array[Vector2] = []
+	for offset in [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]:
+		corners.append(bounds.position + snapshot.dimensions * (Vector2.ONE * 0.5 + offset * extent * 0.5) + Geometry.up(canvas, snapshot.zoom, FOUNDATION_HEIGHT + 27.0 + OUTPOST_GALLERY_HEIGHT))
+	return ridge_roof_faces(corners, Geometry.up(canvas, snapshot.zoom, OUTPOST_ROOF_RISE))
