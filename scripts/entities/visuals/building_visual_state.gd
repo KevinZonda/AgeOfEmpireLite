@@ -118,4 +118,3 @@ func visual_kind() -> String:
 		"fr_royal_institute", "zh_imperial_academy": return "university"
 		"fr_college_of_artillery", "zh_clocktower": return "siege_workshop"
 		_: return "town_center"
-
