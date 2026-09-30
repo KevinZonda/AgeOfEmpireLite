@@ -4,6 +4,7 @@ extends Control
 const Siege = preload("res://scripts/entities/visuals/siege_visual.gd")
 const NavalVisual = preload("res://scripts/entities/visuals/naval_visual.gd")
 const Fishing = preload("res://scripts/entities/visuals/fishing_boat_visual.gd")
+const FishVisual = preload("res://scripts/entities/visuals/fish_visual.gd")
 const Figure = preload("res://scripts/entities/visuals/unit_figure_visual.gd")
 const UnitVisualState = preload("res://scripts/entities/visuals/unit_visual_state.gd")
 const DeerVisual = preload("res://scripts/entities/visuals/deer_visual.gd")
@@ -72,7 +73,7 @@ func _draw_resource() -> void:
 			LivestockVisual.draw(self, figure, resource.appearance, Vector2.RIGHT, 0.0, 0.0, 0.0, 0.0, 0.0, alive, wool)
 		draw_set_transform_matrix(Transform2D.IDENTITY)
 	elif resource.appearance == "fish":
-		draw_colored_polygon(PackedVector2Array([center + Vector2(-30, 0), center + Vector2(5, -18), center + Vector2(31, 0), center + Vector2(5, 18)]), Color("c5d9cf"))
+		FishVisual.draw_portrait(self, Rect2(Vector2(17, 20), size - Vector2(34, 40)), resource.fish_visual_seed)
 	elif resource.kind == "gold" or resource.kind == "stone":
 		var fraction := clampf(float(resource.amount) / maxf(float(resource.initial_amount), 1.0), 0.0, 1.0)
 		var fit := minf((size.x - 30.0) / 60.0, (size.y - 30.0) / 58.0)

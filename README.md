@@ -8,6 +8,8 @@
 
 渔船的八方向船体、捕鱼动作、水面效果及游戏内预览见 [渔船重做](docs/fishing-boat-refinement/README.md)。
 
+水下鱼群的造型、游动、资源余量变化与两种视角预览见 [鱼群重做](docs/fish-refinement/README.md)。
+
 四项重构的实现提交、回归命令及性能取舍见 [验证记录](docs/refactor-validation.md)。后续模块边界重构的逐项测试见 [第二轮验证记录](docs/refactor-boundary-validation.md)。
 
 寻路的路径复用、失败退避、性能计数与对比结果见 [寻路优化与验证](docs/navigation.md)。 绕路、停滞和编队指令故障的复现、修复与测试入口见 [寻路 PoC 报告](docs/navigation-poc/README.md)。

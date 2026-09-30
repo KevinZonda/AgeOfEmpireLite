@@ -5,6 +5,9 @@ const OreVisual = preload("res://scripts/entities/visuals/ore_visual.gd")
 const DeerVisual = preload("res://scripts/entities/visuals/deer_visual.gd")
 const LivestockVisual = preload("res://scripts/entities/visuals/livestock_visual.gd")
 const VegetationVisual = preload("res://scripts/entities/visuals/vegetation_visual.gd")
+const FishVisual = preload("res://scripts/entities/visuals/fish_visual.gd")
+const FISH_REDRAW_INTERVAL := 1.0 / 12.0
+const FISH_VISUAL_RADIUS := 38.0
 const DEER_WALK_SPEED := 18.0
 const DEER_FLEE_SPEED := 80.0
 const DEER_THREAT_RADIUS := 75.0
@@ -48,12 +51,18 @@ var animal_graze := 0.0
 var animal_speed := 0.0
 var boar_target: RtsUnit
 var boar_attack_pose := 0.0
+var fish_time := 0.0
+var fish_redraw_timer := 0.0
+var fish_visual_seed := 0
 
 func setup(resource_kind: String, quantity: int, visual_kind := "") -> void:
 	kind = resource_kind
 	amount = quantity
 	initial_amount = quantity
 	appearance = visual_kind
+	fish_time = 0.0
+	fish_redraw_timer = 0.0
+	fish_visual_seed = hash(position)
 	vegetation_visual = VegetationVisual.new(position, kind == "wood") if kind == "wood" or (kind == "food" and appearance not in ["deer", "boar", "sheep", "fish"]) else null
 	ore_visual = OreVisual.new(position, kind) if kind in ["gold", "stone"] else null
 	wildlife_max_hp = 90.0 if appearance == "boar" else 12.0 if appearance == "deer" else 1.0
@@ -84,6 +93,9 @@ func setup(resource_kind: String, quantity: int, visual_kind := "") -> void:
 
 func _process(delta: float) -> void:
 	if game == null or not game.started or game.paused or game.game_over: return
+	if appearance == "fish":
+		_process_fish(delta)
+		return
 	if health_bar_timer > 0.0:
 		health_bar_timer = maxf(0.0, health_bar_timer - delta)
 		if health_bar_timer == 0.0: queue_redraw()
@@ -95,6 +107,20 @@ func _process(delta: float) -> void:
 		return
 	if appearance != "deer" or wildlife_hp <= 0.0: return
 	_process_deer(delta)
+
+func _process_fish(delta: float) -> void:
+	# MatchSimulation owns callbacks, so is_processing() is deliberately not a
+	# condition here. Hidden or offscreen schools keep their last cosmetic pose.
+	if not is_inside_tree() or not is_visible_in_tree() or is_queued_for_deletion() or amount <= 0: return
+	if get_tree().paused or not is_finite(delta) or delta <= 0.0: return
+	var extent := Vector2.ONE * maxf(radius, FISH_VISUAL_RADIUS)
+	var bounds: Rect2 = get_global_transform_with_canvas() * Rect2(-extent, extent * 2.0)
+	if not get_viewport_rect().intersects(bounds): return
+	fish_time += delta
+	fish_redraw_timer += delta
+	if fish_redraw_timer >= FISH_REDRAW_INTERVAL:
+		fish_redraw_timer = fmod(fish_redraw_timer, FISH_REDRAW_INTERVAL)
+		queue_redraw()
 
 func _process_deer(delta: float) -> void:
 	wander_time += delta
@@ -319,11 +345,8 @@ func _draw() -> void:
 		"stone": color = Color("9b9f9e")
 	var outline := Color("26352d")
 	if appearance == "fish":
-		var body := PackedVector2Array([Vector2(-16, 0), Vector2(4, -7), Vector2(16, 0), Vector2(4, 7)])
-		draw_colored_polygon(body, Color("c5d9cf"))
-		draw_polyline(body + PackedVector2Array([body[0]]), outline, 2.0)
-		draw_colored_polygon(PackedVector2Array([Vector2(-16, 0), Vector2(-24, -7), Vector2(-24, 7)]), Color("9fc9cc"))
-		draw_circle(Vector2(9, -2), 1.5, Color("253947"))
+		# Fish share the projected water plane instead of an upright land sprite.
+		FishVisual.draw(self, Transform2D.IDENTITY, fish_time, fish_visual_seed, float(amount) / maxf(initial_amount, 1), isometric)
 	elif appearance == "deer":
 		if wildlife_hp > 0.0:
 			var figure := Transform2D.IDENTITY
