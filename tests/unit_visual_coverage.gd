@@ -5,6 +5,7 @@ const NavalVisual = preload("res://scripts/entities/visuals/naval_visual.gd")
 const ChineseVisual = preload("res://scripts/entities/visuals/chinese_visual.gd")
 const InfantryVisual = preload("res://scripts/entities/visuals/infantry_visual.gd")
 const SupportVisual = preload("res://scripts/entities/visuals/support_visual.gd")
+const HumanoidVisual = preload("res://scripts/entities/visuals/humanoid_visual.gd")
 
 func _initialize() -> void:
 	call_deferred("_run")
@@ -12,7 +13,7 @@ func _initialize() -> void:
 func _run() -> void:
 	for kind in GameData.UNITS:
 		var tags: Array = GameData.UNITS[kind]["tags"]
-		var owners := int(tags.has("siege")) + int(CharacterVisual.handles(kind)) + int(NavalVisual.handles(kind)) + int(ChineseVisual.handles(kind)) + int(InfantryVisual.handles(kind)) + int(SupportVisual.handles(kind))
+		var owners := int(tags.has("siege")) + int(CharacterVisual.handles(kind)) + int(NavalVisual.handles(kind)) + int(ChineseVisual.handles(kind)) + int(InfantryVisual.handles(kind)) + int(SupportVisual.handles(kind)) + int(HumanoidVisual.handles(kind))
 		assert(owners == 1, "%s needs exactly one battlefield visual" % kind)
 	var game = load("res://scenes/main.tscn").instantiate()
 	root.add_child(game)

@@ -9,13 +9,19 @@ const NavalVisual = preload("res://scripts/entities/visuals/naval_visual.gd")
 const ChineseVisual = preload("res://scripts/entities/visuals/chinese_visual.gd")
 const InfantryVisual = preload("res://scripts/entities/visuals/infantry_visual.gd")
 const SupportVisual = preload("res://scripts/entities/visuals/support_visual.gd")
+const HumanoidVisual = preload("res://scripts/entities/visuals/humanoid_visual.gd")
+const HumanoidPose = preload("res://scripts/entities/visuals/humanoid_pose.gd")
 
 var canvas_item: CanvasItem
 var state: VisualState
+var humanoid_pose := HumanoidPose.new()
 
 func draw(item: CanvasItem, snapshot: VisualState) -> void:
 	canvas_item = item
 	state = snapshot
+	if HumanoidVisual.handles(state.kind):
+		_draw_humanoid()
+		return
 	if state.view_mode_25d:
 		_draw_isometric()
 		return
@@ -36,9 +42,9 @@ func draw(item: CanvasItem, snapshot: VisualState) -> void:
 	elif ChineseVisual.handles(state.kind):
 		ChineseVisual.draw_2d(canvas_item, state.kind, color, gait, swing)
 	elif InfantryVisual.handles(state.kind):
-		InfantryVisual.draw_2d(canvas_item, state.kind, color, gait, swing, state.paling)
+		InfantryVisual.draw_2d(canvas_item, state.kind, color, gait, swing)
 	elif SupportVisual.handles(state.kind):
-		SupportVisual.draw_2d(canvas_item, state.kind, color, gait, swing, state.gather_kind, state.carries_relic, state.braced, state.hunting, state.hunt_draw)
+		SupportVisual.draw_2d(canvas_item, color, gait, swing, state.carries_relic)
 	elif state.tags.has("cavalry"):
 		var horse := PackedVector2Array([Vector2(-r + 2, -5), Vector2(r - 5, -8), Vector2(r + 3, -2), Vector2(r - 3, 8), Vector2(-r + 1, 7)])
 		FilledPolygon.draw(canvas_item, horse, Color("95734e"))
@@ -110,9 +116,9 @@ func _draw_isometric() -> void:
 	elif ChineseVisual.handles(state.kind):
 		ChineseVisual.draw_25d(canvas_item, state.kind, color, gait, swing)
 	elif InfantryVisual.handles(state.kind):
-		InfantryVisual.draw_25d(canvas_item, state.kind, color, gait, swing, state.paling)
+		InfantryVisual.draw_25d(canvas_item, state.kind, color, gait, swing)
 	elif SupportVisual.handles(state.kind):
-		SupportVisual.draw_25d(canvas_item, state.kind, color, gait, swing, state.gather_kind, state.carries_relic, state.braced, state.hunting, state.hunt_draw)
+		SupportVisual.draw_25d(canvas_item, color, gait, swing, state.carries_relic)
 	else:
 		var cavalry: bool = state.tags.has("cavalry")
 		if cavalry:
@@ -161,6 +167,23 @@ func _draw_isometric() -> void:
 		var bar_y := SiegeVisual25D.overlay_y(state.kind) if state.tags.has("siege") else -38.0
 		canvas_item.draw_rect(Rect2(-bar_width * 0.5, bar_y, bar_width, 4), Color("422f2d"))
 		canvas_item.draw_rect(Rect2(-bar_width * 0.5, bar_y, bar_width * clampf(state.hp / state.max_hp, 0.0, 1.0), 4), Color("82dd8b"))
+	canvas_item.draw_set_transform_matrix(Transform2D.IDENTITY)
+
+func _draw_humanoid() -> void:
+	var canvas := canvas_item.get_viewport().get_canvas_transform()
+	var ground_lift := RtsIsoProjection.world_delta(canvas, Vector2(0, -state.ground_height * state.zoom)) if state.view_mode_25d else Vector2.ZERO
+	# A shallow footprint sits beneath planted feet; the joint pose supplies bob.
+	canvas_item.draw_set_transform_matrix(Transform2D(0.0, Vector2(1, 0.4), 0.0, ground_lift))
+	HumanoidVisual.draw_shadow(canvas_item)
+	var figure := RtsIsoProjection.upright(canvas, ground_lift, state.zoom) if state.view_mode_25d else Transform2D.IDENTITY
+	canvas_item.draw_set_transform_matrix(figure)
+	HumanoidVisual.draw(canvas_item, state, humanoid_pose)
+	if state.hit_flash_timer > 0.0:
+		canvas_item.draw_arc(Vector2(0, -19), 18.0, 0.0, TAU, 24, Color("ffe5ac", state.hit_flash_timer / 0.18), 2.0)
+	if state.show_health_bar:
+		var bar_y := -74.0 if state.kind == "spearman" else -52.0 if state.kind == "villager" else -45.0
+		canvas_item.draw_rect(Rect2(-12, bar_y, 24, 3), Color("422f2d"))
+		canvas_item.draw_rect(Rect2(-12, bar_y, 24 * clampf(state.hp / state.max_hp, 0.0, 1.0), 3), Color("82dd8b"))
 	canvas_item.draw_set_transform_matrix(Transform2D.IDENTITY)
 
 func _figure_transform(transform: Transform2D) -> Transform2D:

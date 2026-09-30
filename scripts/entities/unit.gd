@@ -214,12 +214,14 @@ var artillery_shot_cooldown: float:
 	set(value): abilities.artillery_shot_cooldown = value
 var facing_right := true
 var facing_back := false
+var visual_facing_world := Vector2.ZERO
 var visual_phase := 0.0
 var visual_moving := false
 var visual_last_position := Vector2.INF
 var visual_action := ""
 var visual_action_timer := 0.0
 var visual_action_length := 0.0
+var visual_action_released := false
 var visual_idle_timer := 0.0
 var visual_redraw_timer := 0.0
 
@@ -487,9 +489,12 @@ func _update_facing(previous_position: Vector2) -> void:
 func _face_direction(world_direction: Vector2) -> void:
 	if world_direction.length_squared() < 0.25: return
 	var screen_move := get_viewport().get_canvas_transform().basis_xform(world_direction)
+	var previous_screen := get_viewport().get_canvas_transform().basis_xform(visual_facing_world)
+	var heading_changed := roundi(screen_move.angle() / (PI / 4.0)) != roundi(previous_screen.angle() / (PI / 4.0)) or visual_facing_world.is_zero_approx()
+	visual_facing_world = world_direction.normalized()
 	var next_right := facing_right if absf(screen_move.x) < 0.5 else screen_move.x > 0.0
 	var next_back := facing_back if absf(screen_move.y) < 0.5 else screen_move.y < 0.0
-	if next_right != facing_right or next_back != facing_back:
+	if next_right != facing_right or next_back != facing_back or heading_changed:
 		facing_right = next_right
 		facing_back = next_back
 		queue_redraw()
@@ -508,6 +513,7 @@ func _tick_visual(delta: float) -> void:
 			queue_redraw()
 	elif visual_action != "":
 		visual_action = ""
+		visual_action_released = false
 		queue_redraw()
 	elif game.selected.size() <= 12 and game.selected.has(self):
 		visual_phase += delta * 1.8
@@ -524,9 +530,14 @@ func _start_visual_action(action: String, duration: float) -> void:
 	visual_action = action
 	visual_action_length = duration
 	visual_action_timer = duration
+	visual_action_released = false
 	queue_redraw()
 	if owner_id == 0 and game.has_method("play_feedback"):
 		game.play_feedback("attack" if action in ["attack", "hunt"] else "gather" if action == "gather" else "build")
+
+func _mark_visual_impact() -> void:
+	visual_action_released = true
+	queue_redraw()
 
 func _action_swing() -> float:
 	if visual_action_timer <= 0.0 or visual_action_length <= 0.0: return 0.0

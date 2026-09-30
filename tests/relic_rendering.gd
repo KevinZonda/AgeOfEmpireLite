@@ -15,10 +15,10 @@ class MonkPreview extends Node2D:
 	func _draw() -> void:
 		if view_mode_25d:
 			draw_set_transform_matrix(RtsIsoProjection.upright(get_viewport().get_canvas_transform(), Vector2.ZERO, 3.0))
-			RtsSupportVisual.draw_25d(self, "monk", Color("4e9bea"), 0.0, 0.0, "", true)
+			RtsSupportVisual.draw_25d(self, Color("4e9bea"), 0.0, 0.0, true)
 			draw_set_transform_matrix(Transform2D.IDENTITY)
 		else:
-			RtsSupportVisual.draw_2d(self, "monk", Color("4e9bea"), 0.0, 0.0, "", true)
+			RtsSupportVisual.draw_2d(self, Color("4e9bea"), 0.0, 0.0, true)
 
 func _initialize() -> void:
 	call_deferred("_run")

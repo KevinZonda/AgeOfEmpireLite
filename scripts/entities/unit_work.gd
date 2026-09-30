@@ -128,6 +128,7 @@ static func cancel_hunt(unit) -> void:
 	if unit.visual_action == "hunt":
 		unit.visual_action = ""
 		unit.visual_action_timer = 0.0
+		unit.visual_action_released = false
 		unit.queue_redraw()
 
 static func process_hunt_order(unit, delta: float) -> void:
@@ -148,6 +149,7 @@ static func process_hunt_order(unit, delta: float) -> void:
 	arrow.setup(unit.game, unit.owner_id, unit.global_position, unit.target, float(profile.get("damage", 3.0)), float(unit.stats.get("projectile_speed", 350.0)), 0.0, unit.stats, profile)
 	arrow.attack_profile["hunting"] = true
 	unit.game.add_child(arrow)
+	unit._mark_visual_impact()
 	unit.hunt_windup = -1.0
 	unit.attack_timer = float(profile.get("cooldown", 1.584))
 	unit.queue_redraw()

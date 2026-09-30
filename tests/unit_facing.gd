@@ -1,5 +1,7 @@
 extends SceneTree
 
+const VisualState = preload("res://scripts/entities/visuals/unit_visual_state.gd")
+
 func _initialize() -> void:
 	call_deferred("_run")
 
@@ -19,6 +21,14 @@ func _run() -> void:
 		if game.view_mode_25d != isometric: game._toggle_view_mode()
 		game.camera.force_update_scroll()
 		var canvas: Transform2D = root.get_canvas_transform()
+		for heading in 8:
+			var screen_direction := Vector2.RIGHT.rotated(heading * PI / 4.0)
+			unit.position = origin + canvas.affine_inverse().basis_xform(screen_direction * 20.0)
+			unit._update_facing(origin)
+			assert(VisualState.capture(unit).facing_direction.is_equal_approx(screen_direction), "all eight headings must follow screen movement in either projection")
+			var retained: Vector2 = unit.visual_facing_world
+			unit._face_direction(Vector2(-0.1, 0))
+			assert(unit.visual_facing_world == retained, "collision jitter must not change the retained heading")
 		for direction in [Vector2.LEFT, Vector2.RIGHT]:
 			unit.position = origin + canvas.affine_inverse().basis_xform(direction * 20.0)
 			unit._update_facing(origin)
@@ -55,6 +65,16 @@ func _run() -> void:
 		unit.visual_last_position = unit.position
 		unit._tick_visual(0.1)
 		assert(unit.facing_right, "ending an animation must preserve its last facing")
+	# Switching camera modes reprojects the retained world heading even when idle.
+	unit._face_direction(Vector2.RIGHT * 20.0)
+	var world_heading := unit.visual_facing_world
+	var old_heading: Vector2 = VisualState.capture(unit).facing_direction
+	game._toggle_view_mode()
+	game.camera.force_update_scroll()
+	var projected := root.get_canvas_transform().basis_xform(world_heading)
+	var expected := Vector2.RIGHT.rotated(round(projected.angle() / (PI / 4.0)) * PI / 4.0)
+	assert(unit.visual_facing_world == world_heading and VisualState.capture(unit).facing_direction.is_equal_approx(expected))
+	assert(not old_heading.is_equal_approx(expected), "projection changes must update the visible heading without a movement command")
 	target.free()
 	game.queue_free()
 	for frame in 2: await process_frame

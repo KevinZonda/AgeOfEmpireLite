@@ -6,30 +6,25 @@ const FilledPolygon = preload("res://scripts/entities/visuals/filled_polygon.gd"
 const OUTLINE := Color("202829")
 const SKIN := Color("dfbd91")
 const LEATHER := Color("604536")
-const WOOD := Color("9a7148")
 const STEEL := Color("9eafb2")
 const STEEL_LIGHT := Color("e1e8df")
 const GOLD := Color("d8ae56")
 const LACQUER := Color("8c3932")
 
 static func handles(kind: String) -> bool:
-	return kind in ["man_at_arms", "palace_guard", "archer", "longbow"]
+	return kind in ["man_at_arms", "palace_guard"]
 
-static func draw_2d(canvas: CanvasItem, kind: String, team: Color, gait: float, swing: float, stakes_deployed: bool = false) -> void:
+static func draw_2d(canvas: CanvasItem, kind: String, team: Color, gait: float, swing: float) -> void:
 	if kind == "man_at_arms":
 		_heavy_2d(canvas, team, gait, swing, false)
 	elif kind == "palace_guard":
 		_heavy_2d(canvas, team, gait, swing, true)
-	else:
-		_bowman_2d(canvas, team, gait, swing, kind == "longbow", stakes_deployed)
 
-static func draw_25d(canvas: CanvasItem, kind: String, team: Color, gait: float, swing: float, stakes_deployed: bool = false) -> void:
+static func draw_25d(canvas: CanvasItem, kind: String, team: Color, gait: float, swing: float) -> void:
 	if kind == "man_at_arms":
 		_heavy_25d(canvas, team, gait, swing, false)
 	elif kind == "palace_guard":
 		_heavy_25d(canvas, team, gait, swing, true)
-	else:
-		_bowman_25d(canvas, team, gait, swing, kind == "longbow", stakes_deployed)
 
 static func _poly(canvas: CanvasItem, points: Array, fill: Color, stroke: Color = OUTLINE, width: float = 1.4) -> void:
 	var shape := PackedVector2Array(points)
@@ -134,53 +129,3 @@ static func _heavy_25d(canvas: CanvasItem, team: Color, gait: float, swing: floa
 		canvas.draw_line(Vector2(-6, -26), Vector2(6, -26), OUTLINE, 1.2)
 		_straight_sword(canvas, Vector2(10, -10), swing)
 		_heater_shield(canvas, Vector2(-12, -17), team, true)
-
-static func _quiver(canvas: CanvasItem, center: Vector2) -> void:
-	_poly(canvas, [center + Vector2(-4, -7), center + Vector2(4, -7), center + Vector2(3, 7), center + Vector2(-3, 7)], LEATHER)
-	canvas.draw_line(center + Vector2(-3, 3), center + Vector2(3, 3), GOLD, 1.0)
-	for x in [-2.0, 1.0, 3.0]:
-		canvas.draw_line(center + Vector2(x, -6), center + Vector2(x, -11), WOOD, 1.0)
-		canvas.draw_line(center + Vector2(x, -11), center + Vector2(x + 2, -13), STEEL_LIGHT, 1.0)
-
-static func _bow(canvas: CanvasItem, center: Vector2, long_bow: bool, swing: float) -> void:
-	var radius := 17.0 if long_bow else 10.5
-	var bow_center := center + Vector2(swing * 2, 0)
-	canvas.draw_arc(bow_center, radius, -PI * 0.57, PI * 0.57, 16, OUTLINE, 4.0)
-	canvas.draw_arc(bow_center, radius - 1.1, -PI * 0.57, PI * 0.57, 16, WOOD, 2.3)
-	var end_y := radius * 0.98
-	canvas.draw_line(bow_center + Vector2(-3.5, -end_y), bow_center + Vector2(-3.5, end_y), STEEL_LIGHT, 1.15)
-	canvas.draw_line(bow_center + Vector2(-10, 0), bow_center + Vector2(6, 0), WOOD, 1.5)
-	_poly(canvas, [bow_center + Vector2(7, -2), bow_center + Vector2(11, 0), bow_center + Vector2(7, 2)], STEEL_LIGHT, OUTLINE, 0.7)
-
-static func _stakes(canvas: CanvasItem, ground_y: float) -> void:
-	# The longbowman's planted stakes remain low and behind the figure.
-	for x in [-21.0, -15.0]:
-		canvas.draw_line(Vector2(x - 2, ground_y + 5), Vector2(x + 3, ground_y - 9), OUTLINE, 3.5)
-		canvas.draw_line(Vector2(x - 2, ground_y + 5), Vector2(x + 3, ground_y - 9), WOOD, 2.0)
-		_poly(canvas, [Vector2(x + 1, ground_y - 7), Vector2(x + 3, ground_y - 12), Vector2(x + 5, ground_y - 8)], STEEL)
-
-static func _bowman_2d(canvas: CanvasItem, team: Color, gait: float, swing: float, long_bow: bool, stakes_deployed: bool) -> void:
-	if long_bow and stakes_deployed: _stakes(canvas, 1.0)
-	_legs_2d(canvas, gait, false)
-	_quiver(canvas, Vector2(-11, -3))
-	_poly(canvas, [Vector2(-8, -8), Vector2(8, -8), Vector2(9, 7), Vector2(-9, 7)], team.darkened(0.11))
-	canvas.draw_line(Vector2(-8, 2), Vector2(8, 2), LEATHER, 1.8)
-	if long_bow:
-		canvas.draw_line(Vector2(0, -7), Vector2(0, 7), GOLD, 1.2)
-	canvas.draw_circle(Vector2(0, -12), 6.2, OUTLINE)
-	canvas.draw_circle(Vector2(0, -12), 4.9, SKIN)
-	_poly(canvas, [Vector2(-7, -14), Vector2(7, -14), Vector2(4, -18), Vector2(-4, -18)], Color("686647") if long_bow else LEATHER)
-	_bow(canvas, Vector2(12, -1), long_bow, swing)
-
-static func _bowman_25d(canvas: CanvasItem, team: Color, gait: float, swing: float, long_bow: bool, stakes_deployed: bool) -> void:
-	if long_bow and stakes_deployed: _stakes(canvas, -11.0)
-	_legs_25d(canvas, gait, false)
-	_quiver(canvas, Vector2(-11, -16))
-	_poly(canvas, [Vector2(-8, -21), Vector2(8, -21), Vector2(9, -6), Vector2(-9, -6)], team.darkened(0.13))
-	canvas.draw_line(Vector2(-8, -10), Vector2(8, -10), LEATHER, 1.8)
-	if long_bow:
-		canvas.draw_line(Vector2(0, -20), Vector2(0, -7), GOLD, 1.2)
-	canvas.draw_circle(Vector2(0, -27), 6.2, OUTLINE)
-	canvas.draw_circle(Vector2(0, -27), 4.8, SKIN)
-	_poly(canvas, [Vector2(-7, -29), Vector2(7, -29), Vector2(4, -33), Vector2(-4, -33)], Color("686647") if long_bow else LEATHER)
-	_bow(canvas, Vector2(12, -17), long_bow, swing)

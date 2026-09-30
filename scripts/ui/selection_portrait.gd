@@ -6,12 +6,17 @@ const NavalVisual = preload("res://scripts/entities/visuals/naval_visual.gd")
 const ChineseVisual = preload("res://scripts/entities/visuals/chinese_visual.gd")
 const InfantryVisual = preload("res://scripts/entities/visuals/infantry_visual.gd")
 const SupportVisual = preload("res://scripts/entities/visuals/support_visual.gd")
+const HumanoidVisual = preload("res://scripts/entities/visuals/humanoid_visual.gd")
+const HumanoidPose = preload("res://scripts/entities/visuals/humanoid_pose.gd")
+const UnitVisualState = preload("res://scripts/entities/visuals/unit_visual_state.gd")
 const OreVisual = preload("res://scripts/entities/visuals/ore_visual.gd")
 const DeerVisual = preload("res://scripts/entities/visuals/deer_visual.gd")
 const LivestockVisual = preload("res://scripts/entities/visuals/livestock_visual.gd")
 
 var subject: Node2D
 var owner_tint := Color("8a9a8e")
+var humanoid_pose := HumanoidPose.new()
+var humanoid_state := UnitVisualState.new()
 
 func _ready() -> void:
 	custom_minimum_size = Vector2(102, 142)
@@ -72,6 +77,15 @@ func _draw_resource() -> void:
 		draw_set_transform_matrix(Transform2D(Vector2(1.55, 0), Vector2(0, 1.55), center + Vector2(0, 16)))
 		OreVisual.draw_25d(self, resource.kind, fraction)
 		draw_set_transform_matrix(Transform2D.IDENTITY)
+	elif resource.vegetation_visual != null:
+		var is_tree := resource.kind == "wood"
+		var visual := resource.vegetation_visual
+		var fit := minf((size.x - 30.0) / (66.0 * visual.width), (size.y - 30.0) / (80.0 * visual.height)) if is_tree else minf((size.x - 30.0) / 58.0, (size.y - 30.0) / 42.0)
+		var ground := center + Vector2(0, 34.0 * visual.height * fit if is_tree else 10.0 * fit)
+		draw_set_transform_matrix(Transform2D(0.0, Vector2.ONE * fit, 0.0, ground))
+		visual.draw_ground(self, is_tree)
+		visual.draw(self, is_tree, true, float(resource.amount) / maxf(resource.initial_amount, 1))
+		draw_set_transform_matrix(Transform2D.IDENTITY)
 	else:
 		draw_circle(center, 28, color)
 		if resource.appearance == "berry":
@@ -104,6 +118,9 @@ func _draw_unit() -> void:
 	var cavalry: bool = unit.stats.get("tags", []).has("cavalry")
 	var naval: bool = unit.stats.get("tags", []).has("naval")
 	var siege: bool = unit.stats.get("tags", []).has("siege")
+	if HumanoidVisual.handles(unit.kind):
+		_draw_humanoid_portrait(unit, center)
+		return
 	draw_colored_polygon(PackedVector2Array([center + Vector2(-32, 39), center + Vector2(-23, 33), center + Vector2(23, 33), center + Vector2(32, 39), center + Vector2(23, 45), center + Vector2(-23, 45)]), Color("1c2524", 0.65))
 	if siege:
 		_draw_siege(unit.kind, center)
@@ -117,9 +134,9 @@ func _draw_unit() -> void:
 		elif ChineseVisual.handles(unit.kind):
 			ChineseVisual.draw_25d(self, unit.kind, owner_tint, 0.0, 0.0)
 		elif InfantryVisual.handles(unit.kind):
-			InfantryVisual.draw_25d(self, unit.kind, owner_tint, 0.0, 0.0, unit.paling_timer > 0.0)
+			InfantryVisual.draw_25d(self, unit.kind, owner_tint, 0.0, 0.0)
 		else:
-			SupportVisual.draw_25d(self, unit.kind, owner_tint, 0.0, 0.0, unit.gather_kind, unit.carried_relic != null, unit.is_braced() if unit.kind == "spearman" else false)
+			SupportVisual.draw_25d(self, owner_tint, 0.0, 0.0, unit.carried_relic != null)
 		draw_set_transform_matrix(Transform2D.IDENTITY)
 		return
 	if cavalry:
@@ -140,6 +157,20 @@ func _draw_unit() -> void:
 		else:
 			draw_line(center + Vector2(26, 23), center + Vector2(27, -48), Color("c9c8b5"), 3)
 			draw_colored_polygon(PackedVector2Array([center + Vector2(27, -51), center + Vector2(21, -38), center + Vector2(33, -38)]), Color("d8d6c0"))
+
+func _draw_humanoid_portrait(unit: RtsUnit, center: Vector2) -> void:
+	# Stable three-quarter pose with the same proportions and equipment as the map.
+	humanoid_state.kind = unit.kind
+	humanoid_state.player_color = owner_tint
+	humanoid_state.gather_kind = unit.gather_kind
+	humanoid_state.hunting = unit.kind == "villager" and unit.visual_action == "hunt"
+	var portrait_scale := minf(1.65, minf((size.x - 30.0) / 38.0, (size.y - 30.0) / 60.0))
+	var figure := Transform2D(0.0, Vector2.ONE * portrait_scale, 0.0, center + Vector2(0, 31))
+	draw_set_transform_matrix(figure * Transform2D(0.0, Vector2(1, 0.4), 0.0, Vector2.ZERO))
+	HumanoidVisual.draw_shadow(self)
+	draw_set_transform_matrix(figure)
+	HumanoidVisual.draw(self, humanoid_state, humanoid_pose)
+	draw_set_transform_matrix(Transform2D.IDENTITY)
 
 func _draw_siege(kind: String, center: Vector2) -> void:
 	var timber := Color("9d7449")

@@ -10,8 +10,9 @@ class Context extends Node2D:
 	var navigation: RtsNavigation
 	var world_map: Node2D
 	var camera := Camera2D.new()
+	var show_health := false
 	func player_color(_owner: int) -> Color: return Color("4e9bea")
-	func should_show_health_bar(_hp: float, _max_hp: float, _timer: float) -> bool: return false
+	func should_show_health_bar(_hp: float, _max_hp: float, _timer: float) -> bool: return show_health
 
 class SnapshotVisual extends Node2D:
 	var state
@@ -35,7 +36,9 @@ func _run() -> void:
 	for kind in GameData.UNITS:
 		for mode in 2:
 			context.view_mode_25d = mode == 1
-			for pose in (3 if kind == "villager" else 2):
+			var humanoid: bool = kind in ["villager", "spearman", "archer", "longbow"]
+			for pose in (8 if humanoid else 2):
+				context.show_health = humanoid and pose >= 4
 				var unit := RtsUnit.new()
 				unit.game = context
 				unit.kind = kind
@@ -46,6 +49,13 @@ func _run() -> void:
 				unit.visual_action = "attack"
 				unit.visual_action_length = 1.0
 				unit.visual_action_timer = 0.3
+				if humanoid:
+					unit.visual_facing_world = Vector2.RIGHT.rotated(pose * PI / 4.0)
+					unit.visual_action_timer = 0.8 if pose < 4 else 0.5
+					unit.visual_action_released = pose >= 4
+					if kind == "villager" and pose >= 4:
+						unit.visual_action = "build" if pose == 7 else "gather"
+						unit.gather_kind = "gold" if pose == 5 else "food" if pose == 6 else "wood"
 				if kind == "villager" and pose == 2:
 					unit.visual_action = "hunt"
 					unit.hunt_windup = 0.1
@@ -54,6 +64,7 @@ func _run() -> void:
 				unit.scale = Vector2.ONE * 2.0
 				unit.process_mode = Node.PROCESS_MODE_DISABLED
 				context.add_child(unit)
+				if context.show_health: unit.hp = unit.max_hp * 0.6
 				var state = VisualState.capture(unit)
 				await process_frame
 				RenderingServer.force_draw()

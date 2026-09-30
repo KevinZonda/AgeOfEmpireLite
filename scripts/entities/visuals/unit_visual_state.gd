@@ -14,6 +14,9 @@ var visual_action := ""
 var swing := 0.0
 var facing_back := false
 var facing_right := true
+var facing_direction := Vector2(0.70710678, 0.70710678)
+var action_progress := 0.0
+var action_released := false
 var passenger_count := 0
 var paling := false
 var gather_kind := ""
@@ -40,6 +43,11 @@ static func capture(unit, existing_state = null):
 	result.visual_action = unit.visual_action
 	result.facing_back = unit.facing_back
 	result.facing_right = unit.facing_right
+	var direction: Vector2 = unit.get_viewport().get_canvas_transform().basis_xform(unit.visual_facing_world)
+	if direction.is_zero_approx(): direction = Vector2(1.0 if unit.facing_right else -1.0, -1.0 if unit.facing_back else 1.0)
+	result.facing_direction = Vector2.RIGHT.rotated(round(direction.angle() / (PI / 4.0)) * (PI / 4.0))
+	result.action_progress = clampf(1.0 - unit.visual_action_timer / unit.visual_action_length, 0.0, 1.0) if unit.visual_action_length > 0.0 and unit.visual_action_timer > 0.0 else 0.0
+	result.action_released = unit.visual_action_released
 	result.gather_kind = unit.gather_kind
 	result.hunting = unit.kind == "villager" and (unit.visual_action == "hunt" or unit.order == "gather" and is_instance_valid(unit.target) and unit.target is RtsResource and unit.target.appearance == "deer" and unit.target.wildlife_hp > 0.0)
 	result.hunt_draw = clampf(1.0 - unit.hunt_windup / unit.UnitWork.HUNT_WINDUP, 0.0, 1.0) if unit.hunt_windup >= 0.0 else 0.0

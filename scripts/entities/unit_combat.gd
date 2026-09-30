@@ -101,6 +101,7 @@ static func process_attack_order(unit, delta: float) -> void:
 	unit.charging = false
 	unit.revealed_timer = 2.0
 	if unit.visual_action != "attack": unit._start_visual_action("attack", 0.30)
+	unit._mark_visual_impact()
 	if profile.get("damage_kind") == "ranged" or unit.stats.get("primary_profile") == "siege" and float(profile.get("range", 0.0)) > 70.0:
 		var projectile := RtsProjectile.new()
 		projectile.setup(unit.game, unit.owner_id, unit.global_position, unit.target, damage, float(unit.stats.get("projectile_speed", 350.0)), float(profile.get("splash_radius", 0.0)), unit.stats, profile)

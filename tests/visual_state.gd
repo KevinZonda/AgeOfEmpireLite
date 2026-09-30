@@ -31,13 +31,22 @@ func _run() -> void:
 	var unit: RtsUnit = game.units[0]
 	var working_unit_state = UnitState.new()
 	assert(UnitState.capture(unit, working_unit_state) == working_unit_state)
+	unit._face_direction(Vector2.LEFT * 20.0)
+	unit._start_visual_action("attack", 0.4)
+	unit.visual_action_timer = 0.2
 	var unit_state = UnitState.capture(unit)
+	assert(unit_state.action_progress == 0.5 and not unit_state.action_released)
+	var remembered_heading: Vector2 = unit_state.facing_direction
+	unit._mark_visual_impact()
+	unit._face_direction(Vector2.RIGHT * 20.0)
 	var original_tags: Array = unit_state.tags.duplicate()
 	unit.stats["tags"].append("snapshot_mutation")
 	unit.visual_phase += 10.0
 	unit.hp -= 5.0
 	assert(UnitState.capture(unit, working_unit_state) == working_unit_state)
 	assert(working_unit_state.visual_phase == unit.visual_phase)
+	assert(working_unit_state.action_released and not unit_state.action_released)
+	assert(unit_state.facing_direction == remembered_heading and unit_state.facing_direction != working_unit_state.facing_direction)
 	assert(unit_state.tags == original_tags and unit_state.visual_phase != unit.visual_phase)
 	assert(unit_state.hp != unit.hp and unit_state.get("passengers") == null)
 	for state in [unit_state, building_state]:
