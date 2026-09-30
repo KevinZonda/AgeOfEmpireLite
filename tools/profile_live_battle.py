@@ -38,7 +38,7 @@ def main():
                 env["RTS_POC_FOCUS"] = "1" if args.focus else "0"
                 env["RTS_POC_SECONDS"] = str(args.seconds)
                 command = [str(engine), "--path", str(project), "--script", "res://tools/battle_deer_poc.gd",
-                           "--windowed", "--resolution", "1280x800"]
+                           "--windowed", "--always-on-top", "--resolution", "1280x800"]
                 name = f"{repeat + 1}-{buildings}-{version}"
                 try:
                     result = subprocess.run(command, env=env, stdout=subprocess.PIPE,

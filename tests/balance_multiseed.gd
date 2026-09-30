@@ -62,17 +62,8 @@ func _run() -> void:
 		var peak_production := [0, 0]
 		for step in seconds * 10:
 			if game.game_over: break
-			# The accelerated loop stays in one engine frame, so drive fog and
-			# invalidate frame-cached paths as the world changes.
-			if step % 10 == 0: game.navigation.invalidate_obstacles()
-			game.fog._process(0.1)
-			game._process(0.1)
 			if step % think_steps == 0: first_ai.tick()
-			for building in game.buildings.duplicate():
-				if is_instance_valid(building) and not building.is_queued_for_deletion(): building._process(0.1)
-			for unit in game.units.duplicate():
-				if is_instance_valid(unit) and not unit.is_queued_for_deletion(): unit._process(0.1)
-			game.objectives._process(0.1)
+			game.step(0.1)
 			if OS.get_environment("RTS_BALANCE_TRACE") == "1" and step % 600 == 0:
 				for owner in 2:
 					var controller: RtsAiController = first_ai if owner == 0 else game.ai_controllers[0]

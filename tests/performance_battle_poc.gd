@@ -75,12 +75,10 @@ func _run() -> void:
 	var previous := Time.get_ticks_usec()
 	for step in steps:
 		var started := Time.get_ticks_usec()
-		for unit in game.units.duplicate():
-			if not is_instance_valid(unit) or unit.is_queued_for_deletion(): continue
-			unit._process(1.0 / 30.0)
+		game.step(1.0 / 30.0)
 		timings.append((Time.get_ticks_usec() - started) / 1000.0)
 		started = Time.get_ticks_usec()
-		_tick_other_nodes(game)
+		game._tick_presentation(1.0 / 30.0)
 		other_times.append((Time.get_ticks_usec() - started) / 1000.0)
 		await process_frame
 		var now := Time.get_ticks_usec()
@@ -92,13 +90,9 @@ func _run() -> void:
 	if siege: remaining_hp += maxf(0.0, fortress.hp)
 	print("BATTLE_POC ", JSON.stringify({"side": count, "siege": siege, "steps": steps, "flat": flat, "headless": DisplayServer.get_name() == "headless", "viewport": str(root.size), "projection_25d": game.view_mode_25d, "simulation": _summary(timings), "other_cpu": _summary(other_times), "hp_lost": initial_hp - remaining_hp, "frame": _summary(frames), "survivors": game.units.size(), "navigation": game.navigation.profile_snapshot()}))
 	game.free()
+	if remaining_hp < initial_hp: print("BATTLE_POC_OK")
 	quit(0 if remaining_hp < initial_hp else 1)
 
 func _summary(values: Array[float]) -> Dictionary:
 	values.sort()
 	return {"mean_ms": values.reduce(func(a, b): return a + b, 0.0) / values.size(), "p50_ms": values[values.size() / 2], "p95_ms": values[ceili(values.size() * 0.95) - 1], "max_ms": values[-1]}
-
-func _tick_other_nodes(node: Node) -> void:
-	if node.is_queued_for_deletion(): return
-	if not node is RtsUnit and node.has_method("_process"): node._process(1.0 / 30.0)
-	for child in node.get_children(): _tick_other_nodes(child)

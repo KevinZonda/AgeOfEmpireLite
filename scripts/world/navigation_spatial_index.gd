@@ -18,8 +18,8 @@ func invalidate() -> void:
 func cell_at(point: Vector2) -> Vector2i:
 	return Vector2i(floori(point.x / CELL_SIZE), floori(point.y / CELL_SIZE))
 
-func ensure_current(entities: Object) -> void:
-	var frame := Engine.get_process_frames()
+func ensure_current(entities: Object, frame := -1) -> void:
+	if frame == -1: frame = Engine.get_process_frames()
 	if spatial_frame == frame and indexed_unit_count == entities.units.size() and indexed_resource_count == entities.resources.size() and indexed_building_count == entities.buildings.size(): return
 	units_by_cell.clear()
 	resources_by_cell.clear()
@@ -60,8 +60,10 @@ func move_entity(index: Dictionary, entity: Node2D, previous_position: Vector2) 
 	if not index.has(new_cell): index[new_cell] = []
 	index[new_cell].append(entity)
 
-func unit_moved(unit: RtsUnit, previous_position: Vector2) -> void:
-	if spatial_frame == Engine.get_process_frames(): move_entity(units_by_cell, unit, previous_position)
+func unit_moved(unit: RtsUnit, previous_position: Vector2, frame := -1) -> void:
+	if frame == -1: frame = Engine.get_process_frames()
+	if spatial_frame == frame: move_entity(units_by_cell, unit, previous_position)
 
-func resource_moved(resource: RtsResource, previous_position: Vector2) -> void:
-	if spatial_frame == Engine.get_process_frames(): move_entity(resources_by_cell, resource, previous_position)
+func resource_moved(resource: RtsResource, previous_position: Vector2, frame := -1) -> void:
+	if frame == -1: frame = Engine.get_process_frames()
+	if spatial_frame == frame: move_entity(resources_by_cell, resource, previous_position)

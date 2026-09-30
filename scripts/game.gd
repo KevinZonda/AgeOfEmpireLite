@@ -6,6 +6,8 @@ var settings_store := SETTINGS_STORE.new()
 var display_settings := DISPLAY_SETTINGS.new(self, settings_store)
 const MatchSession = preload("res://scripts/match/match_session.gd")
 var session := MatchSession.new(self)
+const MatchSimulation = preload("res://scripts/match/match_simulation.gd")
+var simulation := MatchSimulation.new(self)
 const RtsUiTypography = preload("res://scripts/ui/typography.gd")
 
 const WORLD_SIZE := Vector2(2400, 2400)
@@ -441,6 +443,7 @@ var selection_drag_overlay: Variant:
 	set(value): hud_ui.selection_drag_overlay = value
 
 func _ready() -> void:
+	child_entered_tree.connect(simulation.register)
 	_load_ui_font()
 	if base_tooltip_font_size < 0:
 		base_tooltip_font_size = ThemeDB.get_default_theme().get_font_size("font_size", "TooltipLabel")
@@ -661,6 +664,7 @@ func start_game(civ: String, requested_seed := -1, opponent_civ := "") -> void:
 	if opponent_civ == "" or not GameData.CIVILIZATIONS.has(opponent_civ):
 		opponent_civ = civilization_ids[(civilization_ids.find(civ) + 1) % civilization_ids.size()]
 	_clear_world()
+	simulation.reset()
 	paused = false
 	pause_overlay.hide()
 	selected_civ = civ
@@ -720,6 +724,7 @@ func start_game(civ: String, requested_seed := -1, opponent_civ := "") -> void:
 	queue_redraw()
 
 func _clear_world() -> void:
+	simulation.dispose_projectiles()
 	if navigation != null: navigation.shutdown_jobs()
 	_close_age_choice()
 	_cancel_selection_drag()
@@ -866,6 +871,7 @@ func _check_match_end() -> void:
 		_finish_game(true, "landmarks")
 
 func _finish_game(won: bool, reason := "landmarks") -> void:
+	simulation.dispose_projectiles()
 	if game_over: return
 	_cancel_selection_drag()
 	match_statistics.record_event(0, "对局结束")
@@ -1181,16 +1187,36 @@ func notify_player(message: String) -> void:
 	notice_timer = 3.5
 
 func _process(delta: float) -> void:
-	if navigation != null: navigation.tick_jobs(started and not paused and not game_over)
 	if hud_ui != null: hud_ui.tick_fps(delta)
 	display_settings.tick(delta)
-	if not started or game_over or paused: return
+	if not started or game_over or paused:
+		if navigation != null: navigation.tick_jobs(false)
+		return
+	_tick_presentation(delta)
+	step(delta)
+
+# The same explicit step is used by live matches and accelerated regressions.
+# Delta stays caller-controlled; fixed-rate simulation is a separate behavior
+# change and is not silently enabled by introducing this ownership boundary.
+func step(delta: float) -> bool:
+	return simulation.step(delta)
+
+func _tick_match_logic(delta: float) -> void:
+	match_statistics.tick(delta)
+	for controller in ai_controllers:
+		if defeated_players.has(controller.owner_id): continue
+		var owner_id := controller.owner_id
+		ai_think_timers[owner_id] = float(ai_think_timers.get(owner_id, 0.0)) - delta
+		if ai_think_timers[owner_id] <= 0.0:
+			controller.tick()
+			ai_think_timers[owner_id] = controller.think_interval()
+
+func _tick_presentation(delta: float) -> void:
 	if _uses_native_selection_pointer():
 		_poll_selection_pointer()
 	elif dragging:
 		_update_selection_drag(get_viewport().get_mouse_position())
 	_prune_hidden_enemy_selection()
-	match_statistics.tick(delta)
 	if view_mode_25d:
 		iso_sort_timer -= delta
 		if iso_sort_timer <= 0.0:
@@ -1201,13 +1227,6 @@ func _process(delta: float) -> void:
 	if notice_timer > 0.0:
 		notice_timer -= delta
 		if notice_timer <= 0.0: notice_label.text = ""
-	for controller in ai_controllers:
-		if defeated_players.has(controller.owner_id): continue
-		var owner_id := controller.owner_id
-		ai_think_timers[owner_id] = float(ai_think_timers.get(owner_id, 0.0)) - delta
-		if ai_think_timers[owner_id] <= 0.0:
-			controller.tick()
-			ai_think_timers[owner_id] = controller.think_interval()
 	hud_timer -= delta
 	if hud_timer <= 0.0:
 		_update_hud()

@@ -23,6 +23,12 @@ var route_jobs := RouteJobs.new()
 # Immediate queries are the default; live matches may opt into admission.
 var route_budget_enabled := false
 
+var simulation_frame := -1
+
+func frame_id() -> int:
+	# Separate clock namespaces so a renderer frame never aliases a manual tick.
+	return -simulation_frame - 2 if simulation_frame >= 0 else Engine.get_process_frames()
+
 var game: Node2D
 # Query the live owner directly; fixture worlds provide the same collections.
 var _entities: Object
@@ -144,6 +150,7 @@ func refresh(wake_failed_routes := true) -> void:
 
 func _refresh_grids() -> void:
 	geometry_cache.rebuild(_entities)
+	geometry_cache.obstacle_check_frame = frame_id()
 	invalidate_spatial_index()
 
 func _make_default_grid() -> AStarGrid2D:
@@ -187,7 +194,7 @@ func _is_mobile_wildlife(resource: RtsResource) -> bool:
 	return GeometryCache.is_mobile_wildlife(resource)
 
 func _ensure_current() -> void:
-	var frame := Engine.get_process_frames()
+	var frame := frame_id()
 	if geometry_cache.obstacle_check_frame == frame: return
 	geometry_cache.obstacle_check_frame = frame
 	if geometry_cache.obstacle_signature != geometry_cache.signature(_entities): refresh(false)
@@ -205,8 +212,8 @@ func _spatial_cell(point: Vector2) -> Vector2i:
 func _ensure_spatial_index() -> void:
 	# Avoid another function call on every hot collision query. Only the index
 	# owner rebuilds buckets; this read-only guard mirrors its admission check.
-	if spatial_index.spatial_frame == Engine.get_process_frames() and spatial_index.indexed_unit_count == _entities.units.size() and spatial_index.indexed_resource_count == _entities.resources.size() and spatial_index.indexed_building_count == _entities.buildings.size(): return
-	spatial_index.ensure_current(_entities)
+	if spatial_index.spatial_frame == frame_id() and spatial_index.indexed_unit_count == _entities.units.size() and spatial_index.indexed_resource_count == _entities.resources.size() and spatial_index.indexed_building_count == _entities.buildings.size(): return
+	spatial_index.ensure_current(_entities, frame_id())
 
 func nearby_units(point: Vector2, radius: float) -> Array[RtsUnit]:
 	_ensure_spatial_index()
@@ -246,7 +253,7 @@ func nearby_buildings(point: Vector2, radius: float) -> Array[RtsBuilding]:
 	return result
 
 func unit_moved(unit: RtsUnit, previous_position: Vector2) -> void:
-	spatial_index.unit_moved(unit, previous_position)
+	spatial_index.unit_moved(unit, previous_position, frame_id())
 
 func resource_moved(resource: RtsResource, previous_position: Vector2) -> void:
 	if previous_position == resource.position: return
@@ -254,7 +261,7 @@ func resource_moved(resource: RtsResource, previous_position: Vector2) -> void:
 		# Wildlife move constantly; rebuilding world geometry for every step
 		# stalled frames whenever a stuck order retried. Collision queries read
 		# live positions through the spatial index, so a bucket move suffices.
-		spatial_index.resource_moved(resource, previous_position)
+		spatial_index.resource_moved(resource, previous_position, frame_id())
 		geometry_cache.wildlife_moved(previous_position, resource.position, resource.radius)
 		return
 	invalidate_obstacles(false)

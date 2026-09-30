@@ -303,7 +303,7 @@ func _corridor_is_narrow(point: Vector2) -> bool:
 	return result
 
 func _tick() -> void:
-	var frame := Engine.get_process_frames()
+	var frame: int = game.navigation.frame_id()
 	if frame == last_frame: return
 	last_frame = frame
 	if not active: activate()

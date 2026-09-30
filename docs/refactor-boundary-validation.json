@@ -2986,7 +2986,1745 @@
           "seconds": 3.132,
           "log": "/private/tmp/aoelite-refactor-20260930/actions-rendering/hud_resolution.log"
         }
-      ]
+      ],
+      "commit": "dce0367"
+    },
+    {
+      "phase": "simulation_runtime",
+      "functional": [
+        {
+          "test": "navigation_destination_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.625,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/navigation_destination_poc.log"
+        },
+        {
+          "test": "navigation_boundaries",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.511,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/navigation_boundaries.log"
+        },
+        {
+          "test": "navigation_search_kernel",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.21,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/navigation_search_kernel.log"
+        },
+        {
+          "test": "navigation_kernel_geometry",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.615,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/navigation_kernel_geometry.log"
+        },
+        {
+          "test": "navigation_range_corner_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.624,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/navigation_range_corner_poc.log"
+        },
+        {
+          "test": "navigation_async_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.383,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/navigation_async_poc.log"
+        },
+        {
+          "test": "deer_movement_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.526,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/deer_movement_poc.log"
+        },
+        {
+          "test": "navigation_battle_static_grid_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.337,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/navigation_battle_static_grid_poc.log"
+        },
+        {
+          "test": "navigation_battle_raster_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.821,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/navigation_battle_raster_poc.log"
+        },
+        {
+          "test": "navigation_battle_native_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.622,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/navigation_battle_native_poc.log"
+        },
+        {
+          "test": "navigation_battle_goal_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.617,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/navigation_battle_goal_poc.log"
+        },
+        {
+          "test": "navigation_battle_recovery_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.716,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/navigation_battle_recovery_poc.log"
+        },
+        {
+          "test": "navigation_battle_retry_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.525,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/navigation_battle_retry_poc.log"
+        },
+        {
+          "test": "navigation_search_work",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.73,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/navigation_search_work.log"
+        },
+        {
+          "test": "navigation_grid_raster",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.862,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/navigation_grid_raster.log"
+        },
+        {
+          "test": "navigation_dense_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.743,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/navigation_dense_poc.log"
+        },
+        {
+          "test": "navigation_tasks_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 28.738,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/navigation_tasks_poc.log"
+        },
+        {
+          "test": "navigation_corner_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 27.155,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/navigation_corner_poc.log"
+        },
+        {
+          "test": "navigation_state_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 25.72,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/navigation_state_poc.log"
+        },
+        {
+          "test": "navigation_wildlife_churn_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.894,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/navigation_wildlife_churn_poc.log"
+        },
+        {
+          "test": "navigation_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.654,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/navigation_poc.log"
+        },
+        {
+          "test": "navigation_poc_matrix",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 6.597,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/navigation_poc_matrix.log"
+        },
+        {
+          "test": "navigation_construction_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.167,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/navigation_construction_poc.log"
+        },
+        {
+          "test": "navigation",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.857,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/navigation.log"
+        },
+        {
+          "test": "navigation_routes",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.729,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/navigation_routes.log"
+        },
+        {
+          "test": "navigation_replanning",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.033,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/navigation_replanning.log"
+        },
+        {
+          "test": "group_replanning",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.924,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/group_replanning.log"
+        },
+        {
+          "test": "group_chokepoint",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.169,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/group_chokepoint.log"
+        },
+        {
+          "test": "group_mass_chokepoint",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 7.434,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/group_mass_chokepoint.log"
+        },
+        {
+          "test": "group_multiplayer",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 3.749,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/group_multiplayer.log"
+        },
+        {
+          "test": "terrain_selection_follow",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.101,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/terrain_selection_follow.log"
+        },
+        {
+          "test": "extended_systems",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.785,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/extended_systems.log"
+        },
+        {
+          "test": "economy_siege_controls",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.763,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/economy_siege_controls.log"
+        },
+        {
+          "test": "smoke",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.486,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/smoke.log"
+        },
+        {
+          "test": "match_services",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.72,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/match_services.log"
+        },
+        {
+          "test": "session_rules_regression",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.966,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/session_rules_regression.log"
+        },
+        {
+          "test": "unit_components_regression",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.727,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/unit_components_regression.log"
+        },
+        {
+          "test": "unit_orders_regression",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.721,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/unit_orders_regression.log"
+        },
+        {
+          "test": "match_simulation_regression",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.208,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/match_simulation_regression.log"
+        },
+        {
+          "test": "simulation_runtime",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.269,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/simulation_runtime.log"
+        },
+        {
+          "test": "settings_store",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.205,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/settings_store.log"
+        },
+        {
+          "test": "match_changes",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.098,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/match_changes.log"
+        },
+        {
+          "test": "player_command_catalog",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.036,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/player_command_catalog.log"
+        },
+        {
+          "test": "hud_resolution",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.857,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/hud_resolution.log"
+        },
+        {
+          "test": "right_click_selection",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.437,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/right_click_selection.log"
+        },
+        {
+          "test": "hud_command_pages",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 3.301,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/hud_command_pages.log"
+        },
+        {
+          "test": "player_input_actions_regression",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.538,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/player_input_actions_regression.log"
+        },
+        {
+          "test": "production_queue_regression",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.061,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/production_queue_regression.log"
+        },
+        {
+          "test": "hud_queue_layout",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.062,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/hud_queue_layout.log"
+        },
+        {
+          "test": "display_settings",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.964,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/display_settings.log"
+        },
+        {
+          "test": "unit_preview_page",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.242,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/unit_preview_page.log"
+        },
+        {
+          "test": "tech_tree_page",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.868,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/tech_tree_page.log"
+        },
+        {
+          "test": "typography_scale",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.957,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/typography_scale.log"
+        },
+        {
+          "test": "battle_experience",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.552,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/battle_experience.log"
+        },
+        {
+          "test": "enemy_inspection",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.557,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/enemy_inspection.log"
+        },
+        {
+          "test": "health_bar_visibility",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.436,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/health_bar_visibility.log"
+        },
+        {
+          "test": "map_setup_preview",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.64,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/map_setup_preview.log"
+        },
+        {
+          "test": "terrain_generation",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.832,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/terrain_generation.log"
+        },
+        {
+          "test": "visual_state",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.344,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/visual_state.log"
+        },
+        {
+          "test": "unit_visual_coverage",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.272,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/unit_visual_coverage.log"
+        },
+        {
+          "test": "fog_of_war",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.861,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/fog_of_war.log"
+        },
+        {
+          "test": "fog_building_memory",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.65,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/fog_building_memory.log"
+        },
+        {
+          "test": "fog_rendering",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.439,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/fog_rendering.log"
+        },
+        {
+          "test": "fog_unit_flash_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.55,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/fog_unit_flash_poc.log"
+        },
+        {
+          "test": "combat_rules",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.615,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/combat_rules.log"
+        },
+        {
+          "test": "siege_rules",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.62,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/siege_rules.log"
+        },
+        {
+          "test": "aoe4_requested_systems",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.177,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/aoe4_requested_systems.log"
+        },
+        {
+          "test": "chinese",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.955,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/chinese.log"
+        },
+        {
+          "test": "balance_system",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.053,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/balance_system.log"
+        },
+        {
+          "test": "landmark_catalog",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.61,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/landmark_catalog.log"
+        },
+        {
+          "test": "landmark_roles",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.267,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/landmark_roles.log"
+        },
+        {
+          "test": "landmark_selection",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 12.171,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/landmark_selection.log"
+        },
+        {
+          "test": "landmark_occlusion",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.788,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/landmark_occlusion.log"
+        },
+        {
+          "test": "rally_landmarks",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 3.232,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/rally_landmarks.log"
+        },
+        {
+          "test": "strategic_expansion",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 8.976,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/strategic_expansion.log"
+        },
+        {
+          "test": "objectives",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.629,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/objectives.log"
+        },
+        {
+          "test": "farm_cycle",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.341,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/farm_cycle.log"
+        },
+        {
+          "test": "deer_gathering",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.343,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/deer_gathering.log"
+        },
+        {
+          "test": "sheep_gathering",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.244,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/sheep_gathering.log"
+        },
+        {
+          "test": "villager_boar_escape",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.24,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/villager_boar_escape.log"
+        },
+        {
+          "test": "build_grid",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.342,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/build_grid.log"
+        },
+        {
+          "test": "build_selection",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.348,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/build_selection.log"
+        },
+        {
+          "test": "selection",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.349,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/selection.log"
+        },
+        {
+          "test": "minimap_projection",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.35,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/minimap_projection.log"
+        },
+        {
+          "test": "isometric_view",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.347,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/isometric_view.log"
+        },
+        {
+          "test": "zoom_projection",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.68,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/zoom_projection.log"
+        },
+        {
+          "test": "map_generator",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.989,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/map_generator.log"
+        },
+        {
+          "test": "map_strategy",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.97,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/map_strategy.log"
+        },
+        {
+          "test": "map_fairness",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 8.701,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/map_fairness.log"
+        },
+        {
+          "test": "ai_tactics",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.095,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/ai_tactics.log"
+        },
+        {
+          "test": "civ_map_ai",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.284,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/civ_map_ai.log"
+        },
+        {
+          "test": "island_ai_strategy",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 12.713,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/island_ai_strategy.log"
+        },
+        {
+          "test": "ai_long_match",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 112.243,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/ai_long_match.log"
+        },
+        {
+          "test": "navigation_range_siege_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 3.004,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/navigation_range_siege_poc.log"
+        },
+        {
+          "test": "navigation_range_stall_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.036,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/navigation_range_stall_poc.log"
+        },
+        {
+          "test": "navigation_segment_broadphase_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.053,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-simulation/navigation_segment_broadphase_poc.log"
+        }
+      ],
+      "rendering": [
+        {
+          "test": "unit_snapshot_rendering",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": true,
+          "seconds": 4.202,
+          "log": "/private/tmp/aoelite-refactor-20260930/simulation-rendering/unit_snapshot_rendering.log"
+        },
+        {
+          "test": "filled_polygon_rendering",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": true,
+          "seconds": 0.835,
+          "log": "/private/tmp/aoelite-refactor-20260930/simulation-rendering/filled_polygon_rendering.log"
+        },
+        {
+          "test": "farm_rendering",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": true,
+          "seconds": 1.336,
+          "log": "/private/tmp/aoelite-refactor-20260930/simulation-rendering/farm_rendering.log"
+        },
+        {
+          "test": "landmark_rendering",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": true,
+          "seconds": 2.082,
+          "log": "/private/tmp/aoelite-refactor-20260930/simulation-rendering/landmark_rendering.log"
+        },
+        {
+          "test": "relic_rendering",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": true,
+          "seconds": 1.359,
+          "log": "/private/tmp/aoelite-refactor-20260930/simulation-rendering/relic_rendering.log"
+        },
+        {
+          "test": "hud_resolution",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": true,
+          "seconds": 3.026,
+          "log": "/private/tmp/aoelite-refactor-20260930/simulation-rendering/hud_resolution.log"
+        }
+      ],
+      "budget_mode": [
+        {
+          "test": "navigation_boundaries",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.931,
+          "log": "/private/tmp/aoelite-refactor-20260930/simulation-budget-integrated/navigation_boundaries.log"
+        },
+        {
+          "test": "navigation_destination_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.559,
+          "log": "/private/tmp/aoelite-refactor-20260930/simulation-budget-integrated/navigation_destination_poc.log"
+        },
+        {
+          "test": "navigation_tasks_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 36.272,
+          "log": "/private/tmp/aoelite-refactor-20260930/simulation-budget-integrated/navigation_tasks_poc.log"
+        },
+        {
+          "test": "navigation_routes",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.036,
+          "log": "/private/tmp/aoelite-refactor-20260930/simulation-budget-integrated/navigation_routes.log"
+        },
+        {
+          "test": "navigation_replanning",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.146,
+          "log": "/private/tmp/aoelite-refactor-20260930/simulation-budget-integrated/navigation_replanning.log"
+        },
+        {
+          "test": "group_replanning",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.029,
+          "log": "/private/tmp/aoelite-refactor-20260930/simulation-budget-integrated/group_replanning.log"
+        },
+        {
+          "test": "group_chokepoint",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.794,
+          "log": "/private/tmp/aoelite-refactor-20260930/simulation-budget-integrated/group_chokepoint.log"
+        },
+        {
+          "test": "group_mass_chokepoint",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 9.746,
+          "log": "/private/tmp/aoelite-refactor-20260930/simulation-budget-integrated/group_mass_chokepoint.log"
+        },
+        {
+          "test": "navigation_range_siege_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 4.039,
+          "log": "/private/tmp/aoelite-refactor-20260930/simulation-budget-integrated/navigation_range_siege_poc.log"
+        },
+        {
+          "test": "navigation_range_stall_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.252,
+          "log": "/private/tmp/aoelite-refactor-20260930/simulation-budget-integrated/navigation_range_stall_poc.log"
+        },
+        {
+          "test": "navigation_async_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 3.297,
+          "log": "/private/tmp/aoelite-refactor-20260930/simulation-budget-integrated/navigation_async_poc.log"
+        }
+      ],
+      "generated_battle": [
+        {
+          "test": "performance_battle_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 3.922,
+          "log": "/private/tmp/aoelite-refactor-20260930/simulation-battle-integrated/performance_battle_poc.log"
+        }
+      ],
+      "islands_diagnostic": {
+        "diagnostic_only": true,
+        "long_term_balance_verified": false,
+        "scenario": "English/French islands normal seed4242, 60 simulation seconds",
+        "control_before_simulation": {
+          "base_commit": "09a6e47",
+          "status": "timeout_90s",
+          "elapsed_seconds": 91.278,
+          "completed_cases": 0,
+          "script_errors": [],
+          "result_json": "/tmp/aoelite-refactor-20260930/simulation-islands60-control-results/result.json",
+          "stack_sample": "/tmp/aoelite-refactor-20260930/simulation-islands60-control-results/sample-islands-control.txt"
+        },
+        "integrated_runtime": {
+          "base_commit": "09a6e47 + simulation.patch + six facade epoch calls",
+          "status": "stopped_by_parent_request",
+          "elapsed_seconds": 200.997,
+          "matrix_completed_cases": 3,
+          "script_errors": [],
+          "result_json": "/tmp/aoelite-refactor-20260930/simulation-matrix60-integrated/result.json",
+          "stack_sample": "/tmp/aoelite-refactor-20260930/simulation-matrix60-integrated/sample-islands.txt"
+        },
+        "conclusion": "The same islands case is already slow before the simulation refactor. Neither run completed that case, so relative performance regression and long-term balance are unmeasured. The 24-case matrix is incomplete and must not be reported as passed.",
+        "sampling_limit": "The export-template executable lacks function symbols. Main thread was executing deep engine call stacks rather than waiting on a worker; exact GDScript/corner/AStar attribution is unavailable.",
+        "navigation_epoch_merge_patch": "/tmp/aoelite-refactor-20260930/simulation-navigation-epoch-merge.patch"
+      },
+      "live_window_boundary_ab": {
+        "baseline_commit": "972011b",
+        "ordered_runs": [
+          {
+            "async_enabled": true,
+            "async_navigation": {
+              "accepted": 169,
+              "discarded": 3,
+              "finished": 172,
+              "max_active": 2,
+              "max_pending": 6,
+              "snapshot_us": 39430,
+              "submitted": 173,
+              "worker_us": 1034111
+            },
+            "buildings": 6,
+            "damage": 920.0,
+            "focus_attack": true,
+            "navigation": {},
+            "samples": 215,
+            "timings": {
+              "between_ms": {
+                "max": 0.364,
+                "mean": 0.0793348837209303,
+                "p50": 0.073,
+                "p95": 0.115
+              },
+              "draw_calls": {
+                "max": 2921.0,
+                "mean": 2903.46046511628,
+                "p50": 2902.0,
+                "p95": 2916.0
+              },
+              "frame_ms": {
+                "max": 80.659,
+                "mean": 37.2455069767442,
+                "p50": 35.913,
+                "p95": 49.099
+              },
+              "render_ms": {
+                "max": 18.989,
+                "mean": 13.7457209302326,
+                "p50": 13.494,
+                "p95": 16.34
+              },
+              "scene_ms": {
+                "max": 65.269,
+                "mean": 23.4204511627907,
+                "p50": 22.608,
+                "p95": 33.654
+              },
+              "viewport_cpu_ms": {
+                "max": 15.1459999084473,
+                "mean": 12.4984697785488,
+                "p50": 12.3559999465942,
+                "p95": 14.1440000534058
+              },
+              "viewport_gpu_ms": {
+                "max": 0.0,
+                "mean": 0.0,
+                "p50": 0.0,
+                "p95": 0.0
+              }
+            },
+            "viewport": "(1280, 800)",
+            "version": "baseline",
+            "round": 1,
+            "project": "/private/tmp/aoelite-refactor-20260930/baseline-project",
+            "engine": "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64"
+          },
+          {
+            "async_enabled": true,
+            "async_navigation": {
+              "accepted": 178,
+              "discarded": 4,
+              "finished": 183,
+              "max_active": 2,
+              "max_pending": 12,
+              "snapshot_us": 42194,
+              "submitted": 185,
+              "worker_us": 1725099
+            },
+            "buildings": 6,
+            "damage": 910.0,
+            "focus_attack": true,
+            "navigation": {},
+            "samples": 199,
+            "timings": {
+              "between_ms": {
+                "max": 0.46,
+                "mean": 0.0798643216080402,
+                "p50": 0.074,
+                "p95": 0.12
+              },
+              "draw_calls": {
+                "max": 2918.0,
+                "mean": 2903.13065326633,
+                "p50": 2902.0,
+                "p95": 2913.0
+              },
+              "frame_ms": {
+                "max": 86.999,
+                "mean": 40.3264572864322,
+                "p50": 37.572,
+                "p95": 60.999
+              },
+              "render_ms": {
+                "max": 20.303,
+                "mean": 14.0251457286432,
+                "p50": 13.72,
+                "p95": 16.496
+              },
+              "scene_ms": {
+                "max": 71.062,
+                "mean": 26.2214472361809,
+                "p50": 23.215,
+                "p95": 44.735
+              },
+              "viewport_cpu_ms": {
+                "max": 17.4629993438721,
+                "mean": 12.8091859386195,
+                "p50": 12.6700000762939,
+                "p95": 14.7580003738403
+              },
+              "viewport_gpu_ms": {
+                "max": 0.0,
+                "mean": 0.0,
+                "p50": 0.0,
+                "p95": 0.0
+              }
+            },
+            "viewport": "(1280, 800)",
+            "version": "candidate",
+            "round": 1,
+            "project": "/Users/kevin/Desktop/AgeOfEmpireLite",
+            "engine": "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64"
+          },
+          {
+            "async_enabled": true,
+            "async_navigation": {
+              "accepted": 188,
+              "discarded": 3,
+              "finished": 191,
+              "max_active": 2,
+              "max_pending": 11,
+              "snapshot_us": 45400,
+              "submitted": 193,
+              "worker_us": 2084597
+            },
+            "buildings": 6,
+            "damage": 770.0,
+            "focus_attack": true,
+            "navigation": {},
+            "samples": 124,
+            "timings": {
+              "between_ms": {
+                "max": 2.836,
+                "mean": 0.121870967741936,
+                "p50": 0.072,
+                "p95": 0.316
+              },
+              "draw_calls": {
+                "max": 2926.0,
+                "mean": 2902.64516129032,
+                "p50": 2903.0,
+                "p95": 2917.0
+              },
+              "frame_ms": {
+                "max": 83.271,
+                "mean": 50.4472016129032,
+                "p50": 47.359,
+                "p95": 71.574
+              },
+              "render_ms": {
+                "max": 33.737,
+                "mean": 16.1184193548387,
+                "p50": 15.167,
+                "p95": 23.545
+              },
+              "scene_ms": {
+                "max": 67.301,
+                "mean": 34.2069112903226,
+                "p50": 31.764,
+                "p95": 55.611
+              },
+              "viewport_cpu_ms": {
+                "max": 76.6439971923828,
+                "mean": 14.3304515654041,
+                "p50": 13.5719995498657,
+                "p95": 18.6989994049072
+              },
+              "viewport_gpu_ms": {
+                "max": 0.0,
+                "mean": 0.0,
+                "p50": 0.0,
+                "p95": 0.0
+              }
+            },
+            "viewport": "(1280, 800)",
+            "version": "candidate",
+            "round": 2,
+            "project": "/Users/kevin/Desktop/AgeOfEmpireLite",
+            "engine": "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64"
+          },
+          {
+            "async_enabled": true,
+            "async_navigation": {
+              "accepted": 179,
+              "discarded": 5,
+              "finished": 184,
+              "max_active": 2,
+              "max_pending": 9,
+              "snapshot_us": 45896,
+              "submitted": 186,
+              "worker_us": 1739168
+            },
+            "buildings": 6,
+            "damage": 880.0,
+            "focus_attack": true,
+            "navigation": {},
+            "samples": 193,
+            "timings": {
+              "between_ms": {
+                "max": 11.215,
+                "mean": 0.156559585492228,
+                "p50": 0.075,
+                "p95": 0.251
+              },
+              "draw_calls": {
+                "max": 2917.0,
+                "mean": 2902.37305699482,
+                "p50": 2902.0,
+                "p95": 2914.0
+              },
+              "frame_ms": {
+                "max": 105.73,
+                "mean": 41.3328497409326,
+                "p50": 38.355,
+                "p95": 60.216
+              },
+              "render_ms": {
+                "max": 19.403,
+                "mean": 14.4881398963731,
+                "p50": 14.26,
+                "p95": 17.293
+              },
+              "scene_ms": {
+                "max": 88.875,
+                "mean": 26.6881502590674,
+                "p50": 24.03,
+                "p95": 44.32
+              },
+              "viewport_cpu_ms": {
+                "max": 18.2740001678467,
+                "mean": 13.2643108763225,
+                "p50": 12.9700002670288,
+                "p95": 15.9580001831055
+              },
+              "viewport_gpu_ms": {
+                "max": 0.0,
+                "mean": 0.0,
+                "p50": 0.0,
+                "p95": 0.0
+              }
+            },
+            "viewport": "(1280, 800)",
+            "version": "baseline",
+            "round": 2,
+            "project": "/private/tmp/aoelite-refactor-20260930/baseline-project",
+            "engine": "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64"
+          }
+        ],
+        "diagnostic_only": true
+      },
+      "live_window_simulation_ab": {
+        "baseline_commit": "dce0367",
+        "ordered_runs": [
+          {
+            "async_enabled": true,
+            "async_navigation": {
+              "accepted": 173,
+              "discarded": 5,
+              "finished": 178,
+              "max_active": 2,
+              "max_pending": 9,
+              "snapshot_us": 42011,
+              "submitted": 180,
+              "worker_us": 1850270
+            },
+            "buildings": 6,
+            "damage": 900.0,
+            "focus_attack": true,
+            "navigation": {},
+            "samples": 195,
+            "timings": {
+              "between_ms": {
+                "max": 0.232,
+                "mean": 0.0780461538461539,
+                "p50": 0.075,
+                "p95": 0.092
+              },
+              "draw_calls": {
+                "max": 2937.0,
+                "mean": 2912.6,
+                "p50": 2911.0,
+                "p95": 2927.0
+              },
+              "frame_ms": {
+                "max": 81.964,
+                "mean": 40.8681692307692,
+                "p50": 38.632,
+                "p95": 63.463
+              },
+              "render_ms": {
+                "max": 22.768,
+                "mean": 14.1940153846154,
+                "p50": 13.854,
+                "p95": 17.093
+              },
+              "scene_ms": {
+                "max": 68.155,
+                "mean": 26.5961076923077,
+                "p50": 24.689,
+                "p95": 47.444
+              },
+              "viewport_cpu_ms": {
+                "max": 16.7210006713867,
+                "mean": 12.8911948864277,
+                "p50": 12.7329998016357,
+                "p95": 15.4399995803833
+              },
+              "viewport_gpu_ms": {
+                "max": 0.0,
+                "mean": 0.0,
+                "p50": 0.0,
+                "p95": 0.0
+              }
+            },
+            "viewport": "(1280, 800)",
+            "version": "baseline",
+            "round": 1,
+            "project": "/private/tmp/aoelite-refactor-20260930/before-simulation",
+            "engine": "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64"
+          },
+          {
+            "async_enabled": true,
+            "async_navigation": {
+              "accepted": 172,
+              "discarded": 3,
+              "finished": 175,
+              "max_active": 2,
+              "max_pending": 17,
+              "snapshot_us": 37452,
+              "submitted": 177,
+              "worker_us": 1760400
+            },
+            "buildings": 6,
+            "damage": 910.0,
+            "focus_attack": true,
+            "navigation": {},
+            "samples": 197,
+            "timings": {
+              "between_ms": {
+                "max": 0.248,
+                "mean": 0.0772284263959391,
+                "p50": 0.074,
+                "p95": 0.097
+              },
+              "draw_calls": {
+                "max": 2938.0,
+                "mean": 2912.41116751269,
+                "p50": 2912.0,
+                "p95": 2927.0
+              },
+              "frame_ms": {
+                "max": 118.806,
+                "mean": 40.8058274111675,
+                "p50": 37.911,
+                "p95": 62.759
+              },
+              "render_ms": {
+                "max": 27.403,
+                "mean": 13.7754416243655,
+                "p50": 13.455,
+                "p95": 15.964
+              },
+              "scene_ms": {
+                "max": 103.352,
+                "mean": 26.9531573604061,
+                "p50": 24.314,
+                "p95": 47.538
+              },
+              "viewport_cpu_ms": {
+                "max": 17.0230007171631,
+                "mean": 12.6572791937039,
+                "p50": 12.4359998703003,
+                "p95": 14.7559995651245
+              },
+              "viewport_gpu_ms": {
+                "max": 0.0,
+                "mean": 0.0,
+                "p50": 0.0,
+                "p95": 0.0
+              }
+            },
+            "viewport": "(1280, 800)",
+            "version": "candidate",
+            "round": 1,
+            "project": "/Users/kevin/Desktop/AgeOfEmpireLite",
+            "engine": "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64"
+          },
+          {
+            "async_enabled": true,
+            "async_navigation": {
+              "accepted": 52,
+              "discarded": 2,
+              "finished": 55,
+              "max_active": 2,
+              "max_pending": 3,
+              "snapshot_us": 11002,
+              "submitted": 55,
+              "worker_us": 241708
+            },
+            "buildings": 6,
+            "damage": 930.0,
+            "focus_attack": true,
+            "navigation": {},
+            "samples": 255,
+            "timings": {
+              "between_ms": {
+                "max": 0.531,
+                "mean": 0.0859764705882353,
+                "p50": 0.076,
+                "p95": 0.122
+              },
+              "draw_calls": {
+                "max": 2936.0,
+                "mean": 2914.50196078431,
+                "p50": 2913.0,
+                "p95": 2930.0
+              },
+              "frame_ms": {
+                "max": 49.946,
+                "mean": 31.3423647058824,
+                "p50": 31.054,
+                "p95": 42.737
+              },
+              "render_ms": {
+                "max": 28.794,
+                "mean": 13.6139803921569,
+                "p50": 13.288,
+                "p95": 15.903
+              },
+              "scene_ms": {
+                "max": 30.987,
+                "mean": 17.6424078431373,
+                "p50": 17.678,
+                "p95": 26.554
+              },
+              "viewport_cpu_ms": {
+                "max": 18.9090003967285,
+                "mean": 12.4968470554726,
+                "p50": 12.2749996185303,
+                "p95": 14.3870000839233
+              },
+              "viewport_gpu_ms": {
+                "max": 0.0,
+                "mean": 0.0,
+                "p50": 0.0,
+                "p95": 0.0
+              }
+            },
+            "viewport": "(1280, 800)",
+            "version": "candidate",
+            "round": 2,
+            "project": "/Users/kevin/Desktop/AgeOfEmpireLite",
+            "engine": "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64"
+          },
+          {
+            "async_enabled": true,
+            "async_navigation": {
+              "accepted": 59,
+              "discarded": 3,
+              "finished": 63,
+              "max_active": 2,
+              "max_pending": 2,
+              "snapshot_us": 15250,
+              "submitted": 63,
+              "worker_us": 362585
+            },
+            "buildings": 6,
+            "damage": 970.0,
+            "focus_attack": true,
+            "navigation": {},
+            "samples": 246,
+            "timings": {
+              "between_ms": {
+                "max": 7.018,
+                "mean": 0.15400406504065,
+                "p50": 0.101,
+                "p95": 0.225
+              },
+              "draw_calls": {
+                "max": 2923.0,
+                "mean": 2907.58536585366,
+                "p50": 2908.0,
+                "p95": 2918.0
+              },
+              "frame_ms": {
+                "max": 63.151,
+                "mean": 32.4912845528455,
+                "p50": 31.586,
+                "p95": 45.809
+              },
+              "render_ms": {
+                "max": 28.899,
+                "mean": 14.4486991869919,
+                "p50": 14.12,
+                "p95": 17.235
+              },
+              "scene_ms": {
+                "max": 36.214,
+                "mean": 17.888581300813,
+                "p50": 17.168,
+                "p95": 28.521
+              },
+              "viewport_cpu_ms": {
+                "max": 24.3700008392334,
+                "mean": 13.3419756075231,
+                "p50": 13.1389999389648,
+                "p95": 15.9969997406006
+              },
+              "viewport_gpu_ms": {
+                "max": 0.0,
+                "mean": 0.0,
+                "p50": 0.0,
+                "p95": 0.0
+              }
+            },
+            "viewport": "(1280, 800)",
+            "version": "baseline",
+            "round": 2,
+            "project": "/private/tmp/aoelite-refactor-20260930/before-simulation",
+            "engine": "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64"
+          }
+        ],
+        "diagnostic_only": true
+      },
+      "source_sha256": {
+        "scripts/game.gd": "fc15d42f9a61668dbcd1e522bf5217b7851a5fa8ba3881ebccc502dffc57208b",
+        "scripts/match/match_clock.gd": "f7c6b45c65b1997386721dc9a6644ec2056fc6cf762e9b62202d2224fb9003d4",
+        "scripts/match/match_simulation.gd": "230d0557b788a22ff91474703817b7090f691ad006d68e4f1681be919de33574",
+        "scripts/world/navigation.gd": "7adc0c3d2ed1fca93953ed181d24aac25ab979e0873daa645709e3828113cb81",
+        "scripts/world/navigation_cache.gd": "becea249ae18994584c88535f2273d3e6a2439edba3ed1b9f2aebc27e36e9bb4",
+        "scripts/world/navigation_search_kernel.gd": "6bab9b4ee2fd27d06f73e65c992ac0f8745997143de4177b9952f470f410f71f",
+        "scripts/world/navigation_spatial_index.gd": "6fe330af894c2f165bd5f059632a5447a4f9005667f78968c0dd87b1abb260a9",
+        "scripts/world/movement_group.gd": "96c8dcf52d49f44a1f1d2af87f567067ff707119e4bd1caed8ac411d294b5f8f",
+        "scripts/player/player_actions.gd": "a95a614e8a838810368b57a18c76433f5483a2cc99c406161208b4bce797d860",
+        "scripts/ui/game_hud_ui.gd": "969909f678da92f5cb7c7158be8fa4e5604d6d5656c3a008206c4b216e1e8512"
+      }
     }
   ]
 }

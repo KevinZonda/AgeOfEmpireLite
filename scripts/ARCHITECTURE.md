@@ -39,7 +39,7 @@
 - 输入状态和选择状态分别由 `player_input` 和 `player_selection` 拥有；`game` 兼容字段代理实际拥有者。建造和目标模式互斥。动作在命令面板重建后更新世代，旧选择、旧按钮和隐藏页动作不可执行；快捷键直接调用动作注册表，按钮可用性只是显示投影。
 - `unit.orders` 拥有当前订单、目标、恢复订单与队列；公开命令先验证，再清空或切换。排队命令启动时再次验证活目标和工作条件，失效命令跳过。结束、自动交战恢复、驻军、死亡和淘汰共用取消路径／能力的生命周期入口。
 - 单位旧移动／技能字段代理组件。新命令、停止与驻扎统一取消旧异步路线和临时命令状态；无效命令先拒绝，保留正在执行的命令。
-- 导航缓存和空间索引分别拥有静态及动态状态，兼容字典共享原实例。普通／射程路线预算默认关闭，可用 `RTS_ROUTE_BUDGET=1` 启用；FIFO 请求保留排队顺序，接收前验证单位、订单世代、目标与几何版本。预算为主线程软上限，单次原生查询不能抢占。暂停仍回收异步完成结果，但不派发新查询；重开与退出统一关闭两类任务。手动模拟须调用 `tick_jobs(true, simulation_frame)`，只调用单位 `_process` 不构成完整游戏帧。
+- 导航缓存和空间索引分别拥有静态及动态状态，兼容字典共享原实例。普通／射程路线预算默认关闭，可用 `RTS_ROUTE_BUDGET=1` 启用；FIFO 请求保留排队顺序，接收前验证单位、订单世代、目标与几何版本。预算为主线程软上限，单次原生查询不能抢占。暂停仍回收异步完成结果，但不派发新查询；重开与退出统一关闭两类任务。生产与完整对局测试统一通过 `game.step(delta)` 推进导航和 actor；只调用单位 `_process` 的窄夹具仍须自行派发导航任务。
 - 属性每次从定义、研究、文明和临时效果重新解析。模拟通过 profile 查询攻击值；兼容字段不得反向覆盖 profile。
 - AI 快照只存活于一次思考，包含已排队单位，并在同一轮成功训练或建造后更新。快照不成为跨帧缓存；资源规划保留原有决策优先级。
 - `generate_terrain()` 为完整生成与地图预览共同使用的阶段；完整生成按原顺序继续消费 RNG，预览不调用私有生成步骤。
@@ -68,3 +68,13 @@ that catalog and presents age choices; it does not register business callbacks.
 PlayerInput supplies the gameplay permission predicate. The catalog supports a
 Game without any HUD and is cleared both on tree exit and Game predelete.
 See `docs/player-command-boundary.md`.
+
+### Simulation runtime
+
+`match/match_simulation.gd` owns the live actor registry and explicit step;
+`match/match_clock.gd` owns match time. Live processing and accelerated match
+harnesses use the same navigation, AI, world, entity and final visibility phases.
+Presentation remains in the game scene; delta is caller-controlled. New actors
+created during actor processing begin on the next step. End/reset explicitly
+retire projectiles, and navigation/spatial/groups use the simulation epoch.
+See `docs/simulation-runtime.md` for phase and lifecycle contracts.

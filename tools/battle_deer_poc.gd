@@ -142,7 +142,7 @@ func _render_end() -> void:
 func _toggle_deer() -> void:
 	deer_frozen = not deer_frozen
 	for resource in game.resources:
-		if resource.appearance == "deer": resource.set_process(not deer_frozen)
+		if resource.appearance == "deer": game.simulation.set_actor_enabled(resource, not deer_frozen)
 	deer_button.text = "恢复鹿群活动" if deer_frozen else "冻结鹿群（全地图）"
 	caption.text = "围攻与鹿群 PoC  |  80 名长矛兵 · %d 座建筑 · %s" % [building_count, "鹿群已冻结" if deer_frozen else "鹿群正常活动"]
 

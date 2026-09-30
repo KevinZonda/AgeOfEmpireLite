@@ -31,7 +31,7 @@ TESTS = [
 # Rendering-driver comparisons run separately.
 # Range-corner reuse is repaired and belongs to the normal regression suite.
 REFACTOR_TESTS = list(dict.fromkeys(TESTS + [
-    "match_services", "session_rules_regression", "unit_components_regression", "unit_orders_regression", "match_simulation_regression", "settings_store",
+    "match_services", "session_rules_regression", "unit_components_regression", "unit_orders_regression", "match_simulation_regression", "simulation_runtime", "settings_store",
     "match_changes", "player_command_catalog", "hud_resolution", "right_click_selection", "hud_command_pages", "player_input_actions_regression",
     "production_queue_regression", "hud_queue_layout", "display_settings",
     "unit_preview_page", "tech_tree_page", "typography_scale", "battle_experience",

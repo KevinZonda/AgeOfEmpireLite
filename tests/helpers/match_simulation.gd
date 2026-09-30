@@ -8,6 +8,7 @@ var tree: SceneTree
 var previous_process_mode: int
 var previous_max_fps: int
 var override_modes: Dictionary = {}
+var uses_runtime := false
 
 func _init(match_game: Node2D) -> void:
 	game = match_game
@@ -16,16 +17,22 @@ func _init(match_game: Node2D) -> void:
 	previous_max_fps = Engine.max_fps
 	game.process_mode = Node.PROCESS_MODE_DISABLED
 	Engine.max_fps = 0
-	_suspend_overrides(game)
+	uses_runtime = game.has_method("step")
+	if not uses_runtime: _suspend_overrides(game)
 
 func step(delta: float) -> void:
+	if uses_runtime:
+		game.step(delta)
+		# Runtime owns match actors. This frame only drains deferred work/deletion;
+		# it is not needed to advance simulation, group or navigation clocks.
+		await tree.process_frame
+		return
 	_tick_subtree(game, delta, Node.PROCESS_MODE_PAUSABLE)
-	# Capture overrides spawned by callbacks after their parent's child snapshot.
+	# Generic Actor fixtures retain their original override-mode behavior.
 	_suspend_overrides(game)
 	for id in override_modes.keys():
 		if override_modes[id].node.get_ref() == null: override_modes.erase(id)
 	await tree.process_frame
-	# Deferred callbacks may add explicitly processing children as well.
 	_suspend_overrides(game)
 
 func _tick_subtree(node: Node, delta: float, inherited_mode: int) -> void:
