@@ -119,9 +119,6 @@ static func resource_at(game: Node2D, point: Vector2) -> RtsResource:
 static func trade_post_at(game: Node2D, point: Vector2) -> RtsTradePost:
 	for post in game.trade_posts:
 		if not is_instance_valid(post) or game.fog.active and not game.fog.is_explored(0, post.position): continue
-		if game.view_mode_25d:
-			var screen_delta := game.get_viewport().get_canvas_transform().basis_xform(point - post.position - RtsIsoProjection.ground_lift(game, post.position))
-			if absf(screen_delta.x) <= 28.0 * game.camera.zoom.x and screen_delta.y >= -38.0 * game.camera.zoom.x and screen_delta.y <= 23.0 * game.camera.zoom.x: return post
 		if post.contains(point): return post
 	return null
 

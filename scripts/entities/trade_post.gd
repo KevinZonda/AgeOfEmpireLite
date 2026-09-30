@@ -1,28 +1,32 @@
 class_name RtsTradePost
 extends Node2D
 const RtsUiTypography = preload("res://scripts/ui/typography.gd")
+const TradePostVisual = preload("res://scripts/entities/visuals/trade_post_visual.gd")
 
 var game: Node2D
+var visual := TradePostVisual.new()
 
 func contains(point: Vector2) -> bool:
-	return position.distance_to(point) <= 26.0
+	if game != null and game.view_mode_25d:
+		var canvas := get_viewport().get_canvas_transform()
+		var local: Vector2 = canvas.basis_xform(point - position - RtsIsoProjection.ground_lift(game, position)) / game.camera.zoom.x
+		return visual.contains(local, true)
+	return visual.contains(point - position, false)
 
 func _draw() -> void:
-	if game != null and game.view_mode_25d:
-		var ground_lift := RtsIsoProjection.ground_lift(game, position)
-		draw_set_transform_matrix(Transform2D(0.0, ground_lift))
-		draw_circle(Vector2.ZERO, 24, Color("222e29", 0.6))
-		draw_set_transform_matrix(RtsIsoProjection.upright(get_viewport().get_canvas_transform(), ground_lift, game.camera.zoom.x))
-	draw_rect(Rect2(-23, -22, 46, 44), Color("382d24"))
-	draw_rect(Rect2(-19, -18, 38, 36), Color("bf9a62"))
-	draw_colored_polygon(PackedVector2Array([Vector2(-27, -20), Vector2(0, -37), Vector2(27, -20)]), Color("79513c"))
-	if game != null and game.view_mode_25d:
-		draw_set_transform_matrix(RtsIsoProjection.upright(get_viewport().get_canvas_transform(), RtsIsoProjection.ground_lift(game, position)))
-	else:
-		draw_set_transform_matrix(RtsIsoProjection.upright(get_viewport().get_canvas_transform(), Vector2.ZERO))
+	var isometric: bool = game != null and game.view_mode_25d
+	var canvas := get_viewport().get_canvas_transform()
+	var ground_lift := Vector2.ZERO
+	var zoom: float = game.camera.zoom.x if game != null else canvas.x.length()
+	if isometric:
+		ground_lift = RtsIsoProjection.ground_lift(game, position)
+		draw_set_transform_matrix(RtsIsoProjection.upright(canvas, ground_lift, zoom))
+	visual.draw(self, isometric)
+	draw_set_transform_matrix(RtsIsoProjection.upright(canvas, ground_lift))
 	var font := ThemeDB.fallback_font
 	if font != null:
 		var font_size: int = RtsUiTypography.world_caption_size(game)
 		var label_width := font.get_string_size("贸易站", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
-		draw_string(font, Vector2(-label_width * 0.5, 24 + font_size), "贸易站", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color.WHITE)
+		var label_y := visual.bounds(isometric).end.y * zoom + font_size + 6.0
+		draw_string(font, Vector2(-label_width * 0.5, label_y), "贸易站", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color.WHITE)
 	draw_set_transform_matrix(Transform2D.IDENTITY)
