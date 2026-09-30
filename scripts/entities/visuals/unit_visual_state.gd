@@ -24,16 +24,24 @@ var hp := 1.0
 var max_hp := 1.0
 var show_health_bar := false
 
-static func capture(unit):
-	var result = new()
+static func capture(unit, existing_state = null):
+	var result = existing_state if existing_state != null else new()
 	result.kind = unit.kind
 	result.tags = unit.stats.get("tags", []).duplicate()
 	result.radius = unit.radius()
 	result.player_color = unit.game.player_color(unit.owner_id)
 	result.update_view(unit.game)
+	result.ground_height = 0.0
 	if unit.game.world_map != null: result.ground_height = unit.game.world_map.elevation_at(unit.position)
-	for field in ["visual_phase", "visual_moving", "visual_action", "facing_back", "facing_right", "gather_kind", "hit_flash_timer", "hp", "max_hp"]:
-		result.set(field, unit.get(field))
+	result.visual_phase = unit.visual_phase
+	result.visual_moving = unit.visual_moving
+	result.visual_action = unit.visual_action
+	result.facing_back = unit.facing_back
+	result.facing_right = unit.facing_right
+	result.gather_kind = unit.gather_kind
+	result.hit_flash_timer = unit.hit_flash_timer
+	result.hp = unit.hp
+	result.max_hp = unit.max_hp
 	result.swing = unit._action_swing()
 	result.passenger_count = unit.passengers.size()
 	result.paling = unit.paling_timer > 0.0
