@@ -512,6 +512,7 @@ func _tick_visual(delta: float) -> void:
 	if support_active and is_instance_valid(target): _face_direction(target.position - position)
 	if visual_moving: visual_phase += delta * (11.0 if stats.get("tags", []).has("cavalry") else 8.0)
 	elif support_active: visual_phase += delta * 4.0
+	elif kind == "fishing_boat" and visible: visual_phase += delta * 1.8
 	if visual_action_released: visual_release_elapsed += delta
 	if visual_action_timer > 0.0: visual_action_timer = maxf(0.0, visual_action_timer - delta)
 	if visual_action_timer <= 0.0 and visual_action != "":
@@ -525,10 +526,11 @@ func _tick_visual(delta: float) -> void:
 		if visual_redraw_timer <= 0.0:
 			visual_redraw_timer = (0.22 if game.units.size() > 160 else 0.085) if visual_moving else 0.055
 			queue_redraw()
-	elif game.selected.size() <= 12 and game.selected.has(self):
-		visual_phase += delta * 1.8
+	elif (kind == "fishing_boat" and visible) or (game.selected.size() <= 12 and game.selected.has(self)):
+		if kind != "fishing_boat" or not visible: visual_phase += delta * 1.8
 		visual_idle_timer += delta
-		if visual_idle_timer >= 0.14:
+		var idle_interval := 0.085 if kind == "fishing_boat" and order == "gather" else 0.14
+		if visual_idle_timer >= idle_interval:
 			visual_idle_timer = 0.0
 			queue_redraw()
 

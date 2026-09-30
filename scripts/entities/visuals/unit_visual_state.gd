@@ -29,6 +29,8 @@ var passenger_count := 0
 var siege_deployed := false
 var paling := false
 var gather_kind := ""
+var fishing_active := false
+var fishing_cycle := 0.0
 var hunting := false
 var hunt_draw := 0.0
 var carries_relic := false
@@ -66,6 +68,14 @@ static func capture(unit, existing_state = null):
 	result.converting = unit.kind == "monk" and unit.conversion_timer > 0.0
 	result.tax_active = unit.kind == "imperial_official" and (unit.order in ["supervise", "collect_tax"] or unit.visual_action == "tax")
 	result.gather_kind = unit.gather_kind
+	result.fishing_active = unit.kind == "fishing_boat" and unit.order == "gather" and not unit.visual_moving and is_instance_valid(unit.target) and not unit.target.is_queued_for_deletion() and unit.target is RtsResource and unit.target.appearance == "fish" and unit.target.amount > 0 and unit.position.distance_to(unit.target.position) <= unit.radius() + unit.target.radius + 2.5
+	result.fishing_cycle = clampf(1.0 - unit.work_timer / 1.1, 0.0, 1.0) if result.fishing_active else 0.0
+	if result.fishing_active:
+		# Work side-on to the fish: the deployed net hangs from starboard.
+		# This is a rendering pose; the navigation heading remains unchanged.
+		var fishing_heading: Vector2 = unit.get_viewport().get_canvas_transform().basis_xform((unit.target.position - unit.position).rotated(-PI * 0.5))
+		if not fishing_heading.is_zero_approx():
+			result.facing_direction = Vector2.RIGHT.rotated(round(fishing_heading.angle() / (PI / 4.0)) * (PI / 4.0))
 	result.hunting = unit.kind == "villager" and (unit.visual_action == "hunt" or unit.order == "gather" and is_instance_valid(unit.target) and unit.target is RtsResource and unit.target.appearance == "deer" and unit.target.wildlife_hp > 0.0)
 	result.hunt_draw = clampf(1.0 - unit.hunt_windup / unit.UnitWork.HUNT_WINDUP, 0.0, 1.0) if unit.hunt_windup >= 0.0 else 0.0
 	result.hit_flash_timer = unit.hit_flash_timer

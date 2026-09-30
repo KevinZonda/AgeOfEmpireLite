@@ -1,8 +1,9 @@
 extends RefCounted
 class_name RtsNavalVisual
 
-# Ship art is drawn in the unit's local canvas. In 2D the bow points upward;
-# in the upright 2.5D view it points right. The caller owns the transform.
+# Legacy ship art uses a fixed bow. Fishing boats share the new directional
+# renderer with production units, portraits, and previews.
+const Fishing = preload("res://scripts/entities/visuals/fishing_boat_visual.gd")
 const INK := Color("20302f")
 const HULL_DARK := Color("51392c")
 const HULL := Color("8a603e")
@@ -19,7 +20,10 @@ static func handles(kind: String) -> bool:
 
 static func draw_2d(canvas: CanvasItem, kind: String, radius: float, team: Color, passenger_count: int = 0) -> void:
 	if not handles(kind): return
-	var beam := radius * (0.66 if kind == "fishing_boat" else 0.84 if kind == "transport_ship" else 0.77)
+	if kind == "fishing_boat":
+		Fishing.new().draw(canvas, Fishing.legacy_state(radius, team, false))
+		return
+	var beam := radius * (0.84 if kind == "transport_ship" else 0.77)
 	if kind == "warship": beam = radius * 0.92
 	var bow := -radius - 3.0
 	var stern := radius + 2.0
@@ -30,7 +34,6 @@ static func draw_2d(canvas: CanvasItem, kind: String, radius: float, team: Color
 	_line(canvas, Vector2(-beam + 2, 0), Vector2(-beam + 2, stern - 10), team.darkened(0.14), 2.3)
 	_line(canvas, Vector2(beam - 2, 0), Vector2(beam - 2, stern - 10), team.darkened(0.14), 2.3)
 	match kind:
-		"fishing_boat": _fishing_2d(canvas, radius, team)
 		"arrow_ship": _arrow_2d(canvas, radius, team)
 		"springald_ship": _springald_2d(canvas, radius, team)
 		"incendiary_ship": _incendiary_2d(canvas, radius, team)
@@ -39,39 +42,23 @@ static func draw_2d(canvas: CanvasItem, kind: String, radius: float, team: Color
 
 static func draw_25d(canvas: CanvasItem, kind: String, radius: float, team: Color, passenger_count: int = 0) -> void:
 	if not handles(kind): return
+	if kind == "fishing_boat":
+		Fishing.new().draw(canvas, Fishing.legacy_state(radius, team, true))
+		return
 	var length := radius * 1.15
 	var stern := -length
 	var bow := length + 3.0
-	if kind == "fishing_boat":
-		stern += 2.0
-		bow -= 2.0
 	# A high bow, curved keel, and light top edge stay legible at game scale.
 	_poly(canvas, [Vector2(stern - 3, -15), Vector2(bow - 4, -16), Vector2(bow + 3, -24), Vector2(bow, -10), Vector2(bow - 8, -3), Vector2(stern + 7, -3), Vector2(stern - 2, -8)], INK)
 	_poly(canvas, [Vector2(stern - 1, -16), Vector2(bow - 5, -17), Vector2(bow + 1, -23), Vector2(bow - 2, -11), Vector2(bow - 9, -5), Vector2(stern + 7, -5), Vector2(stern, -9)], HULL)
 	_poly(canvas, [Vector2(stern + 1, -16), Vector2(bow - 5, -17), Vector2(bow - 2, -20), Vector2(stern - 1, -19)], HULL_LIGHT)
 	_line(canvas, Vector2(stern + 5, -10), Vector2(bow - 8, -11), team.darkened(0.12), 2.2)
 	match kind:
-		"fishing_boat": _fishing_25d(canvas, radius, team)
 		"arrow_ship": _arrow_25d(canvas, radius, team)
 		"springald_ship": _springald_25d(canvas, radius, team)
 		"incendiary_ship": _incendiary_25d(canvas, radius, team)
 		"warship": _warship_25d(canvas, radius, team)
 		"transport_ship": _transport_25d(canvas, radius, team, passenger_count)
-
-static func _fishing_2d(c: CanvasItem, r: float, team: Color) -> void:
-	# Mesh hanging over the port side and two rounded wicker fish baskets.
-	_line(c, Vector2(-3, -3), Vector2(-r - 8, 4), HULL_DARK, 2)
-	_poly(c, [Vector2(-r - 7, 1), Vector2(-r - 1, 5), Vector2(-r - 5, 14), Vector2(-r - 13, 10)], Color("aea587"))
-	for i in 3:
-		_line(c, Vector2(-r - 8 + i * 3, 3), Vector2(-r - 11 + i * 3, 11), ROPE, 0.9)
-	for i in 2:
-		_line(c, Vector2(-r - 10, 5 + i * 3), Vector2(-r - 3, 9 + i * 3), ROPE, 0.9)
-	for x in [-4.0, 4.0]:
-		c.draw_circle(Vector2(x, r * 0.37), 3.8, HULL_DARK)
-		c.draw_circle(Vector2(x, r * 0.37), 2.8, Color("c09b64"))
-		_line(c, Vector2(x - 2, r * 0.37), Vector2(x + 2, r * 0.37), ROPE, 1)
-	_line(c, Vector2(0, -r + 1), Vector2(0, 1), HULL_DARK, 2)
-	_poly(c, [Vector2(1, -r + 2), Vector2(7, -4), Vector2(1, -4)], team.lightened(0.4))
 
 static func _arrow_2d(c: CanvasItem, r: float, team: Color) -> void:
 	# Four visible archers and arrows aimed forward make this a fighting skiff.
@@ -137,17 +124,6 @@ static func _transport_2d(c: CanvasItem, r: float, team: Color, count: int) -> v
 	for x in [-4.0, 0.0, 4.0]:
 		_line(c, Vector2(x, -r + 1), Vector2(x, -r - 7), HULL_DARK, 0.9)
 	if count > 0: _count(c, str(count), Vector2(0, r * 0.63), 9)
-
-static func _fishing_25d(c: CanvasItem, r: float, team: Color) -> void:
-	_line(c, Vector2(-r * 0.8, -17), Vector2(-r - 10, -25), HULL_DARK, 2)
-	_poly(c, [Vector2(-r - 10, -25), Vector2(-r - 1, -22), Vector2(-r - 4, -9), Vector2(-r - 13, -13)], Color("aea587"))
-	for i in 3:
-		_line(c, Vector2(-r - 9 + i * 3, -23), Vector2(-r - 12 + i * 3, -12), ROPE, 0.9)
-	for x in [-4.0, 3.0]:
-		c.draw_circle(Vector2(x, -21), 4, HULL_DARK)
-		c.draw_circle(Vector2(x, -21), 2.7, Color("c69f67"))
-	_line(c, Vector2(1, -19), Vector2(1, -39), HULL_DARK, 2)
-	_poly(c, [Vector2(2, -38), Vector2(13, -25), Vector2(2, -26)], team.lightened(0.38))
 
 static func _arrow_25d(c: CanvasItem, r: float, team: Color) -> void:
 	for x in [-r * 0.57, 0.0, r * 0.54]:

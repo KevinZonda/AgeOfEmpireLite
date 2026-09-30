@@ -3,6 +3,7 @@ extends Control
 
 const Siege = preload("res://scripts/entities/visuals/siege_visual.gd")
 const NavalVisual = preload("res://scripts/entities/visuals/naval_visual.gd")
+const Fishing = preload("res://scripts/entities/visuals/fishing_boat_visual.gd")
 const Figure = preload("res://scripts/entities/visuals/unit_figure_visual.gd")
 const UnitVisualState = preload("res://scripts/entities/visuals/unit_visual_state.gd")
 const DeerVisual = preload("res://scripts/entities/visuals/deer_visual.gd")
@@ -14,6 +15,7 @@ var subject: Node2D
 var owner_tint := Color("8a9a8e")
 var figure_renderer := Figure.new()
 var siege_renderer := Siege.new()
+var fishing_renderer := Fishing.new()
 var humanoid_state := UnitVisualState.new()
 var building_portrait_renderer := BuildingVisual.new()
 
@@ -127,6 +129,9 @@ func _draw_unit() -> void:
 		return
 	if siege:
 		_draw_siege(unit.kind, center)
+		return
+	if unit.kind == "fishing_boat":
+		fishing_renderer.draw_portrait(self, unit.kind, owner_tint, Rect2(Vector2(17, 20), size - Vector2(34, 40)))
 		return
 	draw_colored_polygon(PackedVector2Array([center + Vector2(-32, 39), center + Vector2(-23, 33), center + Vector2(23, 33), center + Vector2(32, 39), center + Vector2(23, 45), center + Vector2(-23, 45)]), Color("1c2524", 0.65))
 	if naval:

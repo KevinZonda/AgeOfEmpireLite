@@ -6,6 +6,7 @@ const IconCache = preload("res://scripts/ui/icon_cache.gd")
 const UnitVisual = preload("res://scripts/entities/visuals/unit_visual.gd")
 const UnitVisualState = preload("res://scripts/entities/visuals/unit_visual_state.gd")
 const Siege = preload("res://scripts/entities/visuals/siege_visual.gd")
+const Fishing = preload("res://scripts/entities/visuals/fishing_boat_visual.gd")
 const UnitStatText = preload("res://scripts/ui/unit_stat_text.gd")
 const RtsUiTypography = preload("res://scripts/ui/typography.gd")
 
@@ -76,9 +77,18 @@ class PreviewUnit:
 
 class PreviewBackdrop:
 	extends Node2D
+	var water := false
 
 	func _draw() -> void:
 		var bounds := get_viewport_rect().size
+		if water:
+			draw_rect(Rect2(Vector2.ZERO, bounds), Color("244a53"))
+			for index in 8:
+				var y := bounds.y * (0.16 + index * 0.1)
+				for column in 5:
+					var x := bounds.x * (column * 0.24 + 0.04 * (index % 2))
+					draw_line(Vector2(x, y), Vector2(x + bounds.x * 0.11, y - 2), Color("80b3ba", 0.14), 1.0, true)
+			return
 		draw_rect(Rect2(Vector2.ZERO, bounds), Color("253b35"))
 		for index in 5:
 			var y := bounds.y * 0.54 + index * bounds.y * 0.09
@@ -104,9 +114,16 @@ var preview_viewport: SubViewport
 var preview_context: PreviewContext
 var preview_unit: PreviewUnit
 var preview_mode_choice: OptionButton
+var fishing_preview_controls: HBoxContainer
+var fishing_action_choice: OptionButton
+var fishing_heading_choice: OptionButton
+var fishing_preview_action := "idle"
+var fishing_preview_heading := 1
+var preview_backdrop: PreviewBackdrop
 var style_button: Callable
 var refresh_timer := 0.0
 var siege_renderer = Siege.new()
+var fishing_renderer = Fishing.new()
 
 func build(parent: Control, initial_civilization: String, button_style: Callable) -> void:
 	style_button = button_style
@@ -218,6 +235,28 @@ func _build_model(parent: HBoxContainer) -> void:
 		_refresh_preview()
 	)
 	heading.add_child(preview_mode_choice)
+	fishing_preview_controls = HBoxContainer.new()
+	fishing_preview_controls.add_theme_constant_override("separation", 8)
+	content.add_child(fishing_preview_controls)
+	_label(fishing_preview_controls, "动作", RtsUiTypography.CAPTION, Color("c4b492"))
+	fishing_action_choice = OptionButton.new()
+	for action_label in ["停泊", "航行", "捕鱼"]: fishing_action_choice.add_item(action_label)
+	style_button.call(fishing_action_choice)
+	fishing_action_choice.item_selected.connect(func(index: int) -> void:
+		fishing_preview_action = ["idle", "move", "gather"][index]
+		_refresh_preview()
+	)
+	fishing_preview_controls.add_child(fishing_action_choice)
+	_label(fishing_preview_controls, "朝向", RtsUiTypography.CAPTION, Color("c4b492"))
+	fishing_heading_choice = OptionButton.new()
+	for heading_label in ["东", "东南", "南", "西南", "西", "西北", "北", "东北"]: fishing_heading_choice.add_item(heading_label)
+	fishing_heading_choice.select(fishing_preview_heading)
+	style_button.call(fishing_heading_choice)
+	fishing_heading_choice.item_selected.connect(func(index: int) -> void:
+		fishing_preview_heading = index
+		_refresh_preview()
+	)
+	fishing_preview_controls.add_child(fishing_heading_choice)
 	var frame := PanelContainer.new()
 	frame.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	frame.add_theme_stylebox_override("panel", _style(Color("253b35"), Color("98784b"), 0))
@@ -232,10 +271,10 @@ func _build_model(parent: HBoxContainer) -> void:
 	preview_viewport.size = Vector2i(400, 420)
 	preview_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	container.add_child(preview_viewport)
-	var backdrop := PreviewBackdrop.new()
-	preview_viewport.add_child(backdrop)
+	preview_backdrop = PreviewBackdrop.new()
+	preview_viewport.add_child(preview_backdrop)
 	preview_viewport.size_changed.connect(func() -> void:
-		backdrop.queue_redraw()
+		preview_backdrop.queue_redraw()
 		_refresh_preview()
 	)
 	preview_context = PreviewContext.new()
@@ -319,15 +358,28 @@ func _refresh_preview() -> void:
 	if selected_kind.is_empty() or preview_unit == null: return
 	var stats := _resolved_stats()
 	var previous_phase: float = preview_unit.state.visual_phase if preview_unit.state != null else 0.0
+	var previous_fishing_cycle: float = preview_unit.state.fishing_cycle if preview_unit.state != null else 0.0
 	preview_unit.state = UnitVisualState.preview(selected_kind, stats, preview_context.player_color(0))
 	preview_unit.state.visual_phase = previous_phase
 	preview_unit.state.update_view(preview_context)
+	fishing_preview_controls.visible = selected_kind == "fishing_boat"
+	preview_backdrop.water = selected_kind == "fishing_boat"
+	preview_backdrop.queue_redraw()
+	if selected_kind == "fishing_boat":
+		preview_unit.state.facing_direction = Vector2.RIGHT.rotated(fishing_preview_heading * PI / 4.0)
+		preview_unit.state.visual_moving = fishing_preview_action == "move"
+		preview_unit.state.visual_action = "gather" if fishing_preview_action == "gather" else ""
+		preview_unit.state.gather_kind = "food" if fishing_preview_action == "gather" else ""
+		preview_unit.state.fishing_active = fishing_preview_action == "gather"
+		preview_unit.state.fishing_cycle = previous_fishing_cycle
+		preview_unit.state.action_progress = preview_unit.state.fishing_cycle
 	var view_size := Vector2(preview_viewport.size)
 	preview_unit.position = Vector2(view_size.x * 0.5, view_size.y * (0.63 if preview_context.view_mode_25d else 0.52))
 	preview_unit.scale = Vector2.ONE * clampf(minf(view_size.x / 400.0, view_size.y / 420.0) * 4.0, 3.4, 6.0)
-	if Siege.handles(selected_kind):
-		# Fit tall machines and long throwing arms using their projected bounds.
-		var bounds: Rect2 = siege_renderer.geometry(preview_unit.state).bounds.grow(5.0)
+	if Siege.handles(selected_kind) or selected_kind == "fishing_boat":
+		# Projected bounds include raised equipment and the deployed fishing net.
+		# Fit the complete model inside the panel for either viewing angle.
+		var bounds: Rect2 = fishing_renderer.bounds(preview_unit.state).grow(5.0) if selected_kind == "fishing_boat" else siege_renderer.geometry(preview_unit.state).bounds.grow(5.0)
 		var margin: float = clampf(minf(view_size.x, view_size.y) * 0.06, 12.0, 28.0)
 		var usable := Rect2(Vector2.ONE * margin, (view_size - Vector2.ONE * margin * 2.0).max(Vector2.ONE))
 		var fit: float = minf(usable.size.x / maxf(bounds.size.x, 1.0), usable.size.y / maxf(bounds.size.y, 1.0))
@@ -504,6 +556,10 @@ func _process(delta: float) -> void:
 	if preview_unit == null: return
 	refresh_timer += delta
 	if refresh_timer < 0.1: return
+	var elapsed := refresh_timer
 	refresh_timer = 0.0
-	preview_unit.state.visual_phase += 0.18
+	preview_unit.state.visual_phase += elapsed * (8.0 if preview_unit.state.visual_moving else 1.8)
+	if selected_kind == "fishing_boat" and preview_unit.state.fishing_active:
+		preview_unit.state.fishing_cycle = fposmod(preview_unit.state.fishing_cycle + elapsed / 1.1, 1.0)
+		preview_unit.state.action_progress = preview_unit.state.fishing_cycle
 	preview_unit.queue_redraw()

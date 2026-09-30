@@ -4,17 +4,20 @@ const VisualState = preload("res://scripts/entities/visuals/unit_visual_state.gd
 const Figure = preload("res://scripts/entities/visuals/unit_figure_visual.gd")
 const Siege = preload("res://scripts/entities/visuals/siege_visual.gd")
 const NavalVisual = preload("res://scripts/entities/visuals/naval_visual.gd")
+const Fishing = preload("res://scripts/entities/visuals/fishing_boat_visual.gd")
 
 var canvas_item: CanvasItem
 var state: VisualState
 var figure_renderer := Figure.new()
 var siege_renderer := Siege.new()
+var fishing_renderer := Fishing.new()
 
 func draw(item: CanvasItem, snapshot: VisualState) -> void:
 	canvas_item = item
 	state = snapshot
 	if Figure.handles(state.kind): _draw_figure()
 	elif Siege.handles(state.kind): _draw_siege()
+	elif state.kind == "fishing_boat": _draw_fishing_boat()
 	elif state.view_mode_25d: _draw_vehicle_isometric()
 	else: _draw_vehicle_2d()
 
@@ -69,6 +72,17 @@ func _draw_siege() -> void:
 	if state.hit_flash_timer > 0.0:
 		canvas_item.draw_arc(Vector2(0, -12), state.radius + 6.0, 0.0, TAU, 24, Color("ffe5ac", state.hit_flash_timer / 0.18), 2.0)
 	if state.show_health_bar: _health_bar(siege_renderer.overlay_y(state), maxf(24.0, state.radius * 2.0), 3.0)
+	canvas_item.draw_set_transform_matrix(Transform2D.IDENTITY)
+
+func _draw_fishing_boat() -> void:
+	var canvas := canvas_item.get_viewport().get_canvas_transform()
+	var water_lift := RtsIsoProjection.world_delta(canvas, Vector2(0, -state.ground_height * state.zoom)) if state.view_mode_25d else Vector2.ZERO
+	canvas_item.draw_set_transform_matrix(RtsIsoProjection.upright(canvas, water_lift, state.zoom) if state.view_mode_25d else Transform2D.IDENTITY)
+	fishing_renderer.draw_shadow(canvas_item, state)
+	fishing_renderer.draw(canvas_item, state)
+	if state.hit_flash_timer > 0.0:
+		canvas_item.draw_arc(Vector2(0, -10), state.radius + 6.0, 0.0, TAU, 24, Color("ffe5ac", state.hit_flash_timer / 0.18), 2.0)
+	if state.show_health_bar: _health_bar(fishing_renderer.overlay_y(state), maxf(24.0, state.radius * 2.0), 3.0)
 	canvas_item.draw_set_transform_matrix(Transform2D.IDENTITY)
 
 func _health_bar(y: float, width: float, height: float) -> void:
