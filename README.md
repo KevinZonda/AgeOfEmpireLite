@@ -19,7 +19,7 @@ make run
 
 本机修复引擎已构建，直接 `make run` 即可。其他平台默认使用 PATH 中的 `godot`；也可执行 `make run GODOT=/你的/Godot/路径` 指定引擎。
 
-补丁位于 `patches/godot-4.7.2-macos-frame-wait.patch`，构建产物位于 `docs/godot/bin/`。macOS 的 120 FPS 上限配合该引擎补丁生效，单独限帧无法修复。Godot 编辑器仍可编辑 `project.godot`；直接使用未打补丁的官方引擎运行时，Magnet 干扰仍可能出现。测量、根因和复现方法见 [输入延迟 POC](docs/input-poc/README.md)。
+补丁位于 `patches/godot-4.7.2-macos-frame-wait.patch`，构建产物位于 `docs/godot/bin/`。macOS 的 120 FPS 上限配合该引擎补丁生效，单独限帧无法修复。Godot 编辑器仍可编辑 `project.godot`；直接使用未打补丁的官方引擎运行时，Magnet 干扰仍可能出现。测量、根因和复现方法见 [输入延迟 POC](poc/input-poc/README.md)。
 
 构建还会应用 `patches/godot-4.7.2-macos-headless-wait.patch`，让无窗口任务正常等待下一帧并跳过 Magnet 查询。下方测试命令统一通过 `make run` 使用本地运行时；空项目复现和回归检查见 [headless 等待 PoC](docs/headless-wait-poc/README.md)。
 

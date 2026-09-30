@@ -4,7 +4,7 @@ set -euo pipefail
 cd "$(dirname "$0")/../.."
 SCONS_BIN="${SCONS_BIN:-scons}"
 SOURCE_DIR="$PWD/docs/godot"
-POC_PATCH="$PWD/docs/input-poc/godot-frame-wait.patch"
+POC_PATCH="$PWD/poc/input-poc/godot-frame-wait.patch"
 FIX_PATCH="$PWD/patches/godot-4.7.2-macos-frame-wait.patch"
 if ! git -C "$SOURCE_DIR" apply --reverse --check "$POC_PATCH" 2>/dev/null; then
   if git -C "$SOURCE_DIR" apply --reverse --check "$FIX_PATCH" 2>/dev/null; then

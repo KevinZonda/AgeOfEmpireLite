@@ -1,0 +1,211 @@
+{
+  "capture": "/tmp/aoe-right-click-poc-20260930-090324",
+  "intent_markers": [],
+  "physical_gesture_confirmed": false,
+  "right_events": [
+    {
+      "local_time": "2026-09-30T09:05:19.730710+08:00",
+      "button": 2,
+      "actions": [
+        {
+          "action": "right_order_after",
+          "source": "unhandled_input",
+          "selected_ids": [
+            74574727109,
+            74708944844
+          ]
+        }
+      ]
+    },
+    {
+      "local_time": "2026-09-30T09:05:20.530720+08:00",
+      "button": 2,
+      "actions": [
+        {
+          "action": "right_order_after",
+          "source": "unhandled_input",
+          "selected_ids": [
+            74574727109,
+            74708944844
+          ]
+        }
+      ]
+    },
+    {
+      "local_time": "2026-09-30T09:05:21.206680+08:00",
+      "button": 2,
+      "actions": [
+        {
+          "action": "right_order_after",
+          "source": "unhandled_input",
+          "selected_ids": [
+            74574727109,
+            74708944844
+          ]
+        }
+      ]
+    },
+    {
+      "local_time": "2026-09-30T09:05:23.447490+08:00",
+      "button": 2,
+      "actions": [
+        {
+          "action": "right_order_after",
+          "source": "unhandled_input",
+          "selected_ids": [
+            74574727109,
+            74708944844
+          ]
+        }
+      ]
+    },
+    {
+      "local_time": "2026-09-30T09:05:24.247350+08:00",
+      "button": 2,
+      "actions": [
+        {
+          "action": "right_order_after",
+          "source": "unhandled_input",
+          "selected_ids": [
+            74708944844
+          ]
+        }
+      ]
+    }
+  ],
+  "intervening_left_tap_local_time": "2026-09-30T09:05:21.690740+08:00",
+  "intervening_left_tap": [
+    {
+      "t": 1790730321.690456,
+      "layer": "appkit",
+      "type": 1,
+      "age_ms": 2.176,
+      "buttons": 0,
+      "button_number": 0,
+      "modifiers": 0,
+      "click_count": 1,
+      "event_number": 12808,
+      "window_number": 60515,
+      "x": 931.74,
+      "y": 257.09
+    },
+    {
+      "t": 1790730321.690629,
+      "layer": "appkit",
+      "type": 2,
+      "age_ms": 2.316,
+      "buttons": 0,
+      "button_number": 0,
+      "modifiers": 0,
+      "click_count": 1,
+      "event_number": 12808,
+      "window_number": 60515,
+      "x": 931.74,
+      "y": 257.09
+    },
+    {
+      "action": "input_button",
+      "build_mode": "",
+      "button": 1,
+      "ctrl": false,
+      "cursor_visible": true,
+      "dragging": false,
+      "event_x": 1863.0,
+      "event_y": 1325.0,
+      "focused": true,
+      "input_buttons": 1,
+      "layer": "selection",
+      "mask": 0,
+      "native_buttons": 0,
+      "order_mode": "",
+      "phase": 0,
+      "pressed": true,
+      "previous_left": false,
+      "selected_ids": [
+        74574727109,
+        74708944844
+      ],
+      "source": "input",
+      "start_x": 1592.0,
+      "start_y": 882.0,
+      "t": 1790730321.69074,
+      "x": 1859.0,
+      "y": 1135.0
+    },
+    {
+      "action": "begin_before",
+      "build_mode": "",
+      "cursor_visible": true,
+      "dragging": false,
+      "focused": true,
+      "input_buttons": 1,
+      "layer": "selection",
+      "native_buttons": 0,
+      "order_mode": "",
+      "phase": 0,
+      "previous_left": false,
+      "requested_x": 1862.0,
+      "requested_y": 1326.0,
+      "selected_ids": [
+        74574727109,
+        74708944844
+      ],
+      "source": "unhandled_input",
+      "start_x": 1592.0,
+      "start_y": 882.0,
+      "t": 1790730321.69087,
+      "x": 1859.0,
+      "y": 1135.0
+    },
+    {
+      "action": "input_button",
+      "build_mode": "",
+      "button": 1,
+      "ctrl": false,
+      "cursor_visible": true,
+      "dragging": true,
+      "event_x": 1863.0,
+      "event_y": 1325.0,
+      "focused": true,
+      "input_buttons": 0,
+      "layer": "selection",
+      "mask": 0,
+      "native_buttons": 0,
+      "order_mode": "",
+      "phase": 2,
+      "pressed": false,
+      "previous_left": false,
+      "selected_ids": [
+        74574727109,
+        74708944844
+      ],
+      "source": "input",
+      "start_x": 1862.0,
+      "start_y": 1326.0,
+      "t": 1790730321.69094,
+      "x": 1862.0,
+      "y": 1326.0
+    },
+    {
+      "action": "complete_after",
+      "build_mode": "",
+      "cursor_visible": true,
+      "dragging": false,
+      "focused": true,
+      "input_buttons": 0,
+      "layer": "selection",
+      "native_buttons": 0,
+      "order_mode": "",
+      "phase": 0,
+      "previous_left": false,
+      "selected_ids": [],
+      "source": "input",
+      "start_x": 1862.0,
+      "start_y": 1326.0,
+      "t": 1790730321.69161,
+      "x": 1863.0,
+      "y": 1325.0
+    }
+  ],
+  "interpretation": "All five delivered RIGHT presses issued orders without starting a selection in the following 150ms. An intervening AppKit LEFT tap cleared selection. No user-intent marker establishes that this tap was intended as RIGHT."
+}

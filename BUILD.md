@@ -15,7 +15,7 @@
 run/max_fps.macos=120
 ```
 
-请保留这项配置。当前验证的是补丁与限帧共同生效的方案，单独设置 120 FPS 未能解决问题。测量结果、根因分析和独立诊断工具见 [输入延迟 POC](docs/input-poc/README.md)。
+请保留这项配置。当前验证的是补丁与限帧共同生效的方案，单独设置 120 FPS 未能解决问题。测量结果、根因分析和独立诊断工具见 [输入延迟 POC](poc/input-poc/README.md)。
 
 异步窗口限帧还会扣除当前帧已经消耗的时间，避免慢帧之后仍额外等待完整的 8.33 ms。复现与数据见 [帧预算 PoC](docs/battle-overhead/frame-budget.md)。
 

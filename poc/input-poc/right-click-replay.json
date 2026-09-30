@@ -1,0 +1,66 @@
+{
+	"kind": "synthetic_event_state_replay",
+	"physical_trackpad_reproduction": false,
+	"rows": [
+		{
+			"dragging_after_press": false,
+			"order_after_press": "move",
+			"scenario": "right_only",
+			"selected_after_release": 1,
+			"selection_lost": false,
+			"synthetic": true,
+			"target": [
+				190.0,
+				1116.66796875
+			]
+		},
+		{
+			"dragging_after_press": true,
+			"order_after_press": "move",
+			"scenario": "right_event_left_poll_after",
+			"selected_after_release": 0,
+			"selection_lost": true,
+			"synthetic": true,
+			"target": [
+				190.0,
+				1116.66796875
+			]
+		},
+		{
+			"dragging_after_press": false,
+			"order_after_press": "move",
+			"scenario": "right_event_left_poll_before",
+			"selected_after_release": 1,
+			"selection_lost": false,
+			"synthetic": true,
+			"target": [
+				190.0,
+				1116.66796875
+			]
+		},
+		{
+			"dragging_after_press": false,
+			"order_after_press": "move",
+			"scenario": "left_then_right_same_batch",
+			"selected_after_release": 1,
+			"selection_lost": false,
+			"synthetic": true,
+			"target": [
+				190.0,
+				1116.66796875
+			]
+		},
+		{
+			"dragging_after_press": true,
+			"order_after_press": "idle",
+			"scenario": "left_only",
+			"selected_after_release": 0,
+			"selection_lost": true,
+			"synthetic": true,
+			"target": [
+				190.0,
+				1116.66796875
+			]
+		}
+	]
+}

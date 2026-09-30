@@ -8,7 +8,7 @@ SOURCE_DIR="$PWD/docs/godot"
 FIX_PATCH="$PWD/patches/godot-4.7.2-macos-frame-wait.patch"
 HEADLESS_PATCH="$PWD/patches/godot-4.7.2-macos-headless-wait.patch"
 BUDGET_PATCH="$PWD/patches/godot-4.7.2-macos-frame-budget.patch"
-POC_PATCH="$PWD/docs/input-poc/godot-frame-wait.patch"
+POC_PATCH="$PWD/poc/input-poc/godot-frame-wait.patch"
 if [[ "$(uname -s)" != Darwin ]]; then
   printf 'This runtime build targets macOS.\n' >&2
   exit 1

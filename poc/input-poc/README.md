@@ -1,5 +1,7 @@
 # macOS 拖框起步延迟 POC
 
+触摸板双指轻点偶发右键／左键混淆的独立诊断与回放见 [右键 POC](right-click.md)。该问题尚未通过物理手势采样确认根因，不等同于下方已解决的拖框延迟。
+
 环境：Godot 4.7.2 stable mono (`ed1daf0bf001b61586d9930840f2f1394092c079`)，Apple M2，macOS 14.8.7，Magnet 3.0.7。2026-09-28 本机实测。
 
 ## 已确认的事实
@@ -40,21 +42,21 @@ Magnet 全程开启，在同一测试二进制、同一个游戏窗口里多次�
 
 正式运行时是本项目所需的 macOS 2D / GDScript runtime，含 Noise、字体、SVG 和 2D physics；不包含编辑器、C# 和 3D。最终 runtime 已通过 `tests/smoke.gd` 与 `tests/selection.gd`。旧 F8 光标模式切换、屏幕探针与游戏内计时代码已移除；本目录保留定位过程与独立引擎诊断工具。
 
-`tools/input_poc/run_loop_poc.m` 用 CFRunLoop + 顺序请求线程模拟此调度：30 个请求，原逻辑约 300ms / 32 帧，带计时器检查约 17ms / 3 帧。模拟渲染每帧等待 8ms。它验证调度差异，不代替真实 Magnet 或触摸板测试。
+`poc/input-poc/run_loop_poc.m` 用 CFRunLoop + 顺序请求线程模拟此调度：30 个请求，原逻辑约 300ms / 32 帧，带计时器检查约 17ms / 3 帧。模拟渲染每帧等待 8ms。它验证调度差异，不代替真实 Magnet 或触摸板测试。
 
 ## 复现与日志
 
 ```sh
 # 空场景：1/2/3 切换光标模式，V 切换 VSync，Esc 退出。
-tools/input_poc/run.sh
+poc/input-poc/run.sh
 
 # 原游戏，只增加记录。
-tools/input_poc/run.sh --game
+poc/input-poc/run.sh --game
 
 # 已验证无效的对照：仅加帧率上限。
-tools/input_poc/run.sh --game --responsive-wait
+poc/input-poc/run.sh --game --responsive-wait
 
-python3 tools/input_poc/summarize.py /tmp/aoe-input-poc-日期时间
+python3 poc/input-poc/summarize.py /tmp/aoe-input-poc-日期时间
 ```
 
 `GODOT_BIN` 可指定测试引擎；`TRACE_DIR` 可指定日志目录。诊断 dylib 只在该次运行加载，不安装、不修改系统输入；它每约 2ms 读取 HID/会话按钮和 Quartz 位置，并用 AppKit local monitor 原样返回事件。所有记录以同一系统时间基准关联。自动生成到窗口的拖动不改变 HID 状态，不能当作物理手势测试。
@@ -82,12 +84,12 @@ touch docs/godot/.gdignore
 # 安装 SCons 到独立虚拟环境，然后编译本项目使用的 2D / GDScript 模块。
 python3 -m venv /tmp/aoe-godot-build-env
 /tmp/aoe-godot-build-env/bin/pip install scons==4.11.1
-SCONS_BIN=/tmp/aoe-godot-build-env/bin/scons tools/input_poc/build_engine.sh
+SCONS_BIN=/tmp/aoe-godot-build-env/bin/scons poc/input-poc/build_engine.sh
 
 GODOT_BIN="$PWD/docs/godot/bin/godot.macos.template_debug.arm64.input_poc" \
-  tools/input_poc/run.sh --game --engine-wait-gate
+  poc/input-poc/run.sh --game --engine-wait-gate
 ```
 
 诊断版用 B（或 F6）切换同一二进制中的原逻辑与计时器检查；默认 `PATCHED scheduler`，加 `--original-scheduler` 可从原逻辑开始。诊断版输出带 `.input_poc` 后缀，正式运行时不会被覆盖。诊断环境变量 `AOE_POC_SKIP_WAIT_GATE=1` 会暂时关闭检查。两种模式均保持 `Engine.max_fps=120`、VSync 开启。普通已安装 Godot 不认识这个诊断变量，不能用它验证补丁。
 
-本机本次已验证的诊断二进制另存于 `captures/godot-poc.macos.arm64`，可用 `GODOT_BIN` 指定它复测。`tools/input_poc/build_engine.sh` 会把源码切到诊断补丁；随后运行 `make build-macos` 会恢复正式补丁。
+本机本次已验证的诊断二进制另存于 `captures/godot-poc.macos.arm64`，可用 `GODOT_BIN` 指定它复测。`poc/input-poc/build_engine.sh` 会把源码切到诊断补丁；随后运行 `make build-macos` 会恢复正式补丁。

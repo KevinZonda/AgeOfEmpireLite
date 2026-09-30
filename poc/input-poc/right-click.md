@@ -1,0 +1,135 @@
+# 触摸板双指轻点右键 POC
+
+2026-09-30。用户报告：双指轻点有时表现为左键。使用本项目已有补丁的 Godot 4.7.2 运行时。此轮只添加诊断和事件回放，不修改正式游戏输入逻辑。
+
+## 当前结论
+
+**已用合成回放复现一种会让右键操作产生左键选择效果的游戏路径；尚未证明实际双指轻点出现的事件序列就是该路径。** 真实触摸板需要在诊断窗口操作并标记，不能用程序生成鼠标点击代替。
+
+游戏在 macOS 下同时使用两种输入来源：
+
+- `scripts/game.gd::_unhandled_input()` 根据 Godot 的 `button_index` 下右键指令。
+- `_process()` → `_poll_selection_pointer()` → `_advance_selection_pointer()` 根据 `DisplayServer.mouse_get_button_state()` 的 LEFT 位开始／完成选择。
+
+本地引擎源码 `docs/godot/platform/macos/display_server_macos.mm::mouse_get_button_state()` 直接映射 `[NSEvent pressedMouseButtons]`。`godot_content_view.mm::rightMouseDown()` 明确发出 RIGHT；`mouseDown()` 还会将 Control+左键映射成 RIGHT，但系统 LEFT 状态不会随此转换。这说明事件按钮与轮询状态可以有不同语义，**不说明用户的双指轻点属于 Control+点击**。
+
+## 可重复的回放结果
+
+回放使用真实游戏状态机，测试夹具仅提供独立的原生 LEFT 状态和指针坐标，并放宽 headless 窗口的焦点条件。每轮选中侦察兵，点击可见的空地。结果保存在 [right-click-replay.json](right-click-replay.json)。
+
+| 输入顺序 | 右键移动 | 松开后仍选中侦察兵 |
+| --- | --- | --- |
+| RIGHT 事件，原生状态没有 LEFT | 是 | 是 |
+| RIGHT 事件 → 轮询首次读到 LEFT → 松开 | 是 | **否** |
+| 轮询先读到 LEFT → RIGHT 事件 → 松开 | 是 | 是 |
+| LEFT 事件 → RIGHT 事件（同批）→ 松开 | 是 | 是 |
+| 纯 LEFT 点击空地（对照）| 否 | 否 |
+
+第二行中，RIGHT 到达时尚未 `dragging`，所以 `_input()` 没有执行取消选择并阻塞至松开的分支。下令后轮询的 LEFT 上升沿启动选择候选；LEFT 下降沿完成空地选择，清空已选单位。没有发生 `button_index` 被改写，但最终效果很像右键被当成左键。
+
+若 LEFT 已先启动选择，现有右键取消逻辑能够阻塞本次 LEFT 至松开。这是一个依赖先后顺序的区别，解释了该**合成场景**为何会时好时坏。真实故障仍需确认：是否确有 LEFT 状态；状态发生在 RIGHT 前还是后；或者 AppKit 本来就送出了 LEFT 事件。
+
+运行回放：
+
+```sh
+AOE_RIGHT_CLICK_REPLAY="$PWD/poc/input-poc/right-click-replay.json" \
+  make run RUN_ARGS='--headless --script res://poc/input-poc/right_click_replay.gd'
+```
+
+此轮验证：`RIGHT_CLICK_REPLAY_OK`、原有 `tests/selection.gd` 的 `SELECTION_OK`、native dylib 编译、shell 和 Python 语法检查均通过。
+
+## 自动构造与重复测试
+
+后续扩展为 [right_click_matrix.py](right_click_matrix.py) 与 [right_click_matrix.gd](right_click_matrix.gd)。结果保存于 [right-click-matrix.json](right-click-matrix.json)。运行：
+
+```sh
+python3 poc/input-poc/right_click_matrix.py --repeats 10
+```
+
+**641 种场景 × 3 个地图种子（12345、4242、431）× 每种 10 次 × 3 种输入分发 × 2 种 POC 版本 = 115,380 次合成回放。** 正常左右键对照无失败，相同场景重复结果无变化，直接调用与 `Input.parse_input_event()` 即时分发无结果差异。
+
+这不是 115,380 次物理触摸板操作。原生按钮状态和指针由夹具提供，headless 焦点条件被放宽；画面、设备识别和 AppKit 的物理手势判定未在此矩阵中运行。时间参数用于排列事件和帧轮询先后，采用虚拟时间，不以 sleep 模拟真实负载。
+
+覆盖范围：
+
+- RIGHT 按下／松开与原生 LEFT 上升／下降沿的全部 6 种合法交错顺序，以及每个顺序的 32 种帧轮询位置。
+- 30／60／120 FPS 的帧间隔，4 个帧内起点，0.1／1／5／20ms 的原生按钮脉冲，0／5／30ms 的事件延迟；分别提供 LEFT、RIGHT、BOTH 原生状态。
+- 双指轻点日志中常见的按下／松开同批、原生状态已经回到 0；事件掩码为 LEFT/BOTH 但 `button_index=RIGHT`；重复 RIGHT、RIGHT 的双击标记、迟到的 LEFT 松开；RIGHT 前后实际送达 LEFT；Control+点击的事件／状态语义差异；LEFT 缺失松开。
+- 直接调用游戏入口、Godot 即时输入分发、Godot 缓冲输入后显式 flush。后两者真实经过 Input 与 Viewport 路径，没有跳过 GUI／handled 分发。
+
+对照版本仅存在于测试夹具中：轮询必须先有已送达的 LEFT 按下才允许启动／更新选择，RIGHT 按下撤销该许可。正式 `scripts/game.gd` 未应用此方案。这是验证原因的实验，不是已完成全面回归的正式修复。
+
+下表只统计 `engine_immediate` 的结果；每组包含 3 个种子、每场景 10 次。分母是合成场景执行次数，**不能当作真实触摸板故障率**。
+
+| 合成场景组 | 原游戏清空选择 | 对照版清空选择 |
+| --- | ---: | ---: |
+| 正常 RIGHT、原生 RIGHT，包括瞬时轻点与各种掩码 | 0 / 4,530 | 0 / 4,530 |
+| RIGHT 事件与原生 LEFT 的顺序／轮询位置交错 | 2,520 / 5,760 | 0 / 5,760 |
+| RIGHT 事件与 LEFT 原生脉冲的帧时间组合 | 990 / 4,320 | 0 / 4,320 |
+| RIGHT 事件与 BOTH 原生脉冲的帧时间组合 | 990 / 4,320 | 0 / 4,320 |
+| Control+点击：原生 LEFT 持续 vs 已结束两个对照 | 30 / 60 | 0 / 60 |
+| 实际 LEFT 事件与 RIGHT 事件交错 | 60 / 90 | 60 / 90 |
+
+### 最小故障时间线
+
+来自 `timing_30_0.65_20_0_mask1`，全部按下事件的 `button_index` 都是 RIGHT：
+
+| 虚拟时间 | 操作 | 原游戏状态 |
+| --- | --- | --- |
+| 21.67ms | 原生 LEFT=1；送达 RIGHT 按下 | 侦察兵正常接收 move，仍选中 |
+| 33.33ms | 帧轮询 LEFT=1 | **没有 LEFT 事件也启动选择** |
+| 41.67ms | 原生 LEFT=0；送达 RIGHT 松开 | 选择候选仍存在 |
+| 66.67ms | 帧轮询 LEFT=0 | 完成空地选择，选中数从 1 变 0 |
+
+游戏层原因明确：`_advance_selection_pointer()` 把原生 LEFT 上升沿当作独立的选择起点；`_input()` 的 RIGHT 取消逻辑仅在当时已经 `dragging` 时执行。RIGHT 先到时缺少这一保护，之后的轮询能创建新的选择。这无需假设 Godot 把 RIGHT 的 `button_index` 改成 LEFT。
+
+Control+点击是本地引擎源码已经明确提供的合法语义不一致案例：AppKit LEFT + Control 被转换成 Godot RIGHT，原生 LEFT 状态仍是 LEFT。它支持“这类冲突不是只能依靠随意构造不可能的按钮状态才能发生”，但用户报告的双指轻点没有 Control，不能因此声称已复现相同物理手势。
+
+另一个独立现象：LEFT 按下事件到达时原生状态已经是 0，且 LEFT 松开事件缺失，会保持选择候选。此时 `selection_previous_left_down=false`，轮询看不到下降沿。这在两个 POC 版本中都存在；只有缺失松开这一附加假设才会出现，不是当前 RIGHT 误识别的证据。
+
+### 能排除与仍不能断言的部分
+
+正常 RIGHT 在事件掩码为 LEFT 或 BOTH、原生状态为 0 的情况下也不会变成左键。Godot 的 `Input::_parse_input_event_impl()` 根据 `button_index` 更新 Input 按钮状态，不把事件的 `button_mask` 当作按钮种类。已测试的瞬时轻点、事件缓冲和重复 RIGHT 本身未触发误选择。
+
+如果 AppKit 已送出纯 LEFT 事件，游戏没有足够信息区分“真正的左键点击”和“用户想做右键但系统识别成左键”。矩阵中把 LEFT 放在 RIGHT 后面仍会清空选择，对照版也一样；这不能用轮询修复来覆盖。
+
+因此：**游戏双路径输入漏洞已确认并稳定复现；真实双指轻点偶发识别错误的来源仍未确认。** 首轮窗口日志的可疑点击属于 AppKit 已送出 LEFT 的情况，而不是已观察到 RIGHT 后原生轮询误启动选择。两条证据应分开解释。
+
+## 物理操作采样
+
+### 首轮窗口日志
+
+实际启动的诊断窗口日志位于 `/tmp/aoe-right-click-poc-20260930-090324`，关键事件摘录保存于 [right-click-window-events.json](right-click-window-events.json)。这里记录的是窗口收到的事件，没有 F7/F8 用户意图标记，不能仅凭日志认定每次点击对应的物理手势。
+
+- 日志中的 5 次 RIGHT 按下，AppKit 和 Godot 均一致识别为右键，每次均执行下令；其后 150ms 内没有启动左键选择。没有观察到合成回放中的 RIGHT 后左键轮询启动选择。
+- 北京时间 **09:05:21.690** 有一次夹在右键操作之间的短促 LEFT 点击，将选中对象从 2 个清空为 0 个。AppKit 已报 `left_down/left_up`、`buttonNumber=0`，Godot 收到 LEFT 并完成空地选择。游戏没有把一个已送达的 RIGHT 事件改成 LEFT。
+- 如果用户确认该次点击原本也是双指右键，定位方向应转向 AppKit 送达之前的系统／手势识别；目前缺少该次用户意图证据，不能将它直接认定为误识别。
+
+```sh
+# 完整游戏：默认使用 make run 同款补丁引擎。
+poc/input-poc/right_click.sh --game
+
+# 空场景对照：显示最后一个 Godot 按钮和两种按钮掩码。
+poc/input-poc/right_click.sh
+```
+
+日志目录会打印为 `/tmp/aoe-right-click-poc-日期时间`。`TRACE_DIR` 和 `GODOT_BIN` 可覆盖。运行器只在该进程加载诊断 dylib，native monitor 原样返回事件，不修改输入或系统设置。
+
+完整游戏中先选单位，再在地图空地连续双指轻点下令。可先按 **F7** 标记“下一次有意做右键”；发现误识别后立即按 **F8** 标记。Mac 若默认使用媒体键，使用 Fn+F7／Fn+F8。避免把切回窗口的首次点击当作正常游戏点击。结束后关闭诊断窗口。
+
+```sh
+python3 poc/input-poc/right_click_summary.py /tmp/aoe-right-click-poc-日期时间
+# 默认显示 F8 之前 4 秒；未标记则显示全部按钮和动作。
+# --all 显示完整时间线，--window 8 扩大标记前窗口。
+```
+
+记录层级：
+
+1. Quartz 每约 2ms 读取 HID 和会话的左右键状态，变化时记录。采样可能漏过极短状态，不把“未采到”当作不存在。
+2. AppKit 记录左右键按下／松开、原始 `buttonNumber`、修饰键、点击次数、会话按钮掩码和事件年龄。
+3. Godot 记录 `button_index`、事件掩码、Control、双击标记，以及当时的原生状态与 Input 状态。游戏入口也独立记录，避免已处理的事件未到通用观察器。
+4. 游戏记录左键轮询边沿、选择开始／完成／取消的来源、RIGHT 下令，以及选中对象 ID 的前后变化。
+
+判定方法：有意右键时 AppKit 已是 LEFT，问题发生在游戏接收之前；AppKit 是 RIGHT 但 Godot 游戏入口是 LEFT，检查引擎转换／同步；游戏收到 RIGHT，却由 `source=native_poll` 启动并完成选择，才支持上述游戏双路径冲突。也应检查右键之前是否已完成一次真实 LEFT 选择。仅凭最终丢失选择不能区分这些原因。
+
+按钮编号不能混用：AppKit `buttonNumber` 0=左、1=右；Godot `button_index` 1=左、2=右；本 POC 中按钮状态掩码 1=左、2=右、3=两者。F7/F8 用于记录用户意图；系统状态本身无法告诉我们用户打算做什么手势。
