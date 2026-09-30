@@ -1465,7 +1465,12 @@ func _input(event: InputEvent) -> void:
 			_close_settings()
 			get_viewport().set_input_as_handled()
 		return
-	if not started or game_over: return
+	if not started:
+		if menu_ui.setup_menu_active and menu_panel.visible and event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
+			menu_ui._show_home_menu()
+			get_viewport().set_input_as_handled()
+		return
+	if game_over: return
 	# Active drags receive motion before GUI controls can consume it.
 	if event is InputEventMouseMotion:
 		if dragging:

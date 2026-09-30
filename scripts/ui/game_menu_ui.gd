@@ -44,6 +44,7 @@ var text_scale_choice: OptionButton
 var minimap_size_choice: OptionButton
 var ui_scale_values: Array[float] = []
 var menu_panel: PanelContainer
+var setup_menu_active := false
 var tech_tree_overlay: ColorRect
 var tech_tree_civilization_choice: OptionButton
 var tech_tree_page
@@ -344,6 +345,7 @@ func _clear_menu_panel() -> void:
 		child.queue_free()
 
 func _show_home_menu() -> void:
+	setup_menu_active = false
 	_menu_panel_size(Vector2(600, 550))
 	var box := VBoxContainer.new()
 	box.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -392,6 +394,7 @@ func _show_home_menu() -> void:
 	menu_panel.show()
 
 func _show_setup_menu() -> void:
+	setup_menu_active = true
 	_menu_panel_full_view()
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 10)
@@ -514,7 +517,7 @@ func _show_setup_menu() -> void:
 	footer.add_theme_constant_override("separation", 16)
 	box.add_child(footer)
 	var back_button := Button.new()
-	back_button.text = "返 回"
+	back_button.text = "返回主页  Esc"
 	back_button.custom_minimum_size = Vector2(160, 47)
 	UiStyle._style_menu_button(back_button)
 	back_button.pressed.connect(_show_home_menu)
