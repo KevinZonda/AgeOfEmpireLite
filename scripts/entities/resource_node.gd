@@ -8,6 +8,7 @@ const VegetationVisual = preload("res://scripts/entities/visuals/vegetation_visu
 const FishVisual = preload("res://scripts/entities/visuals/fish_visual.gd")
 const FISH_REDRAW_INTERVAL := 1.0 / 12.0
 const FISH_VISUAL_RADIUS := 38.0
+const ANIMAL_REDRAW_INTERVAL := 0.15
 const DEER_WALK_SPEED := 18.0
 const DEER_FLEE_SPEED := 80.0
 const DEER_THREAT_RADIUS := 75.0
@@ -54,6 +55,7 @@ var boar_attack_pose := 0.0
 var fish_time := 0.0
 var fish_redraw_timer := 0.0
 var fish_visual_seed := 0
+var animal_redraw_timer := 0.0
 
 func setup(resource_kind: String, quantity: int, visual_kind := "") -> void:
 	kind = resource_kind
@@ -88,6 +90,8 @@ func setup(resource_kind: String, quantity: int, visual_kind := "") -> void:
 	boar_attack_pose = 0.0
 	wildlife_attack = 0.0
 	claim_timer = 0.0
+	# Desynchronize repaint ticks so herds do not redraw on the same frame.
+	animal_redraw_timer = deer_rng.randf_range(0.0, ANIMAL_REDRAW_INTERVAL)
 	wander_time = position.x * 0.013 + position.y * 0.019
 	queue_redraw()
 
@@ -207,8 +211,9 @@ func _update_deer_pose(delta: float, movement: Vector2) -> void:
 	deer_gait = move_toward(deer_gait, minf(1.0, movement.length() / maxf(delta * DEER_WALK_SPEED, 0.001)), delta * 8.0)
 	var grazing := not moving and deer_flee_target == Vector2.INF and deer_walk_target == Vector2.INF
 	deer_graze = move_toward(deer_graze, 1.0 if grazing else 0.0, delta * 2.5)
-	# Redraw grazing head motion too, even though the ground anchor is still.
-	queue_redraw()
+	# Repaint on a throttled tick; grazing head motion still updates, just slower.
+	# A fully static pose (no gait, no graze) needs no repaint at all.
+	_throttle_animal_redraw(delta, moving or deer_gait > 0.001 or deer_graze > 0.001)
 
 func _process_boar(delta: float) -> void:
 	if wildlife_hp <= 0.0: return
@@ -253,7 +258,16 @@ func _update_animal_pose(delta: float, movement: Vector2, grazing: bool) -> void
 		animal_phase = fmod(animal_phase + movement.length() * TAU / (32.0 if appearance == "sheep" else 28.0), TAU)
 	animal_gait = move_toward(animal_gait, 1.0 if moving else 0.0, delta * 8.0)
 	animal_graze = move_toward(animal_graze, 1.0 if grazing and not moving else 0.0, delta * 2.5)
-	queue_redraw()
+	_throttle_animal_redraw(delta, moving or animal_gait > 0.001 or animal_graze > 0.001 or boar_attack_pose > 0.0)
+
+func _throttle_animal_redraw(delta: float, animated: bool) -> void:
+	if not animated:
+		animal_redraw_timer = 0.0
+		return
+	animal_redraw_timer += delta
+	if animal_redraw_timer >= ANIMAL_REDRAW_INTERVAL:
+		animal_redraw_timer = fmod(animal_redraw_timer, ANIMAL_REDRAW_INTERVAL)
+		queue_redraw()
 
 func has_wildlife_health() -> bool:
 	return appearance in ["deer", "boar", "sheep"]
@@ -281,8 +295,8 @@ func _process_sheep(delta: float) -> void:
 	if claim_timer <= 0.0:
 		claim_timer = 0.3
 		var closest := 75.0 * 75.0
-		for unit in game.units:
-			if not is_instance_valid(unit) or unit.is_queued_for_deletion() or unit.hp <= 0.0 or unit.kind != "scout" or unit.garrisoned_in != null: continue
+		for unit in game.navigation.nearby_units(position, 75.0):
+			if unit.hp <= 0.0 or unit.kind != "scout": continue
 			var distance := position.distance_squared_to(unit.position)
 			if distance < closest:
 				closest = distance

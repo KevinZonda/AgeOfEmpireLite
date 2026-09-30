@@ -19,7 +19,7 @@ var hp := 1.0:
 	set(value):
 		if health_bar_initialized and not is_equal_approx(hp, value):
 			health_bar_timer = game.HEALTH_BAR_CHANGE_DURATION
-			if is_inside_tree(): queue_redraw()
+			if is_inside_tree() and not _hp_redraw_suspended: queue_redraw()
 		hp = value
 var max_hp := 1.0
 var health_bar_timer := 0.0
@@ -47,6 +47,13 @@ var tax_stockpile := 0
 var tax_timer := 4.0
 var damage_flash_timer := 0.0
 var building_icon: Texture2D
+var farm_redraw_timer := 0.0
+var farm_redraw_fraction := -1.0
+var construction_redraw_timer := 0.0
+var construction_redraw_fraction := -1.0
+var supervise_scan_timer := 0.0
+var supervise_work_rate := 1.0
+var _hp_redraw_suspended := false
 
 func setup(game_ref: Node2D, player_id: int, building_kind: String, under_construction := false, chosen_landmark := "") -> void:
 	game = game_ref
@@ -169,7 +176,13 @@ func work_farm(delta: float, speed: float, harvest_yield: int) -> int:
 		if farm_stage_progress >= farm_stage_work() - 0.000001:
 			farm_stage = "harvesting" if farm_stage == "sowing" else "sowing"
 			farm_stage_progress = 0.0
-	queue_redraw()
+	# Crop growth repaints on quantized progress steps, not every work tick.
+	var crop_fraction := farm_crop_fraction()
+	farm_redraw_timer += delta
+	if farm_redraw_timer >= 0.15 or absf(crop_fraction - farm_redraw_fraction) >= 0.02:
+		farm_redraw_timer = 0.0
+		farm_redraw_fraction = crop_fraction
+		queue_redraw()
 	var food := floori(farm_food_buffer + 0.00001)
 	farm_food_buffer = maxf(0.0, farm_food_buffer - food)
 	return food
@@ -177,8 +190,17 @@ func work_farm(delta: float, speed: float, harvest_yield: int) -> int:
 func advance_construction(delta: float) -> void:
 	if is_complete(): return
 	build_remaining = maxf(0.0, build_remaining - delta)
+	# hp changes every tick; repaint scaffolding progress on quantized steps
+	# instead of letting the hp setter redraw the whole building every frame.
+	_hp_redraw_suspended = true
 	hp = max_hp * (1.0 - 0.7 * build_remaining / maxf(0.1, build_total))
-	queue_redraw()
+	_hp_redraw_suspended = false
+	var progress := 1.0 - build_remaining / maxf(0.1, build_total)
+	construction_redraw_timer += delta
+	if is_complete() or construction_redraw_timer >= 0.15 or absf(progress - construction_redraw_fraction) >= 0.02:
+		construction_redraw_timer = 0.0
+		construction_redraw_fraction = progress
+		queue_redraw()
 	if is_complete():
 		game.building_completed(self)
 
@@ -347,12 +369,16 @@ func _process(delta: float) -> void:
 			relic_income_timer += 4.0
 	if is_complete(): _process_defense(delta)
 	if not is_complete() or production_queue.is_empty(): return
-	var work_rate := 1.0
-	for unit in game.units:
-		if is_instance_valid(unit) and unit.owner_id == owner_id and unit.kind == "imperial_official" and unit.order == "supervise" and unit.target == self and unit.position.distance_to(position) <= 70.0:
-			work_rate = 1.5
-			break
-	production_remaining = maxf(0.0, production_remaining - delta * work_rate)
+	# Supervisor presence is scanned on a slow tick and cached between scans.
+	supervise_scan_timer -= delta
+	if supervise_scan_timer <= 0.0:
+		supervise_scan_timer = 0.25
+		supervise_work_rate = 1.0
+		for unit in game.units:
+			if is_instance_valid(unit) and unit.owner_id == owner_id and unit.kind == "imperial_official" and unit.order == "supervise" and unit.target == self and unit.position.distance_to(position) <= 70.0:
+				supervise_work_rate = 1.5
+				break
+	production_remaining = maxf(0.0, production_remaining - delta * supervise_work_rate)
 	if production_remaining > 0.0: return
 	game.session.changes.begin_transaction()
 	var job: Dictionary = production_queue.pop_front()
