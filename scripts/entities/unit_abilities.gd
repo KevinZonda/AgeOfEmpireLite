@@ -82,6 +82,7 @@ func activate(unit: RtsUnit, ability_id: String) -> bool:
 			if not unit.game.spend(unit.owner_id, status.cost): return false
 			unit.game.spawn_building(unit.owner_id, "scout_camp", status.site)
 			unit.game.fog.update_visibility()
+	unit.queue_redraw()
 	return true
 
 func interrupt_command() -> void:
@@ -111,7 +112,9 @@ func tick(unit: RtsUnit, delta: float) -> bool:
 		unit.hp = minf(unit.max_hp, unit.hp + 2.0 * delta)
 	if conversion_timer > 0.0:
 		conversion_timer = maxf(0.0, conversion_timer - delta)
-		if conversion_timer <= 0.0: unit._finish_conversion()
+		if conversion_timer <= 0.0:
+			unit._finish_conversion()
+			unit.queue_redraw()
 		return true
 	if unit.kind == "monk": unit._heal_ally(delta)
 	unit.movement.tick_charge(delta)

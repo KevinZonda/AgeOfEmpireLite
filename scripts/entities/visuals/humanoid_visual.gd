@@ -114,22 +114,52 @@ static func _arm(canvas: CanvasItem, shoulder: Vector2, hand: Vector2, cloth: Co
 	_dot(canvas, hand, 1.8, SKIN)
 
 static func _body(canvas: CanvasItem, state, pose: Pose) -> void:
+	# Every walking unit shares these joints; costume changes never replace its gait.
 	var width: float = pose.width
 	var top: Vector2 = pose.chest - Vector2(0, 2)
 	var waist: Vector2 = pose.pelvis - Vector2(0, 2)
 	var cloth: Color = state.player_color.darkened(0.16 if pose.back else 0.05)
+	var kind: String = state.kind
+	var robed: bool = kind in ["monk", "imperial_official"]
+	var plated: bool = kind in ["man_at_arms", "arbaletrier"]
+	var lamellar: bool = kind in ["palace_guard", "zhuge_nu"]
+	var mail: bool = kind in ["crossbowman", "spearman"]
+	var hem: Vector2 = waist + Vector2(0, 10 if robed else 5)
+	var hem_width := width * (1.24 if robed else 0.8)
 	_poly(canvas, [top + Vector2(-width, 0), top + Vector2(width, 0), waist + Vector2(width * 0.72, 0), waist + Vector2(-width * 0.72, 0)], cloth, 0.0)
-	_poly(canvas, [waist + Vector2(-width * 0.72, 0), waist + Vector2(width * 0.72, 0), waist + Vector2(width * 0.8, 5), waist + Vector2(-width * 0.8, 5)], cloth, 0.0)
-	_stroke(canvas, PackedVector2Array([top + Vector2(-width, 0), top + Vector2(width, 0), waist + Vector2(width * 0.72, 0), waist + Vector2(width * 0.8, 5), waist + Vector2(-width * 0.8, 5), waist + Vector2(-width * 0.72, 0), top + Vector2(-width, 0)]), EDGE, 1.2)
-	canvas.draw_line(waist + Vector2(-width * 0.8, 1), waist + Vector2(width * 0.8, 1), LEATHER, 2.0)
+	_poly(canvas, [waist + Vector2(-width * 0.72, 0), waist + Vector2(width * 0.72, 0), hem + Vector2(hem_width, 0), hem + Vector2(-hem_width, 0)], cloth.darkened(0.08), 0.0)
+	_stroke(canvas, PackedVector2Array([top + Vector2(-width, 0), top + Vector2(width, 0), waist + Vector2(width * 0.72, 0), hem + Vector2(hem_width, 0), hem + Vector2(-hem_width, 0), waist + Vector2(-width * 0.72, 0), top + Vector2(-width, 0)]), EDGE, 1.2)
+	if plated:
+		_poly(canvas, [top + Vector2(-width, 1), top + Vector2(width, 1), waist + Vector2(width * 0.72, -1), waist + Vector2(-width * 0.72, -1)], STEEL.darkened(0.22 if pose.back else 0.06))
+		canvas.draw_line(top + Vector2(0, 2), waist + Vector2(0, -2), STEEL.lightened(0.18), 1.4)
+		for side in [-1.0, 1.0]:
+			var shoulder: Vector2 = pose.chest + Vector2(side * width, 0)
+			_poly(canvas, [shoulder + Vector2(-3, -2), shoulder + Vector2(3, -2), shoulder + Vector2(3, 3), shoulder + Vector2(-3, 3)], STEEL.darkened(0.12))
+	elif lamellar:
+		var armor: Color = Color("733c35") if kind == "palace_guard" else cloth.darkened(0.27)
+		_poly(canvas, [top + Vector2(-width * 0.9, 1), top + Vector2(width * 0.9, 1), waist + Vector2(width * 0.8, 1), waist + Vector2(-width * 0.8, 1)], armor)
+		for y in [3.0, 7.0, 11.0]:
+			canvas.draw_line(top + Vector2(-width * 0.8, y), top + Vector2(width * 0.8, y), Color("bd9758"), 1.0)
+	elif mail:
+		_poly(canvas, [top + Vector2(-width, 1), top + Vector2(width, 1), top + Vector2(width * 0.8, 6), top + Vector2(-width * 0.8, 6)], STEEL.darkened(0.22))
+		if kind == "crossbowman":
+			for y in [8.0, 11.0]: canvas.draw_line(top + Vector2(-width * 0.7, y), top + Vector2(width * 0.7, y), cloth.darkened(0.28), 0.8)
+	elif kind == "handcannoneer":
+		for side in [-1.0, 1.0]:
+			_poly(canvas, [top + Vector2(side * width, 1), top + Vector2(side * 1.8, 2), waist + Vector2(side * 1.2, 0), waist + Vector2(side * width * 0.72, 0)], LEATHER)
+	if robed:
+		var trim := Color("d9bb72") if kind == "imperial_official" else Color("e1d4a9")
+		canvas.draw_line(top + Vector2(-width * 0.55, 1), waist + Vector2(0, 0), trim, 1.6)
+		canvas.draw_line(top + Vector2(width * 0.55, 1), waist + Vector2(0, 0), trim, 1.6)
+		canvas.draw_line(waist, hem + Vector2(0, -1), cloth.darkened(0.35), 1.0)
+		canvas.draw_line(hem + Vector2(-hem_width, -1), hem + Vector2(hem_width, -1), trim, 1.5)
+		if kind == "monk" and not pose.back: _dot(canvas, pose.chest + Vector2(0, 5), 2.0, Color("e1c376"))
+	canvas.draw_line(waist + Vector2(-width * 0.8, 1), waist + Vector2(width * 0.8, 1), Color("d7b565") if kind in ["palace_guard", "imperial_official"] else LEATHER, 2.0)
 	if pose.back:
 		canvas.draw_line(top + Vector2(0, 1), waist, cloth.darkened(0.18), 1.0)
-	else:
+	elif not plated and not lamellar:
 		canvas.draw_line(top + Vector2(-width * 0.45, 2), waist + Vector2(-width * 0.3, -2), cloth.lightened(0.18), 1.3)
-	if state.kind in ["archer", "longbow"]:
-		_quiver(canvas, pose.chest + Vector2(-pose.across.x * 0.85, 3), pose.back)
-	elif state.kind == "spearman":
-		_poly(canvas, [top + Vector2(-width, 1), top + Vector2(width, 1), top + Vector2(width * 0.8, 6), top + Vector2(-width * 0.8, 6)], STEEL.darkened(0.22))
+	if kind in ["archer", "longbow"]: _quiver(canvas, pose.chest + Vector2(-pose.across.x * 0.85, 3), pose.back)
 	var head: Vector2 = pose.head
 	var head_width := lerpf(4.8, 3.7, pose.profile)
 	var head_points: Array = []
@@ -144,9 +174,33 @@ static func _body(canvas: CanvasItem, state, pose: Pose) -> void:
 			_dot(canvas, head + Vector2(side * 2.6, -1.1), 0.8, EDGE)
 		else:
 			for side in [-1.0, 1.0]: _dot(canvas, head + Vector2(side * 1.7, -0.5), 0.65, EDGE)
-	var hat_width := head_width + (3.0 if state.kind == "villager" else 1.3)
-	var hat: Color = Color("b59861") if state.kind == "villager" else STEEL if state.kind == "spearman" else Color("626848")
-	_poly(canvas, [head + Vector2(-hat_width, -3), head + Vector2(hat_width, -3), head + Vector2(hat_width * 0.6, -7), head + Vector2(-hat_width * 0.6, -7)], hat)
+	var hat_width := head_width + (3.0 if kind in ["villager", "trader"] else 1.3)
+	var hat: Color = Color("b59861") if kind in ["villager", "trader"] else STEEL if mail or plated or kind == "handcannoneer" else Color("626848")
+	if kind == "palace_guard": hat = Color("8c3932")
+	if kind in ["monk", "imperial_official", "zhuge_nu", "grenadier"]: hat = cloth.darkened(0.45)
+	if kind == "monk":
+		_poly(canvas, [head + Vector2(-hat_width, 1), head + Vector2(-hat_width, -4), head + Vector2(-2, -8), head + Vector2(2, -8), head + Vector2(hat_width, -4), head + Vector2(hat_width, 1)], hat)
+		if not pose.back:
+			canvas.draw_line(head + Vector2(-3.2, -1.7), head + Vector2(3.2, -1.7), SKIN, 3.6)
+			if pose.profile > 0.4: _dot(canvas, head + Vector2(signf(pose.direction.x) * 2, -1.1), 0.65, EDGE)
+			else:
+				for side in [-1.0, 1.0]: _dot(canvas, head + Vector2(side * 1.7, -1.1), 0.6, EDGE)
+			canvas.draw_line(head + Vector2(-2, 1), head + Vector2(2, 1), Color("d2c9ac"), 2.0)
+	else:
+		_poly(canvas, [head + Vector2(-hat_width, -3), head + Vector2(hat_width, -3), head + Vector2(hat_width * 0.6, -7), head + Vector2(-hat_width * 0.6, -7)], hat)
+		if kind in ["crossbowman", "handcannoneer", "arbaletrier"]:
+			canvas.draw_line(head + Vector2(-hat_width - 1.4, -3), head + Vector2(hat_width + 1.4, -3), STEEL.darkened(0.08), 2.1)
+		elif kind == "man_at_arms":
+			canvas.draw_line(head + Vector2(-head_width, -2), head + Vector2(head_width, -2), EDGE, 1.3)
+			if not pose.back: canvas.draw_line(head + Vector2(pose.direction.x * 2.0, -2), head + Vector2(pose.direction.x * 2.0, 3), STEEL, 1.5)
+		elif kind == "palace_guard":
+			canvas.draw_line(head + Vector2(0, -7), head + Vector2(0, -12), Color("d7b565"), 2.0)
+			_poly(canvas, [head + Vector2(-1, -12), head + Vector2(4, -11), head + Vector2(2, -7)], Color("983d36"))
+		elif kind == "imperial_official":
+			canvas.draw_line(head + Vector2(-hat_width - 4, -5), head + Vector2(hat_width + 4, -5), hat, 2.3)
+		elif kind == "grenadier":
+			_dot(canvas, head + Vector2(0, -8), 2.2, EDGE)
+			canvas.draw_line(head + Vector2(-head_width, -3), head + Vector2(head_width, -3), Color("b75743"), 1.7)
 	if pose.back: canvas.draw_line(head + Vector2(-head_width, 2), head + Vector2(head_width, 2), LEATHER, 1.8)
 
 static func _equipment(canvas: CanvasItem, state, pose: Pose, bow: bool, attack: bool, pull: float, tool_tip: Vector2, spear_tip: Vector2) -> void:

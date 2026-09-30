@@ -1,20 +1,15 @@
 class_name RtsSelectionPortrait
 extends Control
 
-const CharacterVisual = preload("res://scripts/entities/visuals/character_visual.gd")
 const NavalVisual = preload("res://scripts/entities/visuals/naval_visual.gd")
-const ChineseVisual = preload("res://scripts/entities/visuals/chinese_visual.gd")
-const InfantryVisual = preload("res://scripts/entities/visuals/infantry_visual.gd")
-const SupportVisual = preload("res://scripts/entities/visuals/support_visual.gd")
-const HumanoidVisual = preload("res://scripts/entities/visuals/humanoid_visual.gd")
-const HumanoidPose = preload("res://scripts/entities/visuals/humanoid_pose.gd")
+const Figure = preload("res://scripts/entities/visuals/unit_figure_visual.gd")
 const UnitVisualState = preload("res://scripts/entities/visuals/unit_visual_state.gd")
 const DeerVisual = preload("res://scripts/entities/visuals/deer_visual.gd")
 const LivestockVisual = preload("res://scripts/entities/visuals/livestock_visual.gd")
 
 var subject: Node2D
 var owner_tint := Color("8a9a8e")
-var humanoid_pose := HumanoidPose.new()
+var figure_renderer := Figure.new()
 var humanoid_state := UnitVisualState.new()
 
 func _ready() -> void:
@@ -117,61 +112,36 @@ func _draw_building() -> void:
 func _draw_unit() -> void:
 	var center := Vector2(size.x * 0.5, size.y * 0.5)
 	var unit: RtsUnit = subject
-	var cavalry: bool = unit.stats.get("tags", []).has("cavalry")
 	var naval: bool = unit.stats.get("tags", []).has("naval")
 	var siege: bool = unit.stats.get("tags", []).has("siege")
-	if HumanoidVisual.handles(unit.kind):
-		_draw_humanoid_portrait(unit, center)
+	if Figure.handles(unit.kind):
+		_draw_figure_portrait(unit, center)
 		return
 	draw_colored_polygon(PackedVector2Array([center + Vector2(-32, 39), center + Vector2(-23, 33), center + Vector2(23, 33), center + Vector2(32, 39), center + Vector2(23, 45), center + Vector2(-23, 45)]), Color("1c2524", 0.65))
 	if siege:
 		_draw_siege(unit.kind, center)
 		return
-	if naval or CharacterVisual.handles(unit.kind) or ChineseVisual.handles(unit.kind) or InfantryVisual.handles(unit.kind) or SupportVisual.handles(unit.kind):
+	if naval:
 		draw_set_transform_matrix(Transform2D(Vector2(1.5, 0), Vector2(0, 1.5), center + Vector2(0, 21)))
-		if naval:
-			NavalVisual.draw_25d(self, unit.kind, float(unit.stats.get("radius", 18.0)), owner_tint, unit.passengers.size())
-		elif CharacterVisual.handles(unit.kind):
-			CharacterVisual.draw_25d(self, unit.kind, owner_tint, 0.0, 0.0)
-		elif ChineseVisual.handles(unit.kind):
-			ChineseVisual.draw_25d(self, unit.kind, owner_tint, 0.0, 0.0)
-		elif InfantryVisual.handles(unit.kind):
-			InfantryVisual.draw_25d(self, unit.kind, owner_tint, 0.0, 0.0)
-		else:
-			SupportVisual.draw_25d(self, owner_tint, 0.0, 0.0, unit.carried_relic != null)
+		NavalVisual.draw_25d(self, unit.kind, float(unit.stats.get("radius", 18.0)), owner_tint, unit.passengers.size())
 		draw_set_transform_matrix(Transform2D.IDENTITY)
-		return
-	if cavalry:
-		draw_colored_polygon(PackedVector2Array([center + Vector2(-34, 9), center + Vector2(22, 9), center + Vector2(30, 24), center + Vector2(-22, 26)]), Color("886b4e"))
-		draw_circle(center + Vector2(24, 5), 9, Color("9d7a51"))
-	for x in [-18.0, 18.0]:
-		draw_line(center + Vector2(x * 0.45, 17), center + Vector2(x * 0.55, 35), Color("35302b"), 5)
-	draw_colored_polygon(PackedVector2Array([center + Vector2(-22, -9), center + Vector2(22, -9), center + Vector2(18, 17), center + Vector2(-18, 17)]), owner_tint.darkened(0.15))
-	draw_circle(center + Vector2(0, -23), 13, Color("ddc39b"))
-	if unit.kind == "villager":
-		draw_colored_polygon(PackedVector2Array([center + Vector2(-15, -26), center + Vector2(15, -26), center + Vector2(8, -39), center + Vector2(-8, -39)]), Color("99784a"))
-		draw_line(center + Vector2(20, -16), center + Vector2(26, 21), Color("aa8353"), 3)
-	else:
-		draw_colored_polygon(PackedVector2Array([center + Vector2(-14, -30), center + Vector2(14, -30), center + Vector2(8, -44), center + Vector2(-8, -44)]), Color("acaaa0"))
-		draw_line(center + Vector2(-11, -25), center + Vector2(11, -25), Color("615d54"), 2)
-		if unit.kind in ["archer", "longbow", "crossbowman", "arbaletrier", "zhuge_nu"]:
-			draw_arc(center + Vector2(24, -6), 19, -PI * 0.6, PI * 0.6, 18, Color("d1ba86"), 3)
-		else:
-			draw_line(center + Vector2(26, 23), center + Vector2(27, -48), Color("c9c8b5"), 3)
-			draw_colored_polygon(PackedVector2Array([center + Vector2(27, -51), center + Vector2(21, -38), center + Vector2(33, -38)]), Color("d8d6c0"))
 
-func _draw_humanoid_portrait(unit: RtsUnit, center: Vector2) -> void:
+func _draw_figure_portrait(unit: RtsUnit, center: Vector2) -> void:
 	# Stable three-quarter pose with the same proportions and equipment as the map.
 	humanoid_state.kind = unit.kind
 	humanoid_state.player_color = owner_tint
 	humanoid_state.gather_kind = unit.gather_kind
 	humanoid_state.hunting = unit.kind == "villager" and unit.visual_action == "hunt"
-	var portrait_scale := minf(1.65, minf((size.x - 30.0) / 38.0, (size.y - 30.0) / 60.0))
-	var figure := Transform2D(0.0, Vector2.ONE * portrait_scale, 0.0, center + Vector2(0, 31))
+	humanoid_state.carries_relic = unit.carried_relic != null
+	humanoid_state.shield_active = unit.shield_timer > 0.0
+	var dimensions := Figure.portrait_dimensions(humanoid_state)
+	var portrait_scale := minf(1.65, minf((size.x - 30.0) / dimensions.x, (size.y - 30.0) / dimensions.y))
+	var ground_y := (dimensions.y * 0.5 - 8.0) * portrait_scale if unit.stats.get("tags", []).has("cavalry") else 31.0
+	var figure := Transform2D(0.0, Vector2.ONE * portrait_scale, 0.0, center + Vector2(0, ground_y))
 	draw_set_transform_matrix(figure * Transform2D(0.0, Vector2(1, 0.4), 0.0, Vector2.ZERO))
-	HumanoidVisual.draw_shadow(self)
+	Figure.draw_shadow(self, humanoid_state)
 	draw_set_transform_matrix(figure)
-	HumanoidVisual.draw(self, humanoid_state, humanoid_pose)
+	figure_renderer.draw(self, humanoid_state)
 	draw_set_transform_matrix(Transform2D.IDENTITY)
 
 func _draw_siege(kind: String, center: Vector2) -> void:

@@ -384,5 +384,6 @@ func _tick_official(unit: RtsUnit, delta: float) -> void:
 		if unit.target.tax_stockpile > 0:
 			unit.game.credit_resource(unit.owner_id, "gold", unit.target.tax_stockpile)
 			unit.target.tax_stockpile = 0
+			unit._start_visual_action("tax", 0.55)
 		unit._advance_command()
 	return

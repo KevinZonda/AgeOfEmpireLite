@@ -17,6 +17,14 @@ var facing_right := true
 var facing_direction := Vector2(0.70710678, 0.70710678)
 var action_progress := 0.0
 var action_released := false
+var release_elapsed := -1.0
+var charging := false
+var charge_impact := false
+var movement_speed_factor := 1.0
+var shield_active := false
+var healing := false
+var converting := false
+var tax_active := false
 var passenger_count := 0
 var paling := false
 var gather_kind := ""
@@ -48,6 +56,14 @@ static func capture(unit, existing_state = null):
 	result.facing_direction = Vector2.RIGHT.rotated(round(direction.angle() / (PI / 4.0)) * (PI / 4.0))
 	result.action_progress = clampf(1.0 - unit.visual_action_timer / unit.visual_action_length, 0.0, 1.0) if unit.visual_action_length > 0.0 and unit.visual_action_timer > 0.0 else 0.0
 	result.action_released = unit.visual_action_released
+	result.release_elapsed = unit.visual_release_elapsed
+	result.charging = unit.charging
+	result.charge_impact = unit.visual_charge_impact
+	result.movement_speed_factor = clampf(unit.effective_speed() / 130.0, 0.5, 1.8)
+	result.shield_active = unit.shield_timer > 0.0
+	result.healing = unit.kind == "monk" and unit.visual_action == "heal"
+	result.converting = unit.kind == "monk" and unit.conversion_timer > 0.0
+	result.tax_active = unit.kind == "imperial_official" and (unit.order in ["supervise", "collect_tax"] or unit.visual_action == "tax")
 	result.gather_kind = unit.gather_kind
 	result.hunting = unit.kind == "villager" and (unit.visual_action == "hunt" or unit.order == "gather" and is_instance_valid(unit.target) and unit.target is RtsResource and unit.target.appearance == "deer" and unit.target.wildlife_hp > 0.0)
 	result.hunt_draw = clampf(1.0 - unit.hunt_windup / unit.UnitWork.HUNT_WINDUP, 0.0, 1.0) if unit.hunt_windup >= 0.0 else 0.0
@@ -70,6 +86,7 @@ static func preview(unit_kind: String, definition: Dictionary, color: Color):
 	result.player_color = color
 	result.max_hp = float(definition.get("hp", 1.0))
 	result.hp = result.max_hp
+	result.movement_speed_factor = clampf(float(definition.get("speed", 130.0)) / 130.0, 0.5, 1.8)
 	return result
 
 func update_view(context: Node2D) -> void:

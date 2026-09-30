@@ -222,6 +222,8 @@ var visual_action := ""
 var visual_action_timer := 0.0
 var visual_action_length := 0.0
 var visual_action_released := false
+var visual_release_elapsed := -1.0
+var visual_charge_impact := false
 var visual_idle_timer := 0.0
 var visual_redraw_timer := 0.0
 
@@ -504,17 +506,23 @@ func _tick_visual(delta: float) -> void:
 	visual_last_position = position
 	if not visual_moving and visual_action_timer > 0.0 and order in ["attack", "gather", "build", "repair"] and is_instance_valid(target) and not target.is_queued_for_deletion():
 		_face_direction(target.position - position)
+	var support_active := kind == "monk" and conversion_timer > 0.0 or kind == "imperial_official" and (order in ["supervise", "collect_tax"] or visual_action == "tax") and not visual_moving
+	if support_active and is_instance_valid(target): _face_direction(target.position - position)
 	if visual_moving: visual_phase += delta * (11.0 if stats.get("tags", []).has("cavalry") else 8.0)
+	elif support_active: visual_phase += delta * 4.0
+	if visual_action_released: visual_release_elapsed += delta
 	if visual_action_timer > 0.0: visual_action_timer = maxf(0.0, visual_action_timer - delta)
+	if visual_action_timer <= 0.0 and visual_action != "":
+		visual_action = ""
+		visual_action_released = false
+		visual_release_elapsed = -1.0
+		visual_charge_impact = false
+		queue_redraw()
 	visual_redraw_timer -= delta
-	if visual_moving or visual_action_timer > 0.0:
+	if visual_moving or visual_action_timer > 0.0 or support_active:
 		if visual_redraw_timer <= 0.0:
 			visual_redraw_timer = (0.22 if game.units.size() > 160 else 0.085) if visual_moving else 0.055
 			queue_redraw()
-	elif visual_action != "":
-		visual_action = ""
-		visual_action_released = false
-		queue_redraw()
 	elif game.selected.size() <= 12 and game.selected.has(self):
 		visual_phase += delta * 1.8
 		visual_idle_timer += delta
@@ -531,12 +539,16 @@ func _start_visual_action(action: String, duration: float) -> void:
 	visual_action_length = duration
 	visual_action_timer = duration
 	visual_action_released = false
+	visual_release_elapsed = -1.0
+	visual_charge_impact = false
 	queue_redraw()
-	if owner_id == 0 and game.has_method("play_feedback"):
+	if action in ["attack", "hunt", "gather", "build", "repair"] and owner_id == 0 and game.has_method("play_feedback"):
 		game.play_feedback("attack" if action in ["attack", "hunt"] else "gather" if action == "gather" else "build")
 
-func _mark_visual_impact() -> void:
+func _mark_visual_impact(charged := false) -> void:
 	visual_action_released = true
+	visual_release_elapsed = 0.0
+	visual_charge_impact = charged
 	queue_redraw()
 
 func _action_swing() -> float:

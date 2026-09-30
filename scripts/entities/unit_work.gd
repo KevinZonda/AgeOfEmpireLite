@@ -129,6 +129,8 @@ static func cancel_hunt(unit) -> void:
 		unit.visual_action = ""
 		unit.visual_action_timer = 0.0
 		unit.visual_action_released = false
+		unit.visual_release_elapsed = -1.0
+		unit.visual_charge_impact = false
 		unit.queue_redraw()
 
 static func process_hunt_order(unit, delta: float) -> void:

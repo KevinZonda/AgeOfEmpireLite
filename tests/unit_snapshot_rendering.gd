@@ -2,6 +2,7 @@ extends SceneTree
 
 const Visual = preload("res://scripts/entities/visuals/unit_visual.gd")
 const VisualState = preload("res://scripts/entities/visuals/unit_visual_state.gd")
+const Figure = preload("res://scripts/entities/visuals/unit_figure_visual.gd")
 
 class Context extends Node2D:
 	var started := false
@@ -25,7 +26,7 @@ func _initialize() -> void:
 func _run() -> void:
 	assert(DisplayServer.get_name() != "headless", "This test requires a rendering driver")
 	var viewport := SubViewport.new()
-	viewport.size = Vector2i(220, 220)
+	viewport.size = Vector2i(300, 260)
 	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	root.add_child(viewport)
 	var context := Context.new()
@@ -36,7 +37,9 @@ func _run() -> void:
 	for kind in GameData.UNITS:
 		for mode in 2:
 			context.view_mode_25d = mode == 1
-			var humanoid: bool = kind in ["villager", "spearman", "archer", "longbow"]
+			# Capture actual camera projection, rather than only changing the mode flag.
+			viewport.canvas_transform = Transform2D(Vector2(0.70710678, 0.35355339), Vector2(-0.70710678, 0.35355339), Vector2(150, 170)) if mode == 1 else Transform2D(0.0, Vector2(150, 170))
+			var humanoid: bool = Figure.handles(kind)
 			for pose in (8 if humanoid else 2):
 				context.show_health = humanoid and pose >= 4
 				var unit := RtsUnit.new()
@@ -53,6 +56,14 @@ func _run() -> void:
 					unit.visual_facing_world = Vector2.RIGHT.rotated(pose * PI / 4.0)
 					unit.visual_action_timer = 0.8 if pose < 4 else 0.5
 					unit.visual_action_released = pose >= 4
+					unit.visual_release_elapsed = 0.02 if pose == 4 else 0.15 if pose >= 4 else -1.0
+					unit.charging = kind in ["horseman", "knight", "royal_knight", "fire_lancer"] and pose == 3
+					unit.visual_charge_impact = unit.charging or kind in ["horseman", "knight", "royal_knight", "fire_lancer"] and pose == 4
+					unit.shield_timer = 1.0 if kind == "arbaletrier" and pose >= 4 else 0.0
+					if kind == "monk":
+						unit.visual_action = "heal" if pose == 3 else ""
+						unit.conversion_timer = 2.0 if pose >= 4 else 0.0
+					if kind == "imperial_official": unit.order = "supervise" if pose >= 4 else "idle"
 					if kind == "villager" and pose >= 4:
 						unit.visual_action = "build" if pose == 7 else "gather"
 						unit.gather_kind = "gold" if pose == 5 else "food" if pose == 6 else "wood"
@@ -60,7 +71,7 @@ func _run() -> void:
 					unit.visual_action = "hunt"
 					unit.hunt_windup = 0.1
 				unit.paling_timer = float(pose)
-				unit.position = Vector2(110, 125)
+				unit.position = Vector2.ZERO
 				unit.scale = Vector2.ONE * 2.0
 				unit.process_mode = Node.PROCESS_MODE_DISABLED
 				context.add_child(unit)

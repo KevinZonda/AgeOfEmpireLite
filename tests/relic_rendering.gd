@@ -1,5 +1,8 @@
 extends SceneTree
 
+const Figure = preload("res://scripts/entities/visuals/unit_figure_visual.gd")
+const State = preload("res://scripts/entities/visuals/unit_visual_state.gd")
+
 # Save the code-drawn relic in both camera modes for visual review.
 class PreviewContext extends Node2D:
 	class PreviewFog extends RefCounted:
@@ -12,13 +15,16 @@ class PreviewContext extends Node2D:
 
 class MonkPreview extends Node2D:
 	var view_mode_25d := false
+	var state = State.preview("monk", GameData.UNITS["monk"], Color("4e9bea"))
+	var figure := Figure.new()
 	func _draw() -> void:
+		state.carries_relic = true
 		if view_mode_25d:
 			draw_set_transform_matrix(RtsIsoProjection.upright(get_viewport().get_canvas_transform(), Vector2.ZERO, 3.0))
-			RtsSupportVisual.draw_25d(self, Color("4e9bea"), 0.0, 0.0, true)
+			figure.draw(self, state)
 			draw_set_transform_matrix(Transform2D.IDENTITY)
 		else:
-			RtsSupportVisual.draw_2d(self, Color("4e9bea"), 0.0, 0.0, true)
+			figure.draw(self, state)
 
 func _initialize() -> void:
 	call_deferred("_run")
