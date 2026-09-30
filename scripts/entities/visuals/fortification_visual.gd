@@ -11,7 +11,8 @@ static func draw_topdown(c: CanvasItem, kind: String, bounds: Rect2, palette: Di
 	var dark: Color = face.darkened(0.38)
 	var n0 := 0.27 if stone else 0.34
 	var n1 := 0.73 if stone else 0.66
-	c.draw_rect(bounds.grow(-3.0), dark)
+	# Keep the ground visible around the actual narrow wall strip.
+	_top_quad(c, bounds, 0.0, 1.0, n0 - 0.06, n1 + 0.06, Color(dark, 0.30), wall_vertical)
 	_top_quad(c, bounds, 0.0, 1.0, n0, n1, face, wall_vertical)
 	if stone:
 		_top_quad(c, bounds, 0.02, 0.98, 0.39, 0.61, light.darkened(0.09), wall_vertical)
@@ -29,6 +30,12 @@ static func draw_topdown(c: CanvasItem, kind: String, bounds: Rect2, palette: Di
 			if gate and t > 0.32 and t < 0.68: continue
 			c.draw_circle(_top_point(bounds, t, 0.5, wall_vertical), 2.4, light)
 			c.draw_circle(_top_point(bounds, t, 0.5, wall_vertical), 1.15, dark)
+	if not gate:
+		for t in [0.025, 0.975]:
+			_top_quad(c, bounds, t - 0.025, t + 0.025, n0 - 0.035, n1 + 0.035, light.darkened(0.07), wall_vertical)
+		if not stone:
+			for t in [0.2, 0.5, 0.8]:
+				c.draw_line(_top_point(bounds, t, n0 - 0.05, wall_vertical), _top_point(bounds, t + 0.08, n1 + 0.05, wall_vertical), dark, 1.3)
 	if gate:
 		_gate_topdown(c, bounds, face, light, accent, stone, wall_vertical)
 
@@ -66,12 +73,27 @@ static func _stone_iso(c: CanvasItem, back_a: Vector2, back_b: Vector2, front_a:
 	c.draw_line(back_b + top, front_b + top, trim.darkened(0.2), 1.6)
 	_face(c, front_a, front_b, top, 0.0, 1.0, stone)
 	_course_lines(c, front_a, front_b, top, 0.0, 1.0, mortar)
-	# Merlons alternate with clear gaps rather than forming a solid rail.
+	# A battered stone foot and dressed end quoins make isolated sections
+	# read as masonry, while aligned sections retain the same end profile.
+	var toe := (front_a - back_a) * 0.12
+	_poly(c, [front_a + toe, front_b + toe, front_b + top * 0.16, front_a + top * 0.16], trim.darkened(0.22))
+	for row in 4:
+		var low := top * (float(row) / 4.0)
+		var high := top * (float(row + 1) / 4.0)
+		var width := 0.075 if row % 2 == 0 else 0.055
+		for t in [0.0, 1.0 - width]:
+			_poly(c, [front_a.lerp(front_b, t) + low, front_a.lerp(front_b, t + width) + low, front_a.lerp(front_b, t + width) + high, front_a.lerp(front_b, t) + high], Color(trim.darkened(0.14), 0.6))
+	# A thin projecting cornice supports solid, three-faced merlons.
+	c.draw_line(front_a + top, front_b + top, trim.darkened(0.10), 2.0)
+	var thickness := (back_a - front_a) * 0.25
 	for i in 10:
 		var t := (float(i) + 0.5) / 10.0
-		var at := front_a.lerp(front_b, t) + top
-		c.draw_line(at, at + top * 0.34, shade, 5.0)
-		c.draw_line(at + top * 0.07, at + top * 0.34, trim, 3.2)
+		var a := front_a.lerp(front_b, t - 0.032) + top
+		var b := front_a.lerp(front_b, t + 0.032) + top
+		var up := top * 0.34
+		_poly(c, [a, b, b + up, a + up], trim)
+		_poly(c, [b, b + thickness, b + thickness + up, b + up], shade)
+		_poly(c, [a + up, b + up, b + thickness + up, a + thickness + up], trim.lightened(0.07))
 	# A restrained owner stripe sits below the parapet.
 	c.draw_line(front_a.lerp(front_b, 0.07) + top * 0.82, front_a.lerp(front_b, 0.93) + top * 0.82, accent.darkened(0.23), 1.8)
 
@@ -95,6 +117,16 @@ static func _palisade_iso(c: CanvasItem, back_a: Vector2, back_b: Vector2, front
 		c.draw_line(foot - side * 0.45 + lift * 0.07, foot - side * 0.45 + lift * 0.89, pale.darkened(0.06), 1.0)
 	for h in [0.35, 0.68]:
 		c.draw_line(front_a.lerp(front_b, 0.01) + lift * h, front_a.lerp(front_b, 0.99) + lift * h, dark, 2.6)
+	# Diagonal braces, peg heads and heavier end posts explain the structure.
+	for t in [0.12, 0.42, 0.72]:
+		var a := front_a.lerp(front_b, t) + lift * 0.32
+		var b := front_a.lerp(front_b, t + 0.17) + lift * 0.69
+		c.draw_line(a, b, pale.darkened(0.23), 2.2)
+		for p in [a, b]: c.draw_circle(p, 0.85, dark.darkened(0.26))
+	for t in [0.025, 0.975]:
+		var post := front_a.lerp(front_b, t)
+		c.draw_line(post, post + lift * 1.13, dark, 3.2)
+		c.draw_line(post + lift * 0.06, post + lift * 1.08, pale, 1.4)
 	c.draw_line(front_a.lerp(front_b, 0.07) + lift * 0.73, front_a.lerp(front_b, 0.93) + lift * 0.73, accent.darkened(0.24), 1.8)
 
 # Gatehouse geometry uses the same along-wall/depth basis at both rotations.

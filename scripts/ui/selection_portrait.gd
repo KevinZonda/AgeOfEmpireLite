@@ -108,6 +108,9 @@ func _draw_building() -> void:
 	if building.kind in ["landmark", "wonder", "university", "monastery", "dock", "farm"]:
 		building_portrait_renderer.draw_civic_portrait(self, building.visual_snapshot(), Rect2(Vector2(17, 20), size - Vector2(34, 40)))
 		return
+	if building.kind in ["keep", "outpost", "stone_wall", "stone_gate", "palisade_wall", "palisade_gate"]:
+		building_portrait_renderer.draw_defense_portrait(self, building.visual_snapshot(), Rect2(Vector2(17, 20), size - Vector2(34, 40)))
+		return
 	if RefinedGeometry.handles(building.kind):
 		building_portrait_renderer.draw_refined_portrait(self, building.visual_snapshot(), Rect2(Vector2(17, 20), size - Vector2(34, 40)))
 		return

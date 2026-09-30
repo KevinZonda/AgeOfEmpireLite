@@ -108,6 +108,8 @@ func visual_feature_height() -> float:
 		"university": return 18.0
 		"dock": return 18.0
 		"outpost": return 10.0
+		"stone_wall": return 4.0
+		"palisade_wall": return 2.5
 		"stone_gate": return 21.0
 		"palisade_gate": return 15.0
 		"keep": return 34.0

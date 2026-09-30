@@ -72,7 +72,7 @@ func contains_isometric_visual(snapshot: VisualState, world_point: Vector2, canv
 	var local_point := world_point - state.world_position
 	if state.kind in ["keep", "outpost"] and construction_ratio >= 0.65:
 		if Geometry2D.is_point_in_polygon(local_point - terrain_lift, KeepMonasteryVisual.selection_hull(state, canvas)): return true
-	if state.kind.ends_with("_gate") and construction_ratio >= 0.65:
+	if (state.kind.ends_with("_gate") or state.kind.ends_with("_wall")) and construction_ratio >= 0.65:
 		var top := terrain_lift + RtsIsoProjection.world_delta(canvas, Vector2(0, -(height + state.visual_feature_height()) * state.zoom))
 		var hull := Geometry2D.convex_hull(PackedVector2Array([nw + terrain_lift, ne + terrain_lift, se + terrain_lift, sw + terrain_lift, nw + top, ne + top, se + top, sw + top]))
 		if Geometry2D.is_point_in_polygon(local_point, hull): return true
@@ -142,7 +142,7 @@ func draw(item: CanvasItem, snapshot: VisualState) -> void:
 	var wall_color: Color = palette["wall"]
 	var construction_ratio := 1.0 - state.build_remaining / maxf(state.build_total, 0.1)
 	var art_kind := state.visual_kind()
-	if not (art_kind.ends_with("_wall") or art_kind.ends_with("_gate")) and not ((RefinedGeometry.handles(state.kind) or state.kind in ["farm", "dock", "wonder"] or CivicGeometry.handles(state.kind)) and state.is_complete()):
+	if not (art_kind.ends_with("_wall") or art_kind.ends_with("_gate")) and not ((RefinedGeometry.handles(state.kind) or state.kind in ["farm", "dock", "wonder", "keep", "outpost"] or CivicGeometry.handles(state.kind)) and state.is_complete()):
 		canvas_item.draw_rect(bounds, Color("272d2a"))
 		canvas_item.draw_rect(bounds.grow(-4), wall_color.darkened(0.28) if not state.is_complete() else wall_color)
 	if state.damage_flash_timer > 0.0: canvas_item.draw_rect(bounds.grow(-2), Color("f8ca91", state.damage_flash_timer * 1.4), false, 3.0)
@@ -203,8 +203,8 @@ func _draw_isometric() -> void:
 		FilledPolygon.draw(canvas_item, PackedVector2Array([sw, se, se + se_ground, sw + sw_ground]), Color("817866"))
 		canvas_item.draw_line(sw + sw_ground, se + se_ground, Color("3a3c32", 0.75), 1.4)
 	if not fortification and state.kind != "dock":
-		FilledPolygon.draw(canvas_item, PackedVector2Array([nw, ne, se, sw]), Color("273a30", 0.65))
-	if height > 0.0 and not fortification and not RefinedGeometry.handles(state.kind) and state.kind not in ["farm", "dock", "wonder"] and not CivicGeometry.handles(state.kind):
+		FilledPolygon.draw(canvas_item, PackedVector2Array([nw, ne, se, sw]), Color("273a30", 0.22 if state.kind in ["keep", "outpost"] else 0.65))
+	if height > 0.0 and not fortification and not RefinedGeometry.handles(state.kind) and state.kind not in ["farm", "dock", "wonder", "keep", "outpost"] and not CivicGeometry.handles(state.kind):
 		FilledPolygon.draw(canvas_item, PackedVector2Array([ne + wall_lift, se + wall_lift, se, ne]), color.darkened(0.26))
 		FilledPolygon.draw(canvas_item, PackedVector2Array([sw + wall_lift, se + wall_lift, se, sw]), color)
 		canvas_item.draw_polyline(PackedVector2Array([ne + wall_lift, se + wall_lift, se, ne, ne + wall_lift]), Color("1c2829"), 2.0)
@@ -212,9 +212,10 @@ func _draw_isometric() -> void:
 	var roof_color: Color = Color("a79f89") if state.kind == "landmark" else palette["roof"]
 	if art_kind == "farm": roof_color = Color("735035")
 	if construction_ratio >= 0.65:
-		if not fortification and not RefinedGeometry.handles(state.kind) and state.kind not in ["farm", "dock", "wonder"] and not CivicGeometry.handles(state.kind):
+		if not fortification and not RefinedGeometry.handles(state.kind) and state.kind not in ["farm", "dock", "wonder", "keep", "outpost"] and not CivicGeometry.handles(state.kind):
 			FilledPolygon.draw(canvas_item, PackedVector2Array([nw + wall_lift, ne + wall_lift, se + wall_lift, sw + wall_lift]), roof_color if not open_yard else palette["timber"])
 			canvas_item.draw_polyline(PackedVector2Array([nw + wall_lift, ne + wall_lift, se + wall_lift, sw + wall_lift, nw + wall_lift]), Color("1f2929"), 2.0)
+		if state.kind in ["keep", "outpost"]: _draw_defense_foundation(canvas_item, bounds, palette, canvas, state.zoom)
 		_draw_iso_architecture(art_kind, nw, ne, se, sw, lift, palette, canvas)
 		if state.kind == "landmark" or state.kind == "wonder": _draw_iso_landmark_architecture(lift, canvas)
 	else:
@@ -1042,6 +1043,7 @@ func draw_refined_portrait(item: CanvasItem, snapshot: VisualState, frame: Rect2
 
 func _visible_height(construction_ratio: float) -> float:
 	if (state.kind in ["farm", "dock"] or CivicGeometry.handles(state.kind) or state.kind == "wonder") and construction_ratio >= 0.65: return _civic_display_geometry().height_above_origin
+	if state.kind in ["keep", "outpost"] and construction_ratio >= 0.65: return maxf(0.0, -defense_portrait_bounds(state).position.y)
 	# Finished geometry appears at this stage without height scaling.
 	if RefinedGeometry.handles(state.kind) and construction_ratio >= 0.65:
 		return _refined_geometry().height_above_origin
@@ -1086,4 +1088,60 @@ func draw_civic_portrait(item: CanvasItem, snapshot: VisualState, frame: Rect2) 
 	var fit := minf(frame.size.x / maxf(civic_portrait_bounds.size.x, 0.1), frame.size.y / maxf(civic_portrait_bounds.size.y, 0.1))
 	item.draw_set_transform_matrix(Transform2D(0.0, Vector2.ONE * fit, 0.0, frame.get_center() - civic_portrait_bounds.get_center() * fit))
 	for polygon in civic_portrait_faces: FilledPolygon.draw(item, polygon["points"], polygon["color"])
+	item.draw_set_transform_matrix(Transform2D.IDENTITY)
+
+
+func _draw_defense_foundation(item: CanvasItem, bounds: Rect2, palette: Dictionary, canvas: Transform2D, zoom: float) -> void:
+	var a := bounds.position
+	var b := Vector2(bounds.end.x, bounds.position.y)
+	var c := bounds.end
+	var d := Vector2(bounds.position.x, bounds.end.y)
+	var up := Geometry.up(canvas, zoom, KeepMonasteryVisual.FOUNDATION_HEIGHT)
+	FilledPolygon.draw(item, PackedVector2Array([b, c, c + up, b + up]), palette["wall"].darkened(0.28))
+	FilledPolygon.draw(item, PackedVector2Array([d, c, c + up, d + up]), palette["wall"].darkened(0.13))
+	FilledPolygon.draw(item, PackedVector2Array([a + up, b + up, c + up, d + up]), Color("9a937a"))
+	item.draw_polyline(PackedVector2Array([d + up, c + up, b + up]), Color(palette["trim"], 0.55), 0.7)
+
+
+# The procedural defenses use the same projection and draw calls as the map.
+# Fit their visual hull in canonical screen space without camera or UI overlays.
+func defense_portrait_bounds(snapshot: VisualState) -> Rect2:
+	var projection := Transform2D(Vector2(0.70710678, 0.35355339), Vector2(-0.70710678, 0.35355339), Vector2.ZERO)
+	var hull: PackedVector2Array
+	if snapshot.kind in ["keep", "outpost"]:
+		# Canonical geometry is independent of the current camera zoom.
+		var canonical = VisualState.new()
+		canonical.kind = snapshot.kind
+		canonical.dimensions = snapshot.dimensions
+		canonical.civilization = snapshot.civilization
+		hull = KeepMonasteryVisual.selection_hull(canonical, projection)
+	else:
+		var footprint := Rect2(-snapshot.dimensions * 0.5, snapshot.dimensions)
+		var up := Geometry.up(projection, 1.0, snapshot.isometric_height() + snapshot.visual_feature_height())
+		hull = PackedVector2Array([footprint.position, Vector2(footprint.end.x, footprint.position.y), footprint.end, Vector2(footprint.position.x, footprint.end.y)])
+		for i in 4: hull.append(hull[i] + up)
+	var bounds := Rect2(projection * hull[0], Vector2.ZERO)
+	for point in hull: bounds = bounds.expand(projection * point)
+	return bounds.grow(2.0)
+
+
+func draw_defense_portrait(item: CanvasItem, snapshot: VisualState, frame: Rect2) -> void:
+	state = snapshot
+	var projection := Transform2D(Vector2(0.70710678, 0.35355339), Vector2(-0.70710678, 0.35355339), Vector2.ZERO)
+	var bounds := defense_portrait_bounds(snapshot)
+	var fit := minf(frame.size.x / bounds.size.x, frame.size.y / bounds.size.y)
+	var transform := Transform2D(0.0, Vector2.ONE * fit, 0.0, frame.get_center() - bounds.get_center() * fit)
+	item.draw_set_transform_matrix(transform * projection)
+	var footprint := Rect2(-snapshot.dimensions * 0.5, snapshot.dimensions)
+	var nw := footprint.position
+	var ne := Vector2(footprint.end.x, footprint.position.y)
+	var se := footprint.end
+	var sw := Vector2(footprint.position.x, footprint.end.y)
+	var lift := Geometry.up(projection, 1.0, snapshot.isometric_height())
+	var palette := _architecture_palette()
+	if snapshot.kind in ["keep", "outpost"]:
+		_draw_defense_foundation(item, footprint, palette, projection, 1.0)
+		KeepMonasteryVisual.draw_iso(item, snapshot.kind, nw, ne, se, sw, lift, palette, snapshot.player_color, snapshot.civilization, projection, 1.0)
+	else:
+		FortificationVisual.draw_iso(item, snapshot.kind, nw, ne, se, sw, lift, palette, snapshot.player_color, snapshot.civilization, snapshot.wall_vertical, projection, 1.0)
 	item.draw_set_transform_matrix(Transform2D.IDENTITY)
