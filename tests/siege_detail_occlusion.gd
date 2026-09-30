@@ -61,6 +61,28 @@ func _run() -> void:
 					var color := picture.get_pixelv(Vector2i(pixel.round()))
 					assert(color.g <= color.r * 1.2, "grass cuts through ram post: iso=%s heading=%.2f x=%.1f z=%d" % [iso, heading, x, height])
 				posts += 1
+	# The bolt must visibly project beyond the guide and front crossbeam,
+	# including the diagonal view where a short point disappeared into the frame.
+	var bolt_tips := 0
+	actor.position = Vector2(320, 320)
+	for iso in [false, true]:
+		for heading in [PI / 4, PI / 2, PI * 3 / 4]:
+			for winding in [false, true]:
+				actor.state = Siege.legacy_state("springald", 19, Color("4e9bea"), 0, iso)
+				actor.state.facing_direction = Vector2.RIGHT.rotated(heading)
+				actor.state.visual_action = "attack" if winding else ""
+				actor.state.action_progress = 0.38 if winding else 0.0
+				actor.queue_redraw()
+				await process_frame
+				RenderingServer.force_draw()
+				var picture := viewport.get_texture().get_image()
+				var g = actor.renderer.geometry(actor.state)
+				var draw_back: float = maxf(-g.attack_motion(actor.state), 0.0) * 4.0
+				for forward in [35.0, 37.0]:
+					var pixel: Vector2 = actor.position + g.project(Vector3(0, -forward + draw_back, 17.6)) * SCALE
+					var color := picture.get_pixelv(Vector2i(pixel.round()))
+					assert(color.r > 0.35 and color.b > 0.35 and color.g < color.r * 1.15, "springald point hidden: iso=%s heading=%.2f winding=%s forward=%.1f" % [iso, heading, winding, forward])
+					bolt_tips += 1
 	viewport.free()
-	print("SIEGE_DETAIL_OCCLUSION_OK mouths=%d continuous_posts=%d" % [mouths, posts])
+	print("SIEGE_DETAIL_OCCLUSION_OK mouths=%d continuous_posts=%d bolt_tip_samples=%d" % [mouths, posts, bolt_tips])
 	quit()

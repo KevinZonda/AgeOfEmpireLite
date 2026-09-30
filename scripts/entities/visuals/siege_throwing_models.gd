@@ -145,11 +145,17 @@ static func _springald(g, state) -> void:
 		g.beam(tip - Vector3(0.0, 0.5, 0.0), tip + Vector3(0.0, 0.5, 0.0), 2.6, g.IRON)
 		g.line(tip, nock, g.ROPE, 1.25)
 	if _loaded(state):
-		var head := Vector3(0.0, -22.5 + draw_back, 16.6)
-		g.beam(Vector3(0.0, nock.y + 0.5, 16.6), head, 1.15, g.WOOD_LIGHT)
-		g.beam(head, head + Vector3(0.0, -3.0, 0.0), 2.6, g.IRON_LIGHT)
+		# Keep the loaded bolt proud of the guide and the front frame in oblique views.
+		var head := Vector3(0.0, -29.5 + draw_back, 17.6)
+		g.beam(Vector3(0.0, nock.y + 0.5, 17.6), head, 1.15, g.WOOD_LIGHT)
+		# A solid diamond-section iron point tapers to the bolt's forward tip.
+		var point := head + Vector3(0.0, -8.5, 0.0)
+		var shoulders := [head + Vector3(-2.6, 0.0, 0.0), head + Vector3(0.0, 0.0, 1.4), head + Vector3(2.6, 0.0, 0.0), head + Vector3(0.0, 0.0, -1.4)]
+		for side in 4:
+			g.face([shoulders[side], point, shoulders[(side + 1) % 4]], g.IRON_LIGHT, true)
+		g.face(shoulders, g.IRON, true)
 		for x in [-1.4, 1.4]:
-			g.line(Vector3(x, nock.y + 0.5, 16.6), Vector3(0.0, nock.y - 3.0, 16.6), Color("ccc5a8"), 1.0)
+			g.line(Vector3(x, nock.y + 0.5, 17.6), Vector3(0.0, nock.y - 3.0, 17.6), Color("ccc5a8"), 1.0)
 	g.cylinder(Vector3(-7.5, 16.0, 15.0), Vector3(7.5, 16.0, 15.0), 1.8, g.IRON, 10)
 	g.beam(Vector3(8.0, 16.0, 15.0), Vector3(8.0, 18.5, 18.0), 1.2, g.IRON_LIGHT)
 	g.beam(Vector3(8.0, 18.5, 18.0), Vector3(11.0, 18.5, 18.0), 1.3, g.WOOD)
