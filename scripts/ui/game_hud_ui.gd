@@ -145,7 +145,8 @@ var selection_drag_overlay: Variant
 var top_column: VBoxContainer
 var top_row: HBoxContainer
 var top_tools: HBoxContainer
-var build_tab_bar: HBoxContainer
+var command_side_buttons: Array[Button] = []
+var current_build_pages: Array = []
 var minimap_anchor: Control
 var minimap_panel: PanelContainer
 var minimap_panel_style_2d: StyleBoxFlat
@@ -284,35 +285,27 @@ func _create_hud() -> void:
 	dock.add_theme_constant_override("separation", 9)
 	bottom.add_child(dock)
 	command_panel = PanelContainer.new()
-	command_panel.custom_minimum_size.x = 300
+	command_panel.custom_minimum_size.x = 308
 	command_panel.add_theme_stylebox_override("panel", UiStyle._hud_panel_style(Color("30261b"), 7))
 	dock.add_child(command_panel)
 	var command_column := VBoxContainer.new()
 	command_column.add_theme_constant_override("separation", 5)
 	command_panel.add_child(command_column)
-	var command_header := HBoxContainer.new()
-	command_header.add_theme_constant_override("separation", 4)
-	command_column.add_child(command_header)
 	command_title = Label.new()
-	command_title.text = "命令"
-	command_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	command_title.clip_text = true
 	command_title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	command_title.add_theme_font_size_override("font_size", RtsUiTypography.SUBSECTION_TITLE)
 	command_title.add_theme_color_override("font_color", Color("e8cb85"))
-	command_header.add_child(command_title)
-	build_tab_bar = HBoxContainer.new()
-	build_tab_bar.add_theme_constant_override("separation", 3)
-	build_tab_bar.hide()
-	command_header.add_child(build_tab_bar)
+	command_title.hide()
+	command_column.add_child(command_title)
 	var action_scroll := ScrollContainer.new()
-	action_scroll.custom_minimum_size = Vector2(280, 161)
+	action_scroll.custom_minimum_size = Vector2(294, 170)
 	action_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	action_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	action_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	command_column.add_child(action_scroll)
 	action_bar = GridContainer.new()
-	action_bar.columns = 4
+	action_bar.columns = 5
 	action_bar.add_theme_constant_override("h_separation", 6)
 	action_bar.add_theme_constant_override("v_separation", 4)
 	action_scroll.add_child(action_bar)
@@ -446,9 +439,7 @@ func _apply_minimap_size() -> void:
 
 func _fit_bottom_hud() -> void:
 	if hud_bottom == null: return
-	var font_scale: float = game.text_scale / maxf(0.01, ui_root.scale.x)
-	# Allow the villager's title and build tabs to fit at each font scale.
-	var command_width := maxf(300.0, 173.0 + 110.0 * font_scale)
+	var command_width := maxf(308.0, action_bar.get_combined_minimum_size().x + command_panel.get_theme_stylebox("panel").get_minimum_size().x)
 	if not is_equal_approx(command_panel.custom_minimum_size.x, command_width):
 		command_panel.custom_minimum_size.x = command_width
 	var content_height: float = hud_bottom.get_combined_minimum_size().y
@@ -880,8 +871,9 @@ func _rebuild_actions() -> void:
 		child.queue_free()
 	command_buttons.clear()
 	hotkey_buttons.clear()
-	command_title.text = "命令"
-	build_tab_bar.hide()
+	command_title.hide()
+	command_side_buttons.clear()
+	current_build_pages.clear()
 	if game.selected.is_empty() or not is_instance_valid(game.selected[0]):
 		command_page = 0
 		command_selection_id = 0
@@ -891,9 +883,10 @@ func _rebuild_actions() -> void:
 	if selection_id != command_selection_id:
 		command_page = 0
 		command_selection_id = selection_id
-	action_bar.columns = 4
+	action_bar.columns = 5
 	if item is RtsResource:
 		command_title.text = "采集方式"
+		command_title.show()
 		action_bar.columns = 1
 		var guide := Label.new()
 		guide.text = _resource_guide(item)
@@ -905,11 +898,12 @@ func _rebuild_actions() -> void:
 		return
 	if item.owner_id != 0:
 		command_title.text = "敌方建筑 · 情报" if item is RtsBuilding else "敌方单位 · 情报"
+		command_title.show()
 		return
 	if item is RtsUnit: _build_unit_actions(item)
 	elif item is RtsBuilding: _build_building_actions(item)
 	_refresh_action_buttons()
-	if not build_tab_bar.visible: _paginate_actions()
+	_layout_command_grid()
 
 func _build_unit_actions(item: RtsUnit) -> void:
 	var keys := [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9]
@@ -931,8 +925,7 @@ func _build_unit_actions(item: RtsUnit) -> void:
 		if game.civilizations[0] == "Chinese": pages.append({"title": "王朝", "kinds": []})
 		game.build_page = posmod(game.build_page, pages.size())
 		var page: Dictionary = pages[game.build_page]
-		command_title.text = "村民 · 建造"
-		_show_build_tabs(pages)
+		current_build_pages = pages
 		for kind in page["kinds"]:
 			if kind.is_empty():
 				_add_action_spacer()
@@ -948,7 +941,6 @@ func _build_unit_actions(item: RtsUnit) -> void:
 				_add_landmark_action(choice, keys[action_index] if action_index < keys.size() else KEY_NONE)
 				action_index += 1
 	if (any_military or any_special) and not any_worker:
-		command_title.text = "部队 · 命令"
 		if any_military:
 			if game.players[0]["age"] >= 3 and game.selected.any(func(chosen: Node2D) -> bool: return chosen is RtsUnit and chosen.stats.get("tags", []).has("infantry") and not chosen.stats.get("tags", []).has("siege")):
 				for field_kind in ["field_ram", "field_tower"]:
@@ -1031,54 +1023,65 @@ func _build_unit_actions(item: RtsUnit) -> void:
 		)
 	if not any_worker: _add_action("stop", "停止", {}, KEY_2, "order", func() -> void: game._stop_selected_units())
 
-func _show_build_tabs(pages: Array) -> void:
-	_clear_command_tabs()
-	build_tab_bar.show()
-	for index in pages.size():
-		var tab_index := index
-		var tab := Button.new()
-		tab.text = pages[index]["title"]
-		tab.custom_minimum_size = Vector2(40, 26)
-		UiStyle._style_button(tab, tab_index == game.build_page)
-		tab.pressed.connect(func() -> void:
-			game.build_page = tab_index
-			_rebuild_actions()
-		)
-		build_tab_bar.add_child(tab)
-	var stop := Button.new()
-	stop.text = "■"
-	stop.tooltip_text = "停止选中村民当前的命令"
-	stop.custom_minimum_size = Vector2(26, 26)
-	UiStyle._style_button(stop)
-	stop.pressed.connect(func() -> void: game._stop_selected_units())
-	build_tab_bar.add_child(stop)
-
-func _paginate_actions() -> void:
+# Keep twelve action slots in their original order, with a fixed control column.
+func _layout_command_grid() -> void:
 	var actions: Array[Node] = action_bar.get_children()
-	var page_count := ceili(float(actions.size()) / COMMANDS_PER_PAGE)
-	if page_count <= 1: return
+	var stop: Control
+	for button in command_buttons:
+		if button.icon_kind == "stop":
+			stop = button
+			actions.erase(button)
+			break
+	var is_build_page := not current_build_pages.is_empty()
+	var page_count := current_build_pages.size() if is_build_page else maxi(1, ceili(float(actions.size()) / COMMANDS_PER_PAGE))
 	command_page = clampi(command_page, 0, page_count - 1)
-	var first := command_page * COMMANDS_PER_PAGE
-	for index in actions.size(): actions[index].visible = index >= first and index < first + COMMANDS_PER_PAGE
-	_clear_command_tabs()
-	build_tab_bar.show()
-	for index in page_count:
-		var page_index := index
-		var tab := Button.new()
-		tab.text = str(index + 1)
-		tab.tooltip_text = "命令第 %d 页" % (index + 1)
-		tab.custom_minimum_size = Vector2(26, 26)
-		UiStyle._style_button(tab, index == command_page)
-		tab.pressed.connect(func() -> void:
-			command_page = page_index
+	var page_index: int = game.build_page if is_build_page else command_page
+	var first := 0 if is_build_page else command_page * COMMANDS_PER_PAGE
+	var visible_actions: Array[Control] = []
+	for index in actions.size():
+		actions[index].visible = index >= first and index < first + COMMANDS_PER_PAGE
+		if actions[index].visible: visible_actions.append(actions[index])
+	while visible_actions.size() < COMMANDS_PER_PAGE:
+		_add_action_spacer()
+		visible_actions.append(action_bar.get_child(action_bar.get_child_count() - 1))
+	for direction in [-1, 1]:
+		var next_index := posmod(page_index + direction, page_count)
+		var tip := "上一页" if direction == -1 else "下一页"
+		if is_build_page:
+			tip += "：%s → %s" % [current_build_pages[page_index]["title"], current_build_pages[next_index]["title"]]
+		else:
+			tip += "（%d/%d）" % [page_index + 1, page_count]
+		var arrow := _add_side_button("←" if direction == -1 else "→", tip, func() -> void:
+			if is_build_page: game.build_page = next_index
+			else: command_page = next_index
 			_rebuild_actions()
 		)
-		build_tab_bar.add_child(tab)
+		arrow.disabled = page_count <= 1
+	if stop == null and game.selected[0] is RtsUnit:
+		stop = _add_side_button("■", "停止选中单位当前的命令", func() -> void: game._stop_selected_units())
+	elif stop != null:
+		stop.show()
+		command_side_buttons.append(stop)
+	else:
+		_add_action_spacer()
+		stop = action_bar.get_child(action_bar.get_child_count() - 1)
+	var side_controls: Array[Control] = [command_side_buttons[0], command_side_buttons[1], stop]
+	for row in 3:
+		for column in 4:
+			action_bar.move_child(visible_actions[row * 4 + column], row * 5 + column)
+		action_bar.move_child(side_controls[row], row * 5 + 4)
 
-func _clear_command_tabs() -> void:
-	for child in build_tab_bar.get_children():
-		build_tab_bar.remove_child(child)
-		child.queue_free()
+func _add_side_button(symbol: String, description: String, callback: Callable) -> Button:
+	var button := Button.new()
+	button.text = symbol
+	button.tooltip_text = description
+	button.custom_minimum_size = Vector2(54, 54)
+	button.focus_mode = Control.FOCUS_NONE
+	UiStyle._style_button(button)
+	button.pressed.connect(callback)
+	action_bar.add_child(button)
+	command_side_buttons.append(button)
+	return button
 
 func _selected_has_ability(ability: Dictionary) -> bool:
 	if ability.has("civilization") and game.civilizations[0] != ability["civilization"]: return false
@@ -1091,7 +1094,6 @@ func _selected_has_ability(ability: Dictionary) -> bool:
 func _build_building_actions(item: RtsBuilding) -> void:
 	var keys := [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9]
 	var action_index := 0
-	command_title.text = "%s · 训练与研究" % item.display_label()
 	if item.kind.ends_with("_wall"):
 		var gate_kind := "stone_gate" if item.kind == "stone_wall" else "palisade_gate"
 		var resource := "stone" if gate_kind == "stone_gate" else "wood"

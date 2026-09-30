@@ -16,7 +16,7 @@ func _run() -> void:
 	if game.view_mode_25d:
 		game._toggle_view_mode()
 		await process_frame
-	assert(game.action_bar.get_child_count() == 12, "the construction page should keep all twelve commands")
+	assert(game.action_bar.get_child_count() == 15, "the construction page should keep all twelve commands")
 	assert(game.action_bar.get_rect().end.y <= game.action_bar.get_parent().size.y, "all command rows should be visible")
 	for resolution in [Vector2i(1280, 720), Vector2i(1920, 1080), Vector2i(2560, 1440)]:
 		root.size = resolution
@@ -76,7 +76,7 @@ func _run() -> void:
 	game._rebuild_actions()
 	game._update_hud()
 	for frame in 3: await process_frame
-	assert(game.action_bar.get_child_count() == 12, "large text should retain the full villager construction page")
+	assert(game.action_bar.get_child_count() == 15, "large text should retain the full villager construction page")
 	assert(game.action_bar.get_rect().end.y <= game.action_bar.get_parent().size.y, "all construction commands should remain visible with large text")
 	assert(game.hud_bottom.size.y <= 300.0, "compact selection summary should preserve battlefield space")
 	root.size = Vector2i(1920, 1080)

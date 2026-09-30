@@ -31,7 +31,7 @@ func _run() -> void:
 	game.selected.append(game.units[0])
 	game.build_page = 2
 	game._rebuild_actions()
-	assert(game.hud_ui.build_tab_bar.get_child_count() == 4 and game.command_buttons[0].icon_kind == "zh_barbican", "China should keep its remaining dynasty landmark one tab away")
+	assert(game.hud_ui.command_side_buttons.size() == 3 and game.command_buttons[0].icon_kind == "zh_barbican", "China should keep its remaining dynasty landmark accessible with the page arrows")
 	var archery: RtsBuilding = game.spawn_building(0, "archery_range", Vector2(700, 700))
 	assert(not game.train_unit(archery, "zhuge_nu"))
 	assert(game.train_unit(archery, "archer"))
