@@ -35,7 +35,7 @@ const PlayerActions = preload("res://scripts/player/player_actions.gd")
 var player_selection := PlayerSelection.new()
 var player_input := PlayerInput.new(self)
 var platform_pointer := PlatformPointer.new(self)
-var player_actions := PlayerActions.new(self)
+var player_actions := PlayerActions.new(self, Callable(player_input, "_gameplay_input_allowed"))
 const ContextOrder = preload("res://scripts/player/context_order.gd")
 const PlayerOrders = preload("res://scripts/player/player_orders.gd")
 const MATCH_ECONOMY := preload("res://scripts/match/match_economy.gd")
@@ -503,13 +503,18 @@ func _load_ui_font() -> void:
 	UI_STYLE.load_font()
 
 func _exit_tree() -> void:
+	player_actions.clear()
 	if navigation != null: navigation.shutdown_jobs()
 	if get_tree().node_added.is_connected(_on_ui_node_added): get_tree().node_added.disconnect(_on_ui_node_added)
 	_cancel_selection_drag()
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
+	if what == NOTIFICATION_PREDELETE:
+		# Scene-free matches never enter the tree, so _exit_tree cannot release
+		# catalog callbacks which capture their RefCounted owner.
+		if player_actions != null: player_actions.clear()
+	elif what == NOTIFICATION_APPLICATION_FOCUS_OUT:
 		_cancel_selection_drag()
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	elif what == NOTIFICATION_APPLICATION_FOCUS_IN and started and not paused and not game_over:
@@ -1172,7 +1177,7 @@ func _on_match_feedback(owner_id: int, message: String) -> void:
 	if owner_id == 0: notify_player(message)
 
 func notify_player(message: String) -> void:
-	notice_label.text = message
+	if notice_label != null: notice_label.text = message
 	notice_timer = 3.5
 
 func _process(delta: float) -> void:
@@ -1426,7 +1431,7 @@ func _confirm_wall_line(from: Vector2, to: Vector2, append_order := false) -> vo
 	player_input._confirm_wall_line(from, to, append_order)
 
 func _update_hud() -> void:
-	hud_ui._update_hud()
+	if hud_ui != null: hud_ui._update_hud()
 
 func _prune_hidden_enemy_selection() -> void:
 	PlayerSelection.prune_hidden_enemy_selection(self)
@@ -1468,10 +1473,10 @@ func _refresh_global_queue_panel() -> void:
 	hud_ui._refresh_global_queue_panel()
 
 func _refresh_action_buttons() -> void:
-	hud_ui._refresh_action_buttons()
+	if hud_ui != null: hud_ui._refresh_action_buttons()
 
 func _rebuild_actions() -> void:
-	hud_ui._rebuild_actions()
+	player_actions.rebuild()
 
 func _activate_selected_ability(ability_id: String) -> void:
 	for selection in selected:
@@ -1507,12 +1512,6 @@ func _select_landmark_for_placement(choice_id: String) -> void:
 	build_mode = "landmark"
 	pending_landmark_id = choice_id
 	notify_player("%s：%s。点击地图放置" % [choice["label"], choice["description"]])
-
-func _add_action_spacer() -> void:
-	hud_ui._add_action_spacer()
-
-func _add_action(icon_kind: String, label_text: String, cost: Dictionary, keycode: int, action_type: String, callback: Callable) -> void:
-	hud_ui._add_action(icon_kind, label_text, cost, keycode, action_type, callback)
 
 func _draw() -> void:
 	if not started:

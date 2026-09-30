@@ -59,3 +59,12 @@ python3 tools/check_navigation.py --suite refactor --output /tmp/refactor-checks
 性能比较使用相同引擎和固定种子的 `performance_navigation`／`performance_400`，交替运行基线和重构版本；CPU 模拟耗时与真实渲染帧率分别判断。
 
 进一步删除兼容字段前，应先迁移直接访问这些字段的调用方和测试。输入／快捷键、选择状态已迁移到玩家模块；旧入口仅作为场景与测试适配。
+
+### Player command catalog
+
+`player/player_actions.gd` owns selection-dependent command descriptors, costs,
+page composition, generation guards and execution. `ui/game_hud_ui.gd` renders
+that catalog and presents age choices; it does not register business callbacks.
+PlayerInput supplies the gameplay permission predicate. The catalog supports a
+Game without any HUD and is cleared both on tree exit and Game predelete.
+See `docs/player-command-boundary.md`.

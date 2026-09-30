@@ -25,8 +25,11 @@ func _run() -> void:
 	game.camera.position += site - game.get_global_mouse_position()
 	game.camera.force_update_scroll()
 	var screen_point: Vector2 = game.get_viewport().get_canvas_transform() * site
-	game.hud_ui._add_build_action("house", KEY_NONE)
-	game.command_buttons.back().pressed.emit()
+	var house_button: RtsCommandButton
+	for command in game.command_buttons:
+		if command.icon_kind == "house": house_button = command
+	assert(house_button != null, "worker commands must include house construction")
+	house_button.pressed.emit()
 	assert(game.build_mode == "house")
 	var press := InputEventMouseButton.new()
 	press.button_index = MOUSE_BUTTON_LEFT

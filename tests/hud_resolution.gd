@@ -22,18 +22,19 @@ func _run() -> void:
 		root.size = resolution
 		await process_frame
 		assert(game.get_viewport_rect().size == Vector2(resolution), "game view should follow window resolution")
-		assert(game.hud_bottom.size.y <= 230.0, "bottom HUD should leave more room for the battlefield")
+		assert(game.hud_bottom.size.y <= 241.0, "bottom HUD should leave more room for the battlefield")
 		assert(game.hud_top.size.y <= 54.0, "resource HUD should be a compact single row")
 		assert(is_equal_approx(game.hud_bottom.get_rect().end.y, float(resolution.y)), "bottom HUD should stay at the window edge")
 		assert(is_equal_approx(game.minimap.size.x, game.minimap.size.y), "the 2D minimap should remain square at every resolution")
 		assert(is_equal_approx(game.hud_ui.minimap_panel.size.x, game.hud_ui.minimap_panel.size.y), "the minimap panel should have a 1:1 footprint")
-		assert(is_equal_approx(game.hud_ui.minimap_panel.size.y, game.hud_bottom.size.y), "the default minimap frame should match the HUD height")
+		assert(is_equal_approx(game.hud_ui.minimap_panel.size.y, 230.0), "the default minimap frame should fit a 216px map with 7px padding")
+		assert(game.hud_bottom.size.y + game.hud_top.size.y <= 295.0, "default HUD panels should reserve at least 425px of battlefield at 720p")
 		assert(game.minimap.get_global_rect().position.y >= game.hud_bottom.get_global_rect().position.y, "the default minimap should stay inside the battlefield edge")
 	root.size = Vector2i(1280, 720)
 	game.minimap_size = 264
 	game.hud_ui._apply_minimap_size()
 	await process_frame
-	assert(is_equal_approx(game.hud_bottom.size.y, 230.0), "changing minimap size should not change the bottom HUD height")
+	assert(is_equal_approx(game.hud_bottom.size.y, 241.0), "changing minimap size should not change the bottom HUD height")
 	assert(is_equal_approx(game.hud_bottom.get_rect().end.y, 720.0), "a large minimap should not push the HUD below the screen")
 	assert(game.minimap.size.is_equal_approx(Vector2(264, 264)), "the 2D minimap should follow its size setting")
 	assert(game.hud_ui.minimap_panel.get_global_rect().position.y < game.hud_bottom.get_global_rect().position.y, "the large 2D minimap should extend above the bottom HUD")
@@ -59,7 +60,9 @@ func _run() -> void:
 	game._update_hud()
 	await process_frame
 	assert(game.queue_controls.visible, "production queue controls should remain visible")
-	assert(game.hud_bottom.size.y <= 230.0, "production queue should fit in the bottom HUD")
+	assert(game.hud_bottom.size.y <= 241.0, "production queue should fit in the bottom HUD")
+	assert(game.queue_controls.get_global_rect().end.y <= game.hud_bottom.get_global_rect().end.y, "queued units must remain fully inside the HUD")
+	assert(game.hud_ui.notice_label.get_global_rect().end.y <= game.hud_bottom.get_global_rect().end.y, "queue controls must leave room for feedback")
 	game.ui_scale = 1.5
 	game.text_scale = 2.0
 	game._apply_ui_scales()

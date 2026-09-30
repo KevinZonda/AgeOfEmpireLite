@@ -1968,6 +1968,1024 @@
           "seconds": 2.379,
           "log": "/private/tmp/aoelite-refactor-20260930/navigation-budget-final/navigation_async_poc.log"
         }
+      ],
+      "commit": "09a6e47"
+    },
+    {
+      "phase": "player_commands",
+      "functional": [
+        {
+          "test": "navigation_destination_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.831,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/navigation_destination_poc.log"
+        },
+        {
+          "test": "navigation_boundaries",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.493,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/navigation_boundaries.log"
+        },
+        {
+          "test": "navigation_search_kernel",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.208,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/navigation_search_kernel.log"
+        },
+        {
+          "test": "navigation_kernel_geometry",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.621,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/navigation_kernel_geometry.log"
+        },
+        {
+          "test": "navigation_range_corner_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.619,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/navigation_range_corner_poc.log"
+        },
+        {
+          "test": "navigation_async_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.411,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/navigation_async_poc.log"
+        },
+        {
+          "test": "deer_movement_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.517,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/deer_movement_poc.log"
+        },
+        {
+          "test": "navigation_battle_static_grid_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.242,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/navigation_battle_static_grid_poc.log"
+        },
+        {
+          "test": "navigation_battle_raster_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.824,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/navigation_battle_raster_poc.log"
+        },
+        {
+          "test": "navigation_battle_native_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.615,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/navigation_battle_native_poc.log"
+        },
+        {
+          "test": "navigation_battle_goal_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.616,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/navigation_battle_goal_poc.log"
+        },
+        {
+          "test": "navigation_battle_recovery_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.629,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/navigation_battle_recovery_poc.log"
+        },
+        {
+          "test": "navigation_battle_retry_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.525,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/navigation_battle_retry_poc.log"
+        },
+        {
+          "test": "navigation_search_work",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.623,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/navigation_search_work.log"
+        },
+        {
+          "test": "navigation_grid_raster",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.162,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/navigation_grid_raster.log"
+        },
+        {
+          "test": "navigation_dense_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.26,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/navigation_dense_poc.log"
+        },
+        {
+          "test": "navigation_tasks_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 25.789,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/navigation_tasks_poc.log"
+        },
+        {
+          "test": "navigation_corner_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 26.366,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/navigation_corner_poc.log"
+        },
+        {
+          "test": "navigation_state_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 22.107,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/navigation_state_poc.log"
+        },
+        {
+          "test": "navigation_wildlife_churn_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.698,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/navigation_wildlife_churn_poc.log"
+        },
+        {
+          "test": "navigation_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.665,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/navigation_poc.log"
+        },
+        {
+          "test": "navigation_poc_matrix",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 7.141,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/navigation_poc_matrix.log"
+        },
+        {
+          "test": "navigation_construction_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.075,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/navigation_construction_poc.log"
+        },
+        {
+          "test": "navigation",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.074,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/navigation.log"
+        },
+        {
+          "test": "navigation_routes",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.883,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/navigation_routes.log"
+        },
+        {
+          "test": "navigation_replanning",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.042,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/navigation_replanning.log"
+        },
+        {
+          "test": "group_replanning",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.93,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/group_replanning.log"
+        },
+        {
+          "test": "group_chokepoint",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.799,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/group_chokepoint.log"
+        },
+        {
+          "test": "group_mass_chokepoint",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 12.062,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/group_mass_chokepoint.log"
+        },
+        {
+          "test": "group_multiplayer",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 4.974,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/group_multiplayer.log"
+        },
+        {
+          "test": "terrain_selection_follow",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.579,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/terrain_selection_follow.log"
+        },
+        {
+          "test": "extended_systems",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 3.508,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/extended_systems.log"
+        },
+        {
+          "test": "economy_siege_controls",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.386,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/economy_siege_controls.log"
+        },
+        {
+          "test": "smoke",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 3.516,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/smoke.log"
+        },
+        {
+          "test": "match_services",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.137,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/match_services.log"
+        },
+        {
+          "test": "session_rules_regression",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.87,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/session_rules_regression.log"
+        },
+        {
+          "test": "unit_components_regression",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.137,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/unit_components_regression.log"
+        },
+        {
+          "test": "unit_orders_regression",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.153,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/unit_orders_regression.log"
+        },
+        {
+          "test": "match_simulation_regression",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.212,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/match_simulation_regression.log"
+        },
+        {
+          "test": "settings_store",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.204,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/settings_store.log"
+        },
+        {
+          "test": "match_changes",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 3.098,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/match_changes.log"
+        },
+        {
+          "test": "player_command_catalog",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.654,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/player_command_catalog.log"
+        },
+        {
+          "test": "hud_resolution",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.898,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/hud_resolution.log"
+        },
+        {
+          "test": "right_click_selection",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.509,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/right_click_selection.log"
+        },
+        {
+          "test": "hud_command_pages",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 3.924,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/hud_command_pages.log"
+        },
+        {
+          "test": "player_input_actions_regression",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.384,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/player_input_actions_regression.log"
+        },
+        {
+          "test": "production_queue_regression",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.977,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/production_queue_regression.log"
+        },
+        {
+          "test": "hud_queue_layout",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.984,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/hud_queue_layout.log"
+        },
+        {
+          "test": "display_settings",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 3.32,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/display_settings.log"
+        },
+        {
+          "test": "unit_preview_page",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.996,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/unit_preview_page.log"
+        },
+        {
+          "test": "tech_tree_page",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.586,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/tech_tree_page.log"
+        },
+        {
+          "test": "typography_scale",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.745,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/typography_scale.log"
+        },
+        {
+          "test": "battle_experience",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.288,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/battle_experience.log"
+        },
+        {
+          "test": "enemy_inspection",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.261,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/enemy_inspection.log"
+        },
+        {
+          "test": "health_bar_visibility",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.857,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/health_bar_visibility.log"
+        },
+        {
+          "test": "map_setup_preview",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.86,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/map_setup_preview.log"
+        },
+        {
+          "test": "terrain_generation",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.926,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/terrain_generation.log"
+        },
+        {
+          "test": "visual_state",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.756,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/visual_state.log"
+        },
+        {
+          "test": "unit_visual_coverage",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.49,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/unit_visual_coverage.log"
+        },
+        {
+          "test": "fog_of_war",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.174,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/fog_of_war.log"
+        },
+        {
+          "test": "fog_building_memory",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.063,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/fog_building_memory.log"
+        },
+        {
+          "test": "fog_rendering",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.756,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/fog_rendering.log"
+        },
+        {
+          "test": "fog_unit_flash_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.093,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/fog_unit_flash_poc.log"
+        },
+        {
+          "test": "combat_rules",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.826,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/combat_rules.log"
+        },
+        {
+          "test": "siege_rules",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.826,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/siege_rules.log"
+        },
+        {
+          "test": "aoe4_requested_systems",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.792,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/aoe4_requested_systems.log"
+        },
+        {
+          "test": "chinese",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.402,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/chinese.log"
+        },
+        {
+          "test": "balance_system",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.584,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/balance_system.log"
+        },
+        {
+          "test": "landmark_catalog",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.716,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/landmark_catalog.log"
+        },
+        {
+          "test": "landmark_roles",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.478,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/landmark_roles.log"
+        },
+        {
+          "test": "landmark_selection",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 15.675,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/landmark_selection.log"
+        },
+        {
+          "test": "landmark_occlusion",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 4.501,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/landmark_occlusion.log"
+        },
+        {
+          "test": "rally_landmarks",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 3.915,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/rally_landmarks.log"
+        },
+        {
+          "test": "strategic_expansion",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 9.595,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/strategic_expansion.log"
+        },
+        {
+          "test": "objectives",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.725,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/objectives.log"
+        },
+        {
+          "test": "farm_cycle",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.659,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/farm_cycle.log"
+        },
+        {
+          "test": "deer_gathering",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.652,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/deer_gathering.log"
+        },
+        {
+          "test": "sheep_gathering",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.078,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/sheep_gathering.log"
+        },
+        {
+          "test": "villager_boar_escape",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.857,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/villager_boar_escape.log"
+        },
+        {
+          "test": "build_grid",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.763,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/build_grid.log"
+        },
+        {
+          "test": "build_selection",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.755,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/build_selection.log"
+        },
+        {
+          "test": "selection",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.656,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/selection.log"
+        },
+        {
+          "test": "minimap_projection",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.662,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/minimap_projection.log"
+        },
+        {
+          "test": "isometric_view",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.753,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/isometric_view.log"
+        },
+        {
+          "test": "zoom_projection",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.853,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/zoom_projection.log"
+        },
+        {
+          "test": "map_generator",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 3.603,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/map_generator.log"
+        },
+        {
+          "test": "map_strategy",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 2.486,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/map_strategy.log"
+        },
+        {
+          "test": "map_fairness",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 9.721,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/map_fairness.log"
+        },
+        {
+          "test": "ai_tactics",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.862,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/ai_tactics.log"
+        },
+        {
+          "test": "civ_map_ai",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 3.252,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/civ_map_ai.log"
+        },
+        {
+          "test": "island_ai_strategy",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 14.339,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/island_ai_strategy.log"
+        },
+        {
+          "test": "ai_long_match",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 89.393,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/ai_long_match.log"
+        },
+        {
+          "test": "navigation_range_siege_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.863,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/navigation_range_siege_poc.log"
+        },
+        {
+          "test": "navigation_range_stall_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 0.724,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/navigation_range_stall_poc.log"
+        },
+        {
+          "test": "navigation_segment_broadphase_poc",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": false,
+          "seconds": 1.242,
+          "log": "/private/tmp/aoelite-refactor-20260930/integrated-actions/navigation_segment_broadphase_poc.log"
+        }
+      ],
+      "rendering": [
+        {
+          "test": "unit_snapshot_rendering",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": true,
+          "seconds": 4.546,
+          "log": "/private/tmp/aoelite-refactor-20260930/actions-rendering/unit_snapshot_rendering.log"
+        },
+        {
+          "test": "filled_polygon_rendering",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": true,
+          "seconds": 0.929,
+          "log": "/private/tmp/aoelite-refactor-20260930/actions-rendering/filled_polygon_rendering.log"
+        },
+        {
+          "test": "farm_rendering",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": true,
+          "seconds": 1.475,
+          "log": "/private/tmp/aoelite-refactor-20260930/actions-rendering/farm_rendering.log"
+        },
+        {
+          "test": "landmark_rendering",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": true,
+          "seconds": 2.619,
+          "log": "/private/tmp/aoelite-refactor-20260930/actions-rendering/landmark_rendering.log"
+        },
+        {
+          "test": "relic_rendering",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": true,
+          "seconds": 1.65,
+          "log": "/private/tmp/aoelite-refactor-20260930/actions-rendering/relic_rendering.log"
+        },
+        {
+          "test": "hud_resolution",
+          "passed": true,
+          "exit_code": 0,
+          "timeout": false,
+          "terminated_on_error": false,
+          "rendering": true,
+          "seconds": 3.132,
+          "log": "/private/tmp/aoelite-refactor-20260930/actions-rendering/hud_resolution.log"
+        }
       ]
     }
   ]
