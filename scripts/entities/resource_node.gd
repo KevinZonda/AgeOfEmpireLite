@@ -21,6 +21,7 @@ var initial_amount: int
 var radius := 22.0
 var appearance := ""
 var vegetation_visual: RefCounted
+var ore_visual: RefCounted
 var home_position := Vector2.ZERO
 var wander_time := 0.0
 var claimed_by := -1
@@ -54,6 +55,7 @@ func setup(resource_kind: String, quantity: int, visual_kind := "") -> void:
 	initial_amount = quantity
 	appearance = visual_kind
 	vegetation_visual = VegetationVisual.new(position, kind == "wood") if kind == "wood" or (kind == "food" and appearance not in ["deer", "boar", "sheep", "fish"]) else null
+	ore_visual = OreVisual.new(position, kind) if kind in ["gold", "stone"] else null
 	wildlife_max_hp = 90.0 if appearance == "boar" else 12.0 if appearance == "deer" else 1.0
 	wildlife_hp = wildlife_max_hp
 	health_bar_timer = 0.0
@@ -303,10 +305,13 @@ func _draw() -> void:
 		var ground_lift := RtsIsoProjection.ground_lift(game, position)
 		draw_set_transform_matrix(Transform2D(0.0, ground_lift))
 		if vegetation_visual != null: vegetation_visual.draw_ground(self, kind == "wood")
+		elif ore_visual != null: ore_visual.draw_ground(self)
 		else: draw_circle(Vector2.ZERO, radius * 0.75, Color("1f302a", 0.45))
 		draw_set_transform_matrix(RtsIsoProjection.upright(canvas, ground_lift, game.camera.zoom.x))
 	elif vegetation_visual != null:
 		vegetation_visual.draw_ground(self, kind == "wood")
+	elif ore_visual != null:
+		ore_visual.draw_ground(self)
 	var color := Color("82ba62")
 	match kind:
 		"wood": color = Color("397948")
@@ -345,8 +350,7 @@ func _draw() -> void:
 		if vegetation_visual != null: vegetation_visual.draw(self, false, isometric, float(amount) / maxf(initial_amount, 1))
 	elif kind == "gold" or kind == "stone":
 		var fraction := clampf(float(amount) / maxf(float(initial_amount), 1.0), 0.0, 1.0)
-		if isometric: OreVisual.draw_25d(self, kind, fraction)
-		else: OreVisual.draw_2d(self, kind, fraction)
+		if ore_visual != null: ore_visual.draw(self, isometric, fraction)
 	else:
 		var points := PackedVector2Array([Vector2(-22, 14), Vector2(-16, -10), Vector2(2, -20), Vector2(22, -8), Vector2(20, 17)])
 		draw_colored_polygon(points, color)

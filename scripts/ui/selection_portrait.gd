@@ -9,7 +9,6 @@ const SupportVisual = preload("res://scripts/entities/visuals/support_visual.gd"
 const HumanoidVisual = preload("res://scripts/entities/visuals/humanoid_visual.gd")
 const HumanoidPose = preload("res://scripts/entities/visuals/humanoid_pose.gd")
 const UnitVisualState = preload("res://scripts/entities/visuals/unit_visual_state.gd")
-const OreVisual = preload("res://scripts/entities/visuals/ore_visual.gd")
 const DeerVisual = preload("res://scripts/entities/visuals/deer_visual.gd")
 const LivestockVisual = preload("res://scripts/entities/visuals/livestock_visual.gd")
 
@@ -74,8 +73,11 @@ func _draw_resource() -> void:
 		draw_colored_polygon(PackedVector2Array([center + Vector2(-30, 0), center + Vector2(5, -18), center + Vector2(31, 0), center + Vector2(5, 18)]), Color("c5d9cf"))
 	elif resource.kind == "gold" or resource.kind == "stone":
 		var fraction := clampf(float(resource.amount) / maxf(float(resource.initial_amount), 1.0), 0.0, 1.0)
-		draw_set_transform_matrix(Transform2D(Vector2(1.55, 0), Vector2(0, 1.55), center + Vector2(0, 16)))
-		OreVisual.draw_25d(self, resource.kind, fraction)
+		var fit := minf((size.x - 30.0) / 60.0, (size.y - 30.0) / 58.0)
+		draw_set_transform_matrix(Transform2D(0.0, Vector2.ONE * fit, 0.0, center + Vector2(0, 16 * fit)))
+		if resource.ore_visual != null:
+			resource.ore_visual.draw_ground(self)
+			resource.ore_visual.draw(self, true, fraction)
 		draw_set_transform_matrix(Transform2D.IDENTITY)
 	elif resource.vegetation_visual != null:
 		var is_tree := resource.kind == "wood"
