@@ -1,6 +1,10 @@
 class_name RtsAiController
 extends RefCounted
 
+const Snapshot = preload("res://scripts/ai/ai_snapshot.gd")
+const Profile = preload("res://scripts/ai/ai_profile.gd")
+const EconomyPlan = preload("res://scripts/ai/economy_plan.gd")
+var snapshot: Snapshot
 const TACTICS_SCRIPT = preload("res://scripts/ai/ai_tactics.gd")
 const ECONOMY_SCRIPT = preload("res://scripts/ai/ai_economy.gd")
 
@@ -28,28 +32,31 @@ func _init(game_ref: Node2D, player_id := 1, chosen_difficulty := "normal") -> v
 
 func worker_goal() -> int:
 	var age: int = game.players[owner_id]["age"] if game.players.size() > owner_id else 1
-	var goals: Dictionary = {
-		"easy": [7, 12, 18, 24],
-		"normal": [10, 17, 25, 34],
-		"hard": [14, 21, 31, 42],
-	}
-	return goals[difficulty][clampi(age - 1, 0, 3)]
+	return Profile.for_difficulty(difficulty)["workers"][clampi(age - 1, 0, 3)]
 
 func attack_threshold() -> int:
-	return {"easy": 8, "normal": 5, "hard": 3}[difficulty]
+	return int(Profile.for_difficulty(difficulty)["attack_threshold"])
+
+func think_interval() -> float:
+	return float(Profile.for_difficulty(difficulty)["interval"])
 
 func _has_unfinished_house() -> bool:
 	return _economy._has_unfinished_house()
 
 func tick() -> void:
-	tactic_cooldown = maxf(0.0, tactic_cooldown - {"easy": 6.0, "normal": 3.0, "hard": 1.5}[difficulty])
-	push_cooldown = maxf(0.0, push_cooldown - {"easy": 6.0, "normal": 3.0, "hard": 1.5}[difficulty])
-	site_cooldown = maxf(0.0, site_cooldown - {"easy": 6.0, "normal": 3.0, "hard": 1.5}[difficulty])
+	snapshot = Snapshot.new(game, owner_id)
+	_think()
+	snapshot = null
+
+func _think() -> void:
+	tactic_cooldown = maxf(0.0, tactic_cooldown - think_interval())
+	push_cooldown = maxf(0.0, push_cooldown - think_interval())
+	site_cooldown = maxf(0.0, site_cooldown - think_interval())
 	var workers: Array[RtsUnit] = []
 	var army: Array[RtsUnit] = []
 	var economic_explorers := 0
-	for unit in game.units:
-		if not is_instance_valid(unit) or unit.owner_id != owner_id or unit.garrisoned_in != null: continue
+	for unit in snapshot.units:
+		if not is_instance_valid(unit) or unit.garrisoned_in != null: continue
 		if unit.kind == "villager":
 			workers.append(unit)
 			if unit.order == "move": economic_explorers += 1
@@ -73,6 +80,7 @@ func tick() -> void:
 			if fish != null: unit.issue_command("gather", Vector2.INF, fish)
 		elif unit.kind == "monk" and unit.order == "idle": _assign_monk(unit)
 	_resume_construction(workers)
+	snapshot = Snapshot.new(game, owner_id)
 	var gathering := {"food": 0, "wood": 0, "gold": 0, "stone": 0}
 	for worker in workers:
 		if worker.order == "gather" and is_instance_valid(worker.target):
@@ -106,11 +114,9 @@ func tick() -> void:
 		if army.is_empty(): return
 	var center: RtsBuilding = game._player_center(owner_id)
 	var age: int = game.players[owner_id]["age"]
-	var wants_siege: bool = age >= 3 and game.map_style != "islands" and _unit_count("battering_ram") == 0
-	var wants_monastery: bool = age >= 3 and not wants_siege and not _has_building("monastery")
-	var reserving_strategic_wood := wants_siege or wants_monastery
+	var plan := EconomyPlan.new(age, game.map_style, _unit_count("battering_ram"), _has_building("monastery"))
 	if center != null and not workers.is_empty() and age < RtsTechTree.MAX_AGE and not game.is_age_queued(owner_id):
-		var timing: float = {"easy": 220.0, "normal": 150.0, "hard": 105.0}[difficulty]
+		var timing: float = float(Profile.for_difficulty(difficulty)["age_timing"])
 		var should_advance: bool = game.highest_enemy_age(owner_id) > age or army.size() >= attack_threshold() + 2 or game.match_statistics.elapsed >= timing * float(age - 1)
 		if should_advance and game.can_afford(owner_id, RtsTechTree.age_cost(age)):
 			game.advance_age(owner_id, RtsLandmarkCatalog.preferred_landmark(game.civilizations[owner_id], age, game.map_style))
@@ -118,79 +124,76 @@ func tick() -> void:
 		for choice in RtsLandmarkCatalog.choices_for("Chinese", age, game.players[owner_id]["landmarks"]):
 			if choice["age"] > age or not game.can_afford(owner_id, choice["cost"]): continue
 			if game.construct_landmark(owner_id, choice["id"]): break
-	if center != null and _unit_count("villager") < worker_goal(): game.train_unit(center, "villager")
-	if center != null and game.civilizations[owner_id] == "Chinese" and age >= 2 and _unit_count("imperial_official") < (2 if age >= 3 else 1) and not reserving_strategic_wood:
-		game.train_unit(center, "imperial_official")
+	if center != null and _unit_count("villager") < worker_goal(): _train_unit(center, "villager")
+	if center != null and game.civilizations[owner_id] == "Chinese" and age >= 2 and _unit_count("imperial_official") < (2 if age >= 3 else 1) and not plan.reserving_strategic_wood:
+		_train_unit(center, "imperial_official")
 	if not workers.is_empty() and game.population_cap(owner_id) - game.population_used(owner_id) <= 4 and not _has_unfinished_house():
 		_construct("house", workers[0])
-	if not workers.is_empty() and age >= 2 and not reserving_strategic_wood and game.players[owner_id]["food"] < 450 and _building_count("farm") < mini(12, maxi(2, workers.size() / 3)) and not _has_unfinished_building("farm"):
+	if not workers.is_empty() and age >= 2 and not plan.reserving_strategic_wood and game.players[owner_id]["food"] < 450 and _building_count("farm") < mini(12, maxi(2, workers.size() / 3)) and not _has_unfinished_building("farm"):
 		_construct("farm", workers[0])
-	if not workers.is_empty() and not reserving_strategic_wood:
+	if not workers.is_empty() and not plan.reserving_strategic_wood:
 		for kind in _production_order():
 			if not _has_building(kind):
 				_construct(kind, workers[0])
 				break
 	if not workers.is_empty() and age >= 3 and game.civilizations[owner_id] == "French" and game.map_style != "islands" and not _has_building("keep") and game.can_afford(owner_id, GameData.BUILDINGS["keep"]["cost"]):
 		_economy._construct_french_keep()
-	if not workers.is_empty() and wants_siege and not _has_building("siege_workshop") and game.can_afford(owner_id, GameData.BUILDINGS["siege_workshop"]["cost"]):
+	if not workers.is_empty() and plan.wants_siege and not _has_building("siege_workshop") and game.can_afford(owner_id, GameData.BUILDINGS["siege_workshop"]["cost"]):
 		_construct("siege_workshop", workers[0])
 	_expand_production(workers, army.size(), age)
-	if not workers.is_empty() and not reserving_strategic_wood and age >= 2 and not _has_building("outpost") and game.can_afford(owner_id, GameData.BUILDINGS["outpost"]["cost"]):
+	if not workers.is_empty() and not plan.reserving_strategic_wood and age >= 2 and not _has_building("outpost") and game.can_afford(owner_id, GameData.BUILDINGS["outpost"]["cost"]):
 		_construct("outpost", workers[0])
-	if not workers.is_empty() and not reserving_strategic_wood and age >= 2 and not _has_building("market") and game.can_afford(owner_id, GameData.BUILDINGS["market"]["cost"]):
+	if not workers.is_empty() and not plan.reserving_strategic_wood and age >= 2 and not _has_building("market") and game.can_afford(owner_id, GameData.BUILDINGS["market"]["cost"]):
 		_construct("market", workers[0])
 	if not workers.is_empty() and age >= 2 and game.map_style == "islands" and not _has_building("dock") and game.can_afford(owner_id, GameData.BUILDINGS["dock"]["cost"]):
 		_construct_dock(workers[0])
-	if not workers.is_empty() and wants_monastery and game.can_afford(owner_id, GameData.BUILDINGS["monastery"]["cost"]):
+	if not workers.is_empty() and plan.wants_monastery and game.can_afford(owner_id, GameData.BUILDINGS["monastery"]["cost"]):
 		_construct("monastery", workers[0])
 	_balance_market(age)
-	var age_cost := RtsTechTree.age_cost(age)
-	var save_time: float = {"easy": 220.0, "normal": 150.0, "hard": 105.0}[difficulty] * float(age - 1)
-	var saving_for_age: bool = not age_cost.is_empty() and not game.is_age_queued(owner_id) and (game.match_statistics.elapsed >= save_time or game.highest_enemy_age(owner_id) > age)
+	plan.update_age_saving(age, game.is_age_queued(owner_id), game.match_statistics.elapsed, float(Profile.for_difficulty(difficulty)["age_timing"]), game.highest_enemy_age(owner_id))
 	var enemy_profile := _enemy_profile()
 	for building in game.buildings:
 		if not is_instance_valid(building) or building.owner_id != owner_id or not building.is_complete(): continue
 		if building.landmark_id == "fr_guild_hall" and int(building.landmark_stockpile.get("gold", 0)) >= 120: building.collect_stockpile()
 		if building.landmark_id == "zh_imperial_palace" and building.landmark_ability_cooldown <= 0.0: building.activate_landmark_ability()
-		if building.production_queue.size() >= (2 if difficulty == "easy" else 3): continue
-		if saving_for_age and building.producer_kind() in ["barracks", "archery_range", "stable", "white_tower", "wynguard"]: continue
-		if saving_for_age and building.producer_kind() == "siege_workshop" and game.match_statistics.elapsed < 330.0: continue
-		if not saving_for_age and not reserving_strategic_wood:
+		if building.production_queue.size() >= int(Profile.for_difficulty(difficulty)["queue_limit"]): continue
+		if not plan.allows_production(building.producer_kind(), game.match_statistics.elapsed): continue
+		if plan.allows_research():
 			for tech_id in RtsTechTree.all_researches(game.civilizations[owner_id], building.producer_kind()):
 				if RtsTechTree.can_research(game.civilizations[owner_id], age, building.producer_kind(), tech_id, game.players[owner_id]["researched"]):
 					if game.research_technology(building, tech_id): break
 		if building.producer_kind() == "barracks":
 			var infantry_kind := "spearman" if enemy_profile["cavalry"] >= enemy_profile["ranged"] or age < 3 else "man_at_arms"
-			game.train_unit(building, RtsUnitCatalog.replacement_for(game.civilizations[owner_id], infantry_kind))
+			_train_unit(building, RtsUnitCatalog.replacement_for(game.civilizations[owner_id], infantry_kind))
 		if building.producer_kind() == "archery_range":
 			var ranged_kind := RtsUnitCatalog.replacement_for(game.civilizations[owner_id], "crossbowman")
 			if age < 3 or enemy_profile["heavy"] == 0: ranged_kind = RtsUnitCatalog.replacement_for(game.civilizations[owner_id], "archer")
 			if game.civilizations[owner_id] == "Chinese" and game.players[owner_id].get("dynasty", "") in ["Song", "Yuan", "Ming"] and enemy_profile["heavy"] == 0: ranged_kind = "zhuge_nu"
-			game.train_unit(building, ranged_kind)
+			_train_unit(building, ranged_kind)
 		if building.producer_kind() == "stable":
 			var cavalry_kind := "horseman"
-			if enemy_profile["ranged"] == 0 and not saving_for_age:
+			if enemy_profile["ranged"] == 0 and not plan.saving_for_age:
 				if game.civilizations[owner_id] == "French": cavalry_kind = "royal_knight"
 				elif age >= 3: cavalry_kind = "knight"
-			game.train_unit(building, cavalry_kind)
+			_train_unit(building, cavalry_kind)
 		if building.producer_kind() == "siege_workshop" and _unit_count("battering_ram") < (1 if age == 3 else 2) and game.can_afford(owner_id, GameData.unit_cost("battering_ram")):
-			game.train_unit(building, "battering_ram")
+			_train_unit(building, "battering_ram")
 		if building.producer_kind() == "white_tower":
-			game.train_unit(building, "spearman" if enemy_profile["cavalry"] > 0 else "longbow")
-		if building.producer_kind() == "wynguard": game.train_unit(building, "longbow")
-		if building.producer_kind() == "town_center" and building != center and _unit_count("villager") < worker_goal(): game.train_unit(building, "villager")
+			_train_unit(building, "spearman" if enemy_profile["cavalry"] > 0 else "longbow")
+		if building.producer_kind() == "wynguard": _train_unit(building, "longbow")
+		if building.producer_kind() == "town_center" and building != center and _unit_count("villager") < worker_goal(): _train_unit(building, "villager")
 		if building.producer_kind() == "market" and _unit_count("trader") < 1:
-			game.train_unit(building, "trader")
+			_train_unit(building, "trader")
 		if building.kind == "dock" and _unit_count("fishing_boat") < 2:
-			game.train_unit(building, "fishing_boat")
+			_train_unit(building, "fishing_boat")
 		if building.kind == "dock" and _unit_count("fishing_boat") >= 1 and _unit_count("warship") < 1:
-			game.train_unit(building, "warship")
+			_train_unit(building, "warship")
 		if building.kind == "dock" and _unit_count("arrow_ship") < 2:
-			game.train_unit(building, "arrow_ship")
+			_train_unit(building, "arrow_ship")
 		if building.kind == "dock" and game.map_style == "islands" and _unit_count("transport_ship") < 1:
-			game.train_unit(building, "transport_ship")
+			_train_unit(building, "transport_ship")
 		if building.kind == "monastery" and _unit_count("monk") < 3:
-			game.train_unit(building, "monk")
+			_train_unit(building, "monk")
 	_recover_stalled_attacks(army)
 	if _tactical_orders(army): return
 	_secure_sacred_site(army)
@@ -416,3 +419,8 @@ func _construct(kind: String, _worker: RtsUnit) -> void:
 
 func _construct_dock(_worker: RtsUnit) -> void:
 	_economy._construct_dock(_worker)
+
+func _train_unit(building: RtsBuilding, kind: String) -> bool:
+	var trained: bool = game.train_unit(building, kind)
+	if trained and snapshot != null: snapshot.add_unit(kind)
+	return trained

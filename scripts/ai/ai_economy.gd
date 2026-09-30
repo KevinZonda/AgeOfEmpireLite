@@ -10,9 +10,7 @@ func _init(ai: RefCounted) -> void:
 	owner_id = ai.owner_id
 
 func _has_unfinished_house() -> bool:
-	for building in game.buildings:
-		if is_instance_valid(building) and building.owner_id == owner_id and building.kind == "house" and not building.is_complete(): return true
-	return false
+	return _has_unfinished_building("house")
 
 func _needed_resource(gathering: Dictionary, worker_count: int) -> String:
 	var bank: Dictionary = game.players[owner_id]
@@ -49,22 +47,30 @@ func _expand_production(workers: Array[RtsUnit], army_size: int, age: int) -> vo
 			return
 
 func _has_building(kind: String) -> bool:
+	var controller = _controller.get_ref()
+	if controller.snapshot != null: return controller.snapshot.building_count(kind) > 0
 	for building in game.buildings:
 		if is_instance_valid(building) and building.owner_id == owner_id and building.kind == kind: return true
 	return false
 
 func _building_count(kind: String) -> int:
+	var controller = _controller.get_ref()
+	if controller.snapshot != null: return controller.snapshot.building_count(kind)
 	var count := 0
 	for building in game.buildings:
 		if is_instance_valid(building) and building.owner_id == owner_id and building.kind == kind: count += 1
 	return count
 
 func _has_unfinished_building(kind: String) -> bool:
+	var controller = _controller.get_ref()
+	if controller.snapshot != null: return controller.snapshot.has_unfinished(kind)
 	for building in game.buildings:
 		if is_instance_valid(building) and building.owner_id == owner_id and building.kind == kind and not building.is_complete(): return true
 	return false
 
 func _unit_count(kind: String) -> int:
+	var controller = _controller.get_ref()
+	if controller.snapshot != null: return controller.snapshot.unit_count(kind)
 	var count := 0
 	for unit in game.units:
 		if is_instance_valid(unit) and unit.owner_id == owner_id and unit.kind == kind: count += 1
@@ -149,7 +155,7 @@ func _construct(kind: String, _worker: RtsUnit) -> void:
 			var builder := _construction_worker(forward)
 			if builder != null:
 				var builders: Array[RtsUnit] = [builder]
-				game.place_building(owner_id, kind, forward, builders)
+				_place_building(owner_id, kind, forward, builders)
 				return
 	if kind == "farm":
 		for unit in game.units:
@@ -160,7 +166,7 @@ func _construct(kind: String, _worker: RtsUnit) -> void:
 				var approach: Vector2 = nearby + (unit.position - nearby).normalized() * (float(GameData.BUILDINGS[kind]["size"].x) * 0.6 + unit.radius())
 				if not game.navigation._segment_clear(unit.position, approach, unit.radius(), unit): continue
 				var farm_builders: Array[RtsUnit] = [unit]
-				game.place_building(owner_id, kind, nearby, farm_builders)
+				_place_building(owner_id, kind, nearby, farm_builders)
 				return
 	for attempt in 24:
 		var point := base + Vector2.from_angle(rng.randf() * TAU) * rng.randf_range(105, 245) if kind == "farm" else base + Vector2.from_angle(rng.randf() * TAU) * rng.randf_range(120, 360)
@@ -168,7 +174,7 @@ func _construct(kind: String, _worker: RtsUnit) -> void:
 			var worker := _construction_worker(point)
 			if worker == null: continue
 			var builders: Array[RtsUnit] = [worker]
-			game.place_building(owner_id, kind, point, builders)
+			_place_building(owner_id, kind, point, builders)
 			return
 
 func _construct_french_keep() -> void:
@@ -181,7 +187,7 @@ func _construct_french_keep() -> void:
 			var worker := _construction_worker(point)
 			if worker == null: continue
 			var builders: Array[RtsUnit] = [worker]
-			game.place_building(owner_id, "keep", point, builders)
+			_place_building(owner_id, "keep", point, builders)
 			return
 
 func _construct_dock(_worker: RtsUnit) -> void:
@@ -194,5 +200,11 @@ func _construct_dock(_worker: RtsUnit) -> void:
 				var worker := _construction_worker(point)
 				if worker == null: continue
 				var builders: Array[RtsUnit] = [worker]
-				game.place_building(owner_id, "dock", point, builders)
+				_place_building(owner_id, "dock", point, builders)
 				return
+
+func _place_building(owner: int, kind: String, point: Vector2, workers: Array[RtsUnit]) -> bool:
+	var placed: bool = game.place_building(owner, kind, point, workers)
+	var controller = _controller.get_ref()
+	if placed and controller.snapshot != null: controller.snapshot.add_building(game.buildings.back())
+	return placed

@@ -3,7 +3,7 @@ extends RefCounted
 # Resource accounting and population rules for a running match. Game keeps
 # forwarding methods so entity, AI, and test callers retain their current API.
 static func credit_resource(game: Node2D, owner_id: int, kind: String, amount: int) -> void:
-	game.players[owner_id][kind] += amount
+	game.session.player(owner_id).credit(kind, amount)
 	game.match_statistics.record_income(owner_id, kind, amount)
 	if owner_id == 0: game._update_hud()
 
@@ -37,13 +37,10 @@ static func exchange_resource(game: Node2D, owner_id: int, resource_kind: String
 	return true
 
 static func can_afford(game: Node2D, owner_id: int, cost: Dictionary) -> bool:
-	for resource in cost:
-		if game.players[owner_id][resource] < cost[resource]: return false
-	return true
+	return game.session.player(owner_id).can_afford(cost)
 
 static func spend(game: Node2D, owner_id: int, cost: Dictionary) -> bool:
-	if not game.can_afford(owner_id, cost): return false
-	for resource in cost: game.players[owner_id][resource] -= cost[resource]
+	if not game.session.player(owner_id).spend(cost): return false
 	game._update_hud()
 	return true
 

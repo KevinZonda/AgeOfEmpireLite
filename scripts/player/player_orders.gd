@@ -1,20 +1,22 @@
 extends RefCounted
+const ContextOrder = preload("res://scripts/player/context_order.gd")
 
 # Player command priority and group formation, using match state owned by the game.
 
 static func issue_order(game: Node2D, point: Vector2, append_order := false) -> void:
-	var entity: Node2D = game._entity_at(point)
-	var resource: RtsResource = game._resource_at(point)
-	var post: RtsTradePost = game._trade_post_at(point)
-	var relic: RtsRelic = game._relic_at(point)
-	var ground_point := RtsIsoProjection.ground_point(game, point)
+	var context := ContextOrder.targets(game, point)
+	var entity: Node2D = context["entity"]
+	var resource: RtsResource = context["resource"]
+	var post: RtsTradePost = context["post"]
+	var relic: RtsRelic = context["relic"]
+	var ground_point: Vector2 = context["ground_point"]
 	if not Rect2(Vector2.ZERO, game.world_size).has_point(ground_point):
 		game._show_order_feedback(point, "invalid")
 		game.notify_player("地图边界之外，无法下令")
 		return
 	var has_selected_unit := false
 	for subject in game.selected:
-		if is_instance_valid(subject) and subject is RtsUnit:
+		if is_instance_valid(subject) and subject is RtsUnit and subject.owner_id == 0:
 			has_selected_unit = true
 			break
 	if not has_selected_unit:
@@ -33,40 +35,13 @@ static func issue_order(game: Node2D, point: Vector2, append_order := false) -> 
 		return
 	var movers: Array[RtsUnit] = []
 	for subject in game.selected:
-		if not is_instance_valid(subject) or not subject is RtsUnit: continue
-		if entity is RtsBuilding and entity.kind == "stone_wall" and subject.kind == "siege_tower" and game.is_enemy(subject.owner_id, entity.owner_id):
-			subject.issue_command("assault_wall", Vector2.INF, entity, append_order)
-		elif entity is RtsBuilding and entity.kind == "stone_wall" and RtsSiegeRules.wall_entry(game, subject, entity) != null:
-			subject.issue_command("board_wall", Vector2.INF, entity, append_order)
-		elif entity is RtsUnit and entity.kind in ["transport_ship", "battering_ram", "siege_tower"] and entity.owner_id == 0 and subject != entity and not subject.stats.get("tags", []).has("naval") and not subject.stats.get("tags", []).has("siege"):
-			subject.issue_command("board_transport", Vector2.INF, entity, append_order)
-		elif subject.kind == "transport_ship" and game.world_map.is_walkable(ground_point) and not subject.passengers.is_empty():
-			subject.issue_command("unload", ground_point, null, append_order)
-		elif post != null and subject.kind == "trader":
-			subject.issue_command("trade", Vector2.INF, post, append_order)
-		elif relic != null and subject.kind == "monk":
-			subject.issue_command("relic", Vector2.INF, relic, append_order)
-		elif entity is RtsBuilding and entity.owner_id == 0 and entity.kind == "monastery" and subject.kind == "monk" and subject.carried_relic != null:
-			subject.issue_command("deposit_relic", Vector2.INF, entity, append_order)
-		elif entity != null and game.is_enemy(0, entity.owner_id):
-			subject.issue_command("attack", Vector2.INF, entity, append_order)
-		elif resource != null and resource.appearance == "boar" and resource.wildlife_hp > 0.0 and float(subject.stats.get("damage", 0.0)) > 0.0:
-			subject.issue_command("attack", Vector2.INF, resource, append_order)
-			if subject.kind == "villager": subject.issue_command("gather", Vector2.INF, resource, true)
-		elif entity is RtsBuilding and entity.owner_id == 0 and not entity.is_complete() and subject.kind == "villager":
-			subject.issue_command("build", Vector2.INF, entity, append_order)
-		elif entity != null and entity.owner_id == 0 and subject.kind == "villager" and (entity is RtsBuilding or entity is RtsUnit and entity.stats.get("tags", []).has("siege")) and entity.hp < entity.max_hp:
-			subject.issue_command("repair", Vector2.INF, entity, append_order)
-		elif resource != null and (subject.kind == "villager" and resource.appearance != "fish" or subject.kind == "fishing_boat" and resource.appearance == "fish"):
-			subject.issue_command("gather", Vector2.INF, resource, append_order)
-		elif entity is RtsBuilding and entity.owner_id == 0 and entity.kind == "farm" and subject.kind == "villager":
-			subject.issue_command("gather", Vector2.INF, entity, append_order)
-		elif entity is RtsBuilding and entity.owner_id == 0 and entity.is_complete() and subject.kind == "imperial_official":
-			subject.issue_command("supervise", Vector2.INF, entity, append_order)
-		elif entity is RtsBuilding and entity.owner_id == 0 and entity.is_complete() and (RtsSiegeRules.can_garrison(subject.stats, entity.kind) or entity.kind == "landmark" and entity.garrison_capacity() > 0 and not subject.stats.get("tags", []).has("siege")):
-			subject.issue_command("garrison", Vector2.INF, entity, append_order)
-		else:
+		if not is_instance_valid(subject) or not subject is RtsUnit or subject.owner_id != 0: continue
+		var command := ContextOrder.for_unit(game, subject, context)
+		if command["type"] == "move":
 			movers.append(subject)
+		else:
+			subject.issue_command(command["type"], command["point"], command["target"], append_order)
+			if command.get("hunt", false): subject.issue_command("gather", Vector2.INF, command["target"], true)
 	game.issue_group_order(movers, ground_point, false, append_order)
 	if not movers.is_empty() or entity != null or resource != null or post != null or relic != null:
 		var kind := "attack" if entity != null and game.is_enemy(0, entity.owner_id) else "gather" if resource != null or post != null or relic != null else "build" if entity is RtsBuilding and not entity.is_complete() else "move"

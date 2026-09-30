@@ -1,8 +1,51 @@
 class_name RtsActionAvailability
 extends RefCounted
 
-# A single source for panel lock reasons. The game still validates commands when
-# clicked; this class only explains their current state to the player.
+# Pure validation is shared by panel descriptions and command transactions.
+# Transactions validate again immediately before spending or enqueuing.
+static func context_for(game: Node2D, owner_id: int, building: RtsBuilding = null) -> Dictionary:
+	var bank: Dictionary = game.players[owner_id]
+	var officials := 0
+	var has_wonder := false
+	for unit in game.units:
+		if is_instance_valid(unit) and unit.owner_id == owner_id and unit.kind == "imperial_official": officials += 1
+	for producer in game.buildings:
+		if not is_instance_valid(producer) or producer.owner_id != owner_id: continue
+		officials += producer.queued_unit_count("imperial_official")
+		if producer.kind == "wonder": has_wonder = true
+	return {
+		"game": game, "civilization": game.civilizations[owner_id], "age": bank["age"],
+		"dynasty": bank.get("dynasty", ""), "researched": bank["researched"],
+		"landmarks": bank["landmarks"], "active_landmark": game.active_landmark_id(owner_id),
+		"resources": bank, "population_used": game.population_used(owner_id), "population_cap": game.population_cap(owner_id),
+		"queued_research": game.queued_research(owner_id), "official_count": officials, "has_wonder": has_wonder,
+		"producer_building": building, "producer": building.producer_kind() if building != null else "",
+		"production_complete": building.is_complete() if building != null else true,
+		"landmark_id": building.landmark_id if building != null else "",
+		"landmark_cooldown": building.landmark_ability_cooldown if building != null else 0.0,
+		"landmark_stockpile": building.landmark_stockpile if building != null else {},
+	}
+
+static func production(game: Node2D, building: RtsBuilding, action_type: String, kind: String) -> Dictionary:
+	if game.game_over: return {"available": false, "reason": "对局已结束", "cost": {}}
+	if not is_instance_valid(building) or building.is_queued_for_deletion():
+		return {"available": false, "reason": "建筑已移除", "cost": {}}
+	return evaluate(action_type, kind, context_for(game, building.owner_id, building))
+
+static func construction(game: Node2D, owner_id: int, kind: String, point: Vector2, vertical := false, landmark_id := "") -> Dictionary:
+	var bank: Dictionary = game.players[owner_id]
+	var context := {"civilization": game.civilizations[owner_id], "age": bank["age"], "resources": bank,
+		"landmarks": bank["landmarks"], "active_landmark": game.active_landmark_id(owner_id) if kind == "landmark" else ""}
+	if kind == "wonder":
+		for building in game.buildings:
+			if is_instance_valid(building) and building.owner_id == owner_id and building.kind == "wonder":
+				context["has_wonder"] = true
+				break
+	var status := evaluate("landmark" if kind == "landmark" else "build", landmark_id if kind == "landmark" else kind, context)
+	if status["available"] and not game.can_place(kind, point, vertical):
+		return {"available": false, "reason": "这里不能建造", "cost": status["cost"]}
+	return status
+
 static func evaluate(action_type: String, kind: String, context: Dictionary) -> Dictionary:
 	var civilization: String = context.get("civilization", "")
 	var age: int = context.get("age", 1)
@@ -60,6 +103,8 @@ static func evaluate(action_type: String, kind: String, context: Dictionary) -> 
 		return {"available": false, "reason": "建筑尚未建成", "cost": cost}
 	if action_type == "research" and context.get("queued_research", []).has(kind):
 		return {"available": false, "reason": "正在研究", "cost": cost}
+	if action_type == "train" and kind == "imperial_official" and int(context.get("official_count", 0)) >= 4:
+		return {"available": false, "reason": "已达到 4 名命官上限", "cost": cost}
 	if action_type == "train" and int(context.get("population_used", 0)) + RtsBalanceData.population_cost(kind) > int(context.get("population_cap", 0)):
 		return {"available": false, "reason": "人口已满", "cost": cost}
 	var bank: Dictionary = context.get("resources", {})

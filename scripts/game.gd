@@ -1,4 +1,6 @@
 extends Node2D
+const MatchSession = preload("res://scripts/match/match_session.gd")
+var session := MatchSession.new(self)
 const RtsUiTypography = preload("res://scripts/ui/typography.gd")
 
 const WORLD_SIZE := Vector2(2400, 2400)
@@ -30,6 +32,7 @@ const UNIT_PREVIEW_PAGE := preload("res://scripts/ui/unit_preview_page.gd")
 const MENU_UI := preload("res://scripts/ui/game_menu_ui.gd")
 const HUD_UI := preload("res://scripts/ui/game_hud_ui.gd")
 const PlayerSelection = preload("res://scripts/player/player_selection.gd")
+const ContextOrder = preload("res://scripts/player/context_order.gd")
 const PlayerOrders = preload("res://scripts/player/player_orders.gd")
 const MATCH_ECONOMY := preload("res://scripts/match/match_economy.gd")
 const MATCH_PRODUCTION := preload("res://scripts/match/match_production.gd")
@@ -51,18 +54,42 @@ const PLAYER_COLORS := [
 	Color("4ac5c5"), Color("a77bd8"), Color("e5ae4b"), Color("e58fba"),
 ]
 
-var world_size := WORLD_SIZE
-var civilizations := ["English", "French"]
-var teams: Array[int] = [0, 1]
-var match_mode := "duel"
-var defeated_players: Array[int] = []
-var players: Array[Dictionary] = []
-var units: Array[RtsUnit] = []
-var buildings: Array[RtsBuilding] = []
-var resources: Array[RtsResource] = []
-var trade_posts: Array[RtsTradePost] = []
-var relics: Array[RtsRelic] = []
-var market_supply := {"food": 0, "wood": 0, "stone": 0}
+var world_size: Vector2:
+	get: return session.world_size
+	set(value): session.world_size = value
+var civilizations: Array:
+	get: return session.civilizations
+	set(value): session.civilizations = value
+var teams: Array[int]:
+	get: return session.teams
+	set(value): session.teams = value
+var match_mode: String:
+	get: return session.match_mode
+	set(value): session.match_mode = value
+var defeated_players: Array[int]:
+	get: return session.defeated_players
+	set(value): session.defeated_players = value
+var players: Array[Dictionary]:
+	get: return session.players
+	set(value): session.players = value
+var units: Array[RtsUnit]:
+	get: return session.entities.units
+	set(value): session.entities.units = value
+var buildings: Array[RtsBuilding]:
+	get: return session.entities.buildings
+	set(value): session.entities.buildings = value
+var resources: Array[RtsResource]:
+	get: return session.entities.resources
+	set(value): session.entities.resources = value
+var trade_posts: Array[RtsTradePost]:
+	get: return session.entities.trade_posts
+	set(value): session.entities.trade_posts = value
+var relics: Array[RtsRelic]:
+	get: return session.entities.relics
+	set(value): session.entities.relics = value
+var market_supply: Dictionary:
+	get: return session.market_supply
+	set(value): session.market_supply = value
 var selected: Array[Node2D] = []
 var control_groups: Dictionary = {}
 var last_group_key := -1
@@ -73,8 +100,12 @@ var navigation: RtsNavigation
 var weather: RtsWeather
 var fog: RtsFogOfWar
 var objectives: RtsObjectiveManager
-var map_seed := 0
-var map_style := "balanced"
+var map_seed: int:
+	get: return session.map_seed
+	set(value): session.map_seed = value
+var map_style: String:
+	get: return session.map_style
+	set(value): session.map_style = value
 var selected_map_size := WORLD_SIZE
 var selected_map_style := "balanced"
 var map_size_choice: OptionButton
@@ -95,9 +126,15 @@ var use_lobby_setup := false
 var selected_initial_resources := 1
 var selected_fog_mode := "enabled"
 var selected_view_mode_25d := false
-var started := false
-var game_over := false
-var paused := false
+var started: bool:
+	get: return session.started
+	set(value): session.started = value
+var game_over: bool:
+	get: return session.game_over
+	set(value): session.game_over = value
+var paused: bool:
+	get: return session.paused
+	set(value): session.paused = value
 var view_mode_25d := false
 var formation_mode := "balanced"
 var formation_width := 5
@@ -597,23 +634,7 @@ func start_game(civ: String, requested_seed := -1, opponent_civ := "") -> void:
 	selected_civ = civ
 	selected_opponent_civ = opponent_civ
 	var player_count := lobby_players.size() if use_lobby_setup else 2 if match_mode == "duel" else 3 if match_mode == "ffa3" else 4
-	teams.clear()
-	civilizations.clear()
-	players.clear()
-	defeated_players.clear()
-	market_supply = {"food": 0, "wood": 0, "stone": 0}
-	for owner_id in player_count:
-		teams.append(int(lobby_players[owner_id].get("team", owner_id + 1)) - 1 if use_lobby_setup else 0 if owner_id == 0 or match_mode == "team2" and owner_id == 2 else 1 if match_mode == "team2" else owner_id)
-		civilizations.append(lobby_players[owner_id]["civilization"] if use_lobby_setup else civ if owner_id == 0 else civilization_ids[(civilization_ids.find(opponent_civ) + owner_id - 1) % civilization_ids.size()])
-		var bank := {"food": 340 if owner_id == 0 else 420, "wood": 360 if owner_id == 0 else 420, "gold": 150 if owner_id == 0 else 170, "stone": 100, "age": 1, "researched": [], "landmarks": [], "dynasty": "Tang" if civilizations[owner_id] == "Chinese" else ""}
-		if use_lobby_setup:
-			var presets := [
-				{"food": 200, "wood": 220, "gold": 100, "stone": 0},
-				{"food": 340, "wood": 360, "gold": 150, "stone": 100},
-				{"food": 700, "wood": 700, "gold": 400, "stone": 300},
-			]
-			bank.merge(presets[clampi(selected_initial_resources, 0, 2)], true)
-		players.append(bank)
+	session.configure_players(civ, opponent_civ, match_mode, lobby_players if use_lobby_setup else [], selected_initial_resources)
 	started = true
 	game_over = false
 	map_seed = requested_seed if requested_seed >= 0 else randi_range(1, 2147483647)
@@ -673,16 +694,7 @@ func _clear_world() -> void:
 	if world_map != null: world_map.hide()
 	if weather != null: weather.hide()
 	if fog != null: fog.clear()
-	for unit in units: if is_instance_valid(unit): unit.queue_free()
-	for building in buildings: if is_instance_valid(building): building.queue_free()
-	for resource in resources: if is_instance_valid(resource): resource.queue_free()
-	for post in trade_posts: if is_instance_valid(post): post.queue_free()
-	for relic in relics: if is_instance_valid(relic): relic.queue_free()
-	units.clear()
-	buildings.clear()
-	resources.clear()
-	trade_posts.clear()
-	relics.clear()
+	session.entities.clear()
 	if objectives != null: objectives.reset()
 	selected.clear()
 	control_groups.clear()
@@ -698,7 +710,7 @@ func spawn_point_for(owner_id: int) -> Vector2:
 	return positions[owner_id] if owner_id >= 0 and owner_id < positions.size() else _scaled_point(Vector2(330, 720))
 
 func is_enemy(a: int, b: int) -> bool:
-	return a >= 0 and b >= 0 and a < teams.size() and b < teams.size() and teams[a] != teams[b]
+	return session.is_enemy(a, b)
 
 func player_color(owner_id: int) -> Color:
 	if use_lobby_setup and owner_id >= 0 and owner_id < lobby_players.size():
@@ -746,18 +758,7 @@ func strategic_target_for(owner_id: int) -> Node2D:
 	return nearest_enemy_center(owner_id)
 
 func _spawn_neutral_sites() -> void:
-	for desired in world_map.trade_post_positions():
-		var post := RtsTradePost.new()
-		post.game = self
-		post.position = desired
-		add_child(post)
-		trade_posts.append(post)
-	for site in objectives.sacred_sites:
-		var relic := RtsRelic.new()
-		relic.position = world_map.nearest_walkable_point(site["position"] + Vector2(70, 45))
-		relic.game = self
-		add_child(relic)
-		relics.append(relic)
+	session.entities.spawn_neutral_sites()
 
 func _set_paused(value: bool) -> void:
 	if not started or game_over: return
@@ -793,50 +794,13 @@ func _spawn_map_resources() -> void:
 		spawn_resource(spec["kind"], spec["position"], spec["amount"], spec["appearance"])
 
 func spawn_resource(kind: String, world_point: Vector2, amount: int, appearance := "") -> RtsResource:
-	var resource: RtsResource = RESOURCE_SCENE.new()
-	resource.position = world_point
-	resource.game = self
-	add_child(resource)
-	resource.setup(kind, amount, appearance)
-	resources.append(resource)
-	navigation.invalidate_obstacles()
-	return resource
+	return session.entities.spawn_resource(kind, world_point, amount, appearance)
 
 func spawn_unit(owner_id: int, kind: String, world_point: Vector2, rally := Vector2.INF, rally_target: Node2D = null, rally_resource_kind := "") -> RtsUnit:
-	var unit: RtsUnit = UNIT_SCENE.new()
-	unit.position = world_map.nearest_water_point(world_point) if GameData.UNITS[kind]["tags"].has("naval") else world_map.nearest_walkable_point(world_point)
-	add_child(unit)
-	unit.setup(self, owner_id, kind)
-	unit.position = navigation.nearest_walkable_point(unit.position, unit.radius(), unit)
-	units.append(unit)
-	if fog.active: fog.update_unit_display(unit)
-	navigation.invalidate_spatial_index()
-	if rally != Vector2.INF:
-		if kind == "trader" and rally_target is RtsTradePost:
-			unit.issue_command("trade", Vector2.INF, rally_target)
-		elif kind == "fishing_boat" and rally_target is RtsResource and rally_target.appearance == "fish":
-			unit.issue_command("gather", Vector2.INF, rally_target)
-		elif kind == "villager" and is_instance_valid(rally_target) and not rally_target.is_queued_for_deletion() and (rally_target is RtsResource or rally_target is RtsBuilding and rally_target.kind == "farm" and rally_target.is_complete()):
-			unit.issue_command("gather", Vector2.INF, rally_target)
-		elif kind == "villager" and rally_resource_kind != "":
-			var replacement := find_nearest_resource(rally, rally_resource_kind, 220.0, owner_id)
-			if replacement != null: unit.issue_command("gather", Vector2.INF, replacement)
-			else: unit.issue_command("move", rally)
-		else: unit.issue_command("move", rally)
-	_update_hud()
-	return unit
+	return session.entities.spawn_unit(owner_id, kind, world_point, rally, rally_target, rally_resource_kind)
 
 func spawn_building(owner_id: int, kind: String, world_point: Vector2, under_construction := false, landmark_id := "", vertical := false) -> RtsBuilding:
-	var building: RtsBuilding = BUILDING_SCENE.new()
-	building.position = snap_build_point(kind, world_point, vertical)
-	building.wall_vertical = vertical
-	add_child(building)
-	building.setup(self, owner_id, kind, under_construction, landmark_id)
-	buildings.append(building)
-	if fog.active: fog.update_building_display(building)
-	navigation.invalidate_obstacles()
-	_update_hud()
-	return building
+	return session.entities.spawn_building(owner_id, kind, world_point, under_construction, landmark_id, vertical)
 
 func find_spawn_position(building: RtsBuilding) -> Vector2:
 	if building.kind == "dock": return world_map.nearest_water_point(building.position)
@@ -855,65 +819,10 @@ func building_completed(building: RtsBuilding) -> void:
 	_update_hud()
 
 func entity_destroyed(entity: Node2D) -> void:
-	if not is_instance_valid(entity) or entity.is_queued_for_deletion(): return
-	if not fog.active or fog.can_see(0, entity.position):
-		world_effects.append({"point": entity.position, "kind": "death" if entity is RtsUnit else "collapse", "color": player_color(entity.owner_id), "time": 0.9})
-		if entity.owner_id == 0 and entity is RtsUnit: play_feedback("alert")
-	selected.erase(entity)
-	if entity is RtsUnit:
-		if not entity.passengers.is_empty(): entity.ungarrison_all()
-		units.erase(entity)
-		navigation.invalidate_spatial_index()
-	elif entity is RtsBuilding:
-		if entity.kind in ["town_center", "landmark", "wonder", "keep"]:
-			match_statistics.record_event(entity.owner_id, "%s被摧毁" % entity.display_label())
-		for unit in units:
-			if is_instance_valid(unit) and unit.wall_host == entity: unit.leave_wall()
-		for relic in entity.relics:
-			if is_instance_valid(relic):
-				relic.stored_in = null
-				relic.position = world_map.nearest_walkable_point(entity.position + Vector2(65, 0))
-		entity.relics.clear()
-		entity.ungarrison_all()
-		objectives.on_building_destroyed(entity)
-		buildings.erase(entity)
-		navigation.invalidate_obstacles()
-		if entity.landmark_id == "zh_gatehouse":
-			for building in buildings:
-				if is_instance_valid(building) and building.owner_id == entity.owner_id and building.kind in ["stone_wall", "stone_gate"]: building.refresh_stats()
-		if entity.kind == "town_center" or entity.kind == "landmark":
-			var has_landmark := false
-			for building in buildings:
-				if is_instance_valid(building) and building.owner_id == entity.owner_id and building.is_complete() and (building.kind == "town_center" or building.kind == "landmark"):
-					has_landmark = true
-					break
-			if not has_landmark:
-				defeated_players.append(entity.owner_id)
-				_eliminate_player(entity.owner_id)
-				_check_match_end()
-	entity.queue_free()
-	_rebuild_actions()
-	_update_hud()
+	session.entities.entity_destroyed(entity)
 
 func _eliminate_player(owner_id: int) -> void:
-	for unit in units.duplicate():
-		if is_instance_valid(unit) and unit.owner_id == owner_id:
-			selected.erase(unit)
-			units.erase(unit)
-			unit.queue_free()
-	for building in buildings.duplicate():
-		if is_instance_valid(building) and building.owner_id == owner_id:
-			for relic in building.relics:
-				if is_instance_valid(relic):
-					relic.stored_in = null
-					relic.position = world_map.nearest_walkable_point(building.position + Vector2(60, 0))
-			building.relics.clear()
-			objectives.on_building_destroyed(building)
-			selected.erase(building)
-			buildings.erase(building)
-			building.queue_free()
-	navigation.refresh()
-	if fog.active: fog.update_visibility()
+	session.entities.eliminate_player(owner_id)
 
 func _check_match_end() -> void:
 	var surviving_teams: Dictionary = {}
@@ -1131,7 +1040,7 @@ func active_landmark_id(owner_id: int) -> String:
 
 func place_landmark(owner_id: int, landmark_id: String, world_point: Vector2, workers: Array[RtsUnit], append_order := false) -> bool:
 	world_point = snap_build_point("landmark", world_point)
-	var status := RtsLandmarkCatalog.choice_status(civilizations[owner_id], players[owner_id]["age"], players[owner_id]["landmarks"], landmark_id, active_landmark_id(owner_id))
+	var status := RtsActionAvailability.construction(self, owner_id, "landmark", world_point, false, landmark_id)
 	if not status["available"]:
 		if owner_id == 0: notify_player(status["reason"])
 		return false
@@ -1139,13 +1048,8 @@ func place_landmark(owner_id: int, landmark_id: String, world_point: Vector2, wo
 	for worker in workers:
 		if is_instance_valid(worker) and worker.owner_id == owner_id and worker.kind == "villager": builders.append(worker)
 	if builders.is_empty(): return false
-	if not can_place("landmark", world_point):
-		if owner_id == 0: notify_player("这里不能建造地标")
-		return false
 	var choice := RtsLandmarkCatalog.landmark(landmark_id)
-	if not spend(owner_id, choice["cost"]):
-		if owner_id == 0: notify_player("地标资源不足")
-		return false
+	if not spend(owner_id, status["cost"]): return false
 	var building := spawn_building(owner_id, "landmark", world_point, true, landmark_id)
 	for worker in builders: worker.issue_command("build", Vector2.INF, building, append_order)
 	if owner_id == 0: notify_player("正在建造%s" % choice["label"])
@@ -1267,23 +1171,16 @@ func can_place(kind: String, world_point: Vector2, vertical := false) -> bool:
 
 func place_building(owner_id: int, kind: String, world_point: Vector2, workers: Array[RtsUnit], append_order := false, vertical := false) -> bool:
 	world_point = snap_build_point(kind, world_point, vertical)
-	if not RtsTechTree.can_build(civilizations[owner_id], players[owner_id]["age"], kind): return false
-	if kind == "wonder":
-		for existing in buildings:
-			if is_instance_valid(existing) and existing.owner_id == owner_id and existing.kind == "wonder":
-				if owner_id == 0: notify_player("已有奇观")
-				return false
+	var status := RtsActionAvailability.construction(self, owner_id, kind, world_point, vertical)
+	if not status["available"]:
+		if owner_id == 0: notify_player(status["reason"])
+		return false
 	var builders: Array[RtsUnit] = []
 	for worker in workers:
 		if is_instance_valid(worker) and worker.owner_id == owner_id and worker.kind == "villager":
 			builders.append(worker)
 	if builders.is_empty(): return false
-	if not can_place(kind, world_point, vertical):
-		if owner_id == 0: notify_player("这里不能建造")
-		return false
-	if not spend(owner_id, RtsCivilizationRules.building_cost(civilizations[owner_id], kind)):
-		if owner_id == 0: notify_player("建造资源不足")
-		return false
+	if not spend(owner_id, status["cost"]): return false
 	var building := spawn_building(owner_id, kind, world_point, true, "", vertical)
 	for worker in builders: worker.issue_command("build", Vector2.INF, building, append_order)
 	if owner_id == 0: notify_player("%d 名村民正在建造%s" % [builders.size(), GameData.BUILDINGS[kind]["label"]])
@@ -1429,8 +1326,7 @@ func _process(delta: float) -> void:
 		ai_think_timers[owner_id] = float(ai_think_timers.get(owner_id, 0.0)) - delta
 		if ai_think_timers[owner_id] <= 0.0:
 			controller.tick()
-			var difficulty: String = lobby_players[owner_id]["difficulty"] if use_lobby_setup else "normal"
-			ai_think_timers[owner_id] = {"easy": 6.0, "normal": 3.0, "hard": 1.5}.get(difficulty, 3.0)
+			ai_think_timers[owner_id] = controller.think_interval()
 	hud_timer -= delta
 	if hud_timer <= 0.0:
 		_update_hud()
@@ -1697,37 +1593,9 @@ func _cursor_state_at(world_point: Vector2, over_ui := false) -> String:
 	if order_mode in ["field_ram", "field_tower"]: return "build_valid" if world_map.is_walkable(world_point) else "build_invalid"
 	if order_mode == "unload": return "unload" if world_map.is_walkable(world_point) else "build_invalid"
 	if build_mode != "":
-		var cost: Dictionary = RtsLandmarkCatalog.landmark(pending_landmark_id).get("cost", {}) if build_mode == "landmark" else RtsCivilizationRules.building_cost(civilizations[0], build_mode)
-		return "build_valid" if can_place(build_mode, world_point, wall_vertical) and can_afford(0, cost) else "build_invalid"
+		return "build_valid" if RtsActionAvailability.construction(self, 0, build_mode, world_point, wall_vertical, pending_landmark_id)["available"] else "build_invalid"
 	if _selection_drag_active(): return "drag"
-	var entity := _entity_at(world_point)
-	var resource := _resource_at(world_point)
-	var post := _trade_post_at(world_point)
-	var relic := _relic_at(world_point)
-	var has_unit := false
-	var has_worker := false
-	var has_producer := false
-	for subject in selected:
-		if not is_instance_valid(subject): continue
-		if subject is RtsUnit:
-			has_unit = true
-			if subject.kind == "villager": has_worker = true
-		elif subject is RtsBuilding and subject.can_set_rally(0):
-			has_producer = true
-	if entity != null and is_enemy(0, entity.owner_id) and has_unit: return "attack"
-	if resource != null and resource.appearance == "boar" and resource.wildlife_hp > 0.0 and has_unit: return "attack"
-	if entity is RtsUnit and entity.kind in ["transport_ship", "battering_ram", "siege_tower"] and entity.owner_id == 0 and selected.any(func(subject: Node2D) -> bool: return subject is RtsUnit and not subject.stats.get("tags", []).has("naval") and not subject.stats.get("tags", []).has("siege")): return "board"
-	if has_worker and entity is RtsBuilding and entity.owner_id == 0 and not entity.is_complete(): return "construct"
-	if has_worker and entity != null and entity.owner_id == 0 and (entity is RtsBuilding or entity is RtsUnit and entity.stats.get("tags", []).has("siege")) and entity.hp < entity.max_hp: return "construct"
-	if has_worker and (resource != null and resource.appearance != "fish" or entity is RtsBuilding and entity.kind == "farm"): return "gather"
-	if resource != null and resource.appearance == "fish" and not selected.is_empty() and selected[0] is RtsUnit and selected[0].kind == "fishing_boat": return "gather"
-	if post != null and not selected.is_empty() and selected[0] is RtsUnit and selected[0].kind == "trader": return "trade"
-	if relic != null and not selected.is_empty() and selected[0] is RtsUnit and selected[0].kind == "monk": return "relic"
-	if entity != null and (entity.owner_id == 0 or entity is RtsUnit and is_enemy(0, entity.owner_id) and not has_unit): return "select"
-	if resource != null: return "select"
-	if has_unit: return "move"
-	if has_producer: return "rally"
-	return "default"
+	return ContextOrder.cursor_for(self, ContextOrder.targets(self, world_point))
 
 func _player_center(owner_id: int) -> RtsBuilding:
 	for building in buildings:
