@@ -47,7 +47,7 @@ static func capture(unit, existing_state = null):
 	result.paling = unit.paling_timer > 0.0
 	result.carries_relic = unit.carried_relic != null
 	result.braced = unit.is_braced() if unit.kind == "spearman" else false
-	result.show_health_bar = unit.game.should_show_health_bar(unit.hp, unit.max_hp, unit.health_bar_timer)
+	result.show_health_bar = unit.game.has_method("should_show_health_bar") and unit.game.should_show_health_bar(unit.hp, unit.max_hp, unit.health_bar_timer)
 	return result
 
 static func preview(unit_kind: String, definition: Dictionary, color: Color):
