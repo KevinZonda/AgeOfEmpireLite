@@ -50,6 +50,51 @@ static func continue_gather(unit) -> void:
 	else:
 		unit._advance_command()
 
+static func finish_construction(unit: RtsUnit, completed: RtsBuilding) -> void:
+	# Player commands take priority over every automatic follow-up.
+	unit._advance_command()
+	if unit.order != "idle" or not unit.command_queue.is_empty(): return
+	if completed.kind == "farm":
+		if unit.game.farm_worker(completed, unit) == null and not unit.game.navigation.path_to_range(unit.position, completed.position, completed.size().x * 0.5 + unit.radius() + 2.0, unit).is_empty():
+			if unit._try_order_gather(completed): return
+		var farm: RtsBuilding = unit.game.find_nearest_free_farm(unit.owner_id, unit.position, unit.AUTO_GATHER_RADIUS, unit)
+		if is_instance_valid(farm) and unit._try_order_gather(farm): return
+	var resource_kinds: Array[String] = []
+	match completed.kind:
+		"mill": resource_kinds.assign(["food"])
+		"lumber_camp": resource_kinds.assign(["wood"])
+		"mining_camp": resource_kinds.assign(["gold", "stone"])
+	if not resource_kinds.is_empty():
+		var resource := _nearby_construction_resource(unit, resource_kinds)
+		if resource != null and unit._try_order_gather(resource): return
+	var site := _nearby_construction_site(unit)
+	if site != null: unit.issue_command("build", Vector2.INF, site)
+
+static func _nearby_construction_resource(unit: RtsUnit, kinds: Array[String]) -> RtsResource:
+	var result: RtsResource
+	var best := unit.AUTO_GATHER_RADIUS * unit.AUTO_GATHER_RADIUS
+	for resource in unit.game.resources:
+		if not is_instance_valid(resource) or resource.is_queued_for_deletion() or resource.amount <= 0 or not kinds.has(resource.kind) or resource.appearance == "fish": continue
+		if unit.game.fog.active and not unit.game.fog.can_show_resource(unit.owner_id, resource): continue
+		var distance := unit.position.distance_squared_to(resource.position)
+		if distance > best: continue
+		if unit.game.navigation.path_to_range(unit.position, resource.position, resource.radius + unit.radius() + 2.0, unit).is_empty(): continue
+		best = distance
+		result = resource
+	return result
+
+static func _nearby_construction_site(unit: RtsUnit) -> RtsBuilding:
+	var result: RtsBuilding
+	var best := unit.AUTO_GATHER_RADIUS * unit.AUTO_GATHER_RADIUS
+	for site in unit.game.buildings:
+		if not is_instance_valid(site) or site.is_queued_for_deletion() or site.owner_id != unit.owner_id or site.is_complete(): continue
+		var distance := unit.position.distance_squared_to(site.position)
+		if distance > best: continue
+		if unit.game.navigation.path_to_range(unit.position, site.position, site.size().x * 0.6 + unit.radius(), unit).is_empty(): continue
+		best = distance
+		result = site
+	return result
+
 static func process_repair_order(unit, delta: float) -> void:
 	if unit.target.hp >= unit.target.max_hp:
 		unit._advance_command()

@@ -356,13 +356,16 @@ func _tick_board_transport(unit: RtsUnit, delta: float) -> void:
 	return
 
 func _tick_build(unit: RtsUnit, delta: float) -> void:
-	if unit.target.is_queued_for_deletion() or unit.target.is_complete():
+	if unit.target.is_queued_for_deletion():
 		unit._advance_command()
+		return
+	if unit.target.is_complete():
+		unit.UnitWork.finish_construction(unit, unit.target)
 		return
 	if not unit._move_toward(unit.target.position, delta, unit.target.size().x * 0.6 + unit.radius()): return
 	if unit.visual_action_timer <= 0.0: unit._start_visual_action("build", 0.45)
 	unit.target.advance_construction(delta * GameData.construction_multiplier(unit.game.civilizations[unit.owner_id]))
-	if unit.target.is_complete(): unit._advance_command()
+	if unit.target.is_complete(): unit.UnitWork.finish_construction(unit, unit.target)
 	return
 
 func _tick_field_build(unit: RtsUnit, delta: float) -> void:
