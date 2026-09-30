@@ -66,6 +66,13 @@ var destination_query_unit: RtsUnit
 var destination_origin_cells: Dictionary = {}
 var destination_origin_connections: Dictionary = {}
 var destination_origin_components: Dictionary = {}
+# Valid only within a single corner fallback search: strict edge sweeps share
+# per-anchor obstacle candidates instead of repeating the broad phase per edge.
+var corner_sweep_unit: RtsUnit
+var corner_sweep_anchors: Dictionary = {}
+var corner_sweep_points := PackedVector2Array()
+var corner_sweep_from := Vector2.ZERO
+var corner_sweep_to := Vector2.ZERO
 var obstacle_signature: int:
 	get: return geometry_cache.obstacle_signature
 	set(value): geometry_cache.obstacle_signature = value
@@ -563,23 +570,40 @@ func _obstacle_corner_path(from: Vector2, to: Vector2, unit: RtsUnit) -> PackedV
 	# independent of the lattice; every connecting edge still uses a full sweep.
 	if not corner_graphs.has(key):
 		var corners := PackedVector2Array()
-		for obstacle in _entities.buildings:
-			if not is_instance_valid(obstacle) or obstacle.is_queued_for_deletion(): continue
-			if _gate_passable(obstacle, unit.owner_id): continue
-			var bounds := Rect2(obstacle.position - obstacle.size() * 0.5, obstacle.size()).grow(unit.radius() + 0.05)
-			for point in [bounds.position, bounds.end, Vector2(bounds.position.x, bounds.end.y), Vector2(bounds.end.x, bounds.position.y)]:
-				if not corners.has(point) and _can_occupy(point, unit.radius(), unit, false, Vector2.INF, false, true): corners.append(point)
-		var naval: bool = unit.stats.get("tags", []).has("naval")
-		for y in world_map.grid_size.y:
-			for x in world_map.grid_size.x:
-				var terrain: int = world_map.cells[y * world_map.grid_size.x + x]
-				if _terrain_passable(terrain, naval): continue
-				var bounds := Rect2(Vector2(x, y) * RtsWorldMap.CELL_SIZE, Vector2.ONE * RtsWorldMap.CELL_SIZE).grow(unit.radius() + 0.05)
+		# While a worker rebuild of this body type is in flight, reuse the
+		# previous revision's portals: rebuilding them here stalled the first
+		# query after every invalidation. Stale portals can only add candidates
+		# (every edge is re-swept against live geometry), and the worker installs
+		# a fresh set with the new grid. Without a pending rebuild, regenerate.
+		if geometry_cache.corner_point_stash.has(key) and _corner_rebuild_pending(key):
+			corners = geometry_cache.corner_point_stash[key]
+		else:
+			for obstacle in _entities.buildings:
+				if not is_instance_valid(obstacle) or obstacle.is_queued_for_deletion(): continue
+				if _gate_passable(obstacle, unit.owner_id): continue
+				var bounds := Rect2(obstacle.position - obstacle.size() * 0.5, obstacle.size()).grow(unit.radius() + 0.05)
 				for point in [bounds.position, bounds.end, Vector2(bounds.position.x, bounds.end.y), Vector2(bounds.end.x, bounds.position.y)]:
 					if not corners.has(point) and _can_occupy(point, unit.radius(), unit, false, Vector2.INF, false, true): corners.append(point)
+			var naval: bool = unit.stats.get("tags", []).has("naval")
+			for y in world_map.grid_size.y:
+				for x in world_map.grid_size.x:
+					var terrain: int = world_map.cells[y * world_map.grid_size.x + x]
+					if _terrain_passable(terrain, naval): continue
+					var bounds := Rect2(Vector2(x, y) * RtsWorldMap.CELL_SIZE, Vector2.ONE * RtsWorldMap.CELL_SIZE).grow(unit.radius() + 0.05)
+					for point in [bounds.position, bounds.end, Vector2(bounds.position.x, bounds.end.y), Vector2(bounds.end.x, bounds.position.y)]:
+						if not corners.has(point) and _can_occupy(point, unit.radius(), unit, false, Vector2.INF, false, true): corners.append(point)
+		geometry_cache.corner_point_stash.erase(key)
 		corner_graphs[key] = {"points": corners, "edges": {}, "attachments": {}}
 	var graph: Dictionary = corner_graphs[key]
-	return SearchKernel.corner_path(from, to, graph, _static_segment_clear.bind(unit.radius(), unit, false), reverse_search, MAX_CORNER_ATTACHMENTS)
+	corner_sweep_unit = unit
+	corner_sweep_anchors = {}
+	corner_sweep_points = graph["points"]
+	corner_sweep_from = from
+	corner_sweep_to = to
+	var path := SearchKernel.corner_path(from, to, graph, _static_segment_clear.bind(unit.radius(), unit, false), reverse_search, MAX_CORNER_ATTACHMENTS)
+	corner_sweep_unit = null
+	corner_sweep_anchors = {}
+	return path
 
 func _corner_endpoint_clear(point: Vector2, unit: RtsUnit, key: Vector3) -> bool:
 	# Endpoint occupancy uses the same strict predicate as corner edges. Range
@@ -619,6 +643,12 @@ func _corner_search_from_target(from: Vector2, to: Vector2, unit: RtsUnit) -> bo
 			count += sizes[label]
 		counts.append(count)
 	return counts[1] < counts[0]
+
+func _corner_rebuild_pending(key: Vector3) -> bool:
+	if not async_geometry_enabled: return false
+	for job in grid_builds.active:
+		if job.key == key: return true
+	return false
 
 func _fine_grid_for(unit: RtsUnit) -> AStarGrid2D:
 	var key := _grid_key(unit)
@@ -749,6 +779,8 @@ func _static_segment_clear(from: Vector2, to: Vector2, radius: float, unit: RtsU
 	return _compute_static_segment_clear(from, to, radius, unit, allow_resource_escape, boarding)
 
 func _compute_static_segment_clear(from: Vector2, to: Vector2, radius: float, unit: RtsUnit, allow_resource_escape: bool, boarding: bool) -> bool:
+	if unit != null and unit == corner_sweep_unit and not allow_resource_escape and not boarding:
+		return _corner_sweep_segment_clear(from, to, radius, unit)
 	# Point samples alone can jump over the very short chord where a segment
 	# grazes a circle or a building corner, especially inside narrow passages.
 	var center := (from + to) * 0.5
@@ -782,6 +814,110 @@ func _compute_static_segment_clear(from: Vector2, to: Vector2, radius: float, un
 		if not allow_resource_escape or current >= limit * limit or distance + 0.001 < current: return false
 	var naval: bool = unit != null and unit.stats.get("tags", []).has("naval")
 	return _terrain_segment_clear(from, to, radius, naval, boarding)
+
+func _corner_sweep_segment_clear(from: Vector2, to: Vector2, radius: float, unit: RtsUnit) -> bool:
+	# The exact predicates of _compute_static_segment_clear with no resource
+	# escape and no boarding, but the obstacle broad phase is gathered once per
+	# anchor: a corner search tests many edges out of each expanded node, and
+	# every edge midpoint lies within half the edge length of its anchor, so a
+	# disk reaching the farthest corner candidate is a conservative superset.
+	var candidates: Dictionary = corner_sweep_anchors.get(from, {})
+	if candidates.is_empty():
+		candidates = _corner_sweep_candidates(from, radius, unit)
+		corner_sweep_anchors[from] = candidates
+	var edge_len := from.distance_to(to)
+	var samples := maxi(1, ceili(edge_len / maxf(6.0, minf(12.0, radius * 0.75))))
+	# Candidates are sorted by anchor distance with a suffix-max slack, so an
+	# edge skips every obstacle too far away to touch it. This only prunes
+	# candidates the exact predicates would reject anyway.
+	var wall_dist: PackedFloat64Array = candidates.wall_dist
+	var wall_slack: PackedFloat64Array = candidates.wall_slack
+	var wall_tight: Array = candidates.wall_tight
+	var wall_bounds: Array = candidates.wall_bounds
+	for i in wall_bounds.size():
+		var wall_limit := edge_len + wall_slack[i]
+		if wall_dist[i] > wall_limit * wall_limit: break
+		if _segment_hits_rect(from, to, wall_tight[i]): return false
+		# Preserve Rect2's half-open boundary rule on exact edge tangencies.
+		if _segment_hits_rect(from, to, wall_bounds[i]):
+			for s in range(samples + 1):
+				if wall_bounds[i].has_point(from.lerp(to, float(s) / samples)): return false
+	var resource_dist: PackedFloat64Array = candidates.resource_dist
+	var resource_slack: PackedFloat64Array = candidates.resource_slack
+	var resource_positions: PackedVector2Array = candidates.resource_positions
+	var resource_limits: PackedFloat64Array = candidates.resource_limits
+	for i in resource_positions.size():
+		var resource_limit := edge_len + resource_slack[i]
+		if resource_dist[i] > resource_limit * resource_limit: break
+		var obstacle := resource_positions[i]
+		if Geometry2D.get_closest_point_to_segment(obstacle, from, to).distance_squared_to(obstacle) < resource_limits[i]: return false
+	var naval: bool = unit.stats.get("tags", []).has("naval")
+	return _terrain_segment_clear(from, to, radius, naval)
+
+func _corner_sweep_candidates(anchor: Vector2, radius: float, unit: RtsUnit) -> Dictionary:
+	var reach := sqrt(maxf(maxf(anchor.distance_squared_to(corner_sweep_from), anchor.distance_squared_to(corner_sweep_to)), _farthest_squared(anchor, corner_sweep_points))) + radius
+	_ensure_spatial_index()
+	# Mirror the broad-phase choice of the general sweep: a huge anchor reach
+	# is cheaper as one full scan than as thousands of empty bucket visits.
+	var building_span := ceili(reach * 2.0 / SPATIAL_CELL_SIZE) + 1
+	var building_candidates: Array[RtsBuilding] = _entities.buildings if building_span * building_span > _entities.buildings.size() * 4 else nearby_buildings(anchor, reach)
+	# Sorted by anchor distance; slack is a suffix maximum so an edge can stop
+	# at the first obstacle too far away to touch it (slack bounds the distance
+	# from the obstacle's position to any point of its radius-grown footprint).
+	var wall_entries := []
+	for obstacle in building_candidates:
+		if not is_instance_valid(obstacle) or obstacle.is_queued_for_deletion(): continue
+		if _gate_passable(obstacle, unit.owner_id): continue
+		var bounds := Rect2(obstacle.position - obstacle.size() * 0.5, obstacle.size()).grow(radius)
+		wall_entries.append([anchor.distance_squared_to(obstacle.position), sqrt(2.0) * (maxf(obstacle.size().x, obstacle.size().y) * 0.5 + radius), bounds.grow(-0.0001), bounds])
+	wall_entries.sort_custom(func(a: Array, b: Array) -> bool: return a[0] < b[0])
+	var wall_dist := PackedFloat64Array()
+	var wall_slack := PackedFloat64Array()
+	var wall_tight: Array[Rect2] = []
+	var wall_bounds: Array[Rect2] = []
+	wall_dist.resize(wall_entries.size())
+	wall_slack.resize(wall_entries.size())
+	wall_tight.resize(wall_entries.size())
+	wall_bounds.resize(wall_entries.size())
+	var wall_suffix := 0.0
+	for i in range(wall_entries.size() - 1, -1, -1):
+		wall_suffix = maxf(wall_suffix, wall_entries[i][1])
+		wall_dist[i] = wall_entries[i][0]
+		wall_slack[i] = wall_suffix
+		wall_tight[i] = wall_entries[i][2]
+		wall_bounds[i] = wall_entries[i][3]
+	var resource_reach := reach + spatial_index.max_dynamic_radius
+	var resource_span := ceili(resource_reach * 2.0 / SPATIAL_CELL_SIZE) + 1
+	var resource_candidates: Array[RtsResource] = _entities.resources if resource_span * resource_span > _entities.resources.size() * 4 else nearby_resources(anchor, resource_reach)
+	var resource_entries := []
+	for obstacle in resource_candidates:
+		if not is_instance_valid(obstacle) or obstacle.is_queued_for_deletion(): continue
+		var limit := radius + obstacle.radius
+		resource_entries.append([anchor.distance_squared_to(obstacle.position), limit, obstacle.position, limit * limit])
+	resource_entries.sort_custom(func(a: Array, b: Array) -> bool: return a[0] < b[0])
+	var resource_dist := PackedFloat64Array()
+	var resource_slack := PackedFloat64Array()
+	var resource_positions := PackedVector2Array()
+	var resource_limits := PackedFloat64Array()
+	resource_dist.resize(resource_entries.size())
+	resource_slack.resize(resource_entries.size())
+	resource_positions.resize(resource_entries.size())
+	resource_limits.resize(resource_entries.size())
+	var resource_suffix := 0.0
+	for i in range(resource_entries.size() - 1, -1, -1):
+		resource_suffix = maxf(resource_suffix, resource_entries[i][1])
+		resource_dist[i] = resource_entries[i][0]
+		resource_slack[i] = resource_suffix
+		resource_positions[i] = resource_entries[i][2]
+		resource_limits[i] = resource_entries[i][3]
+	return {"wall_dist": wall_dist, "wall_slack": wall_slack, "wall_tight": wall_tight, "wall_bounds": wall_bounds,
+		"resource_dist": resource_dist, "resource_slack": resource_slack, "resource_positions": resource_positions, "resource_limits": resource_limits}
+
+func _farthest_squared(anchor: Vector2, points: PackedVector2Array) -> float:
+	var farthest := 0.0
+	for point in points:
+		farthest = maxf(farthest, anchor.distance_squared_to(point))
+	return farthest
 
 func _terrain_segment_clear(from: Vector2, to: Vector2, radius: float, naval: bool, boarding := false) -> bool:
 	var bounds := Rect2(Vector2.ONE * radius, world_map.world_size - Vector2.ONE * radius * 2)

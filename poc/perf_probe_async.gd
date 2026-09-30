@@ -200,6 +200,10 @@ func _test_invalidation_storm() -> void:
 	_report("reachable query after swap [main thread]", start)
 	check(not open.is_empty(), "reachable_target_paths_after_swap")
 	check(refresh_ms < 5.0, "refresh_under_5ms", "%.2f" % refresh_ms)
+	# A failing query inside the stale window answers from retained corner
+	# portals with per-anchor batched edge sweeps; a cold exhaustive visibility
+	# scan must stay under one frame's simulation budget.
+	check(fail_stale_ms < 10.0, "stale_window_failure_under_10ms", "%.2f" % fail_stale_ms)
 	# Corner points now arrive with the worker grid; the residual cost of the
 	# first failing query is the exact visibility search itself (pre-existing).
 	check(fail_fresh_ms < 40.0, "post_swap_failure_bounded", "%.2f" % fail_fresh_ms)

@@ -14,6 +14,11 @@ var grid_component_sizes: Dictionary = {}
 var corner_graphs: Dictionary = {}
 var corner_endpoint_validity: Dictionary = {}
 var corner_endpoint_bounds: Dictionary = {}
+# Corner portals stashed across a geometry revision while a worker rebuild of
+# the same body type is in flight. Extra stale portals are harmless — every
+# corner edge is re-swept against live geometry before use — and the worker
+# installs a fresh point set together with the new grid.
+var corner_point_stash: Dictionary = {}
 var obstacle_signature := -1
 var obstacle_revision := 0
 var retry_obstacle_revision := 0
@@ -79,6 +84,8 @@ func _forget_components(grid: AStarGrid2D) -> void:
 	grid_component_sizes.erase(grid.get_instance_id())
 
 func invalidate_corner_visibility() -> void:
+	for key in corner_graphs:
+		corner_point_stash[key] = corner_graphs[key].get("points", PackedVector2Array())
 	corner_graphs.clear()
 	corner_endpoint_validity.clear()
 	corner_endpoint_bounds.clear()
