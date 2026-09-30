@@ -224,11 +224,15 @@ func _update_animal_pose(delta: float, movement: Vector2, grazing: bool) -> void
 	animal_graze = move_toward(animal_graze, 1.0 if grazing and not moving else 0.0, delta * 2.5)
 	queue_redraw()
 
+func has_wildlife_health() -> bool:
+	return appearance in ["deer", "boar", "sheep"]
+
 func take_damage(damage: float) -> void:
-	if appearance not in ["boar", "deer"] or wildlife_hp <= 0.0: return
+	if not has_wildlife_health() or wildlife_hp <= 0.0: return
 	var previous_hp := wildlife_hp
 	wildlife_hp = maxf(0.0, wildlife_hp - damage)
 	if wildlife_hp <= 0.0:
+		shepherd = null
 		boar_target = null
 		boar_attack_pose = 0.0
 		animal_gait = 0.0
@@ -237,7 +241,7 @@ func take_damage(damage: float) -> void:
 	queue_redraw()
 
 func should_show_health_bar() -> bool:
-	return appearance in ["deer", "boar"] and wildlife_hp > 0.0 and game != null and game.has_method("should_show_health_bar") and game.should_show_health_bar(wildlife_hp, wildlife_max_hp, health_bar_timer)
+	return has_wildlife_health() and wildlife_hp > 0.0 and game != null and game.has_method("should_show_health_bar") and game.should_show_health_bar(wildlife_hp, wildlife_max_hp, health_bar_timer)
 
 func _process_sheep(delta: float) -> void:
 	if wildlife_hp <= 0.0: return
@@ -279,10 +283,7 @@ func harvest(quantity: int) -> int:
 	var taken: int = mini(quantity, amount)
 	if appearance == "sheep" and taken > 0 and wildlife_hp > 0.0:
 		# The first gathering action slaughters sheep; meat must stay put.
-		wildlife_hp = 0.0
-		shepherd = null
-		animal_gait = 0.0
-		animal_speed = 0.0
+		take_damage(wildlife_hp)
 		if game != null: game.navigation.invalidate_obstacles()
 	amount -= taken
 	if amount <= 0:
@@ -354,7 +355,7 @@ func _draw() -> void:
 	if should_show_health_bar():
 		var bar_transform := RtsIsoProjection.upright(canvas, RtsIsoProjection.ground_lift(game, position), game.camera.zoom.x) if isometric else Transform2D.IDENTITY
 		draw_set_transform_matrix(bar_transform)
-		var bar_y := -58.0 if appearance == "deer" else -32.0
+		var bar_y := -58.0 if appearance == "deer" else -42.0 if appearance == "sheep" else -32.0
 		draw_rect(Rect2(-16, bar_y, 32, 4), Color("422f2d"))
 		draw_rect(Rect2(-16, bar_y, 32 * clampf(wildlife_hp / wildlife_max_hp, 0.0, 1.0), 4), Color("82dd8b"))
 	draw_set_transform_matrix(Transform2D.IDENTITY)

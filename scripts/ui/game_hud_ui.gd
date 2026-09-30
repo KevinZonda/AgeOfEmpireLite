@@ -533,7 +533,7 @@ func _update_selection_hud() -> void:
 		info_label.text = _resource_label(item)
 		detail_label.text = "资源类型  %s\n采集单位  %s" % [GameData.RESOURCE_LABELS.get(item.kind, item.kind), "渔船" if item.appearance == "fish" else "村民"]
 		var status_line := "当前状态  %s" % _resource_status(item)
-		if item.appearance in ["deer", "boar"]:
+		if item.has_wildlife_health():
 			# The compact summary shows only two lines. Keep wildlife health first.
 			detail_label.text = status_line + "\n" + detail_label.text
 			if item.wildlife_hp > 0.0:
@@ -626,10 +626,12 @@ func _resource_label(resource: RtsResource) -> String:
 	return {"berry": "浆果", "deer": "鹿", "sheep": "绵羊", "boar": "野猪", "fish": "鱼群"}.get(resource.appearance, {"wood": "树木", "gold": "金矿", "stone": "石矿"}.get(resource.kind, GameData.RESOURCE_LABELS.get(resource.kind, resource.kind)))
 
 func _resource_status(resource: RtsResource) -> String:
-	if resource.appearance in ["boar", "deer"] and resource.wildlife_hp > 0.0: return "%s存活 · 生命 %.0f/%.0f" % [_resource_label(resource), resource.wildlife_hp, resource.wildlife_max_hp]
-	if resource.appearance == "sheep":
-		if resource.claimed_by < 0: return "尚未认领"
-		return "我方已认领" if resource.claimed_by == 0 else "敌方已认领"
+	if resource.has_wildlife_health():
+		if resource.wildlife_hp <= 0.0: return "已猎杀 · 可采集"
+		var status := "%s存活 · 生命 %.0f/%.0f" % [_resource_label(resource), resource.wildlife_hp, resource.wildlife_max_hp]
+		if resource.appearance == "sheep":
+			status += " · " + ("尚未认领" if resource.claimed_by < 0 else "我方已认领" if resource.claimed_by == 0 else "敌方已认领")
+		return status
 	return "可采集"
 
 func _resource_guide(resource: RtsResource) -> String:
