@@ -7,6 +7,9 @@ func _run() -> void:
 	var game: Variant = load("res://scenes/main.tscn").instantiate()
 	root.add_child(game)
 	await process_frame
+	game.selected_view_mode_25d = false
+	game.edge_scroll_enabled = false
+	root.size = Vector2i(1280, 720)
 	game.start_game("English", 4242)
 	game.camera.position = game.world_size * 0.5
 	if not game.view_mode_25d: game._toggle_view_mode()
@@ -14,6 +17,7 @@ func _run() -> void:
 	var fog_mesh: Mesh = game.fog.relief_mesh.mesh
 	assert(fog_mesh != null, "2.5D fog should have a terrain mesh")
 	var terrain_lift: Vector2 = game.world_map.lift_per_height
+	var mountain_mesh: Mesh = game.world_map.occlusion_layer.pieces[0].mesh
 	var anchor := Vector2(830, 310)
 	for factor in [1.12, 1.08, 1.0 / 1.12, 1.0 / 1.08]:
 		game.camera.force_update_scroll()
@@ -23,6 +27,7 @@ func _run() -> void:
 		var after: Vector2 = game.get_viewport().get_canvas_transform().affine_inverse() * anchor
 		assert(before.distance_to(after) < 2.0, "pinch zoom should keep the map point under the fingers")
 		assert(game.fog.relief_mesh.mesh == fog_mesh, "pinch zoom should reuse the fog mesh")
+		assert(game.world_map.occlusion_layer.pieces[0].mesh == mountain_mesh, "pinch zoom should reuse mountain occlusion geometry")
 		assert(game.world_map.lift_per_height.distance_to(terrain_lift) < 0.001, "terrain relief should not need rebuilding for a fixed projection")
 		assert(terrain_lift.distance_to(RtsIsoProjection.world_delta(game.get_viewport().get_canvas_transform(), Vector2(0, -game.camera.zoom.x))) < 0.001, "cached terrain relief should match the current camera")
 		await process_frame

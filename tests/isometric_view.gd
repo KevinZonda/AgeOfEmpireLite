@@ -1,5 +1,10 @@
 extends SceneTree
 
+# Synthetic drag events must not be replaced by the real macOS mouse position.
+class TestPointer extends "res://scripts/player/platform_pointer.gd":
+	func _uses_native_selection_pointer() -> bool: return false
+	func _gameplay_mouse_mode(): return Input.MOUSE_MODE_VISIBLE
+
 func _initialize() -> void:
 	call_deferred("_run")
 
@@ -7,6 +12,10 @@ func _run() -> void:
 	var game = load("res://scenes/main.tscn").instantiate()
 	root.add_child(game)
 	await process_frame
+	game.selected_view_mode_25d = false
+	game.edge_scroll_enabled = false
+	root.size = Vector2i(1280, 720)
+	game.platform_pointer = TestPointer.new(game)
 	game.start_game("English", 4242)
 	game.camera.position = game.world_size * 0.5
 	game._toggle_view_mode()
@@ -37,13 +46,16 @@ func _run() -> void:
 	for y in game.world_map.grid_size.y:
 		for x in game.world_map.grid_size.x:
 			var point: Vector2 = game.world_map.cell_center(Vector2i(x, y))
-			if game.world_map.is_walkable(point) and game.world_map.elevation_at(point) > tallest_walkable_height:
+			# A back slope may project behind a nearer ridge. Round-trip clicks
+			# exercise the visible surface, rather than an occluded ground anchor.
+			var visible_ground := RtsIsoProjection.ground_point(game, point + RtsIsoProjection.ground_lift(game, point)).distance_to(point) < 1.0
+			if visible_ground and game.world_map.is_walkable(point) and game.world_map.elevation_at(point) > tallest_walkable_height:
 				tallest_walkable = point
 				tallest_walkable_height = game.world_map.elevation_at(point)
 			if game.world_map.terrain_at(point) == RtsWorldMap.Terrain.MOUNTAIN:
 				mountain_height = game.world_map.elevation_at(point)
 				peak_height = maxf(peak_height, mountain_height)
-			elif game.world_map.is_high_ground(point) and high_ground == Vector2.INF:
+			elif visible_ground and game.world_map.is_high_ground(point) and high_ground == Vector2.INF:
 				high_ground = point
 			if steep_slope == Vector2.INF and game.world_map.is_area_buildable(Rect2(point - Vector2(35, 35), Vector2(70, 70))) and game.world_map.elevation_span(Rect2(point - Vector2(35, 35), Vector2(70, 70))) > 28.0:
 				steep_slope = point

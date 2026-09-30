@@ -10,8 +10,9 @@ const CASES := [
 ]
 
 # Baseline hashes include terrain, decoration/resource ordering, elevations and RNG state.
-# Water-adjacent shared vertices stay at zero, including lakes near mountains.
-const EXPECTED := ["82e3e26cc3b908882df1f612a69b23959188d3efcacaf88849fa5cc21420bd1a", "54a2b4dd6381eb3808cbb39b207b1a61bc2046a3837464dfa24cf9e323888e3b", "623d7e1c60f2abcc83847fea287ea2ced7233759eb622f918701c13b1cecd5c9", "ea3223b6685280e4e904ac0df189453e8d5817959defc1ff606a77fe7c1c896e", "82e3e26cc3b908882df1f612a69b23959188d3efcacaf88849fa5cc21420bd1a", "1071af2847d8fcc359f8c867a63b4be9465c72ed98a6478034b5ef86c5e288da"]
+# Refined deterministic ridges; water-adjacent shared vertices remain at zero.
+# tests/terrain_surface.gd separately pins the unchanged gameplay layout.
+const EXPECTED := ["e71ad761591c6b5c9270d3f60a7dd8d0b4dcee1df8ebdf9ea1265b4a918cf979", "084a58c38fbc5bb8cf52608f511c35b276845e310a6da9c1148c68735add10b6", "674fbb0a10a708c22f40b1b4561e413ca2cd08a68d36c4b02ef3d3e8e4a7f8bd", "ea3223b6685280e4e904ac0df189453e8d5817959defc1ff606a77fe7c1c896e", "e71ad761591c6b5c9270d3f60a7dd8d0b4dcee1df8ebdf9ea1265b4a918cf979", "55735e6d3a35524cb86189f283df105d480b33dadcc1b477aabe59850a63a15a"]
 
 func _initialize() -> void:
 	for i in CASES.size():

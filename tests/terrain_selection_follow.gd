@@ -7,6 +7,9 @@ func _run() -> void:
 	var game = load("res://scenes/main.tscn").instantiate()
 	root.add_child(game)
 	await process_frame
+	game.selected_view_mode_25d = false
+	game.edge_scroll_enabled = false
+	root.size = Vector2i(1280, 720)
 	game.start_game("English", 4242)
 	game.ai_controllers.clear()
 	game.fog.clear()

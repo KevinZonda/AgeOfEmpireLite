@@ -52,6 +52,7 @@ func reset(new_mode := "enabled") -> void:
 	relief_mesh.mesh = null
 	active = mode != "disabled"
 	if not active:
+		game.world_map.set_occlusion_fog(null)
 		_update_entity_visibility()
 		hide()
 		if game.minimap != null: game.minimap.queue_redraw()
@@ -61,6 +62,7 @@ func reset(new_mode := "enabled") -> void:
 	show()
 
 func clear() -> void:
+	game.world_map.set_occlusion_fog(null)
 	_clear_building_memory()
 	spy_timers.clear()
 	active = false
@@ -304,6 +306,7 @@ func _update_mask() -> void:
 	else:
 		mask_texture.update(image)
 	mask_image = image
+	game.world_map.set_occlusion_fog(mask_texture)
 	relief_mesh.texture = mask_texture
 	if game.view_mode_25d and relief_mesh.mesh == null: update_projection()
 	else: queue_redraw()

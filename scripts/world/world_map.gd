@@ -2,6 +2,7 @@ class_name RtsWorldMap
 extends Node2D
 
 const WorldMapRenderer = preload("res://scripts/world/world_map_renderer.gd")
+const TerrainOcclusion = preload("res://scripts/world/terrain_occlusion.gd")
 
 const CELL_SIZE := 50
 const VISUAL_APRON_CELLS := 12
@@ -37,6 +38,23 @@ var accents_mesh: ArrayMesh
 var plants_mesh: ArrayMesh
 var apron_mesh: ArrayMesh
 var relief_mesh: ArrayMesh
+var details_mesh: ArrayMesh
+var relief_noise := FastNoiseLite.new()
+var occlusion_layer: Node2D
+var occlusion_fog: Texture2D
+
+func set_occlusion_fog(texture: Texture2D) -> void:
+	occlusion_fog = texture
+	if occlusion_layer != null: occlusion_layer.set_fog(texture)
+
+func update_terrain_occlusion(groups: Dictionary, white: Texture2D) -> void:
+	if not isometric_view:
+		if occlusion_layer != null: occlusion_layer.hide()
+		return
+	if occlusion_layer == null:
+		occlusion_layer = TerrainOcclusion.new()
+		add_child(occlusion_layer)
+	occlusion_layer.rebuild(groups, white, occlusion_fog)
 
 func generate(seed_value: int, map_size: Vector2, style := "balanced", participants := 2) -> void:
 	generate_terrain(seed_value, map_size, style, participants)
@@ -167,6 +185,10 @@ func trade_post_positions() -> Array[Vector2]:
 	return result
 
 func _build_elevations() -> void:
+	# Separate from layout RNG: refinements cannot move resources or mountain passes.
+	relief_noise.seed = map_seed ^ 0x53a9
+	relief_noise.frequency = 0.011
+	relief_noise.fractal_octaves = 2
 	elevation_levels.resize(cells.size())
 	elevation_levels.fill(0)
 	for y in grid_size.y:
@@ -241,16 +263,29 @@ func _mountain_height_at(point: Vector2) -> float:
 			nearest = minf(nearest, point.distance_to(cell_center(Vector2i(x, y))))
 	if nearest == INF: return 0.0
 	var shoulder := clampf(1.0 - nearest / (CELL_SIZE * 4.5), 0.0, 1.0)
-	var height := 74.0 * shoulder * shoulder * (3.0 - 2.0 * shoulder)
+	var reference := _reference_point(point)
+	var variation := relief_noise.get_noise_2d(reference.x, reference.y)
+	var coverage := 0.0
+	for offset in [Vector2i(-1, -1), Vector2i(0, -1), Vector2i(-1, 0), Vector2i.ZERO]:
+		var neighbor: Vector2i = cell + offset
+		if neighbor.x < 0 or neighbor.y < 0 or neighbor.x >= grid_size.x or neighbor.y >= grid_size.y: continue
+		if cells[_index(neighbor)] == Terrain.MOUNTAIN: coverage += 0.25
+	var height := 74.0 * shoulder * shoulder * (3.0 - 2.0 * shoulder) * (0.92 + variation * 0.22)
+	# Interior ridges have saddles and uneven shoulders instead of a flat plateau.
+	height += smoothstep(0.35, 1.0, coverage) * (35.0 + 46.0 * variation) * shoulder
 	var world_scale := Vector2(world_size.x / 2400.0, world_size.y / 1500.0)
 	for shape in terrain_shapes:
 		if shape["kind"] != Terrain.MOUNTAIN: continue
 		var center: Vector2 = shape["center"] * world_scale
 		var radius: Vector2 = shape["radius"] * world_scale
-		var radial := ((point - center) / radius).length_squared()
+		var local := (point - center) / radius
+		var phase := float(map_seed % 101) * 0.17
+		local += Vector2(sin(local.y * 4.0 + phase), cos(local.x * 5.0 + phase)) * 0.09
+		local.x += local.y * 0.12
+		var radial := local.length_squared()
 		if radial >= 1.0: continue
-		var crest: float = pow(1.0 - sqrt(radial), 0.82)
-		height = maxf(height, (180.0 if map_style == "highlands" else 155.0 if map_style == "lakes" else 190.0) * crest)
+		var crest: float = pow(1.0 - sqrt(radial), 0.72)
+		height = maxf(height, (180.0 if map_style == "highlands" else 155.0 if map_style == "lakes" else 190.0) * crest * (0.97 + variation * 0.16))
 	return height
 
 func spawn_positions() -> Array[Vector2]:
