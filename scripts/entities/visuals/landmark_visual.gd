@@ -3,6 +3,8 @@ extends RefCounted
 # Local 3D faces, rendered through the existing 2D isometric canvas. BSP splits
 # intersecting faces, so overlapping wings cannot override one another merely
 # because their draw calls happened later. Geometry is cached by the building.
+const WesternLandmark = preload("res://scripts/entities/visuals/western_landmark_visual.gd")
+const ChineseLandmark = preload("res://scripts/entities/visuals/chinese_landmark_visual.gd")
 const EPSILON := 0.001
 var faces: Array[Dictionary] = []
 var ordered_faces: Array[Dictionary] = []
@@ -10,6 +12,9 @@ var dimensions := Vector2.ZERO
 var palette: Dictionary
 var base_z := 0.0
 var height_above_origin := 0.0
+var projected_cache: Array[Dictionary] = []
+var projected_cache_up := Vector2.INF
+var projected_cache_lift := Vector2.INF
 
 func face(points: Array, color: Color) -> void:
 	faces.append({"points": PackedVector3Array(points), "color": color})
@@ -173,6 +178,9 @@ func _traverse(tree: Dictionary, toward_camera: Vector3) -> void:
 	_traverse(tree["back"] if front_first else tree["front"], toward_camera)
 
 func prepare() -> void:
+	projected_cache.clear()
+	projected_cache_up = Vector2.INF
+	projected_cache_lift = Vector2.INF
 	height_above_origin = 0.0
 	for polygon in faces:
 		for p in polygon["points"]:
@@ -184,15 +192,28 @@ func prepare() -> void:
 	_traverse(tree, Vector3(1, 1, sqrt(0.5)))
 
 func projected_faces(canvas: Transform2D, zoom: float, lift: Vector2) -> Array[Dictionary]:
-	var result: Array[Dictionary] = []
 	var up := RtsIsoProjection.world_delta(canvas, Vector2(0, -zoom))
+	if up.is_equal_approx(projected_cache_up) and lift.is_equal_approx(projected_cache_lift): return projected_cache
+	var result: Array[Dictionary] = []
 	for polygon in ordered_faces:
 		var points := PackedVector2Array()
 		for p in polygon["points"]: points.append(Vector2(p.x, p.y) + up * p.z + lift)
+		# BSP intersections can leave subpixel slivers. Discard zero-area
+		# projections before they reach polygon triangulation or hit testing.
+		var twice_area := 0.0
+		for i in range(1, points.size() - 1):
+			twice_area += (points[i] - points[0]).cross(points[i + 1] - points[0])
+		if absf(twice_area) < 0.001: continue
 		result.append({"points": points, "color": polygon["color"]})
+	projected_cache = result
+	projected_cache_up = up
+	projected_cache_lift = lift
 	return result
 
 func populate(kind: String, landmark_id: String, player: Color) -> void:
+	if kind == "landmark":
+		if ChineseLandmark.populate(self, landmark_id, player): return
+		if WesternLandmark.populate(self, landmark_id, player): return
 	if kind == "wonder":
 		# Broad plinth, colonnade, cupola and four corner pinnacles.
 		block(0.5, 0.5, 1.04, 1.04, 12, "flat")

@@ -30,17 +30,9 @@ static func draw_topdown(c: CanvasItem, kind: String, bounds: Rect2, palette: Di
 			c.draw_circle(_top_point(bounds, t, 0.5, wall_vertical), 2.4, light)
 			c.draw_circle(_top_point(bounds, t, 0.5, wall_vertical), 1.15, dark)
 	if gate:
-		# A dark road through the wall remains distinct from the closed leaves.
-		_top_quad(c, bounds, 0.32, 0.68, 0.03, 0.97, Color("374039"), wall_vertical)
-		_top_quad(c, bounds, 0.345, 0.655, 0.33, 0.67, Color("76553b") if not stone else Color("554d43"), wall_vertical)
-		c.draw_line(_top_point(bounds, 0.5, 0.33, wall_vertical), _top_point(bounds, 0.5, 0.67, wall_vertical), light, 1.3)
-		for t in [0.26, 0.74]:
-			_top_quad(c, bounds, t - 0.075, t + 0.075, n0 - 0.12, n1 + 0.12, face.lightened(0.08), wall_vertical)
-			_top_quad(c, bounds, t - 0.047, t + 0.047, 0.37, 0.63, dark, wall_vertical)
-		for t in [0.2, 0.72]:
-			c.draw_line(_top_point(bounds, t, 0.5, wall_vertical), _top_point(bounds, t + 0.08, 0.5, wall_vertical), accent.darkened(0.18), 1.8)
+		_gate_topdown(c, bounds, face, light, accent, stone, wall_vertical)
 
-static func draw_iso(c: CanvasItem, kind: String, nw: Vector2, ne: Vector2, se: Vector2, sw: Vector2, lift: Vector2, palette: Dictionary, accent: Color, _civ: String, wall_vertical: bool, canvas: Transform2D, zoom: float) -> void:
+static func draw_iso(c: CanvasItem, kind: String, nw: Vector2, ne: Vector2, se: Vector2, sw: Vector2, lift: Vector2, palette: Dictionary, accent: Color, _civ: String, wall_vertical: bool, _canvas: Transform2D, _zoom: float) -> void:
 	var far_a := nw
 	var far_b := sw if wall_vertical else ne
 	var near_a := ne if wall_vertical else sw
@@ -55,9 +47,12 @@ static func draw_iso(c: CanvasItem, kind: String, nw: Vector2, ne: Vector2, se: 
 	if kind.begins_with("stone"):
 		_stone_iso(c, back_a, back_b, front_a, front_b, lift, palette, accent, kind.ends_with("_gate"))
 	else:
-		_palisade_iso(c, back_a, back_b, front_a, front_b, lift, palette, accent, kind.ends_with("_gate"), canvas, zoom)
+		_palisade_iso(c, back_a, back_b, front_a, front_b, lift, palette, accent, kind.ends_with("_gate"))
 
 static func _stone_iso(c: CanvasItem, back_a: Vector2, back_b: Vector2, front_a: Vector2, front_b: Vector2, lift: Vector2, palette: Dictionary, accent: Color, gate: bool) -> void:
+	if gate:
+		_stone_gate_iso(c, back_a, back_b, front_a, front_b, lift, palette, accent)
+		return
 	var stone: Color = palette["wall"]
 	var trim: Color = palette["trim"]
 	var shade := stone.darkened(0.29)
@@ -69,44 +64,21 @@ static func _stone_iso(c: CanvasItem, back_a: Vector2, back_b: Vector2, front_a:
 	# thickness visible below the walkway, including on gate segments.
 	_poly(c, [back_b, front_b, front_b + top, back_b + top], shade)
 	c.draw_line(back_b + top, front_b + top, trim.darkened(0.2), 1.6)
-	if gate:
-		for section in [[0.0, 0.32], [0.68, 1.0]]:
-			_face(c, front_a, front_b, top, float(section[0]), float(section[1]), stone)
-			_course_lines(c, front_a, front_b, top, float(section[0]), float(section[1]), mortar)
-		# A deep recess behind the stone arch reads as a passage, even at icon scale.
-		var a := front_a.lerp(front_b, 0.32)
-		var b := front_a.lerp(front_b, 0.68)
-		_poly(c, [a, b, b + top * 0.67, front_a.lerp(front_b, 0.60) + top * 0.82, front_a.lerp(front_b, 0.40) + top * 0.82, a + top * 0.67], Color("30332f"))
-		var door := Color("705238")
-		_poly(c, [a.lerp(b, 0.08), a.lerp(b, 0.49), a.lerp(b, 0.49) + top * 0.55, a.lerp(b, 0.08) + top * 0.55], door)
-		_poly(c, [a.lerp(b, 0.51), a.lerp(b, 0.92), a.lerp(b, 0.92) + top * 0.55, a.lerp(b, 0.51) + top * 0.55], door.darkened(0.13))
-		c.draw_line(a.lerp(b, 0.5), a.lerp(b, 0.5) + top * 0.57, Color("2f2f2b"), 1.1)
-		c.draw_line(a + top * 0.69, front_a.lerp(front_b, 0.40) + top * 0.83, trim, 2.0)
-		c.draw_line(front_a.lerp(front_b, 0.40) + top * 0.83, front_a.lerp(front_b, 0.60) + top * 0.83, trim, 2.0)
-		c.draw_line(front_a.lerp(front_b, 0.60) + top * 0.83, b + top * 0.69, trim.darkened(0.13), 2.0)
-		# Gatehouse lintel carries a narrow parapet and small flanking towers.
-		_face(c, front_a, front_b, top * 0.33, 0.32, 0.68, stone.darkened(0.06), top * 0.67)
-		for t in [0.22, 0.78]:
-			var center := front_a.lerp(front_b, t)
-			c.draw_line(center, center + top * 1.18, shade, 6.0)
-			c.draw_line(center + top * 0.78, center + top * 1.18, trim, 4.0)
-	else:
-		_face(c, front_a, front_b, top, 0.0, 1.0, stone)
-		_course_lines(c, front_a, front_b, top, 0.0, 1.0, mortar)
+	_face(c, front_a, front_b, top, 0.0, 1.0, stone)
+	_course_lines(c, front_a, front_b, top, 0.0, 1.0, mortar)
 	# Merlons alternate with clear gaps rather than forming a solid rail.
 	for i in 10:
 		var t := (float(i) + 0.5) / 10.0
-		if gate and t > 0.34 and t < 0.66: continue
 		var at := front_a.lerp(front_b, t) + top
 		c.draw_line(at, at + top * 0.34, shade, 5.0)
 		c.draw_line(at + top * 0.07, at + top * 0.34, trim, 3.2)
 	# A restrained owner stripe sits below the parapet.
-	if gate:
-		c.draw_line(front_a.lerp(front_b, 0.40) + top * 1.05, front_a.lerp(front_b, 0.60) + top * 1.05, accent.darkened(0.14), 2.0)
-	else:
-		c.draw_line(front_a.lerp(front_b, 0.07) + top * 0.82, front_a.lerp(front_b, 0.93) + top * 0.82, accent.darkened(0.23), 1.8)
+	c.draw_line(front_a.lerp(front_b, 0.07) + top * 0.82, front_a.lerp(front_b, 0.93) + top * 0.82, accent.darkened(0.23), 1.8)
 
-static func _palisade_iso(c: CanvasItem, back_a: Vector2, back_b: Vector2, front_a: Vector2, front_b: Vector2, lift: Vector2, palette: Dictionary, accent: Color, gate: bool, canvas: Transform2D, zoom: float) -> void:
+static func _palisade_iso(c: CanvasItem, back_a: Vector2, back_b: Vector2, front_a: Vector2, front_b: Vector2, lift: Vector2, palette: Dictionary, accent: Color, gate: bool) -> void:
+	if gate:
+		_timber_gate_iso(c, back_a, back_b, front_a, front_b, lift, palette, accent)
+		return
 	var timber: Color = palette["timber"]
 	var pale := Color("aa8153")
 	var dark := timber.darkened(0.24)
@@ -117,41 +89,224 @@ static func _palisade_iso(c: CanvasItem, back_a: Vector2, back_b: Vector2, front
 		c.draw_line(back_b + lift * h, front_b + lift * h, pale.darkened(0.16), 1.5)
 	for i in 14:
 		var t := (float(i) + 0.5) / 14.0
-		if gate and t > 0.30 and t < 0.70: continue
 		var foot := front_a.lerp(front_b, t)
 		var side := (front_b - front_a) * 0.031
 		_poly(c, [foot - side, foot + side, foot + side + lift * 0.91, foot + lift * 1.20, foot - side + lift * 0.91], timber.darkened(0.09 if i % 2 == 0 else 0.18))
 		c.draw_line(foot - side * 0.45 + lift * 0.07, foot - side * 0.45 + lift * 0.89, pale.darkened(0.06), 1.0)
 	for h in [0.35, 0.68]:
-		if gate:
-			for section in [[0.01, 0.31], [0.69, 0.99]]:
-				c.draw_line(front_a.lerp(front_b, float(section[0])) + lift * h, front_a.lerp(front_b, float(section[1])) + lift * h, dark, 2.6)
+		c.draw_line(front_a.lerp(front_b, 0.01) + lift * h, front_a.lerp(front_b, 0.99) + lift * h, dark, 2.6)
+	c.draw_line(front_a.lerp(front_b, 0.07) + lift * 0.73, front_a.lerp(front_b, 0.93) + lift * 0.73, accent.darkened(0.24), 1.8)
+
+# Gatehouse geometry uses the same along-wall/depth basis at both rotations.
+# Heights are multiples of the existing 11-unit wall height; collision stays unchanged.
+static func _gate_topdown(c: CanvasItem, bounds: Rect2, stone: Color, trim: Color, accent: Color, masonry: bool, vertical: bool) -> void:
+	_top_quad(c, bounds, 0.33, 0.67, 0.0, 1.0, Color("6d705b"), vertical)
+	for i in 5:
+		var n := float(i) / 5.0
+		_top_quad(c, bounds, 0.365, 0.635, n + 0.015, n + 0.17, Color("a49c7c").darkened(0.06 if i % 2 else 0.0), vertical)
+	_top_quad(c, bounds, 0.32, 0.68, 0.24, 0.76, Color("34392f"), vertical)
+	_top_quad(c, bounds, 0.35, 0.65, 0.42, 0.58, Color("735239"), vertical)
+	for t in [0.38, 0.44, 0.50, 0.56, 0.62]:
+		c.draw_line(_top_point(bounds, t, 0.43, vertical), _top_point(bounds, t, 0.57, vertical), Color("ad8959"), 0.9)
+	for t in [0.265, 0.735]:
+		_top_quad(c, bounds, t - 0.11, t + 0.11, 0.035, 1.0, Color("29332a", 0.27), vertical)
+		_top_quad(c, bounds, t - 0.09, t + 0.09, 0.06, 0.94, stone.darkened(0.29), vertical)
+		_top_quad(c, bounds, t - 0.077, t + 0.077, 0.10, 0.87, trim if masonry else Color("936640"), vertical)
+		_top_quad(c, bounds, t - 0.045, t + 0.045, 0.26, 0.71, stone.darkened(0.38), vertical)
+		if masonry:
+			for at in [t - 0.062, t + 0.062]:
+				for n in [0.18, 0.48, 0.78]:
+					_top_quad(c, bounds, at - 0.02, at + 0.02, n - 0.07, n + 0.07, trim.lightened(0.11), vertical)
+			for n in [0.15, 0.80]:
+				_top_quad(c, bounds, t - 0.025, t + 0.025, n - 0.05, n + 0.05, trim, vertical)
 		else:
-			c.draw_line(front_a.lerp(front_b, 0.01) + lift * h, front_a.lerp(front_b, 0.99) + lift * h, dark, 2.6)
-	if gate:
-		var left := front_a.lerp(front_b, 0.32)
-		var right := front_a.lerp(front_b, 0.68)
-		_poly(c, [left, right, right + lift * 0.91, left + lift * 0.91], Color("272c29"))
-		# Two wooden gate leaves and diagonal bracing, framed by taller posts.
-		var middle := left.lerp(right, 0.5)
-		_poly(c, [left + (right - left) * 0.04, middle, middle + lift * 0.69, left + (right - left) * 0.04 + lift * 0.69], Color("8a633f"))
-		_poly(c, [middle, right - (right - left) * 0.04, right - (right - left) * 0.04 + lift * 0.69, middle + lift * 0.69], Color("765238"))
-		for t in [0.33, 0.43, 0.57, 0.67]:
-			var plank := front_a.lerp(front_b, t)
-			c.draw_line(plank, plank + lift * 0.68, dark, 1.0)
-		c.draw_line(left + lift * 0.12, middle + lift * 0.61, dark, 1.8)
-		c.draw_line(middle + lift * 0.61, right + lift * 0.12, dark, 1.8)
-		for t in [0.29, 0.71]:
-			var post := front_a.lerp(front_b, t)
-			c.draw_line(post, post + lift * 1.27, dark, 6.5)
-			c.draw_line(post + lift * 0.12, post + lift * 1.18, pale, 3.8)
-			var roof_up := RtsIsoProjection.world_delta(canvas, Vector2(0, -3.5 * zoom))
-			_poly(c, [post - (right - left) * 0.13 + lift * 1.18, post + roof_up + lift * 1.29, post + (right - left) * 0.13 + lift * 1.18], dark)
-		c.draw_line(left + lift * 0.95, right + lift * 0.95, dark, 5.0)
-		c.draw_line(left + lift * 0.99, right + lift * 0.99, pale, 2.8)
-		c.draw_line(front_a.lerp(front_b, 0.42) + lift * 1.05, front_a.lerp(front_b, 0.58) + lift * 1.05, accent.darkened(0.2), 2.0)
+			_top_quad(c, bounds, t - 0.087, t + 0.087, 0.11, 0.88, Color("70503b"), vertical)
+			_top_quad(c, bounds, t - 0.087, t, 0.11, 0.88, Color("9c7350"), vertical)
+			c.draw_line(_top_point(bounds, t, 0.10, vertical), _top_point(bounds, t, 0.88, vertical), Color("b9986f"), 1.2)
+			for n in [0.27, 0.44, 0.61, 0.77]:
+				c.draw_line(_top_point(bounds, t - 0.085, n, vertical), _top_point(bounds, t + 0.085, n, vertical), Color("3b3028", 0.45), 0.8)
+		_top_quad(c, bounds, t - 0.033, t + 0.033, 0.81, 0.89, accent.darkened(0.12), vertical)
+	# A roofed timber gallery or stone fighting platform spans the gate.
+	_top_quad(c, bounds, 0.35, 0.65, 0.25, 0.38, trim.darkened(0.15), vertical)
+	_top_quad(c, bounds, 0.35, 0.65, 0.63, 0.75, trim.darkened(0.30), vertical)
+	if masonry:
+		for t in [0.39, 0.50, 0.61]:
+			_top_quad(c, bounds, t - 0.02, t + 0.02, 0.25, 0.34, trim.lightened(0.07), vertical)
 	else:
-		c.draw_line(front_a.lerp(front_b, 0.07) + lift * 0.73, front_a.lerp(front_b, 0.93) + lift * 0.73, accent.darkened(0.24), 1.8)
+		_top_quad(c, bounds, 0.35, 0.65, 0.30, 0.50, Color("9c7350"), vertical)
+		_top_quad(c, bounds, 0.35, 0.65, 0.50, 0.70, Color("70503b"), vertical)
+		c.draw_line(_top_point(bounds, 0.35, 0.50, vertical), _top_point(bounds, 0.65, 0.50, vertical), Color("b9986f"), 1.2)
+
+static func _stone_gate_iso(c: CanvasItem, ba: Vector2, bb: Vector2, fa: Vector2, fb: Vector2, lift: Vector2, palette: Dictionary, accent: Color) -> void:
+	var stone: Color = palette["wall"]
+	var trim: Color = palette["trim"]
+	var shade := stone.darkened(0.27)
+	# Wall shoulders end against the wider gatehouse, rather than running
+	# a solid wall behind the opening.
+	for span in [[0.0, 0.18], [0.82, 1.0]]:
+		var t0: float = span[0]
+		var t1: float = span[1]
+		_poly(c, [ba.lerp(bb, t0) + lift, ba.lerp(bb, t1) + lift, fa.lerp(fb, t1) + lift, fa.lerp(fb, t0) + lift], trim.darkened(0.16))
+		_face(c, fa, fb, lift, t0, t1, stone)
+		_course_lines(c, fa, fb, lift, t0, t1, shade)
+		for t in [t0 + 0.035, t0 + 0.105, t0 + 0.17]:
+			if t > t1: continue
+			_face(c, fa, fb, lift * 0.28, t - 0.023, t + 0.023, trim, lift)
+	_poly(c, [bb, fb, fb + lift, bb + lift], shade)
+	var gb := ba.lerp(fa, -0.45)
+	var ge := bb.lerp(fb, -0.45)
+	var gf := ba.lerp(fa, 1.30)
+	var gh := bb.lerp(fb, 1.30)
+	# Approach paving and the deep, darker rear of the passage.
+	_poly(c, [gb.lerp(ge, 0.33), gb.lerp(ge, 0.67), gf.lerp(gh, 0.67), gf.lerp(gh, 0.33)], Color("a49c7c"))
+	_stone_gate_tower(c, gb, ge, gf, gh, lift, 0.17, 0.35, stone, trim, accent)
+	var a := gf.lerp(gh, 0.35)
+	var b := gf.lerp(gh, 0.65)
+	var arch: Array = [a, b, b + lift * 1.35, a.lerp(b, 0.87) + lift * 1.73, a.lerp(b, 0.68) + lift * 1.92, a.lerp(b, 0.5) + lift * 1.98, a.lerp(b, 0.32) + lift * 1.92, a.lerp(b, 0.13) + lift * 1.73, a + lift * 1.35]
+	_poly(c, arch, Color("272e28"))
+	# Two arched doors sit behind the dressed-stone reveal.
+	_poly(c, [a.lerp(b, 0.07), a.lerp(b, 0.49), a.lerp(b, 0.49) + lift * 1.76, a.lerp(b, 0.28) + lift * 1.67, a.lerp(b, 0.07) + lift * 1.28], Color("805936"))
+	_poly(c, [a.lerp(b, 0.51), a.lerp(b, 0.93), a.lerp(b, 0.93) + lift * 1.28, a.lerp(b, 0.72) + lift * 1.67, a.lerp(b, 0.51) + lift * 1.76], Color("68482f"))
+	for i in 7:
+		var t := 0.10 + float(i) * 0.13
+		var plank := a.lerp(b, t)
+		var h := 1.30 + 0.43 * (1.0 - absf(t - 0.5) * 2.0)
+		c.draw_line(plank + lift * 0.07, plank + lift * h, Color("342b24", 0.75), 0.8)
+	for h in [0.35, 0.97]:
+		c.draw_line(a.lerp(b, 0.08) + lift * h, a.lerp(b, 0.46) + lift * h, Color("343b36"), 1.8)
+		c.draw_line(a.lerp(b, 0.54) + lift * h, a.lerp(b, 0.92) + lift * h, Color("343b36"), 1.8)
+	c.draw_line(a.lerp(b, 0.5), a.lerp(b, 0.5) + lift * 1.75, Color("272923"), 1.2)
+	# The bridge face has an actual arched lower boundary, so the masonry
+	# never fills in the doorway after it has been drawn.
+	_poly(c, [a + lift * 1.35, a.lerp(b, 0.13) + lift * 1.73, a.lerp(b, 0.32) + lift * 1.92, a.lerp(b, 0.5) + lift * 1.98, a.lerp(b, 0.68) + lift * 1.92, a.lerp(b, 0.87) + lift * 1.73, b + lift * 1.35, b + lift * 2.32, a + lift * 2.32], stone)
+	var inner: Array[Vector2] = [Vector2(0.0, 1.35), Vector2(0.13, 1.73), Vector2(0.32, 1.92), Vector2(0.5, 1.98), Vector2(0.68, 1.92), Vector2(0.87, 1.73), Vector2(1.0, 1.35)]
+	var outer: Array[Vector2] = [Vector2(-0.055, 1.38), Vector2(0.08, 1.89), Vector2(0.29, 2.10), Vector2(0.5, 2.16), Vector2(0.71, 2.10), Vector2(0.92, 1.89), Vector2(1.055, 1.38)]
+	for i in 6:
+		_poly(c, [a.lerp(b, inner[i].x) + lift * inner[i].y, a.lerp(b, inner[i+1].x) + lift * inner[i+1].y, a.lerp(b, outer[i+1].x) + lift * outer[i+1].y, a.lerp(b, outer[i].x) + lift * outer[i].y], trim.darkened(0.08 if i % 2 else 0.0))
+		c.draw_line(a.lerp(b, inner[i].x) + lift * inner[i].y, a.lerp(b, outer[i].x) + lift * outer[i].y, shade, 0.65)
+	_poly(c, [gb.lerp(ge, 0.35) + lift * 2.32, gb.lerp(ge, 0.65) + lift * 2.32, b + lift * 2.32, a + lift * 2.32], trim.darkened(0.19))
+	c.draw_line(a + lift * 2.30, b + lift * 2.30, trim, 1.4)
+	for t in [0.39, 0.5, 0.61]:
+		_face(c, gf, gh, lift * 0.29, t - 0.022, t + 0.022, trim, lift * 2.32)
+	_stone_gate_tower(c, gb, ge, gf, gh, lift, 0.65, 0.83, stone, trim, accent)
+
+static func _stone_gate_tower(c: CanvasItem, ba: Vector2, bb: Vector2, fa: Vector2, fb: Vector2, lift: Vector2, t0: float, t1: float, stone: Color, trim: Color, accent: Color) -> void:
+	var a := ba.lerp(bb, t0)
+	var b := ba.lerp(bb, t1)
+	var d := fa.lerp(fb, t0)
+	var e := fa.lerp(fb, t1)
+	var up := lift * 2.55
+	var shade := stone.darkened(0.26)
+	_poly(c, [b, e, e + up, b + up], shade)
+	_poly(c, [d, e, e + up, d + up], stone)
+	# Splayed stone footing and two simple courses give each pier weight.
+	_poly(c, [d, e, e + lift * 0.18, d + lift * 0.18], trim.darkened(0.15))
+	for h in [0.48, 1.0, 1.5, 2.02]:
+		c.draw_line(d + lift * h, e + lift * h, Color(shade, 0.62), 0.75)
+		c.draw_line(e + lift * h, b + lift * h, shade.darkened(0.12), 0.75)
+	var slit := d.lerp(e, 0.50) + lift * 1.32
+	c.draw_line(slit, slit + lift * 0.48, trim, 2.7)
+	c.draw_line(slit + lift * 0.04, slit + lift * 0.44, Color("333b30"), 1.2)
+	var side_slit := b.lerp(e, 0.55) + lift * 1.28
+	c.draw_line(side_slit, side_slit + lift * 0.42, Color("343a30"), 1.2)
+	# A projecting cornice supports an open crenellated fighting platform.
+	_poly(c, [a + up, b + up, e + up, d + up], trim.darkened(0.38))
+	c.draw_line(d + up, e + up, trim, 2.5)
+	c.draw_line(b + up, e + up, trim.darkened(0.16), 2.5)
+	for t in [0.08, 0.5, 0.92]:
+		var p := d.lerp(e, t)
+		var width := (e - d) * 0.10
+		_poly(c, [p - width + up, p + width + up, p + width + up + lift * 0.31, p - width + up + lift * 0.31], trim)
+	for n in [0.08, 0.5, 0.92]:
+		var p := b.lerp(e, n)
+		var width := (e - b) * 0.10
+		_poly(c, [p - width + up, p + width + up, p + width + up + lift * 0.31, p - width + up + lift * 0.31], trim.darkened(0.20))
+	# A short hanging owner pennant leaves most masonry unpainted.
+	var mid := d.lerp(e, 0.50)
+	var w := (e - d) * 0.13
+	_poly(c, [mid - w + lift * 2.21, mid + w + lift * 2.21, mid + w + lift * 1.82, mid + lift * 1.73, mid - w + lift * 1.82], accent.darkened(0.10))
+
+static func _timber_gate_iso(c: CanvasItem, ba: Vector2, bb: Vector2, fa: Vector2, fb: Vector2, lift: Vector2, palette: Dictionary, accent: Color) -> void:
+	var timber: Color = palette["timber"]
+	var pale := Color("ad8658")
+	var dark := timber.darkened(0.26)
+	for span in [[0.0, 0.20], [0.80, 1.0]]:
+		for i in 4:
+			var t: float = float(span[0]) + 0.025 + float(i) * 0.051
+			var foot := fa.lerp(fb, t)
+			var side := (fb - fa) * 0.025
+			_poly(c, [foot - side, foot + side, foot + side + lift * 0.88, foot + lift * 1.2, foot - side + lift * 0.88], timber.darkened(0.06 if i % 2 == 0 else 0.17))
+			c.draw_line(foot + lift * 0.08, foot + lift * 0.87, pale, 0.8)
+		for h in [0.32, 0.65]:
+			c.draw_line(fa.lerp(fb, float(span[0])) + lift * h, fa.lerp(fb, float(span[1])) + lift * h, dark, 2.2)
+	_poly(c, [bb, fb, fb + lift * 0.88, bb + lift * 0.88], dark)
+	for h in [0.32, 0.65]:
+		c.draw_line(bb + lift * h, fb + lift * h, pale.darkened(0.18), 1.3)
+	var gb := ba.lerp(fa, -0.35)
+	var ge := bb.lerp(fb, -0.35)
+	var gf := ba.lerp(fa, 1.20)
+	var gh := bb.lerp(fb, 1.20)
+	_poly(c, [gb.lerp(ge, 0.34), gb.lerp(ge, 0.66), gf.lerp(gh, 0.66), gf.lerp(gh, 0.34)], Color("82745a"))
+	_timber_gate_tower(c, gb, ge, gf, gh, lift, 0.20, 0.34, timber, pale)
+	var a := gf.lerp(gh, 0.34)
+	var b := gf.lerp(gh, 0.66)
+	_poly(c, [a, b, b + lift * 1.74, a + lift * 1.74], Color("2f3328"))
+	_face(c, a, b, lift * 1.42, 0.04, 0.49, Color("986c43"))
+	_face(c, a, b, lift * 1.42, 0.51, 0.96, Color("805735"))
+	for t in [0.12, 0.24, 0.36, 0.64, 0.76, 0.88]:
+		c.draw_line(a.lerp(b, t), a.lerp(b, t) + lift * 1.40, dark, 0.8)
+	for h in [0.17, 1.21]:
+		c.draw_line(a.lerp(b, 0.06) + lift * h, a.lerp(b, 0.46) + lift * h, dark, 1.8)
+		c.draw_line(a.lerp(b, 0.54) + lift * h, a.lerp(b, 0.94) + lift * h, dark, 1.8)
+	c.draw_line(a.lerp(b, 0.08) + lift * 0.21, a.lerp(b, 0.46) + lift * 1.19, pale.darkened(0.18), 1.4)
+	c.draw_line(a.lerp(b, 0.54) + lift * 1.19, a.lerp(b, 0.92) + lift * 0.21, pale.darkened(0.18), 1.4)
+	# Covered gallery above the two doors, with exposed structural braces.
+	_face(c, gf, gh, lift * 0.22, 0.32, 0.68, dark, lift * 1.60)
+	c.draw_line(a + lift * 1.65, b + lift * 1.65, pale, 1.5)
+	var ra := gb.lerp(ge, 0.30) + lift * 1.88
+	var rb := gb.lerp(ge, 0.70) + lift * 1.88
+	var rc := gf.lerp(gh, 0.70) + lift * 1.88
+	var rd := gf.lerp(gh, 0.30) + lift * 1.88
+	var ridge_a := ra.lerp(rd, 0.5) + lift * 0.39
+	var ridge_b := rb.lerp(rc, 0.5) + lift * 0.39
+	_poly(c, [ra, rb, ridge_b, ridge_a], Color("916848"))
+	_poly(c, [ridge_a, ridge_b, rc, rd], Color("634a36"))
+	c.draw_line(ridge_a, ridge_b, pale, 1.2)
+	c.draw_line(rd, rc, Color("342d25"), 1.6)
+	var mid := a.lerp(b, 0.5)
+	var w := (b - a) * 0.10
+	_poly(c, [mid - w + lift * 1.70, mid + w + lift * 1.70, mid + w + lift * 1.43, mid + lift * 1.37, mid - w + lift * 1.43], accent.darkened(0.12))
+	_timber_gate_tower(c, gb, ge, gf, gh, lift, 0.66, 0.80, timber, pale)
+
+static func _timber_gate_tower(c: CanvasItem, ba: Vector2, bb: Vector2, fa: Vector2, fb: Vector2, lift: Vector2, t0: float, t1: float, timber: Color, pale: Color) -> void:
+	var a := ba.lerp(bb, t0)
+	var b := ba.lerp(bb, t1)
+	var d := fa.lerp(fb, t0)
+	var e := fa.lerp(fb, t1)
+	var dark := timber.darkened(0.32)
+	_poly(c, [b, e, e + lift * 1.87, b + lift * 1.87], dark)
+	_poly(c, [d, e, e + lift * 1.87, d + lift * 1.87], timber)
+	for t in [0.0, 0.5, 1.0]:
+		c.draw_line(d.lerp(e, t), d.lerp(e, t) + lift * 1.86, pale.darkened(0.13), 1.6)
+	for h in [0.2, 0.78, 1.26, 1.76]:
+		c.draw_line(d + lift * h, e + lift * h, dark, 1.3)
+	c.draw_line(d + lift * 0.26, e + lift * 1.19, pale.darkened(0.18), 1.3)
+	var slit := d.lerp(e, 0.5) + lift * 1.40
+	c.draw_line(slit, slit + lift * 0.28, Color("293126"), 1.5)
+	var up := lift * 1.93
+	var over := (e - d) * 0.12
+	var depth := (d - a) * 0.10
+	var ra := a - over - depth + up
+	var rb := b + over - depth + up
+	var rc := e + over + depth + up
+	var rd := d - over + depth + up
+	var ridge_a := ra.lerp(rd, 0.5) + lift * 0.42
+	var ridge_b := rb.lerp(rc, 0.5) + lift * 0.42
+	_poly(c, [ra, rb, ridge_b, ridge_a], Color("986c49"))
+	_poly(c, [ridge_a, ridge_b, rc, rd], Color("674c35"))
+	_poly(c, [rb, rc, ridge_b], Color("503d2c"))
+	c.draw_line(rd, rc, Color("342d25"), 1.4)
+	c.draw_line(ridge_a, ridge_b, pale, 1.2)
 
 static func _course_lines(c: CanvasItem, a: Vector2, b: Vector2, lift: Vector2, t0: float, t1: float, mortar: Color) -> void:
 	for h in [0.34, 0.67]:

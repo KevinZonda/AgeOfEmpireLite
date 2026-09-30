@@ -45,6 +45,8 @@ func _run() -> void:
 	context.add_child(context.camera)
 	context.view_mode_25d = not topdown
 	var scale := 2.25 if focus_buildings else 2.0 if regular_buildings else 1.65
+	for argument in OS.get_cmdline_user_args():
+		if argument.begins_with("--scale="): scale = clampf(argument.trim_prefix("--scale=").to_float(), 0.5, 3.0)
 	context.camera.zoom = Vector2(scale, scale if topdown else scale * 0.5)
 	var center := Vector2(180, 200) if topdown and focus_buildings else Vector2(180, 260) if focus_buildings else Vector2(140, 180) if topdown and regular_buildings else Vector2(140, 220) if regular_buildings else Vector2(210, 290) if topdown else Vector2(210, 355)
 	viewport.canvas_transform = Transform2D(Vector2(scale, 0), Vector2(0, scale), center) if topdown else Transform2D(Vector2(0.70710678, 0.35355339) * scale, Vector2(-0.70710678, 0.35355339) * scale, center)
@@ -56,6 +58,8 @@ func _run() -> void:
 		ids = ["town_center", "lumber_camp", "mining_camp", "mill", "blacksmith", "siege_workshop"]
 	if OS.get_cmdline_user_args().has("--fortifications"):
 		ids = ["keep", "outpost", "palisade_wall", "palisade_gate", "stone_wall", "stone_gate", "palisade_wall_vertical", "palisade_gate_vertical", "stone_wall_vertical", "stone_gate_vertical"]
+	for argument in OS.get_cmdline_user_args():
+		if argument.begins_with("--ids="): ids = Array(argument.trim_prefix("--ids=").split(",", false))
 	var sheet := Image.create(cell_size.x * columns, cell_size.y * ceili(ids.size() / float(columns)), false, Image.FORMAT_RGB8)
 	sheet.fill(Color("77876a"))
 	for i in ids.size():
@@ -67,6 +71,9 @@ func _run() -> void:
 		context.add_child(building)
 		building.wall_vertical = id.ends_with("_vertical")
 		building.setup(context, 0, id.trim_suffix("_vertical") if regular else "wonder" if wonder else "landmark", false, "" if wonder or regular else id)
+		for argument in OS.get_cmdline_user_args():
+			if argument.begins_with("--construction="):
+				building.build_remaining = building.build_total * (1.0 - clampf(argument.trim_prefix("--construction=").to_float(), 0.0, 1.0))
 		building.set_process(false)
 		await process_frame
 		await RenderingServer.frame_post_draw

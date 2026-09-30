@@ -7,6 +7,8 @@ const Geometry = preload("res://scripts/entities/visuals/building_geometry.gd")
 const VisualState = preload("res://scripts/entities/visuals/building_visual_state.gd")
 const FilledPolygon = preload("res://scripts/entities/visuals/filled_polygon.gd")
 const LandmarkVisual = preload("res://scripts/entities/visuals/landmark_visual.gd")
+const WesternLandmark = preload("res://scripts/entities/visuals/western_landmark_visual.gd")
+const ChineseLandmark = preload("res://scripts/entities/visuals/chinese_landmark_visual.gd")
 const EconomyBuildingVisual = preload("res://scripts/entities/visuals/economy_building_visual.gd")
 const IndustryBuildingVisual = preload("res://scripts/entities/visuals/industry_building_visual.gd")
 const DockBuildingVisual = preload("res://scripts/entities/visuals/dock_building_visual.gd")
@@ -26,7 +28,7 @@ func contains_icon_visual(snapshot: VisualState, world_point: Vector2, canvas: T
 		var center := Vector2(0, -state.dimensions.y * 0.5 - side * 0.5 - 8.0)
 		return Rect2(center - Vector2.ONE * side * 0.5, Vector2.ONE * side).has_point(world_point - state.world_position)
 	var construction_ratio := 1.0 - state.build_remaining / maxf(state.build_total, 0.1)
-	var height := state.isometric_height() * (0.25 + 0.75 * construction_ratio) + (state.visual_feature_height() + _landmark_extra_height() if construction_ratio >= 0.65 else 0.0)
+	var height := _visible_height(construction_ratio)
 	var terrain_lift := RtsIsoProjection.world_delta(canvas, Vector2(0, -state.foundation_height * state.zoom))
 	var screen_point := canvas.basis_xform(world_point - state.world_position - terrain_lift)
 	var center := Vector2(0, -height * state.zoom - side * 0.5 - 9.0)
@@ -45,6 +47,16 @@ func contains_isometric_visual(snapshot: VisualState, world_point: Vector2, canv
 	var height := state.isometric_height() * (0.25 + 0.75 * construction_ratio)
 	var lift := terrain_lift + RtsIsoProjection.world_delta(canvas, Vector2(0, -height * state.zoom))
 	var local_point := world_point - state.world_position
+	if state.kind in ["keep", "outpost"] and construction_ratio >= 0.65:
+		if Geometry2D.is_point_in_polygon(local_point - terrain_lift, KeepMonasteryVisual.selection_hull(state, canvas)): return true
+	if state.kind.ends_with("_gate") and construction_ratio >= 0.65:
+		var top := terrain_lift + RtsIsoProjection.world_delta(canvas, Vector2(0, -(height + state.visual_feature_height()) * state.zoom))
+		var hull := Geometry2D.convex_hull(PackedVector2Array([nw + terrain_lift, ne + terrain_lift, se + terrain_lift, sw + terrain_lift, nw + top, ne + top, se + top, sw + top]))
+		if Geometry2D.is_point_in_polygon(local_point, hull): return true
+	if state.kind == "landmark" and construction_ratio < 0.65:
+		var scaffold_top := terrain_lift + RtsIsoProjection.world_delta(canvas, Vector2(0, -_visible_height(construction_ratio) * state.zoom))
+		var hull := Geometry2D.convex_hull(PackedVector2Array([nw + terrain_lift, ne + terrain_lift, se + terrain_lift, sw + terrain_lift, nw + scaffold_top, ne + scaffold_top, se + scaffold_top, sw + scaffold_top]))
+		return Geometry2D.is_point_in_polygon(local_point, hull)
 	if not state.kind in ["landmark", "wonder", "farm", "barracks", "archery_range", "stable", "palisade_wall", "stone_wall", "palisade_gate", "stone_gate"]:
 		var center := (nw + ne + se + sw) * 0.25
 		var overhang := 1.1 if state.civilization == "Chinese" else 1.06
@@ -137,7 +149,7 @@ func _draw_isometric() -> void:
 	var bounds := Rect2(-state.dimensions * 0.5, state.dimensions)
 	var art_kind := state.visual_kind()
 	var fortification := art_kind.ends_with("_wall") or art_kind.ends_with("_gate")
-	var open_yard := state.kind != "landmark" and art_kind in ["town_center", "barracks", "archery_range", "stable", "market", "university", "dock", "lumber_camp", "mining_camp", "mill", "scout_camp", "blacksmith", "siege_workshop", "keep", "monastery"]
+	var open_yard := state.kind != "landmark" and art_kind in ["town_center", "barracks", "archery_range", "stable", "market", "university", "dock", "lumber_camp", "mining_camp", "mill", "scout_camp", "blacksmith", "siege_workshop", "keep", "monastery", "outpost"]
 	var palette := _architecture_palette()
 	var color: Color = palette["wall"]
 	var construction_ratio := 1.0 - state.build_remaining / maxf(state.build_total, 0.1)
@@ -166,7 +178,7 @@ func _draw_isometric() -> void:
 		FilledPolygon.draw(canvas_item, PackedVector2Array([sw + wall_lift, se + wall_lift, se, sw]), color)
 		canvas_item.draw_polyline(PackedVector2Array([ne + wall_lift, se + wall_lift, se, ne, ne + wall_lift]), Color("1c2829"), 2.0)
 		canvas_item.draw_polyline(PackedVector2Array([sw + wall_lift, se + wall_lift, se, sw, sw + wall_lift]), Color("1c2829"), 2.0)
-	var roof_color: Color = palette["roof"]
+	var roof_color: Color = Color("a79f89") if state.kind == "landmark" else palette["roof"]
 	if art_kind == "farm": roof_color = Color("735035")
 	if construction_ratio >= 0.65:
 		if not fortification:
@@ -176,16 +188,17 @@ func _draw_isometric() -> void:
 		if state.kind == "landmark" or state.kind == "wonder": _draw_iso_landmark_architecture(lift, canvas)
 	else:
 		var scaffold := Color("c5a878")
+		var scaffold_lift := RtsIsoProjection.world_delta(canvas, Vector2(0, -_visible_height(construction_ratio) * state.zoom)) if state.kind == "landmark" else lift * maxf(0.2, construction_ratio)
 		for corner in [nw, ne, sw, se]:
-			canvas_item.draw_line(corner, corner + lift * maxf(0.2, construction_ratio), scaffold, 2.2)
-		canvas_item.draw_line(nw + lift * 0.38, se + lift * 0.38, Color(scaffold, 0.82), 2.0)
-		canvas_item.draw_line(ne + lift * 0.38, sw + lift * 0.38, Color(scaffold, 0.82), 2.0)
+			canvas_item.draw_line(corner, corner + scaffold_lift, scaffold, 2.2)
+		canvas_item.draw_line(nw + scaffold_lift * 0.65, se + scaffold_lift * 0.65, Color(scaffold, 0.82), 2.0)
+		canvas_item.draw_line(ne + scaffold_lift * 0.65, sw + scaffold_lift * 0.65, Color(scaffold, 0.82), 2.0)
 	if state.damage_flash_timer > 0.0:
 		canvas_item.draw_polyline(PackedVector2Array([nw + lift, ne + lift, se + lift, sw + lift, nw + lift]), Color("f7d091", state.damage_flash_timer * 3.4), 3.0)
 	# Labels and status bars are drawn in screen space so they stay legible.
 	canvas_item.draw_set_transform_matrix(RtsIsoProjection.upright(canvas, terrain_lift))
 	var side := state.icon_size()
-	var icon_height := height + (state.visual_feature_height() + _landmark_extra_height() if construction_ratio >= 0.65 else 0.0)
+	var icon_height := _visible_height(construction_ratio)
 	_draw_building_icon(Vector2(0, -icon_height * state.zoom - side * 0.5 - 9.0), side)
 	var font := ThemeDB.fallback_font
 	if font != null and state.show_building_names:
@@ -216,6 +229,7 @@ func _architecture_palette() -> Dictionary:
 			return palette
 
 func _draw_topdown_architecture(bounds: Rect2, palette: Dictionary) -> void:
+	if state.kind == "landmark": return
 	var art_kind := state.visual_kind()
 	if state.kind not in ["landmark", "wonder"] and art_kind in ["town_center", "mill", "lumber_camp"]:
 		EconomyBuildingVisual.draw_topdown(canvas_item, art_kind, bounds, palette, state.player_color, state.civilization)
@@ -226,7 +240,7 @@ func _draw_topdown_architecture(bounds: Rect2, palette: Dictionary) -> void:
 	if state.kind not in ["landmark", "wonder"] and art_kind == "dock":
 		DockBuildingVisual.draw_topdown(canvas_item, bounds.grow(-6.0), palette, state.player_color, state.civilization)
 		return
-	if state.kind not in ["landmark", "wonder"] and art_kind in ["keep", "monastery"]:
+	if state.kind not in ["landmark", "wonder"] and art_kind in ["keep", "monastery", "outpost"]:
 		KeepMonasteryVisual.draw_topdown(canvas_item, art_kind, bounds, palette, state.player_color, state.civilization)
 		return
 	if art_kind.ends_with("_wall") or art_kind.ends_with("_gate"):
@@ -421,6 +435,9 @@ func _draw_topdown_military_structure(art_kind: String, bounds: Rect2, palette: 
 			canvas_item.draw_circle(horse + Vector2(9, 0), 2.5, Color("765039"))
 
 func _draw_topdown_landmark(bounds: Rect2, palette: Dictionary) -> void:
+	if state.kind == "landmark":
+		if ChineseLandmark.draw_topdown(canvas_item, bounds, state.landmark_id, palette, state.player_color): return
+		if WesternLandmark.draw_topdown(canvas_item, bounds, state.landmark_id, palette, state.player_color): return
 	var forms: Array = []
 	if state.kind == "wonder":
 		forms = [[0.5, 0.5, 0.65, 0.65, "dome"], [0.16, 0.16, 0.17, 0.17, "spire"], [0.84, 0.16, 0.17, 0.17, "spire"], [0.16, 0.84, 0.17, 0.17, "spire"], [0.84, 0.84, 0.17, 0.17, "spire"]]
@@ -469,6 +486,7 @@ func _draw_topdown_landmark(bounds: Rect2, palette: Dictionary) -> void:
 				for y in [box.position.y + 4, box.end.y - 4]: canvas_item.draw_rect(Rect2(x - 2, y - 2, 4, 4), trim)
 
 func _draw_iso_architecture(art_kind: String, nw: Vector2, ne: Vector2, se: Vector2, sw: Vector2, lift: Vector2, palette: Dictionary, canvas: Transform2D) -> void:
+	if state.kind == "landmark": return
 	if state.kind not in ["landmark", "wonder"] and art_kind in ["town_center", "mill", "lumber_camp"]:
 		EconomyBuildingVisual.draw_iso(canvas_item, art_kind, nw, ne, se, sw, lift, palette, state.player_color, state.civilization, canvas, state.zoom)
 		return
@@ -478,7 +496,7 @@ func _draw_iso_architecture(art_kind: String, nw: Vector2, ne: Vector2, se: Vect
 	if state.kind not in ["landmark", "wonder"] and art_kind == "dock":
 		DockBuildingVisual.draw_iso(canvas_item, nw, ne, se, sw, lift, palette, state.player_color, state.civilization, canvas, state.zoom)
 		return
-	if state.kind not in ["landmark", "wonder"] and art_kind in ["keep", "monastery"]:
+	if state.kind not in ["landmark", "wonder"] and art_kind in ["keep", "monastery", "outpost"]:
 		KeepMonasteryVisual.draw_iso(canvas_item, art_kind, nw, ne, se, sw, lift, palette, state.player_color, state.civilization, canvas, state.zoom)
 		return
 	if art_kind.ends_with("_wall") or art_kind.ends_with("_gate"):
@@ -953,3 +971,10 @@ func landmark_extra_height(snapshot: VisualState) -> float:
 func _landmark_extra_height() -> float:
 	if state.kind not in ["landmark", "wonder"]: return 0.0
 	return _landmark_geometry().height_above_origin
+
+func _visible_height(construction_ratio: float) -> float:
+	var base := state.isometric_height() * (0.25 + 0.75 * construction_ratio)
+	if construction_ratio >= 0.65: return base + state.visual_feature_height() + _landmark_extra_height()
+	# The low finished plinth must not shrink the early structural scaffold.
+	if state.kind == "landmark": return base + _landmark_extra_height() * maxf(0.2, construction_ratio)
+	return base

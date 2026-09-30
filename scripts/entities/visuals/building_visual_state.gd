@@ -80,6 +80,7 @@ func icon_size() -> float:
 	return 24.0 if kind.ends_with("_wall") or kind.ends_with("_gate") or kind == "scout_camp" else 30.0
 
 func isometric_height() -> float:
+	if kind == "landmark": return 6.0
 	var art_kind := visual_kind()
 	if art_kind == "farm": return 0.0
 	if art_kind.ends_with("_wall") or art_kind.ends_with("_gate"): return 11.0
@@ -103,6 +104,9 @@ func visual_feature_height() -> float:
 		"market": return 10.0
 		"university": return 18.0
 		"dock": return 18.0
+		"outpost": return 10.0
+		"stone_gate": return 21.0
+		"palisade_gate": return 15.0
 		"keep": return 34.0
 		"monastery": return 44.0
 	return 0.0
