@@ -8,3 +8,4 @@ docs/openage
 __pycache__
 *.pyc
 work
+tmp

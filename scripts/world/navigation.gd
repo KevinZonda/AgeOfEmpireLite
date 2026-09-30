@@ -366,6 +366,7 @@ func _safe_point_path(grid: AStarGrid2D, start: Vector2i, end: Vector2i, unit: R
 func _components_for(grid: AStarGrid2D, cache := true) -> PackedInt32Array:
 	var key := grid.get_instance_id()
 	if cache and grid_components.has(key): return grid_components[key]
+	var started := Time.get_ticks_usec() if profiling_enabled else 0
 	# Diagonals cannot cross blocked corners, so four-neighbor components are
 	# also valid for the eight-neighbor search. Reject disconnected candidates
 	# once, rather than exhausting A* for every worker/interaction sample.
@@ -403,6 +404,7 @@ func _components_for(grid: AStarGrid2D, cache := true) -> PackedInt32Array:
 				tail += 1
 		component += 1
 	if cache: grid_components[key] = labels
+	if profiling_enabled: _record_profile(&"components", started)
 	return labels
 
 func nearest_open_cell(point: Vector2, grid: AStarGrid2D = null) -> Vector2i:
@@ -608,6 +610,7 @@ func _fine_grid_for(unit: RtsUnit) -> AStarGrid2D:
 	return grid
 
 func _make_fine_grid(unit: RtsUnit, bounds: Rect2) -> AStarGrid2D:
+	var started := Time.get_ticks_usec() if profiling_enabled else 0
 	var step := _fine_step(unit)
 	var origin := (bounds.position / step).floor() * step
 	var size := Vector2i(((bounds.end - origin) / step).ceil()) + Vector2i.ONE
@@ -618,6 +621,7 @@ func _make_fine_grid(unit: RtsUnit, bounds: Rect2) -> AStarGrid2D:
 	grid.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES
 	grid.update()
 	_rasterize_static_grid(unit, grid)
+	if profiling_enabled: _record_profile(&"fine_grid_build", started)
 	return grid
 
 func _rasterize_static_grid(unit: RtsUnit, grid: AStarGrid2D, allow_resource_escape := false) -> void:
