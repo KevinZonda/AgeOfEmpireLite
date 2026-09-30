@@ -1,0 +1,222 @@
+extends RefCounted
+
+# Owns movement state. Methods receive the unit without retaining a scene reference.
+const ROUTE_STALL_SECONDS := 0.9
+const ROUTE_RETRY_BASE := 0.7
+const ROUTE_RETRY_MAX := 4.0
+
+var destination := Vector2.ZERO
+var charging := false
+var charge_distance := 0.0
+var charge_elapsed := 0.0
+var resume_destination := Vector2.INF
+var patrol_origin := Vector2.ZERO
+var patrol_destination := Vector2.ZERO
+var hold_position := Vector2.ZERO
+var route := PackedVector2Array()
+var route_index := 0
+var route_goal := Vector2.INF
+var route_generation := 0
+var route_retry := 0.0
+var route_failures := 0
+var route_stop_distance := -1.0
+var route_obstacle_revision := -1
+var route_retry_obstacle_revision := -1
+var route_check_pending := false
+var route_blocked := false
+var route_best_distance := INF
+var route_recovery_distance := INF
+var route_stalled_time := 0.0
+var group_stuck_time := 0.0
+var group_progress_target := Vector2.INF
+var group_best_distance := INF
+var movement_group: RtsMovementGroup
+var avoidance_cooldown := 0.0
+var yield_timer := 0.0
+var yield_request_cooldown := 0.0
+
+func reset_route(unit: RtsUnit) -> void:
+	route_generation += 1
+	if unit.game != null and unit.game.navigation != null: unit.game.navigation.background_jobs.cancel(unit)
+	yield_timer = 0.0
+	route.clear()
+	route_index = 0
+	route_goal = Vector2.INF
+	route_retry = 0.0
+	route_failures = 0
+	route_stop_distance = -1.0
+	route_obstacle_revision = -1
+	route_retry_obstacle_revision = -1
+	route_check_pending = false
+	route_blocked = false
+	route_best_distance = INF
+	route_recovery_distance = INF
+	route_stalled_time = 0.0
+
+func move_to(unit: RtsUnit, point: Vector2, delta: float, stop_distance: float) -> bool:
+	yield_request_cooldown = maxf(0.0, yield_request_cooldown - delta)
+	if yield_timer > 0.0:
+		yield_timer = maxf(0.0, yield_timer - delta)
+		return false
+	var distance := unit.position.distance_to(point)
+	if distance <= stop_distance + 0.5 and (unit.order != "board_transport" or unit.game.navigation.boarding_clear(unit.position, point, unit)): return true
+	unit.abilities.interrupt_movement(unit)
+	route_retry = maxf(0.0, route_retry - delta)
+	unit.game.navigation._ensure_current()
+	if route_obstacle_revision != unit.game.navigation.obstacle_revision:
+		route_obstacle_revision = unit.game.navigation.obstacle_revision
+		route_check_pending = true
+		# Structural changes wake unreachable units immediately. Moving wildlife
+		# still invalidates collision checks, but preserves failure backoff.
+		if route.is_empty() and route_retry_obstacle_revision != unit.game.navigation.retry_obstacle_revision: route_retry = 0.0
+		route_retry_obstacle_revision = unit.game.navigation.retry_obstacle_revision
+	while route_index < route.size() - 1 and unit.position.distance_to(route[route_index]) < 2.0:
+		route_index += 1
+		route_best_distance = INF
+		route_stalled_time = 0.0
+		route_check_pending = true
+	if route_check_pending and not route.is_empty():
+		# Validate only the next segment. Later segments are checked as we enter
+		# them, so a remote building change does not force another A* search.
+		route_blocked = not unit.game.navigation._static_segment_clear(unit.position, route[route_index], unit.radius(), unit)
+		route_check_pending = false
+	var target_changed := route_goal == Vector2.INF or route_goal.distance_to(point) > RtsWorldMap.CELL_SIZE * 0.5 or not is_equal_approx(route_stop_distance, stop_distance)
+	var stagger := float(unit.get_instance_id() % 11) * 0.017
+	if target_changed and route_failures > 0:
+		# Backoff belongs to the failed target, not a new unit.position it moves to.
+		route_retry = minf(route_retry, 0.15 + stagger)
+	var exhausted := not route.is_empty() and route_index == route.size() - 1 and unit.position.distance_to(route[route_index]) < 0.5
+	var stalled := route_stalled_time >= ROUTE_STALL_SECONDS
+	if unit.game.navigation.background_recovery_enabled:
+		if target_changed: unit.game.navigation.background_jobs.cancel(unit)
+		var recovery: Dictionary = unit.game.navigation.background_jobs.take(unit, point, unit.game.navigation)
+		if not recovery.is_empty():
+			var escape: PackedVector2Array = recovery.path
+			if escape.size() > 1:
+				route = escape
+				route_index = 1
+				route_best_distance = unit.position.distance_to(route[route_index])
+				route_recovery_distance = route_best_distance
+				route_stalled_time = 0.0
+				route_check_pending = true
+				route_blocked = false
+				stalled = false
+				exhausted = false
+			elif route_failures >= 3:
+				unit.game.navigation.request_passage(unit, recovery.target)
+	var needs_route := target_changed or route.is_empty() or route_blocked or exhausted or stalled
+	if needs_route and route_retry <= 0.0 and not (unit.game.navigation.background_recovery_enabled and unit.game.navigation.background_jobs.has_request(unit)):
+		if (stalled or exhausted or route_failures > 0) and unit.order in ["move", "attack_move"] and point == destination and not unit.game.navigation.can_occupy(point, unit.radius(), unit):
+			# A slot can become occupied after the order was issued. Finish at
+			# the nearest reachable free point instead of retrying it forever.
+			point = unit.game.navigation.nearest_walkable_point(point, unit.radius(), unit, true)
+			destination = point
+			distance = unit.position.distance_to(point)
+			if distance <= stop_distance + 0.5 and (unit.order != "board_transport" or unit.game.navigation.boarding_clear(unit.position, point, unit)): return true
+		if target_changed:
+			route_failures = 0
+		elif stalled or exhausted:
+			route_failures += 1
+		if ["gather", "build", "field_build", "repair", "attack", "attack_ground", "garrison", "board_transport", "trade", "deposit_relic", "relic", "supervise", "collect_tax", "board_wall", "assault_wall"].has(unit.order):
+			route = unit.game.navigation.path_to_range(unit.position, point, stop_distance, unit)
+		else:
+			route = unit.game.navigation.path_between(unit.position, point, unit)
+		var recovery_target := Vector2.INF
+		var recovery_fallback := Vector2.INF
+		if stalled and not route.is_empty() and unit.game.navigation.has_fixed_unit_blocker(unit, route[mini(1, route.size() - 1)]):
+			if unit.game.navigation.background_recovery_enabled:
+				recovery_target = route[mini(1, route.size() - 1)]
+				if route_failures >= 3 and route.size() > 2: recovery_fallback = point
+			else:
+				var escape: PackedVector2Array = unit.game.navigation.path_around_units(unit, route[mini(1, route.size() - 1)])
+				if escape.is_empty() and route_failures >= 3 and route.size() > 2: escape = unit.game.navigation.path_around_units(unit, point)
+				if not escape.is_empty(): route = escape
+				elif route_failures >= 3: unit.game.navigation.request_passage(unit, route[mini(1, route.size() - 1)])
+		route_index = 1 if route.size() > 1 and unit.position.distance_to(route[0]) < 8.0 else 0
+		route_goal = point
+		route_stop_distance = stop_distance
+		if recovery_target != Vector2.INF: unit.game.navigation.background_jobs.request(unit, recovery_target, recovery_fallback)
+		route_best_distance = unit.position.distance_to(route[route_index]) if not route.is_empty() else INF
+		route_recovery_distance = route_best_distance
+		route_stalled_time = 0.0
+		route_check_pending = false
+		route_blocked = false
+		if route.is_empty(): route_failures += 1
+		# Spread retries without consuming the match RNG. Successful movement
+		# resets failures; simply finding the same blocked route does not.
+		route_retry = 0.15 + stagger
+		if route_failures > 0:
+			route_retry = minf(ROUTE_RETRY_MAX, ROUTE_RETRY_BASE * pow(2.0, mini(route_failures - 1, 3))) + stagger
+	if route.is_empty(): return false
+	var waypoint: Vector2 = route[route_index]
+	var remaining := unit.position.distance_to(waypoint)
+	if remaining < route_best_distance - minf(2.0, maxf(0.1, unit.effective_speed() * 0.2)):
+		route_best_distance = remaining
+		route_stalled_time = 0.0
+		if remaining < route_recovery_distance - unit.radius(): route_failures = 0
+	else:
+		route_stalled_time += delta
+	var speed: float = unit.effective_speed()
+	var step := speed * delta
+	if route_index == route.size() - 1: step = minf(step, remaining)
+	var old_position := unit.position
+	unit.position = unit.game.navigation.move_step(unit, unit.position.move_toward(waypoint, step))
+	unit.game.navigation.unit_moved(unit, old_position)
+	unit._update_facing(old_position)
+	if charging: charge_distance += old_position.distance_to(unit.position)
+	unit.position = unit.position.clamp(Vector2.ONE * unit.radius(), unit.game.world_size - Vector2.ONE * unit.radius())
+	unit._refresh_slope_visual(old_position)
+	return unit.position.distance_to(point) <= stop_distance + 0.5 and (unit.order != "board_transport" or unit.game.navigation.boarding_clear(unit.position, point, unit))
+
+func move_with_group(unit: RtsUnit, delta: float) -> void:
+	yield_request_cooldown = maxf(0.0, yield_request_cooldown - delta)
+	if yield_timer > 0.0:
+		yield_timer = maxf(0.0, yield_timer - delta)
+		return
+	if movement_group.independent_members.has(unit.get_instance_id()):
+		movement_group = null
+		reset_route(unit)
+		move_to(unit, destination, delta, 6.0)
+		return
+	var point := movement_group.target_for(unit)
+	if unit.position.distance_to(point) > 0.5: unit.abilities.interrupt_movement(unit)
+	avoidance_cooldown = maxf(0.0, avoidance_cooldown - delta)
+	# Direct local steering shares the squad path. Only a genuinely stuck member
+	# pays for its own A* route around a corner or a crowded gate.
+	var old_position := unit.position
+	var step := unit.effective_speed() * delta
+	unit.position = unit.game.navigation.move_step(unit, unit.position.move_toward(point, step))
+	unit.game.navigation.unit_moved(unit, old_position)
+	unit._update_facing(old_position)
+	unit.position = unit.position.clamp(Vector2.ONE * unit.radius(), unit.game.world_size - Vector2.ONE * unit.radius())
+	unit._refresh_slope_visual(old_position)
+	var remaining := unit.position.distance_to(point)
+	if group_progress_target.distance_squared_to(point) > 16.0:
+		group_progress_target = point
+		group_best_distance = remaining
+		group_stuck_time = 0.0
+	elif remaining < group_best_distance - 2.0:
+		group_best_distance = remaining
+		group_stuck_time = 0.0
+	else:
+		# Sideways jitter is not progress. Also recover when sitting on an
+		# intermediate waypoint while the actual destination is still far away.
+		group_stuck_time += delta
+
+	if group_stuck_time > 1.1:
+		# A member that cannot follow the shared route computes its own escape
+		# path to its assigned slot. It leaves the formation until the order ends.
+		movement_group = null
+		reset_route(unit)
+		move_to(unit, destination, delta, 8.0)
+
+
+func tick_charge(delta: float) -> void:
+	if charging:
+		charge_elapsed += delta
+		if charge_elapsed >= 7.0: charging = false
+
+func begin_command() -> void:
+	movement_group = null
+	charging = false
+	resume_destination = Vector2.INF

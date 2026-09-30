@@ -66,7 +66,9 @@ func _run() -> void:
 	chinese.start_game("Chinese", 44127, "English")
 	var center: RtsBuilding = chinese._player_center(0)
 	var official: RtsUnit = chinese.spawn_unit(0, "imperial_official", center.position + Vector2(80, 0))
-	official.position = center.position + Vector2(55, 0)
+	# Test tax collection from a legal point already inside collection range;
+	# starting inside the center instead exercises foundation-overlap recovery.
+	official.position = center.position + Vector2(center.size().x * 0.5 + official.radius() + 0.1, 0)
 	center.tax_stockpile = 10
 	var gold_before: int = chinese.players[0]["gold"]
 	official.issue_command("collect_tax", Vector2.INF, center)

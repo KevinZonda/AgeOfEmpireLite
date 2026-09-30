@@ -85,8 +85,8 @@ static func process_gather_order(unit, delta: float) -> void:
 	if unit.target is RtsResource and unit.target.appearance == "deer" and unit.target.wildlife_hp > 0.0:
 		if unit.attack_timer > 0.0: return
 		var hunt_profile: Dictionary = unit.stats.get("profiles", {}).get("hunt_melee", {})
-		unit.target.take_damage(float(hunt_profile.get("damage", unit.stats.get("damage", 1.0))))
-		unit.attack_timer = float(hunt_profile.get("cooldown", unit.stats.get("cooldown", 1.0)))
+		unit.target.take_damage(float(hunt_profile.get("damage", unit.attack_damage())))
+		unit.attack_timer = float(hunt_profile.get("cooldown", unit.attack_cooldown()))
 		unit._start_visual_action("attack", 0.30)
 		return
 	if unit.target is RtsBuilding and unit.target.kind == "farm":

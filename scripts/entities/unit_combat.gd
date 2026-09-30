@@ -2,11 +2,11 @@ extends RefCounted
 
 # Combat execution works on RtsUnit state; unit.gd keeps its public methods.
 static func process_attack_ground(unit, delta: float) -> void:
-	var profile: Dictionary = unit.stats.get("profiles", {}).get(unit.stats.get("primary_profile", ""), {})
+	var profile: Dictionary = RtsStatResolver.primary_attack(unit.stats)
 	if profile.is_empty() or float(profile.get("damage", 0.0)) <= 0.0:
 		unit._advance_command()
 		return
-	var reach := float(profile.get("range", unit.stats.get("range", 0.0)))
+	var reach := float(profile.get("range", unit.attack_range()))
 	if not unit._move_toward(unit.destination, delta, reach): return
 	if unit.attack_timer > 0.0:
 		if unit.attack_timer <= 0.16 and unit.visual_action != "attack": unit._start_visual_action("attack", 0.34)
@@ -14,7 +14,7 @@ static func process_attack_ground(unit, delta: float) -> void:
 	var projectile := RtsProjectile.new()
 	projectile.setup_point(unit.game, unit.owner_id, unit.global_position, unit.destination, float(profile["damage"]), float(unit.stats.get("projectile_speed", 350.0)), maxf(55.0, float(profile.get("splash_radius", 0.0))), unit.stats, profile)
 	unit.game.add_child(projectile)
-	unit.attack_timer = float(profile.get("cooldown", unit.stats["cooldown"]))
+	unit.attack_timer = float(profile.get("cooldown", unit.attack_cooldown()))
 	unit.revealed_timer = 2.0
 	unit._start_visual_action("attack", 0.28)
 
@@ -67,7 +67,7 @@ static func process_attack_order(unit, delta: float) -> void:
 	if unit.target is RtsUnit and is_instance_valid(unit.target.wall_host) and unit.target.wall_host != unit.wall_host and profile.get("damage_kind", "melee") == "melee":
 		unit._advance_command()
 		return
-	var reach: float = float(profile.get("range", unit.stats["range"])) + target_radius
+	var reach: float = float(profile.get("range", unit.attack_range())) + target_radius
 	var min_reach: float = float(profile.get("min_range", unit.stats.get("min_range", 0.0))) + target_radius
 	if min_reach > 0.0 and unit.position.distance_to(unit.target.position) < min_reach:
 		if is_instance_valid(unit.wall_host):
@@ -137,7 +137,7 @@ static func process_attack_order(unit, delta: float) -> void:
 				if is_instance_valid(other) and other != unit.target and unit.game.is_enemy(unit.owner_id, other.owner_id) and other.stats.get("tags", []).has("naval") and other.position.distance_to(impact_point) <= 58.0: other.take_damage(damage * 0.45)
 			unit.game.entity_destroyed(unit)
 			return
-	unit.attack_timer = float(profile.get("cooldown", unit.stats["cooldown"])) / (RtsCivilizationRules.english_network_rate(unit.game, unit) * (1.2 if unit.spirit_buff_timer > 0.0 else 1.0))
+	unit.attack_timer = float(profile.get("cooldown", unit.attack_cooldown())) / (RtsCivilizationRules.english_network_rate(unit.game, unit) * (1.2 if unit.spirit_buff_timer > 0.0 else 1.0))
 	if unit.volley_timer > 0.0: unit.attack_timer /= 1.7
 
 static func heal_ally(unit, delta: float) -> void:

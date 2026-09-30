@@ -49,10 +49,12 @@ static func unit(civilization: String, unit_kind: String, age: int, researched: 
 	if stats["tags"].has("siege"): RtsSiegeRules.apply_current_balance(stats)
 	var primary := primary_profile(stats)
 	stats["primary_profile"] = primary
-	_apply_legacy_primary(stats)
 	var civ_effects: Dictionary = RtsUnitCatalog.CIVILIZATION_BONUSES.get(civilization, {}).get(unit_kind, {})
 	_apply_effects(stats, civ_effects)
+	var applied_technologies := {}
 	for tech_id in researched:
+		if applied_technologies.has(tech_id): continue
+		applied_technologies[tech_id] = true
 		var technology: Dictionary = RtsTechTree.get_technology(tech_id)
 		if technology.is_empty() or not _matches_tags(stats["tags"], technology.get("target_tags", [])): continue
 		var excluded := false
@@ -66,7 +68,7 @@ static func unit(civilization: String, unit_kind: String, age: int, researched: 
 		stats["hp"] = float(stats["hp"]) * RtsLandmarkCatalog.produced_siege_hp(producer_landmark_id)
 		var damage_multiplier := RtsLandmarkCatalog.produced_siege_damage(producer_landmark_id)
 		for profile_id in stats.get("profiles", {}): stats["profiles"][profile_id]["damage"] = float(stats["profiles"][profile_id]["damage"]) * damage_multiplier
-	_apply_legacy_primary(stats)
+	project_legacy_primary(stats)
 	return stats
 
 static func target_tags(unit_kind: String, definition: Dictionary) -> Array[String]:
@@ -95,6 +97,23 @@ static func primary_profile(stats: Dictionary) -> String:
 		if profiles.has(key): return key
 	return ""
 
+# Simulation reads profiles. Flat keys are a projection for existing UI/export APIs.
+static func primary_attack(stats: Dictionary) -> Dictionary:
+	return stats.get("profiles", {}).get(stats.get("primary_profile", ""), {})
+
+static func primary_damage(stats: Dictionary) -> float:
+	return float(primary_attack(stats).get("damage", 0.0))
+
+static func primary_range(stats: Dictionary) -> float:
+	return float(primary_attack(stats).get("range", 0.0))
+
+static func primary_cooldown(stats: Dictionary) -> float:
+	return float(primary_attack(stats).get("cooldown", 1.0))
+
+static func primary_attack_type(stats: Dictionary) -> String:
+	var profile := primary_attack(stats)
+	return "ranged" if profile.get("damage_kind") == "ranged" or stats.get("primary_profile") == "siege" and float(profile.get("range", 0.0)) > 70.0 else "melee"
+
 static func attack_profile(stats: Dictionary, defender: Dictionary, charging := false) -> Dictionary:
 	var profiles: Dictionary = stats.get("profiles", {})
 	var target_tags: Array = defender.get("target_tags", defender.get("tags", []))
@@ -105,13 +124,11 @@ static func attack_profile(stats: Dictionary, defender: Dictionary, charging := 
 	var primary: String = stats.get("primary_profile", "")
 	return profiles.get(primary, {})
 
-static func _apply_legacy_primary(stats: Dictionary) -> void:
-	var primary: Dictionary = stats.get("profiles", {}).get(stats.get("primary_profile", ""), {})
-	if primary.is_empty(): return
-	stats["damage"] = float(primary.get("damage", 0.0))
-	stats["range"] = float(primary.get("range", 20.0))
-	stats["cooldown"] = float(primary.get("cooldown", 1.0))
-	stats["attack_type"] = "ranged" if primary.get("damage_kind") == "ranged" or stats["primary_profile"] == "siege" and float(primary.get("range", 0.0)) > 70.0 else "melee"
+static func project_legacy_primary(stats: Dictionary) -> void:
+	stats["damage"] = primary_damage(stats)
+	stats["range"] = primary_range(stats)
+	stats["cooldown"] = primary_cooldown(stats)
+	stats["attack_type"] = primary_attack_type(stats)
 
 static func _matches_tags(tags: Array, required: Array) -> bool:
 	if required.is_empty(): return true
@@ -125,12 +142,10 @@ static func _apply_effects(stats: Dictionary, effects: Dictionary) -> void:
 		if str(key).begins_with("armor_"):
 			var armor_key := str(key).trim_prefix("armor_")
 			stats["armor"][armor_key] = float(stats["armor"].get(armor_key, 0.0)) + value
-		elif key == "damage":
+		elif key in ["damage", "range", "cooldown"]:
 			var primary: String = stats.get("primary_profile", "")
 			if stats.get("profiles", {}).has(primary):
-				stats["profiles"][primary]["damage"] = float(stats["profiles"][primary]["damage"]) + value
-			else:
-				stats["damage"] = float(stats.get("damage", 0.0)) + value
+				stats["profiles"][primary][key] = float(stats["profiles"][primary].get(key, 0.0)) + value
 		elif str(key).begins_with("damage_"):
 			var damage_kind: String = str(key).trim_prefix("damage_")
 			for profile_id in stats.get("profiles", {}):

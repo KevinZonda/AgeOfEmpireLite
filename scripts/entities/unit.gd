@@ -1,20 +1,21 @@
 class_name RtsUnit
 extends Node2D
-const FilledPolygon = preload("res://scripts/entities/visuals/filled_polygon.gd")
 
 const AUTO_GATHER_RADIUS := 180.0
 const ROUTE_STALL_SECONDS := 0.9
 const ROUTE_RETRY_BASE := 0.7
 const ROUTE_RETRY_MAX := 4.0
+const UnitVisual = preload("res://scripts/entities/visuals/unit_visual.gd")
+const UnitVisualState = preload("res://scripts/entities/visuals/unit_visual_state.gd")
 const UnitWork = preload("res://scripts/entities/unit_work.gd")
+const UnitMovement = preload("res://scripts/entities/unit_movement.gd")
+const UnitAbilities = preload("res://scripts/entities/unit_abilities.gd")
+const UnitStats = preload("res://scripts/entities/unit_stats.gd")
 const UnitCombat = preload("res://scripts/entities/unit_combat.gd")
-const SiegeVisual2D = preload("res://scripts/entities/visuals/siege_visual_2d.gd")
-const SiegeVisual25D = preload("res://scripts/entities/visuals/siege_visual_25d.gd")
-const CharacterVisual = preload("res://scripts/entities/visuals/character_visual.gd")
-const NavalVisual = preload("res://scripts/entities/visuals/naval_visual.gd")
-const ChineseVisual = preload("res://scripts/entities/visuals/chinese_visual.gd")
-const InfantryVisual = preload("res://scripts/entities/visuals/infantry_visual.gd")
-const SupportVisual = preload("res://scripts/entities/visuals/support_visual.gd")
+
+var unit_visual = UnitVisual.new()
+var movement = UnitMovement.new()
+var abilities = UnitAbilities.new()
 
 var game: Node2D
 var owner_id := 0
@@ -30,24 +31,46 @@ var max_hp := 1.0
 var health_bar_timer := 0.0
 var health_bar_initialized := false
 var order := "idle"
-var destination := Vector2.ZERO
+var destination: Vector2:
+	get: return movement.destination
+	set(value): movement.destination = value
 var target: Node2D
 var attack_timer := 0.0
 var hit_flash_timer := 0.0
 var work_timer := 0.0
 var farm_gain_display_amount := 0
 var enclosure_timer := 5.0
-var charging := false
-var charge_distance := 0.0
-var charge_cooldown := 0.0
-var charge_elapsed := 0.0
-var stun_timer := 0.0
-var momentum_timer := 0.0
-var resume_destination := Vector2.INF
+var charging: bool:
+	get: return movement.charging
+	set(value): movement.charging = value
+var charge_distance: float:
+	get: return movement.charge_distance
+	set(value): movement.charge_distance = value
+var charge_cooldown: float:
+	get: return abilities.charge_cooldown
+	set(value): abilities.charge_cooldown = value
+var charge_elapsed: float:
+	get: return movement.charge_elapsed
+	set(value): movement.charge_elapsed = value
+var stun_timer: float:
+	get: return abilities.stun_timer
+	set(value): abilities.stun_timer = value
+var momentum_timer: float:
+	get: return abilities.momentum_timer
+	set(value): abilities.momentum_timer = value
+var resume_destination: Vector2:
+	get: return movement.resume_destination
+	set(value): movement.resume_destination = value
 var resume_order := ""
-var patrol_origin := Vector2.ZERO
-var patrol_destination := Vector2.ZERO
-var hold_position := Vector2.ZERO
+var patrol_origin: Vector2:
+	get: return movement.patrol_origin
+	set(value): movement.patrol_origin = value
+var patrol_destination: Vector2:
+	get: return movement.patrol_destination
+	set(value): movement.patrol_destination = value
+var hold_position: Vector2:
+	get: return movement.hold_position
+	set(value): movement.hold_position = value
 var stance := "aggressive"
 var engagement := "aggressive"
 var auto_engaged := false
@@ -55,27 +78,69 @@ var awareness_timer := 0.0
 var engagement_origin := Vector2.ZERO
 var gather_kind := ""
 var gather_location := Vector2.ZERO
-var route := PackedVector2Array()
-var route_index := 0
-var route_goal := Vector2.INF
-var route_generation := 0
-var route_retry := 0.0
-var route_failures := 0
-var route_stop_distance := -1.0
-var route_obstacle_revision := -1
-var route_retry_obstacle_revision := -1
-var route_check_pending := false
-var route_blocked := false
-var route_best_distance := INF
-var route_recovery_distance := INF
-var route_stalled_time := 0.0
-var movement_group: RtsMovementGroup
-var group_stuck_time := 0.0
-var group_progress_target := Vector2.INF
-var group_best_distance := INF
-var avoidance_cooldown := 0.0
-var yield_timer := 0.0
-var yield_request_cooldown := 0.0
+var route: PackedVector2Array:
+	get: return movement.route
+	set(value): movement.route = value
+var route_index: int:
+	get: return movement.route_index
+	set(value): movement.route_index = value
+var route_goal: Vector2:
+	get: return movement.route_goal
+	set(value): movement.route_goal = value
+var route_generation: int:
+	get: return movement.route_generation
+	set(value): movement.route_generation = value
+var route_retry: float:
+	get: return movement.route_retry
+	set(value): movement.route_retry = value
+var route_failures: int:
+	get: return movement.route_failures
+	set(value): movement.route_failures = value
+var route_stop_distance: float:
+	get: return movement.route_stop_distance
+	set(value): movement.route_stop_distance = value
+var route_obstacle_revision: int:
+	get: return movement.route_obstacle_revision
+	set(value): movement.route_obstacle_revision = value
+var route_retry_obstacle_revision: int:
+	get: return movement.route_retry_obstacle_revision
+	set(value): movement.route_retry_obstacle_revision = value
+var route_check_pending: bool:
+	get: return movement.route_check_pending
+	set(value): movement.route_check_pending = value
+var route_blocked: bool:
+	get: return movement.route_blocked
+	set(value): movement.route_blocked = value
+var route_best_distance: float:
+	get: return movement.route_best_distance
+	set(value): movement.route_best_distance = value
+var route_recovery_distance: float:
+	get: return movement.route_recovery_distance
+	set(value): movement.route_recovery_distance = value
+var route_stalled_time: float:
+	get: return movement.route_stalled_time
+	set(value): movement.route_stalled_time = value
+var movement_group: RtsMovementGroup:
+	get: return movement.movement_group
+	set(value): movement.movement_group = value
+var group_stuck_time: float:
+	get: return movement.group_stuck_time
+	set(value): movement.group_stuck_time = value
+var group_progress_target: Vector2:
+	get: return movement.group_progress_target
+	set(value): movement.group_progress_target = value
+var group_best_distance: float:
+	get: return movement.group_best_distance
+	set(value): movement.group_best_distance = value
+var avoidance_cooldown: float:
+	get: return movement.avoidance_cooldown
+	set(value): movement.avoidance_cooldown = value
+var yield_timer: float:
+	get: return movement.yield_timer
+	set(value): movement.yield_timer = value
+var yield_request_cooldown: float:
+	get: return movement.yield_request_cooldown
+	set(value): movement.yield_request_cooldown = value
 var command_queue: Array[Dictionary] = []
 var garrisoned_in: Node2D
 var wall_host: RtsBuilding
@@ -91,20 +156,48 @@ var trade_resource_kind := "gold"
 var saved_work: Dictionary = {}
 var carried_relic: RtsRelic
 var producer_landmark_id := ""
-var paling_timer := 0.0
-var paling_cooldown := 0.0
-var volley_timer := 0.0
-var volley_cooldown := 0.0
-var shield_timer := 0.0
-var heal_timer := 0.0
-var helm_timer := 0.0
-var helm_cooldown := 0.0
-var conversion_timer := 0.0
-var conversion_cooldown := 0.0
-var spirit_buff_timer := 0.0
-var revealed_timer := 0.0
-var artillery_shot_ready := false
-var artillery_shot_cooldown := 0.0
+var paling_timer: float:
+	get: return abilities.paling_timer
+	set(value): abilities.paling_timer = value
+var paling_cooldown: float:
+	get: return abilities.paling_cooldown
+	set(value): abilities.paling_cooldown = value
+var volley_timer: float:
+	get: return abilities.volley_timer
+	set(value): abilities.volley_timer = value
+var volley_cooldown: float:
+	get: return abilities.volley_cooldown
+	set(value): abilities.volley_cooldown = value
+var shield_timer: float:
+	get: return abilities.shield_timer
+	set(value): abilities.shield_timer = value
+var heal_timer: float:
+	get: return abilities.heal_timer
+	set(value): abilities.heal_timer = value
+var helm_timer: float:
+	get: return abilities.helm_timer
+	set(value): abilities.helm_timer = value
+var helm_cooldown: float:
+	get: return abilities.helm_cooldown
+	set(value): abilities.helm_cooldown = value
+var conversion_timer: float:
+	get: return abilities.conversion_timer
+	set(value): abilities.conversion_timer = value
+var conversion_cooldown: float:
+	get: return abilities.conversion_cooldown
+	set(value): abilities.conversion_cooldown = value
+var spirit_buff_timer: float:
+	get: return abilities.spirit_buff_timer
+	set(value): abilities.spirit_buff_timer = value
+var revealed_timer: float:
+	get: return abilities.revealed_timer
+	set(value): abilities.revealed_timer = value
+var artillery_shot_ready: bool:
+	get: return abilities.artillery_shot_ready
+	set(value): abilities.artillery_shot_ready = value
+var artillery_shot_cooldown: float:
+	get: return abilities.artillery_shot_cooldown
+	set(value): abilities.artillery_shot_cooldown = value
 var facing_right := true
 var facing_back := false
 var visual_phase := 0.0
@@ -126,16 +219,16 @@ func setup(game_ref: Node2D, player_id: int, unit_kind: String) -> void:
 	queue_redraw()
 
 func refresh_stats(preserve_damage := true) -> void:
-	var missing_hp := maxf(0.0, max_hp - hp) if preserve_damage else 0.0
-	stats = RtsUnitCatalog.unit_definition(game.civilizations[owner_id], kind, game.players[owner_id].get("researched", []), game.players[owner_id].get("age", 1), game.players[owner_id].get("landmarks", []), game.players[owner_id].get("dynasty", ""), producer_landmark_id)
-	if shield_timer > 0.0:
-		stats["armor"]["ranged"] = float(stats["armor"].get("ranged", 0.0)) + 5.0
-		for profile_id in stats.get("profiles", {}): stats["profiles"][profile_id]["range"] = float(stats["profiles"][profile_id].get("range", 0.0)) + 30.0
-		stats["range"] = float(stats.get("range", 0.0)) + 30.0
-	if is_instance_valid(wall_host): stats["armor"]["ranged"] = float(stats["armor"].get("ranged", 0.0)) + 2.0
-	max_hp = float(stats["hp"])
-	hp = maxf(1.0, max_hp - missing_hp)
-	queue_redraw()
+	UnitStats.refresh(self, preserve_damage)
+
+func attack_damage() -> float:
+	return RtsStatResolver.primary_damage(stats)
+
+func attack_range() -> float:
+	return RtsStatResolver.primary_range(stats)
+
+func attack_cooldown() -> float:
+	return RtsStatResolver.primary_cooldown(stats)
 
 func radius() -> float:
 	return float(stats["radius"])
@@ -160,28 +253,28 @@ func order_move(world_point: Vector2) -> void:
 func order_attack_move(world_point: Vector2) -> void:
 	_order_move_to(world_point, "attack_move")
 
+func _prepare_command() -> void:
+	resume_order = ""
+	auto_engaged = false
+	abilities.interrupt_command()
+	movement.begin_command()
+
 func _order_move_to(world_point: Vector2, move_order: String) -> void:
 	if is_instance_valid(wall_host): leave_wall()
 	if stance == "hold": stance = "aggressive"
-	resume_order = ""
-	conversion_timer = 0.0
-	if paling_timer > 0.0: paling_timer = 0.0
-	movement_group = null
+	_prepare_command()
+	abilities.paling_timer = 0.0
 	order = move_order
 	destination = game.navigation.nearest_walkable_point(world_point, radius(), self, true)
 	target = null
-	charging = false
-	resume_destination = Vector2.INF
 	_reset_route()
 
 func order_attack(enemy: Node2D, automatic := false) -> void:
-	if is_instance_valid(wall_host) and position.distance_to(enemy.position) > float(stats.get("range", 0.0)) + 35.0: leave_wall()
-	resume_order = ""
-	conversion_timer = 0.0
-	if float(stats.get("damage", 0.0)) <= 0.0: return
+	if not is_instance_valid(enemy) or enemy.is_queued_for_deletion() or attack_damage() <= 0.0: return
 	if kind == "battering_ram" and enemy is RtsUnit: return
-	if helm_timer > 0.0: helm_timer = 0.0
-	movement_group = null
+	if is_instance_valid(wall_host) and position.distance_to(enemy.position) > attack_range() + 35.0: leave_wall()
+	_prepare_command()
+	abilities.helm_timer = 0.0
 	order = "attack"
 	auto_engaged = automatic
 	engagement_origin = position
@@ -189,29 +282,24 @@ func order_attack(enemy: Node2D, automatic := false) -> void:
 	charging = enemy is RtsUnit and (stats.get("profiles", {}).has("charge") or float(stats.get("charge_bonus", 0.0)) > 0.0) and charge_cooldown <= 0.0 and position.distance_to(enemy.position) >= 110.0 and position.distance_to(enemy.position) <= 180.0
 	charge_distance = 0.0
 	charge_elapsed = 0.0
-	resume_destination = Vector2.INF
 	_reset_route()
 
-func order_stop() -> void:
+func order_stop(clear_queue := true) -> void:
 	if stance == "hold": stance = "aggressive"
-	resume_order = ""
-	conversion_timer = 0.0
-	command_queue.clear()
-	movement_group = null
+	_prepare_command()
+	if clear_queue: command_queue.clear()
 	order = "wall" if is_instance_valid(wall_host) else "idle"
 	target = null
-	charging = false
-	resume_destination = Vector2.INF
 	_reset_route()
 
-func order_hold() -> void:
-	order_stop()
+func order_hold(clear_queue := true) -> void:
+	order_stop(clear_queue)
 	stance = "hold"
 	hold_position = position
 	order = "hold"
 
-func order_patrol(world_point: Vector2) -> void:
-	order_stop()
+func order_patrol(world_point: Vector2, clear_queue := true) -> void:
+	order_stop(clear_queue)
 	stance = "aggressive"
 	patrol_origin = position
 	patrol_destination = game.navigation.nearest_walkable_point(world_point, radius(), self, true)
@@ -222,6 +310,8 @@ func garrison_unit(unit: RtsUnit) -> bool:
 	if kind not in ["transport_ship", "battering_ram", "siege_tower"] or field_build_remaining > 0.0 or not is_instance_valid(unit) or unit.owner_id != owner_id or passengers.size() >= (10 if kind == "siege_tower" else 8) or unit.stats.get("tags", []).has("naval") or unit.stats.get("tags", []).has("siege") or unit.garrisoned_in != null: return false
 	if unit.position.distance_to(position) > 100.0 or not game.navigation.boarding_clear(unit.position, position, unit): return false
 	passengers.append(unit)
+	unit._prepare_command()
+	unit._reset_route()
 	unit.garrisoned_in = self
 	unit.order = "idle"
 	unit.command_queue.clear()
@@ -263,10 +353,10 @@ func issue_command(command_type: String, world_point := Vector2.INF, target_ref:
 	queue_redraw()
 
 func _start_command(command: Dictionary) -> bool:
-	movement_group = null
 	match command["type"]:
 		"assault_wall":
 			if kind != "siege_tower" or not command["target"] is RtsBuilding or command["target"].kind != "stone_wall" or not game.is_enemy(owner_id, command["target"].owner_id): return false
+			_prepare_command()
 			target = command["target"]
 			order = "assault_wall"
 			_reset_route()
@@ -275,14 +365,17 @@ func _start_command(command: Dictionary) -> bool:
 			var entrance := RtsSiegeRules.wall_entry(game, self, command["target"])
 			if entrance == null: return false
 			wall_entry_point = entrance
+			_prepare_command()
 			target = command["target"]
 			order = "board_wall"
 			_reset_route()
 		"group_move", "group_attack_move":
 			if command["type"] == "group_attack_move" and not stats.get("tags", []).has("military"): return false
+			var group: RtsMovementGroup = command.get("group")
+			if group == null: return false
 			if is_instance_valid(wall_host): leave_wall()
-			movement_group = command.get("group")
-			if movement_group == null: return false
+			_prepare_command()
+			movement_group = group
 			movement_group.activate()
 
 			order = "attack_move" if command["type"] == "group_attack_move" else "move"
@@ -297,20 +390,21 @@ func _start_command(command: Dictionary) -> bool:
 		"move": order_move(command["point"])
 		"patrol":
 			if not stats.get("tags", []).has("military"): return false
-			order_patrol(command["point"])
-		"hold": order_hold()
+			order_patrol(command["point"], false)
+		"hold": order_hold(false)
 		"attack_move":
 			if not stats.get("tags", []).has("military"): return false
 			order_attack_move(command["point"])
 		"attack_ground":
 			if kind not in ["mangonel", "nest_of_bees", "trebuchet", "bombard", "cannon"]: return false
+			_prepare_command()
 			order = "attack_ground"
 			destination = command["point"]
 			target = null
 			_reset_route()
 		"attack":
 			if not is_instance_valid(command["target"]) or command["target"].is_queued_for_deletion(): return false
-			if float(stats.get("damage", 0.0)) <= 0.0: return false
+			if attack_damage() <= 0.0: return false
 			if kind == "battering_ram" and command["target"] is RtsUnit: return false
 			order_attack(command["target"])
 		"gather":
@@ -324,20 +418,24 @@ func _start_command(command: Dictionary) -> bool:
 			if trade_home == null: return false
 			trade_post = command["target"]
 			trade_returning = false
+			_prepare_command()
 			order = "trade"
 			_reset_route()
 		"supervise", "collect_tax":
 			if kind != "imperial_official" or not command["target"] is RtsBuilding or command["target"].owner_id != owner_id or not command["target"].is_complete(): return false
+			_prepare_command()
 			order = command["type"]
 			target = command["target"]
 			_reset_route()
 		"relic":
 			if kind != "monk" or carried_relic != null or not command["target"] is RtsRelic or not command["target"].available(): return false
+			_prepare_command()
 			order = "relic"
 			target = command["target"]
 			_reset_route()
 		"deposit_relic":
 			if kind != "monk" or carried_relic == null or not command["target"] is RtsBuilding or command["target"].kind != "monastery" or command["target"].owner_id != owner_id: return false
+			_prepare_command()
 			order = "deposit_relic"
 			target = command["target"]
 			_reset_route()
@@ -346,23 +444,27 @@ func _start_command(command: Dictionary) -> bool:
 			order_build(command["target"])
 		"field_build":
 			if not stats.get("tags", []).has("infantry") or not command["target"] is RtsUnit or command["target"].field_build_remaining <= 0.0 or command["target"].owner_id != owner_id: return false
+			_prepare_command()
 			order = "field_build"
 			target = command["target"]
 			_reset_route()
 		"repair":
 			if kind != "villager" or not is_instance_valid(command["target"]) or command["target"].owner_id != owner_id or not (command["target"] is RtsBuilding or command["target"] is RtsUnit and command["target"].stats.get("tags", []).has("siege")): return false
 			if command["target"].hp >= command["target"].max_hp: return false
+			_prepare_command()
 			order = "repair"
 			target = command["target"]
 			_reset_route()
 		"garrison":
 			if not is_instance_valid(command["target"]) or command["target"].is_queued_for_deletion() or not (RtsSiegeRules.can_garrison(stats, command["target"].kind) or command["target"].kind == "landmark" and command["target"].garrison_capacity() > 0 and not stats.get("tags", []).has("siege")): return false
 			remember_work()
+			_prepare_command()
 			order = "garrison"
 			target = command["target"]
 			_reset_route()
 		"board_transport":
 			if not command["target"] is RtsUnit or command["target"].kind not in ["transport_ship", "battering_ram", "siege_tower"] or command["target"].owner_id != owner_id or stats.get("tags", []).has("naval") or stats.get("tags", []).has("siege"): return false
+			_prepare_command()
 			order = "board_transport"
 			target = command["target"]
 			_reset_route()
@@ -370,6 +472,7 @@ func _start_command(command: Dictionary) -> bool:
 			if kind != "transport_ship" or passengers.is_empty(): return false
 			var pair: Dictionary = game.find_landing_pair(self, command["point"])
 			if pair.is_empty(): return false
+			_prepare_command()
 			order = "unload"
 			destination = pair["water"]
 			landing_position = pair["land"]
@@ -379,10 +482,10 @@ func _start_command(command: Dictionary) -> bool:
 	return true
 
 func _advance_command() -> void:
+	_prepare_command()
 	order = "wall" if is_instance_valid(wall_host) else "idle"
-	movement_group = null
 	target = null
-	resume_destination = Vector2.INF
+	_reset_route()
 	while not command_queue.is_empty():
 		var command: Dictionary = command_queue.pop_front()
 		if _start_command(command): break
@@ -403,57 +506,14 @@ func is_braced() -> bool:
 	if float(stats.get("brace_bonus", 0.0)) <= 0.0: return false
 	if order == "idle": return true
 	if order == "attack" and is_instance_valid(target):
-		return position.distance_to(target.position) <= float(stats["range"]) + radius() + 8.0
+		return position.distance_to(target.position) <= attack_range() + radius() + 8.0
 	return false
 
+func ability_availability(ability_id: String) -> Dictionary:
+	return abilities.availability(self, ability_id)
+
 func activate_ability(ability_id: String) -> bool:
-	match ability_id:
-		"palings":
-			if kind != "longbow" or paling_cooldown > 0.0: return false
-			paling_timer = 99999.0
-			paling_cooldown = 30.0
-			order_stop()
-			return true
-		"volley":
-			if kind != "longbow" or volley_cooldown > 0.0: return false
-			volley_timer = 5.0
-			volley_cooldown = 45.0
-			return true
-		"pavise":
-			if kind != "arbaletrier": return false
-			shield_timer = 99999.0 if shield_timer <= 0.0 else 0.0
-			refresh_stats()
-			return true
-		"helmsman":
-			if kind != "warship" or helm_cooldown > 0.0: return false
-			helm_timer = 10.0
-			helm_cooldown = 30.0
-			return true
-		"artillery_shot":
-			if kind != "cannon" or producer_landmark_id != "fr_college_of_artillery" or artillery_shot_cooldown > 0.0: return false
-			artillery_shot_ready = true
-			return true
-		"convert":
-			if kind != "monk" or carried_relic == null or conversion_cooldown > 0.0: return false
-			order_stop()
-			conversion_timer = 3.0
-			conversion_cooldown = 120.0
-			return true
-		"camp":
-			if game.civilizations[owner_id] != "English" or kind not in ["scout", "man_at_arms"]: return false
-			var camp_count := 0
-			for building in game.buildings:
-				if is_instance_valid(building) and building.owner_id == owner_id and building.kind == "scout_camp": camp_count += 1
-			if camp_count >= 5 or not game.can_afford(owner_id, {"wood": 25}): return false
-			for offset in [Vector2(46, 0), Vector2(-46, 0), Vector2(0, 46), Vector2(0, -46)]:
-				var site: Vector2 = position + offset
-				if not game.can_place("scout_camp", site): continue
-				if not game.spend(owner_id, {"wood": 25}): return false
-				game.spawn_building(owner_id, "scout_camp", site)
-				game.fog.update_visibility()
-				return true
-			return false
-	return false
+	return abilities.activate(self, ability_id)
 
 func order_gather(resource: Node2D) -> void:
 	if not ["villager", "fishing_boat"].has(kind): return
@@ -469,6 +529,7 @@ func _try_order_gather(resource: Node2D) -> bool:
 			target = null
 			_reset_route()
 			return false
+	_prepare_command()
 	order = "gather"
 	target = resource
 	farm_gain_display_amount = 0
@@ -490,6 +551,7 @@ func _continue_gather() -> void:
 
 func order_build(building: Node2D) -> void:
 	if kind != "villager": return
+	_prepare_command()
 	order = "build"
 	target = building
 	resume_destination = Vector2.INF
@@ -497,22 +559,7 @@ func order_build(building: Node2D) -> void:
 	_reset_route()
 
 func _reset_route() -> void:
-	route_generation += 1
-	if game != null and game.navigation != null: game.navigation.background_jobs.cancel(self)
-	yield_timer = 0.0
-	route.clear()
-	route_index = 0
-	route_goal = Vector2.INF
-	route_retry = 0.0
-	route_failures = 0
-	route_stop_distance = -1.0
-	route_obstacle_revision = -1
-	route_retry_obstacle_revision = -1
-	route_check_pending = false
-	route_blocked = false
-	route_best_distance = INF
-	route_recovery_distance = INF
-	route_stalled_time = 0.0
+	movement.reset_route(self)
 
 func _process(delta: float) -> void:
 	if not game.started or game.paused or game.game_over: return
@@ -534,8 +581,8 @@ func _process(delta: float) -> void:
 		if position.distance_to(hold_position) > 6.0:
 			_move_toward(hold_position, delta, 4.0)
 			return
-		var held_enemy: Node2D = game.nearest_enemy(self, float(stats.get("range", 0.0)) + 22.0) if engagement != "passive" else null
-		if held_enemy != null and float(stats.get("damage", 0.0)) > 0.0:
+		var held_enemy: Node2D = game.nearest_enemy(self, attack_range() + 22.0) if engagement != "passive" else null
+		if held_enemy != null and attack_damage() > 0.0:
 			order_attack(held_enemy, true)
 			resume_order = "hold"
 		return
@@ -543,8 +590,8 @@ func _process(delta: float) -> void:
 		if not is_instance_valid(wall_host):
 			order = "idle"
 			return
-		var wall_enemy: Node2D = game.nearest_enemy(self, float(stats.get("range", 0.0)) + 20.0) if engagement != "passive" else null
-		if wall_enemy != null and float(stats.get("damage", 0.0)) > 0.0: order_attack(wall_enemy, true)
+		var wall_enemy: Node2D = game.nearest_enemy(self, attack_range() + 20.0) if engagement != "passive" else null
+		if wall_enemy != null and attack_damage() > 0.0: order_attack(wall_enemy, true)
 		return
 	if order == "board_wall":
 		if not is_instance_valid(target) or not target is RtsBuilding or not target.is_complete() or not is_instance_valid(wall_entry_point):
@@ -736,30 +783,7 @@ func _tick_status(delta: float) -> bool:
 	attack_timer = maxf(0.0, attack_timer - delta)
 	awareness_timer = maxf(0.0, awareness_timer - delta)
 	work_timer = maxf(0.0, work_timer - delta)
-	charge_cooldown = maxf(0.0, charge_cooldown - delta)
-	stun_timer = maxf(0.0, stun_timer - delta)
-	momentum_timer = maxf(0.0, momentum_timer - delta)
-	paling_timer = maxf(0.0, paling_timer - delta)
-	paling_cooldown = maxf(0.0, paling_cooldown - delta)
-	volley_timer = maxf(0.0, volley_timer - delta)
-	volley_cooldown = maxf(0.0, volley_cooldown - delta)
-	helm_timer = maxf(0.0, helm_timer - delta)
-	helm_cooldown = maxf(0.0, helm_cooldown - delta)
-	conversion_cooldown = maxf(0.0, conversion_cooldown - delta)
-	artillery_shot_cooldown = maxf(0.0, artillery_shot_cooldown - delta)
-	revealed_timer = maxf(0.0, revealed_timer - delta)
-	if spirit_buff_timer > 0.0:
-		spirit_buff_timer = maxf(0.0, spirit_buff_timer - delta)
-		hp = minf(max_hp, hp + 2.0 * delta)
-	if conversion_timer > 0.0:
-		conversion_timer = maxf(0.0, conversion_timer - delta)
-		if conversion_timer <= 0.0: _finish_conversion()
-		return true
-	if kind == "monk": _heal_ally(delta)
-	if charging:
-		charge_elapsed += delta
-		if charge_elapsed >= 7.0: charging = false
-	return stun_timer > 0.0
+	return abilities.tick(self, delta)
 
 func _process_idle_order() -> void:
 	if kind == "imperial_official":
@@ -775,7 +799,7 @@ func _process_idle_order() -> void:
 		return
 	if engagement == "passive" or awareness_timer > 0.0: return
 	awareness_timer = 0.3
-	var sight := maxf(115.0, float(stats.get("range", 0.0)) + 45.0)
+	var sight := maxf(115.0, attack_range() + 45.0)
 	if engagement == "defensive": sight = minf(sight, 110.0)
 	var enemy: Node2D = game.nearest_enemy(self, sight)
 	if enemy != null and stats.get("tags", []).has("military"): order_attack(enemy, true)
@@ -795,163 +819,10 @@ func _heal_ally(delta: float) -> void:
 func _finish_conversion() -> void:
 	UnitCombat.finish_conversion(self)
 func _move_toward(point: Vector2, delta: float, stop_distance: float) -> bool:
-	yield_request_cooldown = maxf(0.0, yield_request_cooldown - delta)
-	if yield_timer > 0.0:
-		yield_timer = maxf(0.0, yield_timer - delta)
-		return false
-	var distance := position.distance_to(point)
-	if distance <= stop_distance + 0.5 and (order != "board_transport" or game.navigation.boarding_clear(position, point, self)): return true
-	if paling_timer > 0.0: paling_timer = 0.0
-	if shield_timer > 0.0:
-		shield_timer = 0.0
-		refresh_stats()
-	route_retry = maxf(0.0, route_retry - delta)
-	game.navigation._ensure_current()
-	if route_obstacle_revision != game.navigation.obstacle_revision:
-		route_obstacle_revision = game.navigation.obstacle_revision
-		route_check_pending = true
-		# Structural changes wake unreachable units immediately. Moving wildlife
-		# still invalidates collision checks, but preserves failure backoff.
-		if route.is_empty() and route_retry_obstacle_revision != game.navigation.retry_obstacle_revision: route_retry = 0.0
-		route_retry_obstacle_revision = game.navigation.retry_obstacle_revision
-	while route_index < route.size() - 1 and position.distance_to(route[route_index]) < 2.0:
-		route_index += 1
-		route_best_distance = INF
-		route_stalled_time = 0.0
-		route_check_pending = true
-	if route_check_pending and not route.is_empty():
-		# Validate only the next segment. Later segments are checked as we enter
-		# them, so a remote building change does not force another A* search.
-		route_blocked = not game.navigation._static_segment_clear(position, route[route_index], radius(), self)
-		route_check_pending = false
-	var target_changed := route_goal == Vector2.INF or route_goal.distance_to(point) > RtsWorldMap.CELL_SIZE * 0.5 or not is_equal_approx(route_stop_distance, stop_distance)
-	var stagger := float(get_instance_id() % 11) * 0.017
-	if target_changed and route_failures > 0:
-		# Backoff belongs to the failed target, not a new position it moves to.
-		route_retry = minf(route_retry, 0.15 + stagger)
-	var exhausted := not route.is_empty() and route_index == route.size() - 1 and position.distance_to(route[route_index]) < 0.5
-	var stalled := route_stalled_time >= ROUTE_STALL_SECONDS
-	if game.navigation.background_recovery_enabled:
-		if target_changed: game.navigation.background_jobs.cancel(self)
-		var recovery: Dictionary = game.navigation.background_jobs.take(self, point, game.navigation)
-		if not recovery.is_empty():
-			var escape: PackedVector2Array = recovery.path
-			if escape.size() > 1:
-				route = escape
-				route_index = 1
-				route_best_distance = position.distance_to(route[route_index])
-				route_recovery_distance = route_best_distance
-				route_stalled_time = 0.0
-				route_check_pending = true
-				route_blocked = false
-				stalled = false
-				exhausted = false
-			elif route_failures >= 3:
-				game.navigation.request_passage(self, recovery.target)
-	var needs_route := target_changed or route.is_empty() or route_blocked or exhausted or stalled
-	if needs_route and route_retry <= 0.0 and not (game.navigation.background_recovery_enabled and game.navigation.background_jobs.has_request(self)):
-		if (stalled or exhausted or route_failures > 0) and order in ["move", "attack_move"] and point == destination and not game.navigation.can_occupy(point, radius(), self):
-			# A slot can become occupied after the order was issued. Finish at
-			# the nearest reachable free point instead of retrying it forever.
-			point = game.navigation.nearest_walkable_point(point, radius(), self, true)
-			destination = point
-			distance = position.distance_to(point)
-			if distance <= stop_distance + 0.5 and (order != "board_transport" or game.navigation.boarding_clear(position, point, self)): return true
-		if target_changed:
-			route_failures = 0
-		elif stalled or exhausted:
-			route_failures += 1
-		if ["gather", "build", "field_build", "repair", "attack", "attack_ground", "garrison", "board_transport", "trade", "deposit_relic", "relic", "supervise", "collect_tax", "board_wall", "assault_wall"].has(order):
-			route = game.navigation.path_to_range(position, point, stop_distance, self)
-		else:
-			route = game.navigation.path_between(position, point, self)
-		var recovery_target := Vector2.INF
-		var recovery_fallback := Vector2.INF
-		if stalled and not route.is_empty() and game.navigation.has_fixed_unit_blocker(self, route[mini(1, route.size() - 1)]):
-			if game.navigation.background_recovery_enabled:
-				recovery_target = route[mini(1, route.size() - 1)]
-				if route_failures >= 3 and route.size() > 2: recovery_fallback = point
-			else:
-				var escape: PackedVector2Array = game.navigation.path_around_units(self, route[mini(1, route.size() - 1)])
-				if escape.is_empty() and route_failures >= 3 and route.size() > 2: escape = game.navigation.path_around_units(self, point)
-				if not escape.is_empty(): route = escape
-				elif route_failures >= 3: game.navigation.request_passage(self, route[mini(1, route.size() - 1)])
-		route_index = 1 if route.size() > 1 and position.distance_to(route[0]) < 8.0 else 0
-		route_goal = point
-		route_stop_distance = stop_distance
-		if recovery_target != Vector2.INF: game.navigation.background_jobs.request(self, recovery_target, recovery_fallback)
-		route_best_distance = position.distance_to(route[route_index]) if not route.is_empty() else INF
-		route_recovery_distance = route_best_distance
-		route_stalled_time = 0.0
-		route_check_pending = false
-		route_blocked = false
-		if route.is_empty(): route_failures += 1
-		# Spread retries without consuming the match RNG. Successful movement
-		# resets failures; simply finding the same blocked route does not.
-		route_retry = 0.15 + stagger
-		if route_failures > 0:
-			route_retry = minf(ROUTE_RETRY_MAX, ROUTE_RETRY_BASE * pow(2.0, mini(route_failures - 1, 3))) + stagger
-	if route.is_empty(): return false
-	var waypoint: Vector2 = route[route_index]
-	var remaining := position.distance_to(waypoint)
-	if remaining < route_best_distance - minf(2.0, maxf(0.1, effective_speed() * 0.2)):
-		route_best_distance = remaining
-		route_stalled_time = 0.0
-		if remaining < route_recovery_distance - radius(): route_failures = 0
-	else:
-		route_stalled_time += delta
-	var speed: float = effective_speed()
-	var step := speed * delta
-	if route_index == route.size() - 1: step = minf(step, remaining)
-	var old_position := position
-	position = game.navigation.move_step(self, position.move_toward(waypoint, step))
-	game.navigation.unit_moved(self, old_position)
-	_update_facing(old_position)
-	if charging: charge_distance += old_position.distance_to(position)
-	position = position.clamp(Vector2.ONE * radius(), game.world_size - Vector2.ONE * radius())
-	_refresh_slope_visual(old_position)
-	return position.distance_to(point) <= stop_distance + 0.5 and (order != "board_transport" or game.navigation.boarding_clear(position, point, self))
+	return movement.move_to(self, point, delta, stop_distance)
 
 func _move_with_group(delta: float) -> void:
-	yield_request_cooldown = maxf(0.0, yield_request_cooldown - delta)
-	if yield_timer > 0.0:
-		yield_timer = maxf(0.0, yield_timer - delta)
-		return
-	if movement_group.independent_members.has(get_instance_id()):
-		movement_group = null
-		_reset_route()
-		_move_toward(destination, delta, 6.0)
-		return
-	var point := movement_group.target_for(self)
-	avoidance_cooldown = maxf(0.0, avoidance_cooldown - delta)
-	# Direct local steering shares the squad path. Only a genuinely stuck member
-	# pays for its own A* route around a corner or a crowded gate.
-	var old_position := position
-	var step := effective_speed() * delta
-	position = game.navigation.move_step(self, position.move_toward(point, step))
-	game.navigation.unit_moved(self, old_position)
-	_update_facing(old_position)
-	position = position.clamp(Vector2.ONE * radius(), game.world_size - Vector2.ONE * radius())
-	_refresh_slope_visual(old_position)
-	var remaining := position.distance_to(point)
-	if group_progress_target.distance_squared_to(point) > 16.0:
-		group_progress_target = point
-		group_best_distance = remaining
-		group_stuck_time = 0.0
-	elif remaining < group_best_distance - 2.0:
-		group_best_distance = remaining
-		group_stuck_time = 0.0
-	else:
-		# Sideways jitter is not progress. Also recover when sitting on an
-		# intermediate waypoint while the actual destination is still far away.
-		group_stuck_time += delta
-
-	if group_stuck_time > 1.1:
-		# A member that cannot follow the shared route computes its own escape
-		# path to its assigned slot. It leaves the formation until the order ends.
-		movement_group = null
-		_reset_route()
-		_move_toward(destination, delta, 8.0)
+	movement.move_with_group(self, delta)
 
 func _refresh_slope_visual(previous_position: Vector2) -> void:
 	if not game.view_mode_25d or position == previous_position: return
@@ -1002,150 +873,6 @@ func _action_swing() -> float:
 
 func take_damage(damage: float) -> void:
 	UnitCombat.take_damage(self, damage)
-func _draw() -> void:
-	if game.view_mode_25d:
-		_draw_isometric()
-		return
-	var color: Color = game.player_color(owner_id)
-	var r := radius()
-	var gait := sin(visual_phase) * 3.5 if visual_moving else 0.0
-	var idle_bob := sin(visual_phase) * 0.7 if not visual_moving else 0.0
-	var swing := _action_swing()
-	var outline := Color("1b2928")
-	draw_circle(Vector2(2, 5), r + 2.0, Color("172322", 0.53))
-	draw_set_transform_matrix(Transform2D(0.0, Vector2(0, idle_bob - absf(gait) * 0.35 - swing * 1.5)))
-	if NavalVisual.handles(kind):
-		NavalVisual.draw_2d(self, kind, r, color, passengers.size())
-	elif stats.get("tags", []).has("siege"):
-		SiegeVisual2D.draw(self, kind, r, color, swing)
-	elif CharacterVisual.handles(kind):
-		CharacterVisual.draw_2d(self, kind, color, gait, swing)
-	elif ChineseVisual.handles(kind):
-		ChineseVisual.draw_2d(self, kind, color, gait, swing)
-	elif InfantryVisual.handles(kind):
-		InfantryVisual.draw_2d(self, kind, color, gait, swing, paling_timer > 0.0)
-	elif SupportVisual.handles(kind):
-		SupportVisual.draw_2d(self, kind, color, gait, swing, gather_kind, carried_relic != null, is_braced() if kind == "spearman" else false)
-	elif stats.get("tags", []).has("cavalry"):
-		var horse := PackedVector2Array([Vector2(-r + 2, -5), Vector2(r - 5, -8), Vector2(r + 3, -2), Vector2(r - 3, 8), Vector2(-r + 1, 7)])
-		FilledPolygon.draw(self, horse, Color("95734e"))
-		draw_polyline(horse + PackedVector2Array([horse[0]]), outline, 2.0)
-		draw_circle(Vector2(r - 1, -7), 6.5, outline)
-		draw_circle(Vector2(r - 1, -7), 5.0, Color("a28058"))
-		var rider := PackedVector2Array([Vector2(-8, -7), Vector2(5, -9), Vector2(8, 4), Vector2(-5, 6)])
-		FilledPolygon.draw(self, rider, color.darkened(0.08))
-		draw_polyline(rider + PackedVector2Array([rider[0]]), outline, 1.8)
-		draw_circle(Vector2(0, -3), 4.5, Color("d9bf96"))
-		draw_line(Vector2(-r + 3, 3), Vector2(-r - 5, 8), Color("594233"), 2.0)
-		if kind in ["knight", "royal_knight", "fire_lancer"]:
-			draw_line(Vector2(6, -2), Vector2(r + 12, -16), outline, 4.0)
-			draw_line(Vector2(6, -2), Vector2(r + 12, -16), Color("eadbb8"), 2.0)
-	else:
-		draw_line(Vector2(-4, 5), Vector2(-5 + gait, r + 2), outline, 5.0)
-		draw_line(Vector2(4, 5), Vector2(5 - gait, r + 2), outline, 5.0)
-		draw_line(Vector2(-4, 5), Vector2(-5 + gait, r + 2), Color("3e342c"), 3.0)
-		draw_line(Vector2(4, 5), Vector2(5 - gait, r + 2), Color("3e342c"), 3.0)
-		var body := PackedVector2Array([Vector2(-8, -7), Vector2(8, -7), Vector2(9, 8), Vector2(-9, 8)])
-		FilledPolygon.draw(self, body, color.darkened(0.10))
-		draw_polyline(body + PackedVector2Array([body[0]]), outline, 2.0)
-		draw_circle(Vector2(0, -10), 7.0, outline)
-		draw_circle(Vector2(0, -10), 5.5, Color("ddc59f"))
-		if kind == "villager" or kind == "imperial_official":
-			FilledPolygon.draw(self, PackedVector2Array([Vector2(-7, -13), Vector2(7, -13), Vector2(4, -19), Vector2(-4, -19)]), Color("95744b"))
-			draw_line(Vector2(10, 5), Vector2(14 - swing * 6, -13 - swing * 6), Color("c8a777"), 2.5)
-		elif kind == "monk":
-			draw_circle(Vector2(0, -11), 6.5, color.darkened(0.27))
-			draw_line(Vector2(12, 7), Vector2(12, -18), Color("e2d09c"), 2.0)
-			draw_line(Vector2(8, -12), Vector2(16, -12), Color("e2d09c"), 2.0)
-		elif stats.get("tags", []).has("ranged"):
-			draw_arc(Vector2(10, -2), 10.5, -PI * 0.55, PI * 0.55, 12, outline, 4.0)
-			draw_arc(Vector2(10, -2), 9, -PI * 0.55, PI * 0.55, 12, Color("e1d3a9"), 2.0)
-			draw_line(Vector2(7, -13), Vector2(7, 9), Color("d8c9a3"), 1.5)
-		elif kind == "spearman":
-			draw_line(Vector2(11, 8), Vector2(12, -25), outline, 4.5)
-			draw_line(Vector2(11, 8), Vector2(12, -25), Color("d6c59e"), 2.0)
-			FilledPolygon.draw(self, PackedVector2Array([Vector2(9, -24), Vector2(12, -33), Vector2(15, -24)]), Color("c9d1ce"))
-		else:
-			draw_line(Vector2(11, 8), Vector2(12 + swing * 12, -20 + swing * 13), Color("d6d5bd"), 2.5)
-			if stats.get("tags", []).has("heavy"):
-				FilledPolygon.draw(self, PackedVector2Array([Vector2(-11, -4), Vector2(-5, -8), Vector2(0, -4), Vector2(-1, 8), Vector2(-8, 9)]), Color("bbc0b8"))
-	draw_set_transform_matrix(Transform2D.IDENTITY)
-	if hit_flash_timer > 0.0:
-		draw_arc(Vector2.ZERO, r + 4.0, 0.0, TAU, 24, Color("ffe5ac", hit_flash_timer / 0.18), 2.0)
-	if game.should_show_health_bar(hp, max_hp, health_bar_timer):
-		draw_rect(Rect2(-r, -r - 8, r * 2.0, 3), Color("422f2d"))
-		draw_rect(Rect2(-r, -r - 8, r * 2.0 * clampf(hp / max_hp, 0.0, 1.0), 3), Color("82dd8b"))
 
-func _draw_isometric() -> void:
-	var color: Color = game.player_color(owner_id)
-	var outline := Color("1b2928")
-	var canvas := get_viewport().get_canvas_transform()
-	var ground_lift := RtsIsoProjection.ground_lift(game, position)
-	var gait := sin(visual_phase) * 3.0 if visual_moving else 0.0
-	var idle_bob := sin(visual_phase) * 0.7 if not visual_moving else 0.0
-	var swing := _action_swing()
-	# The footprint follows the ground projection; the figure faces the screen.
-	draw_set_transform_matrix(Transform2D(0.0, ground_lift))
-	draw_circle(Vector2.ZERO, radius() + 3.0, Color("1c2928", 0.62))
-	draw_set_transform_matrix(RtsIsoProjection.upright(canvas, ground_lift + RtsIsoProjection.world_delta(canvas, Vector2(0, idle_bob - absf(gait) * 0.35 - swing * 1.5)), game.camera.zoom.x))
-	if NavalVisual.handles(kind):
-		NavalVisual.draw_25d(self, kind, radius(), color, passengers.size())
-	elif stats.get("tags", []).has("siege"):
-		SiegeVisual25D.draw(self, kind, radius(), color, swing)
-	elif CharacterVisual.handles(kind):
-		CharacterVisual.draw_25d(self, kind, color, gait, swing)
-	elif ChineseVisual.handles(kind):
-		ChineseVisual.draw_25d(self, kind, color, gait, swing)
-	elif InfantryVisual.handles(kind):
-		InfantryVisual.draw_25d(self, kind, color, gait, swing, paling_timer > 0.0)
-	elif SupportVisual.handles(kind):
-		SupportVisual.draw_25d(self, kind, color, gait, swing, gather_kind, carried_relic != null, is_braced() if kind == "spearman" else false)
-	else:
-		var cavalry: bool = stats.get("tags", []).has("cavalry")
-		if cavalry:
-			var horse := PackedVector2Array([Vector2(-16, -7), Vector2(11, -8), Vector2(17, -15), Vector2(19, -12), Vector2(16, -3), Vector2(-14, -2)])
-			FilledPolygon.draw(self, horse, Color("a1835c"))
-			draw_polyline(horse + PackedVector2Array([horse[0]]), outline, 2.0)
-		var body_half := 7.0 if cavalry else 5.5
-		var body_bottom := -3.0
-		var body_top := -17.0 if cavalry else -15.0
-		var body := PackedVector2Array([Vector2(-body_half, body_top), Vector2(body_half, body_top), Vector2(body_half + 2, body_bottom), Vector2(-body_half - 2, body_bottom)])
-		FilledPolygon.draw(self, body, color.darkened(0.18))
-		draw_polyline(body + PackedVector2Array([body[0]]), outline, 2.0)
-		draw_line(Vector2(-4, body_bottom), Vector2(-5 + gait, 2), outline, 4.5)
-		draw_line(Vector2(4, body_bottom), Vector2(5 - gait, 2), outline, 4.5)
-		draw_line(Vector2(-4, body_bottom), Vector2(-5 + gait, 2), Color("302f2a"), 2.5)
-		draw_line(Vector2(4, body_bottom), Vector2(5 - gait, 2), Color("302f2a"), 2.5)
-		draw_circle(Vector2(0, body_top - 5), 6.5, outline)
-		draw_circle(Vector2(0, body_top - 5), 5.0, color.darkened(0.32) if facing_back else Color("e7d1ac"))
-		if not facing_back: draw_circle(Vector2(2.0 if facing_right else -2.0, body_top - 5), 1.25, Color("443a32"))
-		if kind == "monk":
-			draw_line(Vector2(9, -24), Vector2(9, 0), Color("e9dca6"), 2.0)
-			draw_line(Vector2(5, -19), Vector2(13, -19), Color("e9dca6"), 2.0)
-		elif kind == "archer" or kind == "longbow":
-			draw_arc(Vector2(9 + swing * 4, -12), 9.5, -PI * 0.6, PI * 0.6, 12, outline, 4.0)
-			draw_arc(Vector2(9 + swing * 4, -12), 8, -PI * 0.6, PI * 0.6, 12, Color("eee6c9"), 2.0)
-		elif cavalry and kind in ["knight", "royal_knight", "fire_lancer"]:
-			draw_line(Vector2(7, -13), Vector2(17, -31), outline, 4.5)
-			draw_line(Vector2(7, -13), Vector2(17, -31), Color("e8d8b5"), 2.0)
-		elif kind == "villager":
-			draw_line(Vector2(8, -7), Vector2(13 - swing * 6, -19 - swing * 5), Color("d5bb8d"), 2.5)
-			draw_rect(Rect2(7, -11, 6, 6), Color("b6a07a"))
-		elif kind == "spearman":
-			draw_line(Vector2(9, -1), Vector2(9, -31), outline, 4.5)
-			draw_line(Vector2(9, -1), Vector2(9, -31), Color("d6c59e"), 2.0)
-			FilledPolygon.draw(self, PackedVector2Array([Vector2(6, -30), Vector2(9, -38), Vector2(12, -30)]), Color("c9d1ce"))
-		elif visual_action == "attack" and swing > 0.0:
-			draw_line(Vector2(6, -8), Vector2(14 + swing * 12, -23 + swing * 12), Color("e2e0ca"), 2.4)
-		if stats.get("tags", []).has("heavy") and not cavalry:
-			FilledPolygon.draw(self, PackedVector2Array([Vector2(-11, -16), Vector2(-4, -19), Vector2(-2, -6), Vector2(-10, -5)]), Color("9eaaa9"))
-			draw_polyline(PackedVector2Array([Vector2(-11, -16), Vector2(-4, -19), Vector2(-2, -6), Vector2(-10, -5), Vector2(-11, -16)]), outline, 1.8)
-	draw_set_transform_matrix(RtsIsoProjection.upright(canvas, ground_lift))
-	if hit_flash_timer > 0.0:
-		draw_arc(Vector2(0, -16), radius() + 7.0, 0.0, TAU, 24, Color("ffe5ac", hit_flash_timer / 0.18), 2.0)
-	if game.should_show_health_bar(hp, max_hp, health_bar_timer):
-		var bar_width := maxf(18.0, radius() * 2.0)
-		var bar_y := SiegeVisual25D.overlay_y(kind) if stats.get("tags", []).has("siege") else -38.0
-		draw_rect(Rect2(-bar_width * 0.5, bar_y, bar_width, 4), Color("422f2d"))
-		draw_rect(Rect2(-bar_width * 0.5, bar_y, bar_width * clampf(hp / max_hp, 0.0, 1.0), 4), Color("82dd8b"))
-	draw_set_transform_matrix(Transform2D.IDENTITY)
+func _draw() -> void:
+	unit_visual.draw(self, UnitVisualState.capture(self))
