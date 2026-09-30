@@ -9,6 +9,7 @@ var minimal := false
 var vsync := true
 var label: Label
 var headless := false
+var last_button := "none"
 
 func _ready() -> void:
 	headless = DisplayServer.get_name() == "headless"
@@ -25,6 +26,7 @@ func log_row(row: Dictionary) -> void:
 	if trace == null: return
 	row["t"] = Time.get_unix_time_from_system()
 	trace.store_line(JSON.stringify(row))
+	if row["layer"] not in ["frame", "post_draw"] and row.get("type", "") != "InputEventMouseMotion": trace.flush()
 
 func _process(_delta: float) -> void:
 	var now := Time.get_ticks_usec()
@@ -33,7 +35,7 @@ func _process(_delta: float) -> void:
 		"x": 0 if headless else DisplayServer.mouse_get_position().x, "y": 0 if headless else DisplayServer.mouse_get_position().y})
 	previous_frame = now
 	if minimal:
-		label.text = "MINIMAL POC | mode %d | VSync %s\nDrag anywhere. 1 visible / 2 hidden / 3 confined. V toggle VSync. Esc quit.\nContinuous frame clock: %.3f" % [Input.mouse_mode, vsync, now / 1000000.0]
+		label.text = "RIGHT-CLICK POC | mode %d | VSync %s\n1 visible / 2 hidden / 3 confined. V toggle VSync. Esc quit.\nLast Godot button: %s | native mask: %d | Input mask: %d\nF7: next gesture intended RIGHT. F8: mark failed RIGHT.\nMasks: 1 LEFT / 2 RIGHT / 3 BOTH. Click away from this text." % [Input.mouse_mode, vsync, last_button, 0 if headless else DisplayServer.mouse_get_button_state(), Input.get_mouse_button_mask()]
 		queue_redraw()
 
 func _input(event: InputEvent) -> void:
@@ -42,6 +44,12 @@ func _input(event: InputEvent) -> void:
 		if event is InputEventMouseButton:
 			row["pressed"] = event.pressed
 			row["button"] = event.button_index
+			row["ctrl"] = event.ctrl_pressed
+			row["shift"] = event.shift_pressed
+			row["double_click"] = event.double_click
+			row["native_buttons"] = 0 if headless else DisplayServer.mouse_get_button_state()
+			row["input_buttons"] = Input.get_mouse_button_mask()
+			last_button = "%d %s" % [event.button_index, "DOWN" if event.pressed else "UP"]
 			if event.button_index == MOUSE_BUTTON_LEFT:
 				down = event.pressed
 				if down: anchor = event.position
@@ -49,11 +57,8 @@ func _input(event: InputEvent) -> void:
 		log_row(row)
 	if event is InputEventKey and event.pressed and not event.echo:
 		log_row({"layer": "key", "key": event.keycode})
-		if event.keycode in [KEY_F6, KEY_B] and "--engine-wait-gate" in OS.get_cmdline_user_args():
-			var original := OS.get_environment("AOE_POC_SKIP_WAIT_GATE") != "1"
-			OS.set_environment("AOE_POC_SKIP_WAIT_GATE", "1" if original else "0")
-			get_window().title = "Input POC - %s (B toggles)" % ("ORIGINAL scheduler" if original else "PATCHED scheduler")
-			log_row({"layer": "scheduler_mode", "original": original})
+		if event.keycode in [KEY_F7, KEY_F8]:
+			log_row({"layer": "marker", "action": "failed_right_click" if event.keycode == KEY_F8 else "next_intended_right_click"})
 			get_viewport().set_input_as_handled()
 		if minimal:
 			match event.keycode:

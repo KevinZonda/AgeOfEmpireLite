@@ -32,8 +32,8 @@
 运行回放：
 
 ```sh
-AOE_RIGHT_CLICK_REPLAY="$PWD/poc/input-poc/right-click-replay.json" \
-  make run RUN_ARGS='--headless --script res://poc/input-poc/right_click_replay.gd'
+AOE_RIGHT_CLICK_REPLAY="$PWD/poc/right-click-poc/right-click-replay.json" \
+  make run RUN_ARGS='--headless --script res://poc/right-click-poc/right_click_replay.gd'
 ```
 
 此轮验证：`RIGHT_CLICK_REPLAY_OK`、原有 `tests/selection.gd` 的 `SELECTION_OK`、native dylib 编译、shell 和 Python 语法检查均通过。
@@ -43,7 +43,7 @@ AOE_RIGHT_CLICK_REPLAY="$PWD/poc/input-poc/right-click-replay.json" \
 后续扩展为 [right_click_matrix.py](right_click_matrix.py) 与 [right_click_matrix.gd](right_click_matrix.gd)。结果保存于 [right-click-matrix.json](right-click-matrix.json)。运行：
 
 ```sh
-python3 poc/input-poc/right_click_matrix.py --repeats 10
+python3 poc/right-click-poc/right_click_matrix.py --repeats 10
 ```
 
 **641 种场景 × 3 个地图种子（12345、4242、431）× 每种 10 次 × 3 种输入分发 × 2 种 POC 版本 = 115,380 次合成回放。** 正常左右键对照无失败，相同场景重复结果无变化，直接调用与 `Input.parse_input_event()` 即时分发无结果差异。
@@ -107,10 +107,10 @@ Control+点击是本地引擎源码已经明确提供的合法语义不一致案
 
 ```sh
 # 完整游戏：默认使用 make run 同款补丁引擎。
-poc/input-poc/right_click.sh --game
+poc/right-click-poc/right_click.sh --game
 
 # 空场景对照：显示最后一个 Godot 按钮和两种按钮掩码。
-poc/input-poc/right_click.sh
+poc/right-click-poc/right_click.sh
 ```
 
 日志目录会打印为 `/tmp/aoe-right-click-poc-日期时间`。`TRACE_DIR` 和 `GODOT_BIN` 可覆盖。运行器只在该进程加载诊断 dylib，native monitor 原样返回事件，不修改输入或系统设置。
@@ -118,7 +118,7 @@ poc/input-poc/right_click.sh
 完整游戏中先选单位，再在地图空地连续双指轻点下令。可先按 **F7** 标记“下一次有意做右键”；发现误识别后立即按 **F8** 标记。Mac 若默认使用媒体键，使用 Fn+F7／Fn+F8。避免把切回窗口的首次点击当作正常游戏点击。结束后关闭诊断窗口。
 
 ```sh
-python3 poc/input-poc/right_click_summary.py /tmp/aoe-right-click-poc-日期时间
+python3 poc/right-click-poc/right_click_summary.py /tmp/aoe-right-click-poc-日期时间
 # 默认显示 F8 之前 4 秒；未标记则显示全部按钮和动作。
 # --all 显示完整时间线，--window 8 扩大标记前窗口。
 ```

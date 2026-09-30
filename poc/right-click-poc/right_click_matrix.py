@@ -129,7 +129,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repeats", type=int, default=3)
     parser.add_argument("--seeds", default="12345,4242,431")
-    parser.add_argument("--output", type=Path, default=ROOT / "poc/input-poc/right-click-matrix.json")
+    parser.add_argument("--output", type=Path, default=ROOT / "poc/right-click-poc/right-click-matrix.json")
     args = parser.parse_args()
     godot = os.environ.get("GODOT_BIN", str(ROOT / "docs/godot/bin/godot.macos.template_debug.arm64"))
     cases = build_cases()
@@ -141,7 +141,7 @@ def main():
             result = temp_path / f"results-{seed}.json"
             config.write_text(json.dumps(dict(map_seed=seed, repeats=args.repeats, cases=cases)))
             env = dict(os.environ, AOE_RIGHT_CLICK_CASES=str(config), AOE_RIGHT_CLICK_MATRIX=str(result))
-            completed = subprocess.run([godot, "--path", str(ROOT), "--headless", "--script", "res://poc/input-poc/right_click_matrix.gd"], env=env, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=180)
+            completed = subprocess.run([godot, "--path", str(ROOT), "--headless", "--script", "res://poc/right-click-poc/right_click_matrix.gd"], env=env, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=180)
             print(completed.stdout, end="", flush=True)
             if completed.returncode or not result.exists():
                 raise SystemExit("Matrix Godot process failed")

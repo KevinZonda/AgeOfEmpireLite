@@ -13,7 +13,7 @@ func _run() -> void:
 	var file := FileAccess.open(OS.get_environment("AOE_RIGHT_CLICK_CASES"), FileAccess.READ)
 	assert(file != null)
 	var config: Dictionary = JSON.parse_string(file.get_as_text())
-	game = load("res://poc/input-poc/right_click_fixture.gd").new()
+	game = load("res://poc/right-click-poc/right_click_fixture.gd").new()
 	root.add_child(game)
 	await process_frame
 	game.start_game("English", int(config["map_seed"]))

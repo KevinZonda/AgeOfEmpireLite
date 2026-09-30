@@ -4,7 +4,7 @@ func _initialize() -> void:
 	call_deferred("_run")
 
 func _run() -> void:
-	var game: Variant = load("res://poc/input-poc/right_click_fixture.gd").new()
+	var game: Variant = load("res://poc/right-click-poc/right_click_fixture.gd").new()
 	root.add_child(game)
 	await process_frame
 	game.start_game("English", 12345)

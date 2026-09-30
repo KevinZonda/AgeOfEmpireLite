@@ -1,4 +1,4 @@
-extends "res://poc/input-poc/game_trace.gd"
+extends "res://poc/right-click-poc/game_trace.gd"
 
 # Replay only: supply session state independently of Godot button events.
 var replay_left := false
