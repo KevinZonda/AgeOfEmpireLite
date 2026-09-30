@@ -106,7 +106,7 @@ func _run() -> void:
 	game._rebuild_actions()
 	assert(game.command_buttons.size() >= 4, "Town Center should show villager training and garrison controls")
 	assert(not game.command_buttons.any(func(button: RtsCommandButton) -> bool: return button.get_meta("action_type") in ["research", "landmark"]), "Town Center should not host military upgrades or age landmark choices")
-	assert(game.hotkey_buttons.has(KEY_1))
+	assert(game.hotkey_buttons.has(KEY_Q))
 	game.command_buttons[0].pressed.emit()
 	assert(center.queued_unit_count("villager") == 1, "train command should enqueue a villager")
 	var rally_destination: Vector2 = game._scaled_point(Vector2(800, 720))
@@ -277,7 +277,7 @@ func _run() -> void:
 	assert(game.order_mode == "attack_move" and game._cursor_state_at(Vector2(700, 700)) == "attack_move")
 	game._issue_attack_move(Vector2(900, 700))
 	assert(spearman.order == "attack_move" and game.order_mode == "")
-	game.hotkey_buttons[KEY_2].pressed.emit()
+	game.hotkey_buttons[KEY_T].pressed.emit()
 	assert(spearman.order == "idle", "stop should clear a unit order")
 	spearman.issue_command("move", Vector2(800, 900))
 	var first_destination: Vector2 = spearman.destination

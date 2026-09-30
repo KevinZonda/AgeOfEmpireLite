@@ -107,6 +107,8 @@ const BUILD_PAGES := [
 ]
 
 const COMMANDS_PER_PAGE := 12
+const GRID_KEYS := [KEY_Q, KEY_W, KEY_E, KEY_R, KEY_A, KEY_S, KEY_D, KEY_F, KEY_Z, KEY_X, KEY_C, KEY_V]
+const SIDE_KEYS := [KEY_T, KEY_G, KEY_B]
 var descriptors: Array[Dictionary] = []
 var current_build_pages: Array = []
 var command_page := 0
@@ -228,8 +230,6 @@ func rebuild() -> void:
 	rebuilt.emit()
 
 func _build_unit_actions(item: RtsUnit) -> void:
-	var keys := [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9]
-	var action_index := 0
 	var any_worker := false
 	var any_military := false
 	var any_special := false
@@ -252,69 +252,67 @@ func _build_unit_actions(item: RtsUnit) -> void:
 			if kind.is_empty():
 				_add_action_spacer()
 			elif kind == "age":
-				if RtsTechTree.can_advance(game.players[0]["age"]): _add_action("age", "(%s) 升时代" % ["", "II", "III", "IV"][game.players[0]["age"]], {}, KEY_NONE, "order", func() -> void: age_choice_requested.emit())
+				if RtsTechTree.can_advance(game.players[0]["age"]): _add_action("age", "(%s) 升时代" % ["", "II", "III", "IV"][game.players[0]["age"]], {}, "order", func() -> void: age_choice_requested.emit())
 				else: _add_action_spacer()
 			else:
-				_add_build_action(kind, keys[action_index] if action_index < keys.size() else KEY_NONE)
-			action_index += 1
+				_add_build_action(kind)
 		if game.civilizations[0] == "Chinese" and game.build_page == 2:
 			for choice in RtsLandmarkCatalog.choices_for(game.civilizations[0], game.players[0]["age"], game.players[0]["landmarks"]):
 				if int(choice["age"]) > game.players[0]["age"]: continue
-				_add_landmark_action(choice, keys[action_index] if action_index < keys.size() else KEY_NONE)
-				action_index += 1
+				_add_landmark_action(choice)
 	if (any_military or any_special) and not any_worker:
 		if any_military:
 			if game.players[0]["age"] >= 3 and game.selected.any(func(chosen: Node2D) -> bool: return chosen is RtsUnit and chosen.stats.get("tags", []).has("infantry") and not chosen.stats.get("tags", []).has("siege")):
 				for field_kind in ["field_ram", "field_tower"]:
 					var mode_id: String = field_kind
 					var label_text := "野外建造攻城槌" if field_kind == "field_ram" else "野外建造攻城塔"
-					_add_action(field_kind, label_text, GameData.unit_cost("battering_ram" if field_kind == "field_ram" else "siege_tower"), KEY_NONE, "order", func() -> void:
+					_add_action(field_kind, label_text, GameData.unit_cost("battering_ram" if field_kind == "field_ram" else "siege_tower"), "order", func() -> void:
 						game.order_mode = mode_id
 						game.notify_player("点击地面指定建造位置")
 					)
 			if game.selected.any(func(chosen: Node2D) -> bool: return chosen is RtsUnit and chosen.kind in ["mangonel", "nest_of_bees", "trebuchet", "bombard", "cannon"]):
-				_add_action("attack_ground", "攻击地面", {}, KEY_NONE, "order", func() -> void:
+				_add_action("attack_ground", "攻击地面", {}, "order", func() -> void:
 					game.order_mode = "attack_ground"
 					game.notify_player("点击地面指定炮击位置")
 				)
-			_add_action("attack_move", "攻击移动", {}, KEY_1, "order", func() -> void:
+			_add_action("attack_move", "攻击移动", {}, "order", func() -> void:
 				game.order_mode = "attack_move"
 				game.build_mode = ""
 				game.notify_player("点击地图攻击移动；Shift 点击连续下令")
 			)
-			_add_action("patrol", "巡逻", {}, KEY_3, "order", func() -> void:
+			_add_action("patrol", "巡逻", {}, "order", func() -> void:
 				game.order_mode = "patrol"
 				game.notify_player("点击地图设置巡逻终点")
 			)
-			_add_action("hold", "坚守", {}, KEY_4, "order", func() -> void:
+			_add_action("hold", "坚守", {}, "order", func() -> void:
 				for unit in game.selected:
 					if is_instance_valid(unit) and unit is RtsUnit: unit.issue_command("hold")
 			)
-			_add_action("focus", "集火", {}, KEY_5, "order", func() -> void:
+			_add_action("focus", "集火", {}, "order", func() -> void:
 				game.order_mode = "focus"
 				game.notify_player("点击敌方单位或建筑集火")
 			)
-			_add_action("retreat", "撤退", {}, KEY_7, "order", func() -> void: game._retreat_selected())
+			_add_action("retreat", "撤退", {}, "order", func() -> void: game._retreat_selected())
 			for shape in ["balanced", "line", "compact", "column"]:
 				var shape_id: String = shape
 				var shape_label: String = {"balanced": "默认", "line": "横队", "compact": "密集", "column": "纵队"}[shape]
-				_add_action("formation", "%s阵型%s" % [shape_label, " ✓" if game.formation_mode == shape else ""], {}, KEY_NONE, "order", func() -> void:
+				_add_action("formation", "%s阵型%s" % [shape_label, " ✓" if game.formation_mode == shape else ""], {}, "order", func() -> void:
 					game.formation_mode = shape_id
 					game.notify_player("下一次群体移动采用%s阵型" % shape_label)
 					rebuild()
 				)
-			_add_action("formation", "队宽 - (%d)" % game.formation_width, {}, KEY_NONE, "order", func() -> void:
+			_add_action("formation", "队宽 - (%d)" % game.formation_width, {}, "order", func() -> void:
 				game.formation_width = maxi(2, game.formation_width - 1)
 				rebuild()
 			)
-			_add_action("formation", "队宽 + (%d)" % game.formation_width, {}, KEY_NONE, "order", func() -> void:
+			_add_action("formation", "队宽 + (%d)" % game.formation_width, {}, "order", func() -> void:
 				game.formation_width = mini(8, game.formation_width + 1)
 				rebuild()
 			)
 			for behavior in ["aggressive", "defensive", "passive"]:
 				var behavior_id: String = behavior
 				var behavior_label: String = {"aggressive": "主动", "defensive": "防御", "passive": "被动"}[behavior]
-				_add_action("stance", "%s交战%s" % [behavior_label, " ✓" if item.engagement == behavior_id else ""], {}, KEY_NONE, "order", func() -> void:
+				_add_action("stance", "%s交战%s" % [behavior_label, " ✓" if item.engagement == behavior_id else ""], {}, "order", func() -> void:
 					for chosen in game.selected:
 						if is_instance_valid(chosen) and chosen is RtsUnit and chosen.stats.get("tags", []).has("military"): chosen.engagement = behavior_id
 					game.notify_player("已设为%s交战" % behavior_label)
@@ -324,26 +322,26 @@ func _build_unit_actions(item: RtsUnit) -> void:
 		for ability in game.UNIT_ABILITY_ACTIONS:
 			if not _selected_has_ability(ability): continue
 			var ability_id: String = ability["id"]
-			_add_action(ability_id, ability["label"], {}, KEY_NONE, "unit_ability", func() -> void: game._activate_selected_ability(ability_id))
+			_add_action(ability_id, ability["label"], {}, "unit_ability", func() -> void: game._activate_selected_ability(ability_id))
 	if item.kind == "transport_ship":
-		_add_action("unload", "登陆", {}, KEY_1, "order", func() -> void:
+		_add_action("unload", "登陆", {}, "order", func() -> void:
 			game.order_mode = "unload"
 			game.notify_player("点击陆地让运输船靠岸并卸载乘员")
 		)
 	if item.kind in ["battering_ram", "siege_tower"]:
-		_add_action("unload", "放出乘员", {}, KEY_NONE, "order", func() -> void:
+		_add_action("unload", "放出乘员", {}, "order", func() -> void:
 			for chosen in game.selected:
 				if is_instance_valid(chosen) and chosen is RtsUnit and chosen.kind in ["battering_ram", "siege_tower"]: chosen.ungarrison_all()
 		)
 	if item.kind == "trader" and game.civilizations[0] == "French":
 		for resource_kind in ["food", "wood", "gold"]:
-			_add_action(resource_kind, "贸易换%s" % GameData.RESOURCE_LABELS[resource_kind], {}, KEY_NONE, "order", func() -> void: game._set_selected_trade_resource(resource_kind))
+			_add_action(resource_kind, "贸易换%s" % GameData.RESOURCE_LABELS[resource_kind], {}, "order", func() -> void: game._set_selected_trade_resource(resource_kind))
 	if item.kind == "trader":
-		_add_action("trade", "恢复贸易", {}, KEY_NONE, "order", func() -> void:
+		_add_action("trade", "恢复贸易", {}, "order", func() -> void:
 			for chosen in game.selected:
 				if is_instance_valid(chosen) and chosen is RtsUnit and chosen.kind == "trader" and is_instance_valid(chosen.trade_post): chosen.issue_command("trade", Vector2.INF, chosen.trade_post)
 		)
-	if not any_worker: _add_action("stop", "停止", {}, KEY_2, "order", func() -> void: game._stop_selected_units())
+	if not any_worker: _add_action("stop", "停止", {}, "order", func() -> void: game._stop_selected_units())
 
 func _selected_has_ability(ability: Dictionary) -> bool:
 	if ability.has("civilization") and game.civilizations[0] != ability["civilization"]: return false
@@ -354,14 +352,11 @@ func _selected_has_ability(ability: Dictionary) -> bool:
 	return false
 
 func _build_building_actions(item: RtsBuilding) -> void:
-	var keys := [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9]
-	var action_index := 0
 	if item.kind.ends_with("_wall"):
 		var gate_kind := "stone_gate" if item.kind == "stone_wall" else "palisade_gate"
 		var resource := "stone" if gate_kind == "stone_gate" else "wood"
 		var extra: int = GameData.BUILDINGS[gate_kind]["cost"][resource] - GameData.BUILDINGS[item.kind]["cost"][resource]
-		_add_action(gate_kind, "改建城门", {resource: extra}, KEY_1, "convert_gate", func() -> void: game.convert_wall_to_gate(item))
-		action_index += 1
+		_add_action(gate_kind, "改建城门", {resource: extra}, "convert_gate", func() -> void: game.convert_wall_to_gate(item))
 	var train_kinds: Array[String] = []
 	var research_kinds: Array[String] = []
 	for candidate in game.selected:
@@ -371,53 +366,47 @@ func _build_building_actions(item: RtsBuilding) -> void:
 		for kind in RtsTechTree.all_researches(game.civilizations[0], candidate.producer_kind()):
 			if not research_kinds.has(kind): research_kinds.append(kind)
 	for kind in train_kinds:
-		_add_train_action(kind, keys[action_index] if action_index < keys.size() else KEY_NONE)
-		action_index += 1
+		_add_train_action(kind)
 	for kind in research_kinds:
-		_add_research_action(kind, keys[action_index] if action_index < keys.size() else KEY_NONE)
-		action_index += 1
+		_add_research_action(kind)
 	if item.kind == "market":
 		for resource_kind in ["food", "wood", "stone"]:
 			var sell_price: int = game.market_quote(resource_kind, false)
 			var buy_price: int = game.market_quote(resource_kind, true)
 			var short_name := "粮" if resource_kind == "food" else "木" if resource_kind == "wood" else "石"
-			_add_action("market_sell", "卖%s +%d金" % [short_name, sell_price], {}, keys[action_index] if action_index < keys.size() else KEY_NONE, "order", func() -> void: game.exchange_resource(0, resource_kind, false))
-			action_index += 1
-			_add_action("market_buy", "买%s -%d金" % [short_name, buy_price], {}, keys[action_index] if action_index < keys.size() else KEY_NONE, "order", func() -> void: game.exchange_resource(0, resource_kind, true))
-			action_index += 1
+			_add_action("market_sell", "卖%s +%d金" % [short_name, sell_price], {}, "order", func() -> void: game.exchange_resource(0, resource_kind, false))
+			_add_action("market_buy", "买%s -%d金" % [short_name, buy_price], {}, "order", func() -> void: game.exchange_resource(0, resource_kind, true))
 	if item.garrison_capacity() > 0:
-		_add_action("ungarrison", "放出驻军", {}, keys[action_index] if action_index < keys.size() else KEY_NONE, "order", func() -> void: item.ungarrison_all())
-		action_index += 1
+		_add_action("ungarrison", "放出驻军", {}, "order", func() -> void: item.ungarrison_all())
 	if item.kind == "town_center":
-		_add_action("town_bell", "镇钟：村民避险", {}, KEY_NONE, "order", func() -> void: game.ring_town_bell(item))
-		_add_action("return_work", "返回原工作", {}, KEY_NONE, "order", func() -> void: item.ungarrison_all(true))
+		_add_action("town_bell", "镇钟：村民避险", {}, "order", func() -> void: game.ring_town_bell(item))
+		_add_action("return_work", "返回原工作", {}, "order", func() -> void: item.ungarrison_all(true))
 	if item.landmark_id == "fr_guild_hall":
-		_add_action("collect_stockpile", "提取公会资源", {}, keys[action_index] if action_index < keys.size() else KEY_NONE, "landmark_ability", func() -> void: item.collect_stockpile())
-		action_index += 1
+		_add_action("collect_stockpile", "提取公会资源", {}, "landmark_ability", func() -> void: item.collect_stockpile())
 	if item.landmark_id == "zh_imperial_palace":
-		_add_action("spy", "侦察敌方村民", {}, keys[action_index] if action_index < keys.size() else KEY_NONE, "landmark_ability", func() -> void: item.activate_landmark_ability())
+		_add_action("spy", "侦察敌方村民", {}, "landmark_ability", func() -> void: item.activate_landmark_ability())
 
-func _add_build_action(kind: String, keycode: int) -> void:
+func _add_build_action(kind: String) -> void:
 	var cost: Dictionary = RtsCivilizationRules.building_cost(game.civilizations[0], kind)
-	_add_action(kind, GameData.BUILDINGS[kind]["label"], cost, keycode, "build", func() -> void:
+	_add_action(kind, GameData.BUILDINGS[kind]["label"], cost, "build", func() -> void:
 		game.build_mode = kind
 		game.pending_landmark_id = ""
-		game.notify_player("拖拽铺设%s；R 旋转；Shift 连续建造" % GameData.BUILDINGS[kind]["label"] if kind.ends_with("_wall") else "点击地图放置%s；R 旋转墙门；Shift 连续建造" % GameData.BUILDINGS[kind]["label"])
+		game.notify_player("拖拽铺设%s；空格旋转；Shift 连续建造" % GameData.BUILDINGS[kind]["label"] if kind.ends_with("_wall") else "点击地图放置%s；空格旋转墙门；Shift 连续建造" % GameData.BUILDINGS[kind]["label"])
 	)
 
-func _add_landmark_action(choice: Dictionary, keycode: int) -> void:
+func _add_landmark_action(choice: Dictionary) -> void:
 	var choice_id: String = choice["id"]
-	_add_action(choice_id, choice["label"], choice["cost"], keycode, "landmark", func() -> void: game._select_landmark_for_placement(choice_id))
+	_add_action(choice_id, choice["label"], choice["cost"], "landmark", func() -> void: game._select_landmark_for_placement(choice_id))
 
-func _add_train_action(kind: String, keycode: int) -> void:
-	_add_action(kind, GameData.UNITS[kind]["label"], GameData.unit_cost(kind), keycode, "train", func() -> void:
+func _add_train_action(kind: String) -> void:
+	_add_action(kind, GameData.UNITS[kind]["label"], GameData.unit_cost(kind), "train", func() -> void:
 		for candidate in game.selected:
 			if is_instance_valid(candidate) and candidate is RtsBuilding and candidate.owner_id == 0 and RtsTechTree.all_train_units(game.civilizations[0], candidate.producer_kind()).has(kind): game.train_unit(candidate, kind)
 	)
 
-func _add_research_action(kind: String, keycode: int) -> void:
+func _add_research_action(kind: String) -> void:
 	var technology: Dictionary = RtsTechTree.get_technology(kind)
-	_add_action(kind, technology["label"], technology["cost"], keycode, "research", func() -> void:
+	_add_action(kind, technology["label"], technology["cost"], "research", func() -> void:
 		for candidate in game.selected:
 			if is_instance_valid(candidate) and candidate is RtsBuilding and candidate.owner_id == 0 and RtsTechTree.all_researches(game.civilizations[0], candidate.producer_kind()).has(kind):
 				if game.research_technology(candidate, kind): break
@@ -426,7 +415,7 @@ func _add_research_action(kind: String, keycode: int) -> void:
 func _add_action_spacer() -> void:
 	descriptors.append({"view": "spacer", "visible": true})
 
-func _add_action(icon_kind: String, label_text: String, cost: Dictionary, keycode: int, action_type: String, callback: Callable) -> void:
+func _add_action(icon_kind: String, label_text: String, cost: Dictionary, action_type: String, callback: Callable) -> void:
 	var description := ""
 	if action_type == "train" and GameData.UNITS.has(icon_kind):
 		var source_landmark: String = game.selected[0].landmark_id if not game.selected.is_empty() and game.selected[0] is RtsBuilding else ""
@@ -449,11 +438,11 @@ func _add_action(icon_kind: String, label_text: String, cost: Dictionary, keycod
 		description = ("设置商人贸易所得的%s。" % GameData.RESOURCE_LABELS[icon_kind])
 	elif action_type == "unit_ability":
 		description = ("让选中单位使用此能力。")
-	var id := register(action_type, icon_kind, keycode, callback)
-	descriptors.append({"view": "command", "id": id, "kind": icon_kind, "label": label_text, "description": description, "cost": cost, "keycode": keycode, "type": action_type, "visible": true})
+	var id := register(action_type, icon_kind, KEY_NONE, callback)
+	descriptors.append({"view": "command", "id": id, "kind": icon_kind, "label": label_text, "description": description, "cost": cost, "keycode": KEY_NONE, "type": action_type, "visible": true})
 
 func _side_action(symbol: String, description: String, callback: Callable, direction := 0) -> Dictionary:
-	return {"view": "side", "id": register("order", "page" if direction != 0 else "side", KEY_NONE, callback), "symbol": symbol, "description": description, "direction": direction, "side_order": 0 if direction <= 0 else 1, "visible": true}
+	return {"view": "side", "id": register("order", "page" if direction != 0 else "side", KEY_NONE, callback), "symbol": symbol, "description": description, "direction": direction, "keycode": KEY_NONE, "side_order": 0 if direction <= 0 else 1, "visible": true}
 
 # Twelve command slots plus a fixed stop and page-navigation column. Hidden
 # commands retain their descriptors for inspection but cannot be executed.
@@ -511,6 +500,19 @@ func _layout_commands() -> void:
 	for row in 3:
 		for column in 4: visible_commands[row * 4 + column]["slot"] = row * 5 + column
 		side[row]["slot"] = row * 5 + 4
+	# Bind after pagination: every visible position has one key on every page.
+	hotkeys.clear()
+	for command in descriptors:
+		if command.has("id"): command["keycode"] = KEY_NONE
+	for index in visible_commands.size():
+		_bind_command_key(visible_commands[index], GRID_KEYS[index])
+	for row in side.size():
+		_bind_command_key(side[row], SIDE_KEYS[row])
+
+func _bind_command_key(command: Dictionary, keycode: int) -> void:
+	if not command.has("id"): return
+	command["keycode"] = keycode
+	hotkeys[keycode] = command["id"]
 
 func _research_description(kind: String, technology: Dictionary) -> String:
 	var purpose := ""

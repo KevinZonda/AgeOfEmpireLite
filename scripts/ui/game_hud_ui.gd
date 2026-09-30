@@ -174,7 +174,7 @@ func _create_hud() -> void:
 	top_tools.add_theme_constant_override("separation", 5)
 	top_row.add_child(top_tools)
 	var global_queue_button := Button.new()
-	global_queue_button.text = "队列 [F]"
+	global_queue_button.text = "队列 [Tab]"
 	UiStyle._style_button(global_queue_button)
 	global_queue_button.pressed.connect(_toggle_global_queue)
 	top_tools.add_child(global_queue_button)
@@ -186,6 +186,7 @@ func _create_hud() -> void:
 	top_tools.add_child(idle_villager_button)
 	view_button = Button.new()
 	view_button.text = "2.5D 视角"
+	view_button.tooltip_text = "切换 2D / 2.5D 视角（F3）"
 	UiStyle._style_button(view_button)
 	view_button.pressed.connect(func() -> void: view_mode_requested.emit())
 	top_tools.add_child(view_button)
@@ -896,7 +897,10 @@ func _render_command(descriptor: Dictionary) -> Control:
 			button = Button.new()
 			button.text = descriptor["symbol"]
 		button.set_meta("side_order", descriptor["side_order"])
-		button.tooltip_text = descriptor["description"]
+		var keycode: int = descriptor["keycode"]
+		button.tooltip_text = "%s\n快捷键：%s" % [descriptor["description"], OS.get_keycode_string(keycode)]
+		_add_shortcut_badge(button, keycode)
+		hotkey_buttons[keycode] = button
 		button.custom_minimum_size = command_tile_size
 		button.focus_mode = Control.FOCUS_NONE
 		UiStyle._style_button(button)
@@ -908,6 +912,7 @@ func _render_command(descriptor: Dictionary) -> Control:
 	var keycode: int = descriptor["keycode"]
 	button.configure(descriptor["kind"], descriptor["label"], OS.get_keycode_string(keycode) if keycode != KEY_NONE else "")
 	button.custom_minimum_size = command_tile_size
+	_add_shortcut_badge(button, keycode)
 	button.set_description(descriptor["description"])
 	button.set_meta("cost", descriptor["cost"])
 	button.set_meta("action_type", descriptor["type"])
@@ -921,6 +926,25 @@ func _render_command(descriptor: Dictionary) -> Control:
 		command_side_buttons.append(button)
 	if keycode != KEY_NONE: hotkey_buttons[keycode] = button
 	return button
+
+func _add_shortcut_badge(button: Button, keycode: int) -> void:
+	if keycode == KEY_NONE: return
+	var badge := PanelContainer.new()
+	badge.name = "ShortcutBadge"
+	badge.position = Vector2(2, 2)
+	badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color("211b14")
+	style.content_margin_left = 3
+	style.content_margin_right = 3
+	badge.add_theme_stylebox_override("panel", style)
+	var label := Label.new()
+	label.text = OS.get_keycode_string(keycode)
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	label.add_theme_font_size_override("font_size", 11)
+	label.add_theme_color_override("font_color", Color("f1d99b"))
+	badge.add_child(label)
+	button.add_child(badge)
 
 func _show_age_choice() -> void:
 	if not game.started or game.game_over or age_choice_overlay != null: return

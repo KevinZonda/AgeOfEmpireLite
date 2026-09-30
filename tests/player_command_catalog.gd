@@ -20,6 +20,8 @@ func _run() -> void:
 	game._rebuild_actions()
 	assert(game.hud_ui == null and game.get_child_count() == 0, "commands must not create a HUD or scene tree")
 	assert(game.player_actions.descriptors.size() == 15, "worker catalog must retain all twelve slots and three controls")
+	_assert_grid(game)
+	assert(_command(game, "blacksmith")["keycode"] == KEY_Z and _command(game, "wonder")["keycode"] == KEY_V, "last-row commands must have shortcuts")
 	var house := _command(game, "house")
 	assert(not str(house["label"]).is_empty() and not str(house["description"]).is_empty())
 	assert(game.execute_player_action(house["id"]) and game.build_mode == "house", "build execution must work without a HUD")
@@ -31,6 +33,9 @@ func _run() -> void:
 	assert(not game.execute_player_action(house["id"]), "stale selection must invalidate callbacks immediately")
 	game._rebuild_actions()
 	assert(not game.execute_player_action(house["id"]), "catalog rebuild must expire old IDs")
+	_assert_grid(game)
+	assert(_command(game, "attack_move")["keycode"] == KEY_E, "age IV field-building actions occupy the first two grid positions")
+	var old_first_id: String = game.player_actions.hotkeys[KEY_Q]
 	var hidden: Dictionary = {}
 	for command in game.player_actions.descriptors:
 		if command.get("view", "") == "command" and not command["visible"]:
@@ -38,24 +43,37 @@ func _run() -> void:
 			break
 	assert(not hidden.is_empty(), "military commands must exercise pagination")
 	assert(not game.execute_player_action(hidden["id"]), "hidden page commands must not execute without HUD gating")
-	assert(game.player_actions.execute_hotkey(KEY_1) and game.order_mode == "attack_move", "shortcuts must use the catalog alone")
+	assert(game.player_actions.execute_hotkey(KEY_E) and game.order_mode == "attack_move", "shortcuts must use the catalog alone")
 	game.order_mode = ""
 	game.player_actions.interaction_allowed = func() -> bool: return not blocked
 	blocked = true
-	assert(not game.player_actions.execute_hotkey(KEY_1), "injected interaction state must block both clicks and shortcuts")
+	assert(not game.player_actions.execute_hotkey(KEY_E), "injected interaction state must block both clicks and shortcuts")
 	blocked = false
 	var next: Dictionary = {}
 	for command in game.player_actions.descriptors:
 		if command.get("symbol", "") == "⋯": next = command
-	assert(game.execute_player_action(next["id"]) and game.player_actions.command_page == 1, "command paging must rebuild without a HUD")
+	assert(next["keycode"] == KEY_B)
+	assert(game.player_actions.execute_hotkey(KEY_B) and game.player_actions.command_page == 1, "command paging must rebuild without a HUD")
+	_assert_grid(game)
+	assert(not game.execute_player_action(old_first_id), "paging must expire previous-page callbacks")
+	assert(game.player_actions.hotkeys[KEY_Q] != old_first_id, "each page must rebind Q to its own first action")
+	var width_before: int = game.formation_width
+	assert(game.player_actions.execute_hotkey(KEY_Q) and game.formation_width == width_before + 1, "Q on page two must change width rather than build a ram")
 	var selected_stop := _command(game, "stop")
-	assert(selected_stop["visible"] and selected_stop["slot"] == 4, "stop must remain available on later pages")
+	assert(selected_stop["visible"] and selected_stop["slot"] == 4 and selected_stop["keycode"] == KEY_T, "stop must remain available on later pages")
 	# Age choice is a presentation request. Catalog execution needs no overlay.
 	game.players[0]["age"] = 1
 	game.selected.assign([worker])
 	game._rebuild_actions()
 	game.player_actions.age_choice_requested.connect(func() -> void: age_requests += 1)
-	assert(game.execute_player_action(_command(game, "age")["id"]) and age_requests == 1)
+	_assert_grid(game)
+	assert(game.player_actions.execute_hotkey(KEY_F) and age_requests == 1, "age advancement belongs to its grid position")
+	assert(game.player_actions.execute_hotkey(KEY_B) and game.build_page == 1)
+	_assert_grid(game)
+	assert(_command(game, "palisade_wall")["keycode"] == KEY_Z)
+	assert(not game.player_actions.has_hotkey(KEY_D) and not game.player_actions.has_hotkey(KEY_F), "empty military-build slots must not retain economy shortcuts")
+	assert(game.player_actions.execute_hotkey(KEY_G) and game.build_page == 0)
+	_assert_grid(game)
 	# Mixed producers retain the union while rejecting invalid owner selection.
 	game.players[0]["age"] = 4
 	var center := _building(game, "town_center")
@@ -63,6 +81,7 @@ func _run() -> void:
 	var stable := _building(game, "stable")
 	game.selected.assign([barracks, stable])
 	game._rebuild_actions()
+	_assert_grid(game)
 	assert(not _command(game, "spearman").is_empty() and not _command(game, "horseman").is_empty(), "mixed selection must include each producer's commands")
 	assert(game.execute_player_action(_command(game, "spearman")["id"]), "production must execute without a HUD")
 	assert(barracks.production_queue.size() == 1 and stable.production_queue.is_empty(), "training must affect only compatible producers")
@@ -102,3 +121,17 @@ func _command(game: Node2D, kind: String) -> Dictionary:
 	for command in game.player_actions.descriptors:
 		if command.get("kind", "") == kind: return command
 	return {}
+
+func _assert_grid(game: Node2D) -> void:
+	var expected := [KEY_Q, KEY_W, KEY_E, KEY_R, KEY_T, KEY_A, KEY_S, KEY_D, KEY_F, KEY_G, KEY_Z, KEY_X, KEY_C, KEY_V, KEY_B]
+	var occupied: Dictionary = {}
+	for command in game.player_actions.descriptors:
+		if not command.get("visible", false):
+			assert(command.get("keycode", KEY_NONE) == KEY_NONE, "hidden commands must have no shortcut")
+			continue
+		if not command.has("id"): continue
+		var keycode: int = expected[command["slot"]]
+		assert(command["keycode"] == keycode, "shortcut must match visible grid position")
+		assert(game.player_actions.hotkeys[keycode] == command["id"])
+		occupied[keycode] = true
+	assert(game.player_actions.hotkeys.size() == occupied.size(), "only occupied visible slots may bind keys")

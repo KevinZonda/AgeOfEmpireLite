@@ -43,7 +43,7 @@ func _run() -> void:
 	game.selected.clear()
 	game.selected.append(infantry)
 	game._rebuild_actions()
-	assert(game.hotkey_buttons.has(KEY_3) and game.hotkey_buttons.has(KEY_4) and game.hotkey_buttons.has(KEY_5))
+	assert(game.hotkey_buttons.has(KEY_W) and game.hotkey_buttons.has(KEY_E) and game.hotkey_buttons.has(KEY_R))
 	game.order_mode = "patrol"
 	assert(game._cursor_state_at(infantry.position) == "patrol")
 	game.order_mode = ""

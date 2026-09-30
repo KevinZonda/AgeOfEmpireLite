@@ -46,11 +46,11 @@ func set_order_mode(value: String) -> void:
 
 func _pan_camera(delta: float) -> void:
 	var direction := Vector2.ZERO
-	if Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT): direction.x -= 1
-	if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT): direction.x += 1
-	if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP): direction.y -= 1
-	if Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN): direction.y += 1
-	# A pointer resting at the screen edge must not cancel or skew WASD movement.
+	if Input.is_key_pressed(KEY_LEFT): direction.x -= 1
+	if Input.is_key_pressed(KEY_RIGHT): direction.x += 1
+	if Input.is_key_pressed(KEY_UP): direction.y -= 1
+	if Input.is_key_pressed(KEY_DOWN): direction.y += 1
+	# A pointer resting at the screen edge must not cancel or skew keyboard movement.
 	if direction == Vector2.ZERO and game.get_window().has_focus():
 		direction = game._edge_pan_direction(game._selection_pointer_screen_position(), game.get_viewport_rect().size)
 	if direction != Vector2.ZERO:
@@ -240,13 +240,13 @@ func _input(event: InputEvent) -> void:
 		game._set_paused(not game.paused)
 		game.get_viewport().set_input_as_handled()
 		return
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F:
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_TAB:
 		game._toggle_global_queue()
 		game.get_viewport().set_input_as_handled()
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_V:
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F3:
 		game._toggle_view_mode(true)
 		game.get_viewport().set_input_as_handled()
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_R and (game.build_mode.ends_with("_wall") or game.build_mode.ends_with("_gate")):
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_SPACE and (game.build_mode.ends_with("_wall") or game.build_mode.ends_with("_gate")):
 		game.wall_vertical = not game.wall_vertical
 		game.queue_redraw()
 		game.get_viewport().set_input_as_handled()
