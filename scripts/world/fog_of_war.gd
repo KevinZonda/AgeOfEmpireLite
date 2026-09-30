@@ -6,6 +6,7 @@ const RememberedBuildingVisual = preload("res://scripts/entities/visuals/remembe
 const UPDATE_INTERVAL := 0.15
 const UNEXPLORED_COLOR := Color(0.035, 0.055, 0.065, 1.0)
 const EXPLORED_COLOR := Color(0.035, 0.055, 0.065, 0.68)
+const SHOW_SAMPLE_OFFSETS := [Vector2(-1, -1), Vector2(0, -1), Vector2(1, -1), Vector2(-1, 0), Vector2(1, 0), Vector2(0, 1)]
 
 var game: Node2D
 var grid_size := Vector2i.ZERO
@@ -19,6 +20,19 @@ var active := false
 var mode := "enabled"
 var spy_timers: Dictionary = {}
 var remembered_buildings: Dictionary = {}
+# Tick-level results, recomputed by update_visibility and read every frame.
+var unit_display_cache: Dictionary = {}
+var _ally_snapshot: Array[PackedByteArray] = []
+var _scout_camps: Dictionary = {}
+var _no_camps: Array[Vector2] = []
+var _circle_templates: Dictionary = {}
+var _mountain_prefix := PackedInt32Array()
+var _mask_data := PackedByteArray()
+var _unit_tick_positions: Dictionary = {}
+var _unit_tick_positions_next: Dictionary = {}
+var _transparent_quad := PackedByteArray([0, 0, 0, 0])
+var _explored_quad := PackedByteArray([EXPLORED_COLOR.r8, EXPLORED_COLOR.g8, EXPLORED_COLOR.b8, EXPLORED_COLOR.a8])
+var _unexplored_quad := PackedByteArray([UNEXPLORED_COLOR.r8, UNEXPLORED_COLOR.g8, UNEXPLORED_COLOR.b8, UNEXPLORED_COLOR.a8])
 
 func setup(game_ref: Node2D) -> void:
 	game = game_ref
@@ -47,6 +61,16 @@ func reset(new_mode := "enabled") -> void:
 		explored.resize(cell_count)
 		explored.fill(1 if mode == "terrain" else 0)
 		explored_cells.append(explored)
+	_ally_snapshot.clear()
+	for owner_id in game.players.size():
+		var snapshot := PackedByteArray()
+		snapshot.resize(cell_count)
+		_ally_snapshot.append(snapshot)
+	unit_display_cache.clear()
+	_scout_camps.clear()
+	_unit_tick_positions.clear()
+	_unit_tick_positions_next.clear()
+	_build_mountain_prefix()
 	mask_texture = null
 	mask_image = null
 	relief_mesh.mesh = null
@@ -71,6 +95,12 @@ func clear() -> void:
 	mask_image = null
 	visible_cells.clear()
 	explored_cells.clear()
+	unit_display_cache.clear()
+	_scout_camps.clear()
+	_unit_tick_positions.clear()
+	_unit_tick_positions_next.clear()
+	_circle_templates.clear()
+	_mountain_prefix = PackedInt32Array()
 
 func _process(delta: float) -> void:
 	if not active or not game.started or game.paused or game.game_over: return
@@ -109,28 +139,42 @@ func can_show_unit(owner_id: int, unit: RtsUnit) -> bool:
 	# rather than only its ground anchor, are inside current vision.
 	var reach := unit.radius() + 16.0
 	var top := maxf(40.0, unit.radius() + 18.0)
-	var offsets := [Vector2(-reach, -top), Vector2(0, -top), Vector2(reach, -top), Vector2(-reach, 0), Vector2(reach, 0), Vector2(0, reach)]
 	var origin := unit.position
+	var iso: bool = game.view_mode_25d
 	var canvas := get_viewport().get_canvas_transform()
-	if game.view_mode_25d: origin += RtsIsoProjection.ground_lift(game, unit.position)
-	for offset in offsets:
-		var point: Vector2 = origin + (RtsIsoProjection.world_delta(canvas, offset * game.camera.zoom.x) if game.view_mode_25d else offset)
+	if iso: origin += RtsIsoProjection.ground_lift(game, unit.position)
+	for sample in SHOW_SAMPLE_OFFSETS:
+		var offset := Vector2(sample.x * reach, sample.y * (top if sample.y < 0.0 else reach))
+		var point: Vector2 = origin + (RtsIsoProjection.world_delta(canvas, offset * game.camera.zoom.x) if iso else offset)
 		if not can_see(owner_id, point): return false
 	return true
 
 func update_unit_display(unit: RtsUnit) -> void:
-	unit.visible = unit.garrisoned_in == null and (unit.owner_id == 0 or can_show_unit(0, unit))
+	var shown := unit.owner_id == 0 or can_show_unit(0, unit)
+	if unit.owner_id != 0: unit_display_cache[unit.get_instance_id()] = shown
+	unit.visible = unit.garrisoned_in == null and shown
 
 func update_building_display(building: RtsBuilding) -> void:
 	building.visible = building.owner_id == 0 or can_see(0, building.position)
 
+# Runs every frame between ticks; reuses the tick-level visibility results
+# instead of recomputing sight checks for every enemy unit. Units first seen
+# after the last tick (fresh spawns) are computed once and cached.
 func _update_enemy_unit_display() -> void:
 	var selection_may_change := false
 	for unit in game.units:
 		if not is_instance_valid(unit) or unit.is_queued_for_deletion() or unit.owner_id == 0: continue
-		var was_visible: bool = unit.visible
-		update_unit_display(unit)
-		if was_visible and not unit.visible and game.selected.has(unit): selection_may_change = true
+		var key: int = unit.get_instance_id()
+		var shown: bool
+		if unit_display_cache.has(key):
+			shown = unit_display_cache[key]
+		else:
+			shown = can_show_unit(0, unit)
+			unit_display_cache[key] = shown
+		var should_show := unit.garrisoned_in == null and shown
+		if unit.visible == should_show: continue
+		if unit.visible and game.selected.has(unit): selection_may_change = true
+		unit.visible = should_show
 	if selection_may_change: game._prune_hidden_enemy_selection()
 
 func is_explored(owner_id: int, point: Vector2) -> bool:
@@ -148,17 +192,20 @@ func reveal_enemy_villagers(owner_id: int, duration: float) -> void:
 
 func update_visibility() -> void:
 	if not active: return
-	game.navigation.invalidate_spatial_index()
-	for owner_id in game.players.size():
+	_heal_moved_unit_buckets()
+	_collect_scout_camps()
+	var player_count: int = game.players.size()
+	for owner_id in player_count:
 		var visible: PackedByteArray = visible_cells[owner_id]
 		visible.fill(0)
+		var camps: Array[Vector2] = _scout_camps.get(owner_id, _no_camps)
 		for unit in game.units:
 			if not is_instance_valid(unit) or unit.is_queued_for_deletion() or unit.owner_id != owner_id or unit.garrisoned_in != null: continue
 			var radius := 360.0 if unit.kind == "scout" else 185.0 if unit.kind == "villager" else 250.0
 			if unit.kind == "scout" and game.civilizations[owner_id] == "Chinese" and game.players[owner_id].get("dynasty", "") == "Tang": radius += 70.0
 			if game.world_map.is_high_ground(unit.position): radius += 65.0
-			for camp in game.buildings:
-				if is_instance_valid(camp) and camp.owner_id == owner_id and camp.kind == "scout_camp" and camp.position.distance_to(unit.position) <= 180.0:
+			for camp_position in camps:
+				if camp_position.distance_squared_to(unit.position) <= 32400.0:
 					radius *= 1.3
 					break
 			_reveal_circle(visible, unit.position, radius)
@@ -170,23 +217,33 @@ func update_visibility() -> void:
 		if float(spy_timers.get(owner_id, 0.0)) > 0.0:
 			for enemy in game.units:
 				if is_instance_valid(enemy) and enemy.kind == "villager" and game.is_enemy(owner_id, enemy.owner_id): _reveal_circle(visible, enemy.position, 42.0)
-		visible_cells[owner_id] = visible
 	# Teams share current vision, while each player's explored map persists.
-	var own_visibility := visible_cells.duplicate(true)
-	for owner_id in game.players.size():
+	var shares_vision := false
+	for owner_id in player_count:
+		for ally_id in player_count:
+			if ally_id != owner_id and not game.is_enemy(owner_id, ally_id): shares_vision = true
+	if shares_vision:
+		if _ally_snapshot.size() != player_count:
+			_ally_snapshot.clear()
+			for owner_id in player_count:
+				var snapshot := PackedByteArray()
+				snapshot.resize(grid_size.x * grid_size.y)
+				_ally_snapshot.append(snapshot)
+		for owner_id in player_count:
+			var source: PackedByteArray = visible_cells[owner_id]
+			var snapshot: PackedByteArray = _ally_snapshot[owner_id]
+			for index in source.size(): snapshot[index] = source[index]
+	for owner_id in player_count:
 		var visible: PackedByteArray = visible_cells[owner_id]
-		for ally_id in game.players.size():
-			if ally_id == owner_id or game.is_enemy(owner_id, ally_id): continue
-			var ally_visible: PackedByteArray = own_visibility[ally_id]
-			for index in visible.size():
-				if ally_visible[index] != 0: visible[index] = 1
-		visible_cells[owner_id] = visible
-	for owner_id in game.players.size():
-		var visible: PackedByteArray = visible_cells[owner_id]
+		if shares_vision:
+			for ally_id in player_count:
+				if ally_id == owner_id or game.is_enemy(owner_id, ally_id): continue
+				var ally_visible: PackedByteArray = _ally_snapshot[ally_id]
+				for index in visible.size():
+					if ally_visible[index] != 0: visible[index] = 1
 		var explored: PackedByteArray = explored_cells[owner_id]
 		for index in visible.size():
 			if visible[index] != 0: explored[index] = 1
-		explored_cells[owner_id] = explored
 	_update_building_memory()
 	_update_entity_visibility()
 	_update_mask()
@@ -194,20 +251,105 @@ func update_visibility() -> void:
 	queue_redraw()
 	if game.minimap != null: game.minimap.queue_redraw()
 
+func _collect_scout_camps() -> void:
+	for positions in _scout_camps.values(): positions.clear()
+	for building in game.buildings:
+		if not is_instance_valid(building) or building.is_queued_for_deletion() or building.kind != "scout_camp": continue
+		if not _scout_camps.has(building.owner_id): _scout_camps[building.owner_id] = [] as Array[Vector2]
+		_scout_camps[building.owner_id].append(building.position)
+
+# Position writes that bypass navigation.unit_moved (teleports, garrison code,
+# tests) leave the spatial index stale; click picking and stealth detection read
+# it right after a tick. Detect such moves against the last tick's snapshot and
+# invalidate only then, so quiet ticks never pay for a full index rebuild.
+func _heal_moved_unit_buckets() -> void:
+	var moved := false
+	_unit_tick_positions_next.clear()
+	for unit in game.units:
+		if not is_instance_valid(unit) or unit.is_queued_for_deletion(): continue
+		var id: int = unit.get_instance_id()
+		_unit_tick_positions_next[id] = unit.position
+		if _unit_tick_positions.get(id, unit.position) != unit.position: moved = true
+	var swap := _unit_tick_positions
+	_unit_tick_positions = _unit_tick_positions_next
+	_unit_tick_positions_next = swap
+	if moved: game.navigation.invalidate_spatial_index()
+
+# Stamps whole rows of a cached circle template. The exact distance test still
+# gates every cell; line of sight only runs when a mountain lies inside the
+# circle's bounding square (an O(1) prefix-sum query), keeping mountain
+# occlusion identical while open terrain costs one write per cell.
 func _reveal_circle(visible: PackedByteArray, origin: Vector2, radius: float) -> void:
-	var terrain_map: RtsWorldMap = game.world_map
-	var first := terrain_map.cell_at(origin - Vector2.ONE * radius)
-	var last := terrain_map.cell_at(origin + Vector2.ONE * radius)
-	var source_cell := terrain_map.cell_at(origin)
-	var limit := radius + RtsWorldMap.CELL_SIZE * 0.45
-	for y in range(first.y, last.y + 1):
-		for x in range(first.x, last.x + 1):
-			var cell := Vector2i(x, y)
-			if visible[_index(cell)] != 0: continue
-			if origin.distance_squared_to(terrain_map.cell_center(cell)) > limit * limit: continue
-			if _line_of_sight(source_cell, cell): visible[_index(cell)] = 1
+	var cell_size := float(RtsWorldMap.CELL_SIZE)
+	var limit := radius + cell_size * 0.45
+	var limit_sq := limit * limit
+	var band := ceili(limit / cell_size)
+	var rows := _circle_template(band)
+	var width := grid_size.x
+	var height := grid_size.y
+	var source: Vector2i = game.world_map.cell_at(origin)
+	var sx := source.x
+	var sy := source.y
+	var ox := origin.x
+	var oy := origin.y
+	var with_los := _mountains_within(sx, sy, band)
+	for i in range(0, rows.size(), 3):
+		var y := sy + rows[i]
+		if y < 0 or y >= height: continue
+		var dy_world := oy - (y * cell_size + cell_size * 0.5)
+		var row_base := y * width
+		var x0 := maxi(0, sx + rows[i + 1])
+		var x1 := mini(width - 1, sx + rows[i + 2])
+		for x in range(x0, x1 + 1):
+			var index := row_base + x
+			if visible[index] != 0: continue
+			var dx_world := ox - (x * cell_size + cell_size * 0.5)
+			if dx_world * dx_world + dy_world * dy_world > limit_sq: continue
+			if not with_los or _line_of_sight(source, Vector2i(x, y)): visible[index] = 1
+
+# Relative row spans (dy, dx0, dx1 triples) covering every cell whose center
+# can fall inside the reveal limit for a source anywhere in its own cell.
+func _circle_template(band: int) -> PackedInt32Array:
+	if _circle_templates.has(band): return _circle_templates[band]
+	var cell_size := float(RtsWorldMap.CELL_SIZE)
+	var reach := band * cell_size + 36.0
+	var rows := PackedInt32Array()
+	for dy in range(-band, band + 1):
+		var dy_world := float(dy) * cell_size
+		var remaining := reach * reach - dy_world * dy_world
+		if remaining < 0.0: continue
+		var dx := floori(sqrt(remaining) / cell_size)
+		rows.append_array(PackedInt32Array([dy, -dx, dx]))
+	_circle_templates[band] = rows
+	return rows
+
+func _build_mountain_prefix() -> void:
+	var width := grid_size.x
+	var height := grid_size.y
+	var stride := width + 1
+	_mountain_prefix.resize(stride * (height + 1))
+	_mountain_prefix.fill(0)
+	var cells: PackedByteArray = game.world_map.cells
+	for y in range(1, height + 1):
+		var row_total := 0
+		var row := y * stride
+		var above := row - stride
+		var cells_row := (y - 1) * width
+		for x in range(1, width + 1):
+			if cells[cells_row + x - 1] == RtsWorldMap.Terrain.MOUNTAIN: row_total += 1
+			_mountain_prefix[row + x] = _mountain_prefix[above + x] + row_total
+
+func _mountains_within(cx: int, cy: int, extent: int) -> bool:
+	var x0 := maxi(0, cx - extent)
+	var y0 := maxi(0, cy - extent)
+	var x1 := mini(grid_size.x - 1, cx + extent)
+	var y1 := mini(grid_size.y - 1, cy + extent)
+	var stride := grid_size.x + 1
+	return _mountain_prefix[(y1 + 1) * stride + x1 + 1] - _mountain_prefix[y0 * stride + x1 + 1] - _mountain_prefix[(y1 + 1) * stride + x0] + _mountain_prefix[y0 * stride + x0] > 0
 
 func _line_of_sight(from: Vector2i, to: Vector2i) -> bool:
+	var cells: PackedByteArray = game.world_map.cells
+	var width := grid_size.x
 	var x := from.x
 	var y := from.y
 	var dx := absi(to.x - x)
@@ -224,7 +366,7 @@ func _line_of_sight(from: Vector2i, to: Vector2i) -> bool:
 			error += dx
 			y += step_y
 		if x == to.x and y == to.y: return true
-		if game.world_map.cells[_index(Vector2i(x, y))] == RtsWorldMap.Terrain.MOUNTAIN: return false
+		if cells[y * width + x] == RtsWorldMap.Terrain.MOUNTAIN: return false
 	return true
 
 func _update_building_memory() -> void:
@@ -275,6 +417,7 @@ func _clear_building_memory() -> void:
 	remembered_buildings.clear()
 
 func _update_entity_visibility() -> void:
+	unit_display_cache.clear()
 	for unit in game.units:
 		if not is_instance_valid(unit) or unit.is_queued_for_deletion(): continue
 		update_unit_display(unit)
@@ -293,19 +436,33 @@ func _update_entity_visibility() -> void:
 		if is_instance_valid(relic): relic.visible = relic.available() and can_see(0, relic.position)
 
 func _update_mask() -> void:
-	var image := Image.create(grid_size.x, grid_size.y, false, Image.FORMAT_RGBA8)
-	var visible: PackedByteArray = visible_cells[0]
-	var explored: PackedByteArray = explored_cells[0]
-	for y in grid_size.y:
-		for x in grid_size.x:
-			var index := _index(Vector2i(x, y))
-			var color := Color.TRANSPARENT if visible[index] != 0 or mode == "terrain" else EXPLORED_COLOR if explored[index] != 0 else UNEXPLORED_COLOR
-			image.set_pixel(x, y, color)
-	if mask_texture == null:
-		mask_texture = ImageTexture.create_from_image(image)
+	var width := grid_size.x
+	var height := grid_size.y
+	var count := width * height
+	if _mask_data.size() != count * 4:
+		_mask_data.resize(count * 4)
+		mask_image = null
+	var data := _mask_data
+	if mode == "terrain":
+		data.fill(0)
 	else:
-		mask_texture.update(image)
-	mask_image = image
+		var visible: PackedByteArray = visible_cells[0]
+		var explored: PackedByteArray = explored_cells[0]
+		for index in count:
+			var base := index * 4
+			var quad := _transparent_quad if visible[index] != 0 else _explored_quad if explored[index] != 0 else _unexplored_quad
+			data[base] = quad[0]
+			data[base + 1] = quad[1]
+			data[base + 2] = quad[2]
+			data[base + 3] = quad[3]
+	if mask_image == null:
+		mask_image = Image.create_from_data(width, height, false, Image.FORMAT_RGBA8, data)
+	else:
+		mask_image.set_data(width, height, false, Image.FORMAT_RGBA8, data)
+	if mask_texture == null:
+		mask_texture = ImageTexture.create_from_image(mask_image)
+	else:
+		mask_texture.update(mask_image)
 	game.world_map.set_occlusion_fog(mask_texture)
 	relief_mesh.texture = mask_texture
 	if game.view_mode_25d and relief_mesh.mesh == null: update_projection()
