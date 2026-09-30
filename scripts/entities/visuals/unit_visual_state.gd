@@ -43,7 +43,8 @@ var show_health_bar := false
 static func capture(unit, existing_state = null):
 	var result = existing_state if existing_state != null else new()
 	result.kind = unit.kind
-	result.tags = unit.stats.get("tags", []).duplicate()
+	# Snapshots are read-only; share the tags array instead of allocating a copy.
+	result.tags = unit.stats.get("tags", [])
 	result.radius = unit.radius()
 	result.player_color = unit.game.player_color(unit.owner_id)
 	result.update_view(unit.game)
@@ -78,7 +79,8 @@ static func capture(unit, existing_state = null):
 			result.facing_direction = Vector2.RIGHT.rotated(round(fishing_heading.angle() / (PI / 4.0)) * (PI / 4.0))
 	result.hunting = unit.kind == "villager" and (unit.visual_action == "hunt" or unit.order == "gather" and is_instance_valid(unit.target) and unit.target is RtsResource and unit.target.appearance == "deer" and unit.target.wildlife_hp > 0.0)
 	result.hunt_draw = clampf(1.0 - unit.hunt_windup / unit.UnitWork.HUNT_WINDUP, 0.0, 1.0) if unit.hunt_windup >= 0.0 else 0.0
-	result.hit_flash_timer = unit.hit_flash_timer
+	# The hit flash is a self_modulate tint on the unit; no redraw-time ring.
+	result.hit_flash_timer = 0.0
 	result.hp = unit.hp
 	result.max_hp = unit.max_hp
 	result.swing = unit._action_swing()

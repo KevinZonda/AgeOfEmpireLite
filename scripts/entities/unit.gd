@@ -421,7 +421,12 @@ func _process(delta: float) -> void:
 	_tick_visual(delta)
 	if hit_flash_timer > 0.0:
 		hit_flash_timer = maxf(0.0, hit_flash_timer - delta)
-		queue_redraw()
+		# Tint instead of repainting the whole figure every frame of the flash.
+		if hit_flash_timer > 0.0:
+			var flash := hit_flash_timer / 0.18
+			self_modulate = Color(1.0 + 0.9 * flash, 1.0 + 0.75 * flash, 1.0 + 0.4 * flash)
+		else:
+			self_modulate = Color.WHITE
 	if field_build_remaining > 0.0: return
 	if _tick_status(delta): return
 	# Garrison entry and units stationed on walls intentionally use the building
