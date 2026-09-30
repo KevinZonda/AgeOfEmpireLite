@@ -31,6 +31,8 @@ func _run() -> void:
 	var crossed := 0
 	var furthest_route_index := group.route_index
 	for step in 950:
+		# Manual ticks include game-frame admission and recovery services.
+		game.navigation.tick_jobs(true, step)
 		group.last_frame = -1
 		for unit in squad:
 			if unit.order != "idle": unit._process(0.05)

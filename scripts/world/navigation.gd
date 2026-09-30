@@ -10,6 +10,7 @@ const MAX_CORNER_ATTACHMENTS := 64
 const MAX_RANGE_CORNER_ATTEMPTS := 4
 const MAX_RANGE_SEGMENTS := 8192
 const RecoveryKernel = preload("res://scripts/world/navigation_recovery.gd")
+const SearchKernel = preload("res://scripts/world/navigation_search_kernel.gd")
 const GeometryCache = preload("res://scripts/world/navigation_cache.gd")
 const SpatialIndex = preload("res://scripts/world/navigation_spatial_index.gd")
 var geometry_cache := GeometryCache.new()
@@ -254,6 +255,7 @@ func resource_moved(resource: RtsResource, previous_position: Vector2) -> void:
 		# stalled frames whenever a stuck order retried. Collision queries read
 		# live positions through the spatial index, so a bucket move suffices.
 		spatial_index.resource_moved(resource, previous_position)
+		geometry_cache.wildlife_moved(previous_position, resource.position, resource.radius)
 		return
 	invalidate_obstacles(false)
 
@@ -348,74 +350,15 @@ func _safe_point_path(grid: AStarGrid2D, start: Vector2i, end: Vector2i, unit: R
 		var components: PackedInt32Array = grid_components[key]
 		if components[start.y * grid.region.size.x + start.x] != components[end.y * grid.region.size.x + end.x]: return PackedVector2Array()
 	var radius := unit.radius() if unit != null else CLEARANCE
-	# Two clear cell centers can still have a resource between them. Repair
-	# that edge conservatively for this search, restoring the shared grid after.
-	var blocked: Array[Vector2i] = []
-	var result := PackedVector2Array()
-	for attempt in 32:
-		var raw := _point_path(grid, start, end)
-		if raw.is_empty():
-			# Temporary edge-repair blocks must never enter a shared cache.
-			if blocked.is_empty(): _components_for(grid)
-			break
-		var invalid := -1
-		for i in range(1, raw.size()):
-			if not _static_segment_clear(raw[i - 1], raw[i], radius, unit):
-				invalid = i
-				break
-		if invalid < 0:
-			result = raw
-			break
-		var cell := Vector2i(((raw[invalid] - grid.offset) / grid.cell_size).round())
-		if cell == end: cell = Vector2i(((raw[invalid - 1] - grid.offset) / grid.cell_size).round())
-		if cell == start: break
-		grid.set_point_solid(cell)
-		blocked.append(cell)
-	for cell in blocked: grid.set_point_solid(cell, false)
-	return result
+	return SearchKernel.safe_point_path(grid, start, end, _point_path, _static_segment_clear.bind(radius, unit), _components_for)
 
 func _components_for(grid: AStarGrid2D, cache := true) -> PackedInt32Array:
 	var key := grid.get_instance_id()
 	if cache and grid_components.has(key): return grid_components[key]
 	var started := Time.get_ticks_usec() if profiling_enabled else 0
-	# Diagonals cannot cross blocked corners, so four-neighbor components are
-	# also valid for the eight-neighbor search. Reject disconnected candidates
-	# once, rather than exhausting A* for every worker/interaction sample.
-	var size := grid.region.size
-	var labels := PackedInt32Array()
-	labels.resize(size.x * size.y)
-	labels.fill(-1)
-	var queue := PackedInt32Array()
-	queue.resize(labels.size())
-	var component := 0
-	var sizes := PackedInt32Array()
-	for index in labels.size():
-		if labels[index] != -1: continue
-		var origin := Vector2i(index % size.x, index / size.x)
-		if grid.is_point_solid(origin):
-			labels[index] = -2
-			continue
-		labels[index] = component
-		queue[0] = index
-		var head := 0
-		var tail := 1
-		while head < tail:
-			var current := queue[head]
-			head += 1
-			var cell := Vector2i(current % size.x, current / size.x)
-			for offset in [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]:
-				var next: Vector2i = cell + offset
-				if next.x < 0 or next.y < 0 or next.x >= size.x or next.y >= size.y: continue
-				var neighbor := next.y * size.x + next.x
-				if labels[neighbor] != -1: continue
-				if grid.is_point_solid(next):
-					labels[neighbor] = -2
-					continue
-				labels[neighbor] = component
-				queue[tail] = neighbor
-				tail += 1
-		sizes.append(tail)
-		component += 1
+	var components := SearchKernel.components_for(grid)
+	var labels: PackedInt32Array = components.labels
+	var sizes: PackedInt32Array = components.sizes
 	if cache:
 		grid_components[key] = labels
 		grid_component_sizes[key] = sizes
@@ -575,7 +518,8 @@ func _obstacle_corner_path(from: Vector2, to: Vector2, unit: RtsUnit) -> PackedV
 	# Corner edges use STRICT static sweeps. If an endpoint already overlaps
 	# a resource/building, no such edge can leave/enter it. Ordinary coarse and
 	# fine routing still handle legal overlap escape before this fallback.
-	if not _static_segment_clear(from, from, unit.radius(), unit, false) or not _static_segment_clear(to, to, unit.radius(), unit, false): return PackedVector2Array()
+	var key := _grid_key(unit)
+	if not _corner_endpoint_clear(from, unit, key) or not _corner_endpoint_clear(to, unit, key): return PackedVector2Array()
 	# Strict corner edges are symmetric. An enclosed destination can have a
 	# tiny component while the origin sees most of the map: search from the
 	# smaller side instead of exhausting the whole outside visibility graph.
@@ -588,7 +532,6 @@ func _obstacle_corner_path(from: Vector2, to: Vector2, unit: RtsUnit) -> PackedV
 	# Even a fine lattice can miss a legal 1px-wide band between expanded
 	# footprints or terrain and a resource. Boundary corners provide portals
 	# independent of the lattice; every connecting edge still uses a full sweep.
-	var key := _grid_key(unit)
 	if not corner_graphs.has(key):
 		var corners := PackedVector2Array()
 		for obstacle in _entities.buildings:
@@ -596,7 +539,7 @@ func _obstacle_corner_path(from: Vector2, to: Vector2, unit: RtsUnit) -> PackedV
 			if _gate_passable(obstacle, unit.owner_id): continue
 			var bounds := Rect2(obstacle.position - obstacle.size() * 0.5, obstacle.size()).grow(unit.radius() + 0.05)
 			for point in [bounds.position, bounds.end, Vector2(bounds.position.x, bounds.end.y), Vector2(bounds.end.x, bounds.position.y)]:
-				if not corners.has(point) and can_occupy(point, unit.radius(), unit, false, false): corners.append(point)
+				if not corners.has(point) and _can_occupy(point, unit.radius(), unit, false, Vector2.INF, false, true): corners.append(point)
 		var naval: bool = unit.stats.get("tags", []).has("naval")
 		for y in world_map.grid_size.y:
 			for x in world_map.grid_size.x:
@@ -604,73 +547,29 @@ func _obstacle_corner_path(from: Vector2, to: Vector2, unit: RtsUnit) -> PackedV
 				if _terrain_passable(terrain, naval): continue
 				var bounds := Rect2(Vector2(x, y) * RtsWorldMap.CELL_SIZE, Vector2.ONE * RtsWorldMap.CELL_SIZE).grow(unit.radius() + 0.05)
 				for point in [bounds.position, bounds.end, Vector2(bounds.position.x, bounds.end.y), Vector2(bounds.end.x, bounds.position.y)]:
-					if not corners.has(point) and can_occupy(point, unit.radius(), unit, false, false): corners.append(point)
+					if not corners.has(point) and _can_occupy(point, unit.radius(), unit, false, Vector2.INF, false, true): corners.append(point)
 		corner_graphs[key] = {"points": corners, "edges": {}, "attachments": {}}
 	var graph: Dictionary = corner_graphs[key]
-	# A range query tries many destinations from the SAME origin. Rechecking
-	# every origin-to-corner sweep made an unreachable unit block a full frame.
-	# These strict static sweeps depend on geometry/body type, not unit traffic.
-	for anchor in [from, to]:
-		if graph["attachments"].has(anchor):
-			var existing: Dictionary = graph["attachments"][anchor]
-			graph["attachments"].erase(anchor)
-			graph["attachments"][anchor] = existing
-			continue
-		if graph["attachments"].size() >= MAX_CORNER_ATTACHMENTS:
-			graph["attachments"].erase(graph["attachments"].keys()[0])
-		graph["attachments"][anchor] = {}
-	var points := PackedVector2Array([from, to])
-	points.append_array(graph["points"])
-	var costs := PackedFloat64Array()
-	costs.resize(points.size())
-	costs.fill(INF)
-	costs[0] = 0.0
-	var closed := PackedByteArray()
-	closed.resize(points.size())
-	var parents := PackedInt32Array()
-	parents.resize(points.size())
-	parents.fill(-1)
-	# Lazy visibility A*: only test edges out of expanded nodes; keep static
-	# corner-to-corner results for other workers sharing the same obstacles.
-	while true:
-		var current := -1
-		var best := INF
-		for i in points.size():
-			if closed[i]: continue
-			var estimate := costs[i] + points[i].distance_to(to)
-			if estimate < best:
-				best = estimate
-				current = i
-		if current < 0: return PackedVector2Array()
-		if current == 1:
-			var result := PackedVector2Array()
-			while current >= 0:
-				result.append(points[current])
-				current = parents[current]
-			result.reverse()
-			if reverse_search: result.reverse()
-			return result
-		closed[current] = 1
-		for next in points.size():
-			if closed[next]: continue
-			var cost := costs[current] + points[current].distance_to(points[next])
-			if cost >= costs[next] or cost + points[next].distance_to(to) > costs[1]: continue
-			var edge := Vector2i(mini(current, next), maxi(current, next))
-			var clear: bool
-			if edge.x >= 2 and graph["edges"].has(edge): clear = graph["edges"][edge]
-			elif edge.x < 2 and edge.y >= 2:
-				var attachment: Dictionary = graph["attachments"][points[edge.x]]
-				if not attachment.has(edge.y):
-					attachment[edge.y] = _static_segment_clear(points[edge.x], points[edge.y], unit.radius(), unit, false)
-				clear = attachment[edge.y]
-			else:
-				clear = _static_segment_clear(points[current], points[next], unit.radius(), unit, false)
-				if edge.x >= 2: graph["edges"][edge] = clear
-			if clear:
-				costs[next] = cost
-				parents[next] = current
-	# GDScript requires a terminal return even though the loop exits above.
-	return PackedVector2Array()
+	return SearchKernel.corner_path(from, to, graph, _static_segment_clear.bind(unit.radius(), unit, false), reverse_search, MAX_CORNER_ATTACHMENTS)
+
+func _corner_endpoint_clear(point: Vector2, unit: RtsUnit, key: Vector3) -> bool:
+	# Endpoint occupancy uses the same strict predicate as corner edges. Range
+	# candidates share an origin, so cache both acceptance and rejection before
+	# creating a world corner graph. Geometry resets it; wildlife movement
+	# invalidates only nearby endpoints along with affected visibility segments.
+	if not geometry_cache.corner_endpoint_validity.has(key): geometry_cache.corner_endpoint_validity[key] = {}
+	var endpoints: Dictionary = geometry_cache.corner_endpoint_validity[key]
+	if endpoints.has(point):
+		var existing: bool = endpoints[point]
+		endpoints.erase(point)
+		endpoints[point] = existing
+		return existing
+	var clear := _static_segment_clear(point, point, unit.radius(), unit, false)
+	if endpoints.size() >= MAX_CORNER_ATTACHMENTS: endpoints.erase(endpoints.keys()[0])
+	endpoints[point] = clear
+	if geometry_cache.corner_endpoint_bounds.has(key): geometry_cache.corner_endpoint_bounds[key] = geometry_cache.corner_endpoint_bounds[key].expand(point)
+	else: geometry_cache.corner_endpoint_bounds[key] = Rect2(point, Vector2.ZERO)
+	return clear
 
 func _corner_search_from_target(from: Vector2, to: Vector2, unit: RtsUnit) -> bool:
 	var key := _grid_key(unit)
@@ -900,35 +799,10 @@ func _search_path_to_range(from: Vector2, target: Vector2, reach: float, unit: R
 	_ensure_current()
 	var boarding := unit.order == "board_transport"
 	if from.distance_to(target) <= reach + 0.5 and (not boarding or boarding_clear(from, target, unit)): return PackedVector2Array([from])
-	var direction := (from - target).normalized()
-	if direction.is_zero_approx(): direction = Vector2.RIGHT
-	var approaches: Array[Vector2] = []
-	for offset in [0.0, PI / 4.0, -PI / 4.0, PI / 2.0, -PI / 2.0, 3.0 * PI / 4.0, -3.0 * PI / 4.0, PI]:
-		approaches.append(target + direction.rotated(offset) * maxf(0.0, reach - 0.25))
-	# A square footprint can leave only tiny usable arcs in the interaction
-	# disk. Relative angles alone miss all four sides when approaching obliquely.
-	# Include the boundary tolerance used by _move_toward so contact repairs
-	# do not request points a quarter pixel INSIDE the building's collision box.
-	var limit := reach + 0.25
-	for i in 32:
-		approaches.append(target + Vector2.from_angle(TAU * i / 32.0) * limit)
+	var footprints: Array[Rect2] = []
 	for obstacle in nearby_buildings(target, reach + unit.radius()):
-		var bounds := Rect2(obstacle.position - obstacle.size() * 0.5, obstacle.size()).grow(unit.radius() + 0.05)
-		for x in [bounds.position.x, bounds.end.x]:
-			var dx: float = absf(x - target.x)
-			if dx > limit: continue
-			var span := sqrt(maxf(0.0, limit * limit - dx * dx))
-			var low := maxf(bounds.position.y, target.y - span)
-			var high := minf(bounds.end.y, target.y + span)
-			if low <= high: approaches.append(Vector2(x, clampf(from.y, low, high)))
-		for y in [bounds.position.y, bounds.end.y]:
-			var dy: float = absf(y - target.y)
-			if dy > limit: continue
-			var span := sqrt(maxf(0.0, limit * limit - dy * dy))
-			var low := maxf(bounds.position.x, target.x - span)
-			var high := minf(bounds.end.x, target.x + span)
-			if low <= high: approaches.append(Vector2(clampf(from.x, low, high), y))
-	approaches.sort_custom(func(a: Vector2, b: Vector2) -> bool: return from.distance_squared_to(a) < from.distance_squared_to(b))
+		footprints.append(Rect2(obstacle.position - obstacle.size() * 0.5, obstacle.size()))
+	var approaches := SearchKernel.range_approaches(from, target, reach, unit.radius(), footprints)
 	var candidates: Array[Vector2] = []
 	# Consider all clear approaches before paying for a detour. A blocked
 	# nearest arc must not trigger a full fine-grid build when another side
@@ -1229,7 +1103,7 @@ func can_occupy(point: Vector2, radius: float, self_unit: RtsUnit, include_units
 	_record_profile(&"can_occupy", started)
 	return result
 
-func _can_occupy(point: Vector2, radius: float, self_unit: RtsUnit, include_units: bool, escape_from := Vector2.INF, allow_overlap_escape := true) -> bool:
+func _can_occupy(point: Vector2, radius: float, self_unit: RtsUnit, include_units: bool, escape_from := Vector2.INF, allow_overlap_escape := true, static_resources_only := false) -> bool:
 	var naval: bool = self_unit != null and self_unit.stats.get("tags", []).has("naval")
 	if not _terrain_can_occupy(point, radius, naval): return false
 	_ensure_spatial_index()
@@ -1250,6 +1124,7 @@ func _can_occupy(point: Vector2, radius: float, self_unit: RtsUnit, include_unit
 			var cell := Vector2i(x, y)
 			for resource in resources_by_cell.get(cell, []):
 				if not is_instance_valid(resource) or resource.is_queued_for_deletion(): continue
+				if static_resources_only and _is_mobile_wildlife(resource): continue
 				var distance_limit: float = radius + resource.radius
 				var distance_to_resource := point.distance_squared_to(resource.position)
 				if distance_to_resource < distance_limit * distance_limit:

@@ -52,7 +52,7 @@ func _run() -> void:
 				context.add_child(unit)
 				var state = VisualState.capture(unit)
 				await process_frame
-				await RenderingServer.frame_post_draw
+				RenderingServer.force_draw()
 				var live := viewport.get_texture().get_image()
 				var snapshot := SnapshotVisual.new()
 				snapshot.state = state
@@ -61,7 +61,7 @@ func _run() -> void:
 				unit.free()
 				context.add_child(snapshot)
 				await process_frame
-				await RenderingServer.frame_post_draw
+				RenderingServer.force_draw()
 				var remembered := viewport.get_texture().get_image()
 				assert(live.get_data() == remembered.get_data(), "snapshot rendering differs for %s mode=%d pose=%d" % [kind, mode, pose])
 				snapshot.free()

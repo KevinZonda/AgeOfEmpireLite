@@ -25,7 +25,8 @@
 | `ui/match_report_ui.gd` / `unit_stat_text.gd` | 战报／回放界面；HUD 和单位图鉴共享攻击属性文字 |
 | `entities/visuals/*_visual.gd` / `*_visual_state.gd` | 绘制和视觉快照；不依赖生产、订单或活实体 |
 | `world/world_map.gd` / `world_map_renderer.gd` | 公共地形生成阶段、完整地图后续生成与地形绘制 |
-| `world/navigation.gd` | 导航兼容入口与碰撞／路线查询；装配缓存、空间索引和调度器 |
+| `world/navigation.gd` | 导航兼容入口与碰撞／路线查询；装配缓存、空间索引、搜索内核和调度器 |
+| `world/navigation_search_kernel.gd` | 不读取场景的连通分量、安全边修复、拐角 A* 与射程候选计算；共享网格和活体回调仍只在主线程使用 |
 | `world/navigation_cache.gd` / `navigation_spatial_index.gd` | 静态网格、连通分量、几何版本及动态实体索引，各自拥有缓存状态 |
 | `world/navigation_route_jobs.gd` / `navigation_jobs.gd` | 普通／射程主线程路线预算与异步拥堵恢复；取消、验证及结果回收 |
 | `world/fog_of_war.gd` | 迷雾；建筑记忆使用显示节点和冻结快照 |
@@ -51,7 +52,7 @@
 python3 tools/check_navigation.py --suite refactor --output /tmp/refactor-checks
 ```
 
-默认仍只运行导航回归；`--tests` 可指定子集。集成套件覆盖对局状态、共享规则、单位命令与技能、UI、AI、地图、迷雾及导航。`unit_snapshot_rendering`、农田／地标等截图测试需要真实渲染驱动，应单独运行。`hud_resolution` 的布局断言及 `navigation_range_corner_poc` 的负路径缓存性能断言在基线中也失败，单独记录，不归入通过的集成套件。需直接加载字体的 PoC 还需要引擎生成的字体导入缓存。
+默认仍只运行导航回归；`--tests` 可指定子集。集成套件覆盖对局状态、共享规则、单位命令与技能、UI、AI、地图、迷雾及导航。`unit_snapshot_rendering`、农田／地标等截图测试需要真实渲染驱动，应单独运行。`hud_resolution` 的布局断言在基线中失败，单独记录，不归入通过的集成套件。`navigation_range_corner_poc` 的重复端点验证已修复并纳入套件；导航内核与几何测试分别新增330与113项检查。需直接加载字体的 PoC 还需要引擎生成的字体导入缓存。
 
 2026-09-30 四项重构的实现提交、89 个集成测试和 11 个预算模式回归结果见 [验证记录](../docs/refactor-validation.md)。
 
