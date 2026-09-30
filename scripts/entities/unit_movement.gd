@@ -4,16 +4,19 @@ extends RefCounted
 const ROUTE_STALL_SECONDS := 0.9
 const ROUTE_RETRY_BASE := 0.7
 const ROUTE_RETRY_MAX := 4.0
-# Inline searches (route budget queue disabled) share a per-frame cost cap so a
-# mass order spreads pathfinding across simulation steps. A unit denied by the
-# cap retries shortly; after a few denials it searches anyway so drivers that
-# never advance the navigation frame (headless probes) cannot starve it.
-const SYNC_ROUTE_FRAME_BUDGET_US := 8000
+# Inline searches (route budget queue disabled) share a cost cap so a mass
+# order spreads pathfinding across simulation steps. The cap refills with
+# simulated time (SYNC_ROUTE_BUDGET_US per step's worth of delta), which also
+# covers headless drivers that never advance the navigation frame. A unit
+# denied by the cap retries shortly; after a few denials it searches anyway so
+# nothing can starve.
+const SYNC_ROUTE_BUDGET_US := 8000
+const SYNC_ROUTE_STEP_SECONDS := 1.0 / 30.0
 const ROUTE_DENIAL_MIN := 3
 const ROUTE_DENIAL_STAGGER := 8
 
 static var _sync_route_nav: RtsNavigation
-static var _sync_route_frame := -1
+static var _sync_route_clock := 0.0
 static var _sync_route_spent_us := 0
 
 var destination := Vector2.ZERO
@@ -39,6 +42,7 @@ var route_best_distance := INF
 var route_recovery_distance := INF
 var route_stalled_time := 0.0
 var route_denials := 0
+var route_clock := 0.0
 var group_stuck_time := 0.0
 var group_progress_target := Vector2.INF
 var group_best_distance := INF
@@ -72,6 +76,15 @@ func move_to(unit: RtsUnit, point: Vector2, delta: float, stop_distance: float) 
 	var navigation: RtsNavigation = unit.game.navigation
 	var position: Vector2 = unit.position
 	var radius := unit.radius()
+	route_clock += delta
+	if navigation != _sync_route_nav:
+		_sync_route_nav = navigation
+		_sync_route_clock = route_clock
+		_sync_route_spent_us = 0
+	elif route_clock > _sync_route_clock:
+		# Simulated time passed: refill the inline search budget.
+		_sync_route_spent_us = maxi(0, _sync_route_spent_us - int((route_clock - _sync_route_clock) / SYNC_ROUTE_STEP_SECONDS * SYNC_ROUTE_BUDGET_US))
+		_sync_route_clock = route_clock
 	yield_request_cooldown = maxf(0.0, yield_request_cooldown - delta)
 	if yield_timer > 0.0:
 		yield_timer = maxf(0.0, yield_timer - delta)
@@ -133,11 +146,7 @@ func move_to(unit: RtsUnit, point: Vector2, delta: float, stop_distance: float) 
 		var budgeted := not navigation.route_budget_enabled
 		var search_started := 0
 		if budgeted:
-			if navigation != _sync_route_nav or navigation.frame_id() != _sync_route_frame:
-				_sync_route_nav = navigation
-				_sync_route_frame = navigation.frame_id()
-				_sync_route_spent_us = 0
-			if _sync_route_spent_us >= SYNC_ROUTE_FRAME_BUDGET_US and route_denials < ROUTE_DENIAL_MIN + unit.get_instance_id() % ROUTE_DENIAL_STAGGER:
+			if _sync_route_spent_us >= SYNC_ROUTE_BUDGET_US and route_denials < ROUTE_DENIAL_MIN + unit.get_instance_id() % ROUTE_DENIAL_STAGGER:
 				# Defer to a later step without growing failure backoff.
 				route_denials += 1
 				route_retry = 0.05 + stagger
@@ -284,8 +293,8 @@ func begin_command() -> void:
 	resume_destination = Vector2.INF
 
 static func _charge_sync_route(navigation: RtsNavigation, started: int) -> void:
-	if navigation != _sync_route_nav or navigation.frame_id() != _sync_route_frame:
+	if navigation != _sync_route_nav:
 		_sync_route_nav = navigation
-		_sync_route_frame = navigation.frame_id()
+		_sync_route_clock = 0.0
 		_sync_route_spent_us = 0
 	_sync_route_spent_us += Time.get_ticks_usec() - started
