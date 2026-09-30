@@ -25,7 +25,7 @@ func _run() -> void:
 			root.canvas_transform = canvas
 			for completed in [0.75, 1.0]:
 				building.build_remaining = building.build_total * (1.0 - completed)
-				var lift := RtsIsoProjection.world_delta(canvas, Vector2(0, -building.isometric_height() * (0.25 + 0.75 * completed) * zoom))
+				var lift := Vector2.ZERO if wonder else RtsIsoProjection.world_delta(canvas, Vector2(0, -building.isometric_height() * (0.25 + 0.75 * completed) * zoom))
 				var geometry = building._landmark_geometry()
 				var faces: Array = geometry.projected_faces(canvas, zoom, lift)
 				for face in faces:
@@ -35,7 +35,7 @@ func _run() -> void:
 					assert(building.contains_isometric_visual(building.position + center, canvas), "%s: displayed face must remain clickable" % id)
 					checked += 1
 				assert(building._landmark_geometry() == geometry, "drawing and hit testing must reuse prepared geometry")
-				var icon_height: float = building.isometric_height() * (0.25 + 0.75 * completed) + building._landmark_extra_height()
+				var icon_height: float = geometry.height_above_origin + (0.0 if wonder else building.isometric_height() * (0.25 + 0.75 * completed))
 				var icon_point := building.position + RtsIsoProjection.world_delta(canvas, Vector2(0, -icon_height * zoom - building.icon_size() * 0.5 - 9.0))
 				assert(building.contains_icon_visual(icon_point, canvas))
 				context.show_building_icons = false

@@ -6,6 +6,9 @@ const Geometry = preload("res://scripts/entities/visuals/building_geometry.gd")
 
 const VisualState = preload("res://scripts/entities/visuals/building_visual_state.gd")
 const FilledPolygon = preload("res://scripts/entities/visuals/filled_polygon.gd")
+const CivicGeometry = preload("res://scripts/entities/visuals/civic_building_geometry.gd")
+const WonderVisual = preload("res://scripts/entities/visuals/wonder_visual.gd")
+const FarmVisual = preload("res://scripts/entities/visuals/farm_visual.gd")
 const LandmarkVisual = preload("res://scripts/entities/visuals/landmark_visual.gd")
 const WesternLandmark = preload("res://scripts/entities/visuals/western_landmark_visual.gd")
 const ChineseLandmark = preload("res://scripts/entities/visuals/chinese_landmark_visual.gd")
@@ -22,6 +25,13 @@ var landmark_geometry
 var landmark_geometry_key := ""
 var refined_geometry
 var refined_geometry_key: Array = []
+var farm_geometry
+var farm_geometry_key: Array = []
+var civic_geometry
+var civic_geometry_key: Array = []
+var portrait_mesh
+var civic_portrait_faces: Array[Dictionary] = []
+var civic_portrait_bounds := Rect2()
 
 func contains_icon_visual(snapshot: VisualState, world_point: Vector2, canvas: Transform2D) -> bool:
 	state = snapshot
@@ -36,6 +46,16 @@ func contains_icon_visual(snapshot: VisualState, world_point: Vector2, canvas: T
 	var screen_point := canvas.basis_xform(world_point - state.world_position - terrain_lift)
 	var center := Vector2(0, -height * state.zoom - side * 0.5 - 9.0)
 	return Rect2(center - Vector2.ONE * side * 0.5, Vector2.ONE * side).has_point(screen_point)
+
+func contains_topdown_visual(snapshot: VisualState, world_point: Vector2) -> bool:
+	state = snapshot
+	if Rect2(state.world_position - state.dimensions * 0.5, state.dimensions).has_point(world_point): return true
+	var construction_ratio := 1.0 - state.build_remaining / maxf(state.build_total, 0.1)
+	if state.kind != "dock" or construction_ratio < 0.65: return false
+	var local_point := world_point - state.world_position
+	for polygon in _civic_display_geometry().flat_faces:
+		if Geometry2D.is_point_in_polygon(local_point, polygon["points"]): return true
+	return false
 
 func contains_isometric_visual(snapshot: VisualState, world_point: Vector2, canvas: Transform2D) -> bool:
 	state = snapshot
@@ -56,10 +76,14 @@ func contains_isometric_visual(snapshot: VisualState, world_point: Vector2, canv
 		var top := terrain_lift + RtsIsoProjection.world_delta(canvas, Vector2(0, -(height + state.visual_feature_height()) * state.zoom))
 		var hull := Geometry2D.convex_hull(PackedVector2Array([nw + terrain_lift, ne + terrain_lift, se + terrain_lift, sw + terrain_lift, nw + top, ne + top, se + top, sw + top]))
 		if Geometry2D.is_point_in_polygon(local_point, hull): return true
-	if state.kind == "landmark" and construction_ratio < 0.65:
+	if (state.kind in ["landmark", "wonder"] or CivicGeometry.handles(state.kind) or state.kind == "dock") and construction_ratio < 0.65:
 		var scaffold_top := terrain_lift + RtsIsoProjection.world_delta(canvas, Vector2(0, -_visible_height(construction_ratio) * state.zoom))
 		var hull := Geometry2D.convex_hull(PackedVector2Array([nw + terrain_lift, ne + terrain_lift, se + terrain_lift, sw + terrain_lift, nw + scaffold_top, ne + scaffold_top, se + scaffold_top, sw + scaffold_top]))
 		return Geometry2D.is_point_in_polygon(local_point, hull)
+	if (state.kind in ["farm", "dock"] or CivicGeometry.handles(state.kind)) and construction_ratio >= 0.65:
+		for polygon in _civic_display_geometry().projected_faces(canvas, state.zoom, terrain_lift):
+			if Geometry2D.is_point_in_polygon(local_point, polygon["points"]): return true
+		return false
 	if RefinedGeometry.handles(state.kind) and construction_ratio >= 0.65:
 		for polygon in _refined_geometry().projected_faces(canvas, state.zoom, terrain_lift):
 			if Geometry2D.is_point_in_polygon(local_point, polygon["points"]): return true
@@ -103,7 +127,7 @@ func contains_isometric_visual(snapshot: VisualState, world_point: Vector2, canv
 			hull_points.append(Geometry.point(nw, ne, sw, u + width * 0.5, v + depth * 0.5) + floor_lift + up + RtsIsoProjection.world_delta(canvas, Vector2(0, -16.0 * state.zoom)))
 			if Geometry2D.is_point_in_polygon(local_point, Geometry2D.convex_hull(hull_points)): return true
 	if state.kind in ["landmark", "wonder"] and construction_ratio >= 0.65:
-		for polygon in _landmark_geometry().projected_faces(canvas, state.zoom, lift):
+		for polygon in _landmark_geometry().projected_faces(canvas, state.zoom, terrain_lift if state.kind == "wonder" else lift):
 			if Geometry2D.is_point_in_polygon(local_point, polygon["points"]): return true
 	return false
 
@@ -118,7 +142,7 @@ func draw(item: CanvasItem, snapshot: VisualState) -> void:
 	var wall_color: Color = palette["wall"]
 	var construction_ratio := 1.0 - state.build_remaining / maxf(state.build_total, 0.1)
 	var art_kind := state.visual_kind()
-	if not (art_kind.ends_with("_wall") or art_kind.ends_with("_gate")) and not (RefinedGeometry.handles(state.kind) and state.is_complete()):
+	if not (art_kind.ends_with("_wall") or art_kind.ends_with("_gate")) and not ((RefinedGeometry.handles(state.kind) or state.kind in ["farm", "dock", "wonder"] or CivicGeometry.handles(state.kind)) and state.is_complete()):
 		canvas_item.draw_rect(bounds, Color("272d2a"))
 		canvas_item.draw_rect(bounds.grow(-4), wall_color.darkened(0.28) if not state.is_complete() else wall_color)
 	if state.damage_flash_timer > 0.0: canvas_item.draw_rect(bounds.grow(-2), Color("f8ca91", state.damage_flash_timer * 1.4), false, 3.0)
@@ -139,7 +163,7 @@ func draw(item: CanvasItem, snapshot: VisualState) -> void:
 	if font != null and state.show_building_names:
 		var font_size: int = state.caption_size
 		var canvas := canvas_item.get_viewport().get_canvas_transform()
-		var label_anchor := canvas.basis_xform(Vector2(-state.dimensions.x * 0.5, state.dimensions.y * 0.5))
+		var label_anchor := canvas.basis_xform(Vector2(-state.dimensions.x * 0.5, state.dimensions.y * (0.64 if state.kind == "dock" else 0.5)))
 		canvas_item.draw_set_transform_matrix(RtsIsoProjection.upright(canvas, Vector2.ZERO))
 		canvas_item.draw_string(font, label_anchor + Vector2(0, font_size + 2), state.label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color.WHITE)
 		canvas_item.draw_set_transform_matrix(Transform2D.IDENTITY)
@@ -178,9 +202,9 @@ func _draw_isometric() -> void:
 		FilledPolygon.draw(canvas_item, PackedVector2Array([ne, se, se + se_ground, ne + ne_ground]), Color("625d4e"))
 		FilledPolygon.draw(canvas_item, PackedVector2Array([sw, se, se + se_ground, sw + sw_ground]), Color("817866"))
 		canvas_item.draw_line(sw + sw_ground, se + se_ground, Color("3a3c32", 0.75), 1.4)
-	if not fortification:
+	if not fortification and state.kind != "dock":
 		FilledPolygon.draw(canvas_item, PackedVector2Array([nw, ne, se, sw]), Color("273a30", 0.65))
-	if height > 0.0 and not fortification and not RefinedGeometry.handles(state.kind):
+	if height > 0.0 and not fortification and not RefinedGeometry.handles(state.kind) and state.kind not in ["farm", "dock", "wonder"] and not CivicGeometry.handles(state.kind):
 		FilledPolygon.draw(canvas_item, PackedVector2Array([ne + wall_lift, se + wall_lift, se, ne]), color.darkened(0.26))
 		FilledPolygon.draw(canvas_item, PackedVector2Array([sw + wall_lift, se + wall_lift, se, sw]), color)
 		canvas_item.draw_polyline(PackedVector2Array([ne + wall_lift, se + wall_lift, se, ne, ne + wall_lift]), Color("1c2829"), 2.0)
@@ -188,14 +212,14 @@ func _draw_isometric() -> void:
 	var roof_color: Color = Color("a79f89") if state.kind == "landmark" else palette["roof"]
 	if art_kind == "farm": roof_color = Color("735035")
 	if construction_ratio >= 0.65:
-		if not fortification and not RefinedGeometry.handles(state.kind):
+		if not fortification and not RefinedGeometry.handles(state.kind) and state.kind not in ["farm", "dock", "wonder"] and not CivicGeometry.handles(state.kind):
 			FilledPolygon.draw(canvas_item, PackedVector2Array([nw + wall_lift, ne + wall_lift, se + wall_lift, sw + wall_lift]), roof_color if not open_yard else palette["timber"])
 			canvas_item.draw_polyline(PackedVector2Array([nw + wall_lift, ne + wall_lift, se + wall_lift, sw + wall_lift, nw + wall_lift]), Color("1f2929"), 2.0)
 		_draw_iso_architecture(art_kind, nw, ne, se, sw, lift, palette, canvas)
 		if state.kind == "landmark" or state.kind == "wonder": _draw_iso_landmark_architecture(lift, canvas)
 	else:
 		var scaffold := Color("c5a878")
-		var scaffold_lift := RtsIsoProjection.world_delta(canvas, Vector2(0, -_visible_height(construction_ratio) * state.zoom)) if state.kind == "landmark" else lift * maxf(0.2, construction_ratio)
+		var scaffold_lift := RtsIsoProjection.world_delta(canvas, Vector2(0, -_visible_height(construction_ratio) * state.zoom)) if state.kind in ["landmark", "wonder"] or CivicGeometry.handles(state.kind) or state.kind == "dock" else lift * maxf(0.2, construction_ratio)
 		for corner in [nw, ne, sw, se]:
 			canvas_item.draw_line(corner, corner + scaffold_lift, scaffold, 2.2)
 		canvas_item.draw_line(nw + scaffold_lift * 0.65, se + scaffold_lift * 0.65, Color(scaffold, 0.82), 2.0)
@@ -236,7 +260,11 @@ func _architecture_palette() -> Dictionary:
 			return palette
 
 func _draw_topdown_architecture(bounds: Rect2, palette: Dictionary) -> void:
-	if state.kind == "landmark": return
+	if state.kind in ["landmark", "wonder"]: return
+	if CivicGeometry.handles(state.kind):
+		for polygon in _civic_geometry().flat_faces:
+			FilledPolygon.draw(canvas_item, polygon["points"], polygon["color"])
+		return
 	var art_kind := state.visual_kind()
 	if RefinedGeometry.handles(state.kind):
 		for polygon in _refined_geometry().flat_faces:
@@ -249,7 +277,7 @@ func _draw_topdown_architecture(bounds: Rect2, palette: Dictionary) -> void:
 		IndustryBuildingVisual.draw_topdown(canvas_item, art_kind, bounds, palette, state.player_color, state.civilization)
 		return
 	if state.kind not in ["landmark", "wonder"] and art_kind == "dock":
-		DockBuildingVisual.draw_topdown(canvas_item, bounds.grow(-6.0), palette, state.player_color, state.civilization)
+		DockBuildingVisual.draw_topdown(canvas_item, bounds, palette, state.player_color, state.civilization)
 		return
 	if state.kind not in ["landmark", "wonder"] and art_kind in ["keep", "monastery", "outpost"]:
 		KeepMonasteryVisual.draw_topdown(canvas_item, art_kind, bounds, palette, state.player_color, state.civilization)
@@ -263,15 +291,8 @@ func _draw_topdown_architecture(bounds: Rect2, palette: Dictionary) -> void:
 	var trim: Color = palette["trim"]
 	var wall: Color = palette["wall"]
 	if art_kind == "farm":
-		canvas_item.draw_rect(roof_bounds, Color("735035"))
-		for portion in [0.1, 0.3, 0.5, 0.7, 0.9]:
-			var y := lerpf(roof_bounds.position.y, roof_bounds.end.y, portion)
-			canvas_item.draw_line(Vector2(roof_bounds.position.x + 3, y), Vector2(roof_bounds.end.x - 3, y), Color("a2784a"), 2.2)
-			if state.is_complete() and state.crop_fraction >= portion:
-				for x_portion in [0.2, 0.4, 0.6, 0.8]:
-					var x := lerpf(roof_bounds.position.x, roof_bounds.end.x, x_portion)
-					canvas_item.draw_line(Vector2(x, y + 2), Vector2(x, y - 5), Color("a9c468"), 2.0)
-					canvas_item.draw_circle(Vector2(x + 2, y - 5), 2.0, Color("d9c875"))
+		for polygon in _farm_geometry().flat_faces:
+			FilledPolygon.draw(canvas_item, polygon["points"], polygon["color"])
 		return
 	if art_kind in ["keep", "outpost"]:
 		canvas_item.draw_rect(roof_bounds, wall.darkened(0.33))
@@ -446,6 +467,9 @@ func _draw_topdown_military_structure(art_kind: String, bounds: Rect2, palette: 
 			canvas_item.draw_circle(horse + Vector2(9, 0), 2.5, Color("765039"))
 
 func _draw_topdown_landmark(bounds: Rect2, palette: Dictionary) -> void:
+	if state.kind == "wonder":
+		WonderVisual.draw_topdown(canvas_item, bounds, state.civilization, palette, state.player_color)
+		return
 	if state.kind == "landmark":
 		if ChineseLandmark.draw_topdown(canvas_item, bounds, state.landmark_id, palette, state.player_color): return
 		if WesternLandmark.draw_topdown(canvas_item, bounds, state.landmark_id, palette, state.player_color): return
@@ -497,7 +521,11 @@ func _draw_topdown_landmark(bounds: Rect2, palette: Dictionary) -> void:
 				for y in [box.position.y + 4, box.end.y - 4]: canvas_item.draw_rect(Rect2(x - 2, y - 2, 4, 4), trim)
 
 func _draw_iso_architecture(art_kind: String, nw: Vector2, ne: Vector2, se: Vector2, sw: Vector2, lift: Vector2, palette: Dictionary, canvas: Transform2D) -> void:
-	if state.kind == "landmark": return
+	if state.kind in ["landmark", "wonder"]: return
+	if CivicGeometry.handles(state.kind):
+		for polygon in _civic_geometry().projected_faces(canvas, state.zoom, Vector2.ZERO):
+			FilledPolygon.draw(canvas_item, polygon["points"], polygon["color"])
+		return
 	if RefinedGeometry.handles(state.kind):
 		for polygon in _refined_geometry().projected_faces(canvas, state.zoom, Vector2.ZERO):
 			FilledPolygon.draw(canvas_item, polygon["points"], polygon["color"])
@@ -928,13 +956,13 @@ func _landmark_geometry():
 		landmark_geometry = LandmarkVisual.new()
 		landmark_geometry.dimensions = state.dimensions
 		landmark_geometry.palette = _architecture_palette()
-		landmark_geometry.populate(state.kind, state.landmark_id, state.player_color)
+		landmark_geometry.populate(state.kind, state.landmark_id, state.player_color, state.civilization)
 		landmark_geometry.prepare()
 		landmark_geometry_key = key
 	return landmark_geometry
 
 func _draw_iso_landmark_architecture(lift: Vector2, canvas: Transform2D) -> void:
-	for polygon in _landmark_geometry().projected_faces(canvas, state.zoom, lift):
+	for polygon in _landmark_geometry().projected_faces(canvas, state.zoom, Vector2.ZERO if state.kind == "wonder" else lift):
 		FilledPolygon.draw(canvas_item, polygon["points"], polygon["color"])
 
 func _draw_iso_battlements(corners: Array, rise: Vector2, color: Color, width: float) -> void:
@@ -953,17 +981,18 @@ func _draw_iso_battlements(corners: Array, rise: Vector2, color: Color, width: f
 	for tooth in teeth:
 		canvas_item.draw_line(tooth, tooth + rise, LandmarkVisual.battlement_color(tooth - center, color), width)
 
-func _draw_iso_farm(nw: Vector2, ne: Vector2, se: Vector2, sw: Vector2, lift: Vector2) -> void:
-	for portion in [0.1, 0.3, 0.5, 0.7, 0.9]:
-		var start := nw.lerp(sw, portion) + lift
-		var finish := ne.lerp(se, portion) + lift
-		canvas_item.draw_line(start, finish, Color("6f5838"), 3.0)
-		canvas_item.draw_line(start + (se - ne) * 0.045, finish + (se - ne) * 0.045, Color("a9814e"), 2.2)
-		if not state.is_complete() or state.crop_fraction < portion: continue
-		for across in [0.2, 0.4, 0.6, 0.8]:
-			var crop := start.lerp(finish, across)
-			canvas_item.draw_line(crop, crop + Vector2(0, -7), Color("91ae5a"), 2.0)
-			canvas_item.draw_circle(crop + Vector2(2, -7), 2.0, Color("d9c875"))
+func _farm_geometry():
+	var step := clampi(roundi(state.crop_fraction * FarmVisual.CROP_STEPS), 0, FarmVisual.CROP_STEPS)
+	var key: Array = [state.dimensions, state.civilization, step, state.farm_stage]
+	if farm_geometry == null or farm_geometry_key != key:
+		farm_geometry = FarmVisual.geometry(state.dimensions, state.civilization, float(step) / FarmVisual.CROP_STEPS, state.farm_stage)
+		farm_geometry_key = key
+	return farm_geometry
+
+func _draw_iso_farm(_nw: Vector2, _ne: Vector2, _se: Vector2, _sw: Vector2, _lift: Vector2) -> void:
+	var canvas := canvas_item.get_viewport().get_canvas_transform()
+	for polygon in _farm_geometry().projected_faces(canvas, state.zoom, Vector2.ZERO):
+		FilledPolygon.draw(canvas_item, polygon["points"], polygon["color"])
 
 func _draw_building_icon(center: Vector2, icon_size: float) -> void:
 	if not state.show_building_icons: return
@@ -984,6 +1013,8 @@ func landmark_extra_height(snapshot: VisualState) -> float:
 	return _landmark_extra_height()
 
 func _landmark_extra_height() -> float:
+	if state.kind in ["farm", "dock"] or CivicGeometry.handles(state.kind) or state.kind == "wonder":
+		return maxf(0.0, _civic_display_geometry().height_above_origin - state.isometric_height() - state.visual_feature_height())
 	if RefinedGeometry.handles(state.kind):
 		return maxf(0.0, _refined_geometry().height_above_origin - state.isometric_height() - state.visual_feature_height())
 	if state.kind not in ["landmark", "wonder"]: return 0.0
@@ -1010,6 +1041,7 @@ func draw_refined_portrait(item: CanvasItem, snapshot: VisualState, frame: Rect2
 	item.draw_set_transform_matrix(Transform2D.IDENTITY)
 
 func _visible_height(construction_ratio: float) -> float:
+	if (state.kind in ["farm", "dock"] or CivicGeometry.handles(state.kind) or state.kind == "wonder") and construction_ratio >= 0.65: return _civic_display_geometry().height_above_origin
 	# Finished geometry appears at this stage without height scaling.
 	if RefinedGeometry.handles(state.kind) and construction_ratio >= 0.65:
 		return _refined_geometry().height_above_origin
@@ -1017,4 +1049,41 @@ func _visible_height(construction_ratio: float) -> float:
 	if construction_ratio >= 0.65: return base + state.visual_feature_height() + _landmark_extra_height()
 	# The low finished plinth must not shrink the early structural scaffold.
 	if state.kind == "landmark": return base + _landmark_extra_height() * maxf(0.2, construction_ratio)
+	if state.kind in ["wonder", "dock"] or CivicGeometry.handles(state.kind): return _civic_display_geometry().height_above_origin * maxf(0.2, construction_ratio)
 	return base
+
+func _civic_geometry():
+	var key: Array = [state.kind, state.dimensions, state.civilization, state.player_color]
+	if civic_geometry == null or key != civic_geometry_key:
+		civic_geometry = CivicGeometry.new(state.kind, state.dimensions, state.civilization, state.player_color, _architecture_palette())
+		civic_geometry_key = key
+	return civic_geometry
+
+func _civic_display_geometry():
+	if state.kind == "dock": return DockBuildingVisual.geometry(state.dimensions, _architecture_palette(), state.civilization, state.player_color)
+	if state.kind == "farm": return _farm_geometry()
+	if state.kind == "wonder": return _landmark_geometry()
+	return _civic_geometry()
+
+func _cache_civic_portrait(snapshot: VisualState) -> void:
+	state = snapshot
+	var mesh = _civic_display_geometry()
+	if mesh != portrait_mesh:
+		civic_portrait_faces.clear()
+		var first := true
+		for polygon in mesh.ordered_faces:
+			var points := PackedVector2Array()
+			for p in polygon["points"]:
+				var point := Vector2((p.x - p.y) * 0.70710678, (p.x + p.y) * 0.35355339 - p.z)
+				points.append(point)
+				civic_portrait_bounds = Rect2(point, Vector2.ZERO) if first else civic_portrait_bounds.expand(point)
+				first = false
+			if not Geometry2D.triangulate_polygon(points).is_empty(): civic_portrait_faces.append({"points": points, "color": polygon["color"]})
+		portrait_mesh = mesh
+
+func draw_civic_portrait(item: CanvasItem, snapshot: VisualState, frame: Rect2) -> void:
+	_cache_civic_portrait(snapshot)
+	var fit := minf(frame.size.x / maxf(civic_portrait_bounds.size.x, 0.1), frame.size.y / maxf(civic_portrait_bounds.size.y, 0.1))
+	item.draw_set_transform_matrix(Transform2D(0.0, Vector2.ONE * fit, 0.0, frame.get_center() - civic_portrait_bounds.get_center() * fit))
+	for polygon in civic_portrait_faces: FilledPolygon.draw(item, polygon["points"], polygon["color"])
+	item.draw_set_transform_matrix(Transform2D.IDENTITY)

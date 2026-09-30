@@ -141,6 +141,10 @@ func foundation_height() -> float:
 func contains_isometric_visual(world_point: Vector2, canvas: Transform2D) -> bool:
 	return building_visual.contains_isometric_visual(_current_visual_state(), world_point, canvas)
 
+func contains_visual(world_point: Vector2, canvas: Transform2D) -> bool:
+	var snapshot = _current_visual_state()
+	return building_visual.contains_isometric_visual(snapshot, world_point, canvas) if snapshot.view_mode_25d else building_visual.contains_topdown_visual(snapshot, world_point)
+
 func _landmark_geometry():
 	building_visual.state = _current_visual_state(false)
 	return building_visual._landmark_geometry()

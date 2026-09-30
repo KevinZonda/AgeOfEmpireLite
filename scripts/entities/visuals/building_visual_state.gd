@@ -19,6 +19,7 @@ var health_bar_timer := 0.0
 var build_remaining := 0.0
 var build_total := 0.0
 var crop_fraction := 0.0
+var farm_stage := "sowing"
 var has_production := false
 var damage_flash_timer := 0.0
 var foundation_height := 0.0
@@ -48,6 +49,7 @@ static func capture(building, existing_state = null, include_terrain := true):
 	result.player_color = building.game.player_color(building.owner_id)
 	result.label = building.display_label()
 	result.crop_fraction = building.farm_crop_fraction()
+	result.farm_stage = building.farm_stage
 	result.has_production = not building.production_queue.is_empty()
 	var map = building.game.world_map
 	if include_terrain:
@@ -80,7 +82,8 @@ func icon_size() -> float:
 	return 24.0 if kind.ends_with("_wall") or kind.ends_with("_gate") or kind == "scout_camp" else 30.0
 
 func isometric_height() -> float:
-	if kind == "landmark": return 6.0
+	if kind in ["landmark", "wonder"]: return 6.0
+	if kind in ["university", "monastery"]: return 2.0
 	var art_kind := visual_kind()
 	if art_kind == "farm": return 0.0
 	if art_kind.ends_with("_wall") or art_kind.ends_with("_gate"): return 11.0

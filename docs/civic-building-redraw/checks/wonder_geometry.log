@@ -1,0 +1,6 @@
+Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
+
+WONDER_PASS English wrong_pixels=0 faces=263 fragments=1116 prepare_us=12757
+WONDER_PASS French wrong_pixels=0 faces=210 fragments=828 prepare_us=9466
+WONDER_PASS Chinese wrong_pixels=0 faces=535 fragments=2279 prepare_us=36866
+WONDER_GEOMETRY_OK visible_samples=355

@@ -3,6 +3,7 @@ extends RefCounted
 # Local 3D faces, rendered through the existing 2D isometric canvas. BSP splits
 # intersecting faces, so overlapping wings cannot override one another merely
 # because their draw calls happened later. Geometry is cached by the building.
+const WonderVisual = preload("res://scripts/entities/visuals/wonder_visual.gd")
 const WesternLandmark = preload("res://scripts/entities/visuals/western_landmark_visual.gd")
 const ChineseLandmark = preload("res://scripts/entities/visuals/chinese_landmark_visual.gd")
 const EPSILON := 0.001
@@ -210,18 +211,12 @@ func projected_faces(canvas: Transform2D, zoom: float, lift: Vector2) -> Array[D
 	projected_cache_lift = lift
 	return result
 
-func populate(kind: String, landmark_id: String, player: Color) -> void:
+func populate(kind: String, landmark_id: String, player: Color, civilization := "English") -> void:
 	if kind == "landmark":
 		if ChineseLandmark.populate(self, landmark_id, player): return
 		if WesternLandmark.populate(self, landmark_id, player): return
 	if kind == "wonder":
-		# Broad plinth, colonnade, cupola and four corner pinnacles.
-		block(0.5, 0.5, 1.04, 1.04, 12, "flat")
-		base_z = 12.0
-		for u in [0.1, 0.9]:
-			for v in [0.1, 0.9]: block(u, v, 0.17, 0.17, 35, "spire")
-		block(0.5, 0.5, 0.62, 0.62, 48, "dome", Color("bda36b"))
-		for u in [0.27, 0.42, 0.58, 0.73]: column(u, 0.94, 20.0)
+		WonderVisual.populate(self, civilization, player)
 		return
 	match landmark_id:
 		"eng_council_hall":

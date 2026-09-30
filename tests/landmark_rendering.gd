@@ -74,6 +74,12 @@ func _run() -> void:
 		for argument in OS.get_cmdline_user_args():
 			if argument.begins_with("--construction="):
 				building.build_remaining = building.build_total * (1.0 - clampf(argument.trim_prefix("--construction=").to_float(), 0.0, 1.0))
+		if building.kind == "farm":
+			var crop := 0.75
+			for argument in OS.get_cmdline_user_args():
+				if argument.begins_with("--crop="): crop = clampf(argument.trim_prefix("--crop=").to_float(), 0.0, 1.0)
+				if argument.begins_with("--farm-stage="): building.farm_stage = argument.trim_prefix("--farm-stage=")
+			building.farm_stage_progress = (1.0 - crop) * building.FARM_HARVEST_WORK if building.farm_stage == "harvesting" else crop * building.FARM_SOW_WORK
 		building.set_process(false)
 		await process_frame
 		await RenderingServer.frame_post_draw
