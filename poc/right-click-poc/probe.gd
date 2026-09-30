@@ -4,11 +4,11 @@ func _initialize() -> void:
 	call_deferred("_run")
 
 func _run() -> void:
-	var probe := load("res://poc/right-click-poc/trace.gd").new()
+	var probe: Variant = load("res://poc/right-click-poc/trace.gd").new()
 	probe.name = "InputTrace"
 	root.add_child(probe)
 	if "--game" in OS.get_cmdline_user_args():
-		var game := load("res://poc/right-click-poc/game_trace.gd").new()
+		var game: Variant = load("res://poc/right-click-poc/game_trace.gd").new()
 		root.add_child(game)
 		await process_frame
 		game.start_game("English", 12345)

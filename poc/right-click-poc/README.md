@@ -2,6 +2,32 @@
 
 2026-09-30。用户报告：双指轻点有时表现为左键。使用本项目已有补丁的 Godot 4.7.2 运行时。此轮只添加诊断和事件回放，不修改正式游戏输入逻辑。
 
+## 具体诊断目标与判据
+
+本目录独立诊断“右键操作导致额外左键选择、取消选中或无法下令”，包括真实窗口采样、可重复的故障回放，以及用于确认原因的对照版本。入口和诊断代码都在本目录；依赖项目的正式游戏代码和 `docs/godot/bin/` 中的本地运行时，不依赖 `poc/input-poc/`。拖框延迟与 Magnet 调度仍由 [input-poc](../input-poc/README.md) 负责。
+
+需要分别回答两个具体问题：
+
+| 问题 | 复现条件与判据 | 目前结论 |
+| --- | --- | --- |
+| 游戏是否在已识别 RIGHT 后额外执行 LEFT 选择？ | 不送任何 LEFT 按下事件；已选单位收到 RIGHT；其后仅原生 LEFT 状态出现并消失。观察是否由 `source=native_poll` 启动并完成选择、清空已选单位 | 合成回放已稳定复现；原因在游戏选择状态机 |
+| 双指轻点是否在进入游戏之前被系统判成 LEFT？ | 用 F7／F8 标记用户右键意图；若 AppKit 原始事件为 LEFT，说明游戏接收之前已是 LEFT | 首轮日志出现过 AppKit LEFT，但没有用户意图标记，尚未确认该次物理手势 |
+
+成功识别的 RIGHT 事件不应为同一次操作额外创建 LEFT 选择。故障回放的目标是确认这条游戏行为；注入原生 LEFT 脉冲是明确的输入假设，不能证明硬件双指轻点必然生成该脉冲。正式修复尚未应用，测试夹具中的“必须有 LEFT 事件才允许轮询选择”只用于 A/B 验证。
+
+## 目录与运行入口
+
+所有命令在项目根目录执行。
+
+| 文件 | 用途 |
+| --- | --- |
+| [run.sh](run.sh) | `poc/right-click-poc/run.sh --game` 启动完整游戏采样；不加参数启动空场景对照。`right_click.sh` 是同一入口的兼容包装 |
+| [probe.gd](probe.gd)、[trace.gd](trace.gd)、[game_trace.gd](game_trace.gd)、[native_probe.m](native_probe.m) | 关联 Quartz、AppKit、Godot 事件与游戏选择／下令动作；原样返回系统事件 |
+| [right_click_replay.gd](right_click_replay.gd)、[right_click_fixture.gd](right_click_fixture.gd) | 最小故障及正常左右键对照；`make run RUN_ARGS='--headless --script res://poc/right-click-poc/right_click_replay.gd'` |
+| [right_click_matrix.py](right_click_matrix.py)、[right_click_matrix.gd](right_click_matrix.gd) | 自动构造时序矩阵；`python3 poc/right-click-poc/right_click_matrix.py --repeats 10` |
+| [right_click_summary.py](right_click_summary.py) | 汇总采样时间线；`python3 poc/right-click-poc/right_click_summary.py /tmp/aoe-right-click-poc-日期时间` |
+| `right-click-*.json` | 已保存的最小回放、矩阵统计和首轮窗口事件摘录；不是修复后游戏的回归基线 |
+
 ## 当前结论
 
 **已用合成回放复现一种会让右键操作产生左键选择效果的游戏路径；尚未证明实际双指轻点出现的事件序列就是该路径。** 真实触摸板需要在诊断窗口操作并标记，不能用程序生成鼠标点击代替。
