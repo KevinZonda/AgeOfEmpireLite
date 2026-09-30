@@ -197,7 +197,11 @@ func _ensure_current() -> void:
 	var frame := frame_id()
 	if geometry_cache.obstacle_check_frame == frame: return
 	geometry_cache.obstacle_check_frame = frame
-	if geometry_cache.obstacle_signature != geometry_cache.signature(_entities): refresh(false)
+	# Explicit invalidation marks the signature invalid. The only geometry
+	# inputs that can change without invalidation are construction completion
+	# and wildlife death; the cache polls just those watched entities, keeping
+	# the per-frame guard O(watched) with no per-entity hashing.
+	if geometry_cache.obstacle_signature == -1 or geometry_cache.silent_geometry_changed(): refresh(false)
 
 func invalidate_spatial_index() -> void:
 	spatial_index.invalidate()
@@ -210,10 +214,12 @@ func _spatial_cell(point: Vector2) -> Vector2i:
 	return Vector2i(floori(point.x / SPATIAL_CELL_SIZE), floori(point.y / SPATIAL_CELL_SIZE))
 
 func _ensure_spatial_index() -> void:
-	# Avoid another function call on every hot collision query. Only the index
-	# owner rebuilds buckets; this read-only guard mirrors its admission check.
-	if spatial_index.spatial_frame == frame_id() and spatial_index.indexed_unit_count == _entities.units.size() and spatial_index.indexed_resource_count == _entities.resources.size() and spatial_index.indexed_building_count == _entities.buildings.size(): return
-	spatial_index.ensure_current(_entities, frame_id())
+	# Within one frame the index is reused as-is. A frame boundary pays one
+	# cheap reconcile pass; only invalidation or a count mismatch rebuilds.
+	# Keep the hot-path guard inline to avoid a call per collision query.
+	var frame := frame_id()
+	if spatial_index.spatial_frame == frame and spatial_index.indexed_unit_count == _entities.units.size() and spatial_index.indexed_resource_count == _entities.resources.size() and spatial_index.indexed_building_count == _entities.buildings.size(): return
+	spatial_index.ensure_current(_entities, frame)
 
 func nearby_units(point: Vector2, radius: float) -> Array[RtsUnit]:
 	_ensure_spatial_index()

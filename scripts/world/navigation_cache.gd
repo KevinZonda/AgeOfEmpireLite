@@ -19,6 +19,12 @@ var obstacle_revision := 0
 var retry_obstacle_revision := 0
 var retry_obstacle_signature := -1
 var obstacle_check_frame := -1
+# Signature inputs that mutate without any invalidation callback: construction
+# completion flips is_complete(), and a killed animal stops being mobile
+# wildlife. Rebuild snapshots only those entities, so the per-frame guard in
+# _ensure_current polls a handful of entries instead of hashing every entity.
+var _watched_buildings: Array[RtsBuilding] = []
+var _watched_wildlife: Array[RtsResource] = []
 
 func invalidate(wake_failed_routes: bool) -> void:
 	if wake_failed_routes: retry_obstacle_signature = -1
@@ -35,11 +41,26 @@ func rebuild(entities: Object) -> void:
 	_default_grid = null
 	obstacle_revision += 1
 	obstacle_signature = signature(entities)
+	_watched_buildings.clear()
+	for building in entities.buildings:
+		if is_instance_valid(building) and not building.is_queued_for_deletion() and not building.is_complete(): _watched_buildings.append(building)
+	_watched_wildlife.clear()
+	for resource in entities.resources:
+		if is_instance_valid(resource) and not resource.is_queued_for_deletion() and is_mobile_wildlife(resource): _watched_wildlife.append(resource)
 	var structural_signature := signature(entities, true)
 	if structural_signature != retry_obstacle_signature:
 		retry_obstacle_signature = structural_signature
 		retry_obstacle_revision += 1
 	obstacle_check_frame = Engine.get_process_frames()
+
+func silent_geometry_changed() -> bool:
+	for building in _watched_buildings:
+		if not is_instance_valid(building) or building.is_queued_for_deletion() or building.is_complete(): return true
+	# Watched wildlife was mobile at rebuild time; appearance never changes,
+	# so the only possible flip is its hp reaching zero.
+	for resource in _watched_wildlife:
+		if not is_instance_valid(resource) or resource.is_queued_for_deletion() or resource.wildlife_hp <= 0.0: return true
+	return false
 
 func invalidate_corner_visibility() -> void:
 	corner_graphs.clear()
@@ -81,7 +102,8 @@ func signature(entities: Object, ignore_resource_positions := false) -> int:
 			# tracked by the spatial index, not cached geometry.
 			var mobile := is_mobile_wildlife(resource)
 			signature = hash([signature, resource.get_instance_id(), Vector2.ZERO if ignore_resource_positions or mobile else resource.position, resource.radius, mobile])
-	return signature
+	# -1 is the invalidation sentinel; a computed signature must never alias it.
+	return signature if signature != -1 else -2
 
 static func is_mobile_wildlife(resource: RtsResource) -> bool:
 	return resource.appearance in ["deer", "boar", "sheep"] and resource.wildlife_hp > 0.0
