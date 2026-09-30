@@ -23,3 +23,17 @@ make run RUN_ARGS='--script res://tools/battle_deer_poc.gd --windowed --resoluti
 ```
 
 可见场景运行正常的单位、弹道和鹿 AI；禁用电脑决策与迷雾，提高双方生命值以持续观察。上方按钮可冻结／恢复全地图鹿群，右上角显示 FPS。此工具使用当前项目代码，不模拟旧版规则，也不保存用户显示设置。
+
+## 走停节奏与动画
+
+鹿现在先停留吃草，再选择 12–26 像素的短距离目标，走完后停留 2–5 秒。普通游荡限制在当前栖息点 32 像素内；受惊逃跑后将栖息点移到逃跑终点。每只鹿使用按出生坐标初始化的独立随机数生成器，错开停留时间而不改变地图的全局随机序列。行走和逃跑分别以 45、240 px/s² 加速，并在终点前减速。
+
+`visuals/deer_visual.gd` 根据屏幕投影后的方向翻转／收窄轮廓，实际位移驱动四腿步态；静止时逐渐收腿、低头吃草。蹄子贴近地面阴影。逃跑身体起伏每个步态周期两次、幅度不超过 0.8 像素，避免重复倍频导致抖动；接近竖直方向时忽略横向浮点误差，避免左右翻转。
+
+移动回归扩展为 31 项断言，包括走停循环、局部游荡、错开吃草、受惊转向和加速、逃跑后停留、静止不踏步、暂停和死亡不继续动画。2D／2.5D 预览同时展示四个朝向的吃草、行走和逃跑，以及六只使用真实移动逻辑的鹿：
+
+```sh
+make run RUN_ARGS='--script res://tools/deer_motion_preview.gd --windowed --resolution 1280x800'
+# 空格切换 2D／2.5D；指定环境变量可渲染预览图并退出
+RTS_DEER_PROJECTION=2d RTS_DEER_CAPTURE=/tmp/deer-motion-2d.png make run RUN_ARGS='--script res://tools/deer_motion_preview.gd --windowed --resolution 1280x800'
+```

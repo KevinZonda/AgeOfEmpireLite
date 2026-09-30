@@ -2,9 +2,11 @@ class_name RtsResource
 extends Node2D
 
 const OreVisual = preload("res://scripts/entities/visuals/ore_visual.gd")
+const DeerVisual = preload("res://scripts/entities/visuals/deer_visual.gd")
 const DEER_WALK_SPEED := 18.0
 const DEER_FLEE_SPEED := 80.0
 const DEER_THREAT_RADIUS := 75.0
+const DEER_WANDER_RADIUS := 32.0
 
 var game: Node2D
 var kind: String
@@ -21,6 +23,14 @@ var wildlife_hp := 0.0
 var wildlife_scan := 0.0
 var wildlife_attack := 0.0
 var deer_flee_target := Vector2.INF
+var deer_walk_target := Vector2.INF
+var deer_pause := 0.0
+var deer_speed := 0.0
+var deer_direction := Vector2.RIGHT
+var deer_phase := 0.0
+var deer_gait := 0.0
+var deer_graze := 0.0
+var deer_rng := RandomNumberGenerator.new()
 
 func setup(resource_kind: String, quantity: int, visual_kind := "") -> void:
 	kind = resource_kind
@@ -30,6 +40,15 @@ func setup(resource_kind: String, quantity: int, visual_kind := "") -> void:
 	wildlife_hp = 90.0 if appearance == "boar" else 12.0 if appearance == "deer" else 1.0
 	home_position = position
 	deer_flee_target = Vector2.INF
+	deer_walk_target = Vector2.INF
+	deer_rng.seed = hash(position)
+	deer_pause = deer_rng.randf_range(1.5, 3.5)
+	deer_speed = 0.0
+	deer_direction = Vector2.from_angle(deer_rng.randf_range(0.0, TAU))
+	deer_phase = 0.0
+	deer_gait = 0.0
+	deer_graze = 0.0
+	wildlife_scan = 0.0
 	wander_time = position.x * 0.013 + position.y * 0.019
 	queue_redraw()
 
@@ -61,13 +80,27 @@ func _process_deer(delta: float) -> void:
 			var away := (position - threat.position).normalized()
 			if away.is_zero_approx(): away = Vector2.RIGHT
 			deer_flee_target = position + away * 55.0
-	# Keep the escape between scans instead of jumping back to the home orbit
-	# on the very next frame. Both wandering and fleeing obey a speed limit.
+			deer_walk_target = Vector2.INF
+	# Idle deer graze in place, then choose a short, persistent walk. Each deer
+	# has its own seeded RNG so a herd neither moves in sync nor affects map RNG.
 	var fleeing := deer_flee_target != Vector2.INF
-	var desired := deer_flee_target if fleeing else home_position + Vector2(sin(wander_time * 0.75) * 14.0, cos(wander_time * 0.52) * 10.0)
+	if not fleeing and deer_walk_target == Vector2.INF:
+		deer_pause -= delta
+		if deer_pause <= 0.0: _choose_deer_walk()
+	var desired := deer_flee_target if fleeing else deer_walk_target
+	if desired == Vector2.INF:
+		deer_speed = 0.0
+		_update_deer_pose(delta, Vector2.ZERO)
+		return
 	desired = desired.clamp(Vector2.ONE * radius, game.world_size - Vector2.ONE * radius)
 	var previous := position
-	var next := position.move_toward(desired, (DEER_FLEE_SPEED if fleeing else DEER_WALK_SPEED) * delta)
+	var acceleration := 240.0 if fleeing else 45.0
+	var top_speed := DEER_FLEE_SPEED if fleeing else DEER_WALK_SPEED
+	# Brake before the end of a walk instead of sliding into an abrupt stop.
+	var target_speed := minf(top_speed, sqrt(2.0 * acceleration * position.distance_to(desired)))
+	var previous_speed := deer_speed
+	deer_speed = move_toward(deer_speed, target_speed, acceleration * delta)
+	var next := position.move_toward(desired, (previous_speed + deer_speed) * 0.5 * delta)
 	# Check the whole movement, including long frames; a walkable endpoint
 	# across a lake must not let wildlife jump over the intervening water.
 	var samples := maxi(1, ceili(previous.distance_to(next) / (RtsWorldMap.CELL_SIZE * 0.25)))
@@ -78,13 +111,39 @@ func _process_deer(delta: float) -> void:
 			blocked = true
 			break
 		position = point
-	if fleeing and (blocked or position.distance_squared_to(desired) < 0.01):
-		# Settle where the escape ended rather than orbiting the old threat.
-		home_position = position
-		deer_flee_target = Vector2.INF
+	if blocked or position.distance_squared_to(desired) < 0.0625:
+		if fleeing:
+			# The new grazing area follows the escape, never the old threat.
+			home_position = position
+			deer_flee_target = Vector2.INF
+		deer_walk_target = Vector2.INF
+		deer_pause = deer_rng.randf_range(2.0, 5.0)
+		deer_speed = 0.0
+	_update_deer_pose(delta, position - previous)
 	if position != previous:
 		game.navigation.resource_moved(self, previous)
-		queue_redraw()
+
+func _choose_deer_walk() -> void:
+	for attempt in 8:
+		var candidate := position + Vector2.from_angle(deer_rng.randf_range(0.0, TAU)) * deer_rng.randf_range(12.0, 26.0)
+		candidate = home_position + (candidate - home_position).limit_length(DEER_WANDER_RADIUS)
+		candidate = candidate.clamp(Vector2.ONE * radius, game.world_size - Vector2.ONE * radius)
+		if position.distance_to(candidate) >= 10.0 and game.world_map.is_walkable(candidate):
+			deer_walk_target = candidate
+			return
+	deer_pause = deer_rng.randf_range(2.0, 5.0)
+
+func _update_deer_pose(delta: float, movement: Vector2) -> void:
+	var moving := movement.length_squared() > 0.000001
+	if moving:
+		deer_direction = movement.normalized()
+		var stride_length := lerpf(24.0, 44.0, clampf(deer_speed / DEER_FLEE_SPEED, 0.0, 1.0))
+		deer_phase = fmod(deer_phase + movement.length() * TAU / stride_length, TAU)
+	deer_gait = move_toward(deer_gait, minf(1.0, movement.length() / maxf(delta * DEER_WALK_SPEED, 0.001)), delta * 8.0)
+	var grazing := not moving and deer_flee_target == Vector2.INF and deer_walk_target == Vector2.INF
+	deer_graze = move_toward(deer_graze, 1.0 if grazing else 0.0, delta * 2.5)
+	# Redraw grazing head motion too, even though the ground anchor is still.
+	queue_redraw()
 
 func _process_boar(delta: float) -> void:
 	if wildlife_hp <= 0.0: return
@@ -179,7 +238,14 @@ func _draw() -> void:
 		draw_circle(Vector2(9, -2), 1.5, Color("253947"))
 	elif appearance == "deer":
 		if wildlife_hp > 0.0:
-			draw_ellipse_shape()
+			var figure := Transform2D.IDENTITY
+			if isometric:
+				figure = RtsIsoProjection.upright(canvas, RtsIsoProjection.ground_lift(game, position), game.camera.zoom.x)
+			else:
+				draw_set_transform_matrix(Transform2D(0.0, Vector2(1, 0.35), 0.0, Vector2.ZERO))
+				draw_circle(Vector2.ZERO, radius * 0.75, Color("1f302a", 0.35))
+			DeerVisual.draw(self, figure, canvas.basis_xform(deer_direction).normalized(), deer_phase, deer_gait, deer_graze, wander_time, deer_speed / DEER_FLEE_SPEED)
+			draw_set_transform_matrix(figure)
 		else:
 			var carcass := PackedVector2Array([Vector2(-20, 2), Vector2(-14, -5), Vector2(13, -5), Vector2(21, 2), Vector2(14, 9), Vector2(-14, 9)])
 			draw_colored_polygon(carcass, Color("886448"))
@@ -218,17 +284,3 @@ func _draw() -> void:
 		draw_polyline(points + PackedVector2Array([points[0]]), outline, 2.0)
 		draw_line(Vector2(-16, -10), Vector2(2, -20), color.lightened(0.25), 2)
 	if isometric: draw_set_transform_matrix(Transform2D.IDENTITY)
-
-func draw_ellipse_shape() -> void:
-	var body := PackedVector2Array([Vector2(-18, -4), Vector2(12, -8), Vector2(21, 1), Vector2(5, 9), Vector2(-15, 8)])
-	draw_colored_polygon(body, Color("a8794e"))
-	draw_polyline(body + PackedVector2Array([body[0]]), Color("26352d"), 2.0)
-	draw_circle(Vector2(17, -9), 8, Color("b98b59"))
-	draw_arc(Vector2(17, -9), 8, 0, TAU, 16, Color("26352d"), 1.5)
-	draw_circle(Vector2(20, -11), 1.5, Color("24251f"))
-	draw_line(Vector2(-11, 6), Vector2(-13, 19), Color("543f31"), 3)
-	draw_line(Vector2(6, 6), Vector2(10, 19), Color("543f31"), 3)
-	draw_line(Vector2(16, -15), Vector2(10, -27), Color("674b37"), 2)
-	draw_line(Vector2(10, -27), Vector2(5, -29), Color("674b37"), 2)
-	draw_line(Vector2(10, -27), Vector2(13, -31), Color("674b37"), 2)
-	draw_line(Vector2(20, -15), Vector2(23, -25), Color("674b37"), 2)
