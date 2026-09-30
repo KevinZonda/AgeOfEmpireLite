@@ -66,10 +66,10 @@ func _run() -> void:
 		game._unhandled_input(event)
 		game._advance_selection_pointer(screen, false)
 		rows.append({"scenario": scenario, "synthetic": true, "target": [target.x, target.y], "order_after_press": order_after_press, "dragging_after_press": dragging_after_press, "selected_after_release": game.selected.size(), "selection_lost": not game.selected.has(scout)})
-		if scenario in ["right_only", "right_event_left_poll_before", "left_then_right_same_batch"]:
+		if scenario != "left_only":
 			assert(game.selected.has(scout) and order_after_press == "move", "normal right or an already pending left must preserve selected scout")
 		else:
-			assert(game.selected.is_empty(), "left polling after right, or actual left click, should reproduce selection loss")
+			assert(game.selected.is_empty(), "an actual left click on empty ground should clear selection")
 	var report := {"kind": "synthetic_event_state_replay", "physical_trackpad_reproduction": false, "rows": rows}
 	var path := OS.get_environment("AOE_RIGHT_CLICK_REPLAY")
 	if path != "":

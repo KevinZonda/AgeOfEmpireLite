@@ -85,7 +85,7 @@ def build_cases():
     return cases
 
 
-def analyze(reports, cases):
+def analyze(reports, cases, expect_fixed=False):
     aggregates = defaultdict(Counter)
     failures = []
     representatives = {}
@@ -117,6 +117,8 @@ def analyze(reports, cases):
                 failures.append(dict(reason="normal_right_control_failed", seed=report["map_seed"], **row))
             if row["family"] == "left_control" and not row["selection_lost"]:
                 failures.append(dict(reason="normal_left_control_failed", seed=report["map_seed"], **row))
+            if expect_fixed and row["family"] in ("ctrl_mapping", "native_left_interleaving", "timing_left_native", "timing_both_native") and (row["selection_lost"] or row["final"]["order"] != "move" or row["final"]["begins"]):
+                failures.append(dict(reason="right_native_state_conflict_regressed", seed=report["map_seed"], **row))
             if row["selection_lost"] or row["final"]["dragging"]:
                 rep_key = f"{row['family']}/{row['variant']}/{row['driver']}"
                 if rep_key not in representatives:
@@ -129,8 +131,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repeats", type=int, default=3)
     parser.add_argument("--seeds", default="12345,4242,431")
-    parser.add_argument("--output", type=Path, default=ROOT / "poc/right-click-poc/right-click-matrix.json")
+    parser.add_argument("--expect-fixed", action="store_true", help="Require RIGHT/native-LEFT conflicts to preserve selection and movement")
+    parser.add_argument("--output", type=Path)
     args = parser.parse_args()
+    if args.output is None:
+        filename = "right-click-fixed-matrix.json" if args.expect_fixed else "right-click-current-matrix.json"
+        args.output = ROOT / "poc/right-click-poc" / filename
     godot = os.environ.get("GODOT_BIN", str(ROOT / "docs/godot/bin/godot.macos.template_debug.arm64"))
     cases = build_cases()
     reports = []
@@ -146,7 +152,8 @@ def main():
             if completed.returncode or not result.exists():
                 raise SystemExit("Matrix Godot process failed")
             reports.append(json.loads(result.read_text()))
-        summary = analyze(reports, cases)
+        summary = analyze(reports, cases, args.expect_fixed)
+        summary["expect_fixed"] = args.expect_fixed
         args.output.write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n")
     print("TOTAL", summary["total_runs"], "CONTROL_FAILURES", len(summary["control_failures"]), "UNSTABLE", len(summary["repeat_instability"]), "DRIVER_MISMATCHES", len(summary["direct_vs_engine_immediate_mismatches"]))
     for row in summary["aggregates"]:

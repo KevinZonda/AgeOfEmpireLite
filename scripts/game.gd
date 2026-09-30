@@ -1331,9 +1331,6 @@ func _selection_point_over_hud(screen_point: Vector2) -> bool:
 			return true
 	return false
 
-func _can_begin_native_selection(screen_point: Vector2) -> bool:
-	return get_window().has_focus() and started and not paused and not game_over and build_mode == "" and order_mode == "" and not wall_dragging and not _selection_point_over_hud(screen_point)
-
 func _poll_selection_pointer() -> void:
 	_advance_selection_pointer(_selection_pointer_screen_position(), _selection_native_left_down())
 
@@ -1343,9 +1340,10 @@ func _advance_selection_pointer(screen_point: Vector2, left_down: bool) -> void:
 			pass
 		elif dragging:
 			if selection_drag_phase == SelectionDragPhase.IDLE: selection_drag_phase = SelectionDragPhase.CANDIDATE
-		elif _can_begin_native_selection(screen_point):
-			_begin_selection_candidate(screen_point)
 		else:
+			# Native LEFT can belong to a logical RIGHT (for example Ctrl-click).
+			# Only an unhandled LEFT event may start a selection; polling keeps
+			# an existing drag responsive and detects its release.
 			selection_drag_phase = SelectionDragPhase.BLOCKED
 	elif left_down:
 		if dragging and selection_drag_phase in [SelectionDragPhase.CANDIDATE, SelectionDragPhase.ACTIVE]:

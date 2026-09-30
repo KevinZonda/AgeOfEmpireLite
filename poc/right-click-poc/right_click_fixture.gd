@@ -40,7 +40,3 @@ func _selection_native_left_down() -> bool:
 
 func _selection_pointer_screen_position() -> Vector2:
 	return replay_point
-
-func _can_begin_native_selection(screen_point: Vector2) -> bool:
-	# Headless windows cannot have focus. Keep the other production gates.
-	return started and not paused and not game_over and build_mode == "" and order_mode == "" and not wall_dragging and not _selection_point_over_hud(screen_point)
