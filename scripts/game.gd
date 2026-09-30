@@ -1274,6 +1274,10 @@ func _toggle_view_mode(save_setting := false) -> void:
 func _redraw_projected_entities() -> void:
 	for building in buildings:
 		if is_instance_valid(building): building.queue_redraw()
+	# Fog memories are display-only nodes outside the live building list.
+	for memory in fog.remembered_buildings.values():
+		var ghost: Node2D = memory["ghost"]
+		if is_instance_valid(ghost): ghost.queue_redraw()
 	for unit in units:
 		if is_instance_valid(unit): unit.queue_redraw()
 	for resource in resources:
