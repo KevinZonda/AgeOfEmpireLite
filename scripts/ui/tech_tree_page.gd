@@ -1,5 +1,8 @@
 extends RefCounted
 class_name RtsTechTreePage
+const PageShell = preload("res://scripts/ui/page_shell.gd")
+const UiStyle = preload("res://scripts/ui/ui_style.gd")
+const IconCache = preload("res://scripts/ui/icon_cache.gd")
 const RtsUiTypography = preload("res://scripts/ui/typography.gd")
 
 signal civilization_selected(civilization: String, age: int)
@@ -20,22 +23,8 @@ var building_columns: Array[String] = []
 var selected_age := 1
 
 func build(parent: Control, civilization: String, style_button: Callable, initial_age := 1) -> void:
-	overlay = ColorRect.new()
-	overlay.color = Color("100f0d")
-	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
-	parent.add_child(overlay)
-	var panel := PanelContainer.new()
-	panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	panel.offset_left = 24
-	panel.offset_top = 20
-	panel.offset_right = -24
-	panel.offset_bottom = -20
-	panel.add_theme_stylebox_override("panel", _tech_tree_style(Color("26211a"), Color("9f7b43"), 16))
-	overlay.add_child(panel)
-	var layout := VBoxContainer.new()
-	layout.add_theme_constant_override("separation", 10)
-	panel.add_child(layout)
+	overlay = PageShell.create(parent, Color("100f0d"), UiStyle.page_panel(Color("26211a"), Color("9f7b43"), 16), Vector4(24, 20, 24, 20))
+	var layout := PageShell.layout(overlay)
 	var header := HBoxContainer.new()
 	layout.add_child(header)
 	var title := _tech_tree_label(header, "%s  ·  科技树" % GameData.CIVILIZATIONS[civilization]["label"], RtsUiTypography.PAGE_TITLE, Color("f4dfae"))
@@ -235,7 +224,7 @@ func _unlock_tile(parent: Node, icon_kind: String, title: String, detail: String
 
 func _add_icon(parent: Node, icon_kind: String, side: float) -> void:
 	var icon := TextureRect.new()
-	icon.texture = RtsCommandButton._texture_at("%s%s.png" % [ICON_ROOT, icon_kind])
+	icon.texture = IconCache.texture_at("%s%s.png" % [ICON_ROOT, icon_kind])
 	icon.custom_minimum_size = Vector2.ONE * side
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -252,10 +241,4 @@ func _tech_tree_label(parent: Node, value: String, size: int, color: Color) -> L
 	return label
 
 func _tech_tree_style(fill: Color, border: Color, margin: float) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = fill
-	style.border_color = border
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(3)
-	style.set_content_margin_all(margin)
-	return style
+	return UiStyle.page_panel(fill, border, margin, 3)

@@ -1,6 +1,13 @@
 class_name RtsGameHudUi
 extends CanvasLayer
+const SelectionPortrait = preload("res://scripts/ui/selection_portrait.gd")
+const SelectionDragOverlay = preload("res://scripts/ui/selection_drag_overlay.gd")
+const UiStyle = preload("res://scripts/ui/ui_style.gd")
+const IconCache = preload("res://scripts/ui/icon_cache.gd")
 const RtsUiTypography = preload("res://scripts/ui/typography.gd")
+
+signal view_mode_requested
+signal idle_villager_requested
 
 # Owns the HUD tree and renders command state from the game root.
 const BUILD_HELP := {
@@ -105,6 +112,35 @@ const BUILD_PAGES := [
 const COMMANDS_PER_PAGE := 12
 const HUD_BOTTOM_HEIGHT := 241.0
 var game: Node2D
+var top_label: Label
+var fps_label: Label
+var fps_update_timer := 0.0
+var resource_readouts: Dictionary = {}
+var population_label: Label
+var hud_top: PanelContainer
+var hud_bottom: PanelContainer
+var idle_villager_button: Button
+var info_label: Label
+var detail_label: Label
+var selection_portrait
+var selection_health: ProgressBar
+var selection_progress: ProgressBar
+var queue_label: Label
+var queue_controls: HBoxContainer
+var global_queue_panel: PanelContainer
+var global_queue_list: VBoxContainer
+var view_button: Button
+var command_title: Label
+var notice_label: Label
+var action_bar: GridContainer
+var command_buttons: Array[RtsCommandButton] = []
+var hotkey_buttons: Dictionary = {}
+var minimap: RtsMinimap
+var ui_root: Control
+var ui_scale_update_pending := false
+var age_choice_overlay: ColorRect
+var cursor: GameCursor
+var selection_drag_overlay: Variant
 var top_column: VBoxContainer
 var top_row: HBoxContainer
 var top_tools: HBoxContainer
@@ -141,16 +177,13 @@ func _create_hud() -> void:
 	root.oversampling_with_scale = CanvasItem.OVERSAMPLING_WITH_SCALE_ENABLED
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(root)
-	game.ui_root = root
-	game.menu_backdrop = game.MENU_BACKDROP.new()
-	game.menu_backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	game.menu_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	root.add_child(game.menu_backdrop)
+	ui_root = root
+	game.menu_ui.create_backdrop(root)
 	var top := PanelContainer.new()
-	game.hud_top = top
+	hud_top = top
 	top.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
 	top.offset_bottom = 54
-	top.add_theme_stylebox_override("panel", game._hud_panel_style(Color("251e17"), 8))
+	top.add_theme_stylebox_override("panel", UiStyle._hud_panel_style(Color("251e17"), 8))
 	root.add_child(top)
 	top.minimum_size_changed.connect(func() -> void: call_deferred("_fit_top_hud"))
 	top.resized.connect(_layout_top_overlays)
@@ -160,34 +193,34 @@ func _create_hud() -> void:
 	top_row = HBoxContainer.new()
 	top_row.add_theme_constant_override("separation", 5)
 	top_column.add_child(top_row)
-	game.top_label = Label.new()
-	game.top_label.custom_minimum_size.x = 230
-	game.top_label.add_theme_font_size_override("font_size", RtsUiTypography.BODY)
-	game.top_label.add_theme_color_override("font_color", Color("f4dfaa"))
-	game.top_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	top_row.add_child(game.top_label)
+	top_label = Label.new()
+	top_label.custom_minimum_size.x = 230
+	top_label.add_theme_font_size_override("font_size", RtsUiTypography.BODY)
+	top_label.add_theme_color_override("font_color", Color("f4dfaa"))
+	top_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	top_row.add_child(top_label)
 	for kind in ["food", "wood", "gold", "stone"]:
-		game._add_resource_readout(top_row, kind)
+		_add_resource_readout(top_row, kind)
 	var population_chip := PanelContainer.new()
-	population_chip.add_theme_stylebox_override("panel", game._hud_panel_style(Color("352b1e"), 5))
+	population_chip.add_theme_stylebox_override("panel", UiStyle._hud_panel_style(Color("352b1e"), 5))
 	top_row.add_child(population_chip)
 	var population_row := HBoxContainer.new()
 	population_row.add_theme_constant_override("separation", 4)
 	population_chip.add_child(population_row)
 	var population_icon := TextureRect.new()
-	population_icon.texture = RtsCommandButton._texture_at("res://assets/ui/resource_icons/population.png")
+	population_icon.texture = IconCache.texture_at("res://assets/ui/resource_icons/population.png")
 	population_icon.custom_minimum_size = Vector2(30, 28)
 	population_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	population_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	population_icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	population_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	population_row.add_child(population_icon)
-	game.population_label = Label.new()
-	game.population_label.custom_minimum_size.x = 102
-	game.population_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	game.population_label.add_theme_font_size_override("font_size", RtsUiTypography.BODY)
-	game.population_label.add_theme_color_override("font_color", Color("eee2c7"))
-	population_row.add_child(game.population_label)
+	population_label = Label.new()
+	population_label.custom_minimum_size.x = 102
+	population_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	population_label.add_theme_font_size_override("font_size", RtsUiTypography.BODY)
+	population_label.add_theme_color_override("font_color", Color("eee2c7"))
+	population_row.add_child(population_label)
 	top_tools = HBoxContainer.new()
 	top_tools.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top_tools.alignment = BoxContainer.ALIGNMENT_END
@@ -195,55 +228,55 @@ func _create_hud() -> void:
 	top_row.add_child(top_tools)
 	var global_queue_button := Button.new()
 	global_queue_button.text = "队列 [F]"
-	game._style_button(global_queue_button)
+	UiStyle._style_button(global_queue_button)
 	global_queue_button.pressed.connect(_toggle_global_queue)
 	top_tools.add_child(global_queue_button)
-	game.idle_villager_button = Button.new()
-	game.idle_villager_button.text = "村民 0"
-	game._style_button(game.idle_villager_button)
-	game.idle_villager_button.tooltip_text = "选中下一个空闲村民（句号键）"
-	game.idle_villager_button.pressed.connect(game._select_next_idle_villager)
-	top_tools.add_child(game.idle_villager_button)
-	game.view_button = Button.new()
-	game.view_button.text = "2.5D 视角"
-	game._style_button(game.view_button)
-	game.view_button.pressed.connect(func() -> void: game._toggle_view_mode(true))
-	top_tools.add_child(game.view_button)
-	game.global_queue_panel = PanelContainer.new()
-	game.global_queue_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
-	game.global_queue_panel.offset_left = -390
-	game.global_queue_panel.offset_right = -8
-	game.global_queue_panel.offset_top = 58
-	game.global_queue_panel.offset_bottom = 415
-	game.global_queue_panel.add_theme_stylebox_override("panel", game._hud_panel_style(Color("2c241b"), 12))
-	root.add_child(game.global_queue_panel)
-	game.fps_label = Label.new()
-	game.fps_label.text = "FPS: --"
-	game.fps_label.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
-	game.fps_label.offset_left = -100
-	game.fps_label.offset_right = -12
-	game.fps_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	game.fps_label.add_theme_font_size_override("font_size", RtsUiTypography.CAPTION)
-	game.fps_label.add_theme_color_override("font_color", Color("f4dfaa"))
-	game.fps_label.add_theme_color_override("font_outline_color", Color("1b1814"))
-	game.fps_label.add_theme_constant_override("outline_size", 3)
-	game.fps_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	game.fps_label.visible = game.show_fps
-	root.add_child(game.fps_label)
-	top.visibility_changed.connect(func() -> void: game.fps_label.visible = game.show_fps and top.visible)
-	game.fps_label.visibility_changed.connect(_layout_top_overlays)
+	idle_villager_button = Button.new()
+	idle_villager_button.text = "村民 0"
+	UiStyle._style_button(idle_villager_button)
+	idle_villager_button.tooltip_text = "选中下一个空闲村民（句号键）"
+	idle_villager_button.pressed.connect(func() -> void: idle_villager_requested.emit())
+	top_tools.add_child(idle_villager_button)
+	view_button = Button.new()
+	view_button.text = "2.5D 视角"
+	UiStyle._style_button(view_button)
+	view_button.pressed.connect(func() -> void: view_mode_requested.emit())
+	top_tools.add_child(view_button)
+	global_queue_panel = PanelContainer.new()
+	global_queue_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	global_queue_panel.offset_left = -390
+	global_queue_panel.offset_right = -8
+	global_queue_panel.offset_top = 58
+	global_queue_panel.offset_bottom = 415
+	global_queue_panel.add_theme_stylebox_override("panel", UiStyle._hud_panel_style(Color("2c241b"), 12))
+	root.add_child(global_queue_panel)
+	fps_label = Label.new()
+	fps_label.text = "FPS: --"
+	fps_label.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	fps_label.offset_left = -100
+	fps_label.offset_right = -12
+	fps_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	fps_label.add_theme_font_size_override("font_size", RtsUiTypography.CAPTION)
+	fps_label.add_theme_color_override("font_color", Color("f4dfaa"))
+	fps_label.add_theme_color_override("font_outline_color", Color("1b1814"))
+	fps_label.add_theme_constant_override("outline_size", 3)
+	fps_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	fps_label.visible = game.show_fps
+	root.add_child(fps_label)
+	top.visibility_changed.connect(func() -> void: fps_label.visible = game.show_fps and top.visible)
+	fps_label.visibility_changed.connect(_layout_top_overlays)
 	call_deferred("_layout_top_overlays")
 	var global_queue_scroll := ScrollContainer.new()
-	game.global_queue_panel.add_child(global_queue_scroll)
-	game.global_queue_list = VBoxContainer.new()
-	game.global_queue_list.custom_minimum_size.x = 350
-	global_queue_scroll.add_child(game.global_queue_list)
-	game.global_queue_panel.hide()
+	global_queue_panel.add_child(global_queue_scroll)
+	global_queue_list = VBoxContainer.new()
+	global_queue_list.custom_minimum_size.x = 350
+	global_queue_scroll.add_child(global_queue_list)
+	global_queue_panel.hide()
 	var bottom := PanelContainer.new()
-	game.hud_bottom = bottom
+	hud_bottom = bottom
 	bottom.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
 	bottom.offset_top = -HUD_BOTTOM_HEIGHT
-	bottom.add_theme_stylebox_override("panel", game._hud_panel_style(Color("241d16"), 7))
+	bottom.add_theme_stylebox_override("panel", UiStyle._hud_panel_style(Color("241d16"), 7))
 	root.add_child(bottom)
 	bottom.minimum_size_changed.connect(func() -> void: call_deferred("_fit_bottom_hud"))
 	var dock := HBoxContainer.new()
@@ -251,7 +284,7 @@ func _create_hud() -> void:
 	bottom.add_child(dock)
 	command_panel = PanelContainer.new()
 	command_panel.custom_minimum_size.x = 300
-	command_panel.add_theme_stylebox_override("panel", game._hud_panel_style(Color("30261b"), 7))
+	command_panel.add_theme_stylebox_override("panel", UiStyle._hud_panel_style(Color("30261b"), 7))
 	dock.add_child(command_panel)
 	var command_column := VBoxContainer.new()
 	command_column.add_theme_constant_override("separation", 5)
@@ -259,14 +292,14 @@ func _create_hud() -> void:
 	var command_header := HBoxContainer.new()
 	command_header.add_theme_constant_override("separation", 4)
 	command_column.add_child(command_header)
-	game.command_title = Label.new()
-	game.command_title.text = "命令"
-	game.command_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	game.command_title.clip_text = true
-	game.command_title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	game.command_title.add_theme_font_size_override("font_size", RtsUiTypography.SUBSECTION_TITLE)
-	game.command_title.add_theme_color_override("font_color", Color("e8cb85"))
-	command_header.add_child(game.command_title)
+	command_title = Label.new()
+	command_title.text = "命令"
+	command_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	command_title.clip_text = true
+	command_title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	command_title.add_theme_font_size_override("font_size", RtsUiTypography.SUBSECTION_TITLE)
+	command_title.add_theme_color_override("font_color", Color("e8cb85"))
+	command_header.add_child(command_title)
 	build_tab_bar = HBoxContainer.new()
 	build_tab_bar.add_theme_constant_override("separation", 3)
 	build_tab_bar.hide()
@@ -277,21 +310,21 @@ func _create_hud() -> void:
 	action_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	action_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	command_column.add_child(action_scroll)
-	game.action_bar = GridContainer.new()
-	game.action_bar.columns = 4
-	game.action_bar.add_theme_constant_override("h_separation", 6)
-	game.action_bar.add_theme_constant_override("v_separation", 4)
-	action_scroll.add_child(game.action_bar)
+	action_bar = GridContainer.new()
+	action_bar.columns = 4
+	action_bar.add_theme_constant_override("h_separation", 6)
+	action_bar.add_theme_constant_override("v_separation", 4)
+	action_scroll.add_child(action_bar)
 	selection_panel = PanelContainer.new()
 	selection_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	selection_panel.add_theme_stylebox_override("panel", game._hud_panel_style(Color("30271c"), 8))
+	selection_panel.add_theme_stylebox_override("panel", UiStyle._hud_panel_style(Color("30271c"), 8))
 	dock.add_child(selection_panel)
 	var selection_row := HBoxContainer.new()
 	selection_row.add_theme_constant_override("separation", 10)
 	selection_panel.add_child(selection_row)
-	game.selection_portrait = game.SELECTION_PORTRAIT.new()
-	game.selection_portrait.custom_minimum_size = Vector2(100, 140)
-	selection_row.add_child(game.selection_portrait)
+	selection_portrait = SelectionPortrait.new()
+	selection_portrait.custom_minimum_size = Vector2(100, 140)
+	selection_row.add_child(selection_portrait)
 	selection_column = VBoxContainer.new()
 	selection_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	selection_column.add_theme_constant_override("separation", 4)
@@ -299,17 +332,17 @@ func _create_hud() -> void:
 	selection_header = HBoxContainer.new()
 	selection_header.add_theme_constant_override("separation", 4)
 	selection_column.add_child(selection_header)
-	game.info_label = Label.new()
-	game.info_label.text = "未选择"
-	game.info_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	game.info_label.add_theme_font_size_override("font_size", RtsUiTypography.SECTION_TITLE)
-	game.info_label.add_theme_color_override("font_color", Color("f0dfb6"))
-	selection_header.add_child(game.info_label)
+	info_label = Label.new()
+	info_label.text = "未选择"
+	info_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	info_label.add_theme_font_size_override("font_size", RtsUiTypography.SECTION_TITLE)
+	info_label.add_theme_color_override("font_color", Color("f0dfb6"))
+	selection_header.add_child(info_label)
 	selection_details_button = Button.new()
 	selection_details_button.text = "详情 ▾"
 	selection_details_button.tooltip_text = "展开完整属性、攻击数据和单位状态"
 	selection_details_button.custom_minimum_size = Vector2(64, 26)
-	game._style_button(selection_details_button)
+	UiStyle._style_button(selection_details_button)
 	selection_details_button.pressed.connect(_toggle_selection_details)
 	selection_header.add_child(selection_details_button)
 	selection_summary = Label.new()
@@ -331,39 +364,39 @@ func _create_hud() -> void:
 	multi_selection_grid.add_theme_constant_override("h_separation", 5)
 	multi_selection_grid.add_theme_constant_override("v_separation", 5)
 	multi_selection_scroll.add_child(multi_selection_grid)
-	game.detail_label = Label.new()
-	game.detail_label.text = "左键选择 · 右键下令"
-	game.detail_label.add_theme_font_size_override("font_size", RtsUiTypography.CAPTION)
-	game.detail_label.add_theme_color_override("font_color", Color("d3c5a8"))
-	game.detail_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	game.detail_label.custom_minimum_size.x = 420
-	game.detail_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	detail_label = Label.new()
+	detail_label.text = "左键选择 · 右键下令"
+	detail_label.add_theme_font_size_override("font_size", RtsUiTypography.CAPTION)
+	detail_label.add_theme_color_override("font_color", Color("d3c5a8"))
+	detail_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	detail_label.custom_minimum_size.x = 420
+	detail_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	selection_details_scroll = ScrollContainer.new()
 	selection_details_scroll.custom_minimum_size.y = 76
 	selection_details_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	selection_details_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	selection_details_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	selection_column.add_child(selection_details_scroll)
-	selection_details_scroll.add_child(game.detail_label)
+	selection_details_scroll.add_child(detail_label)
 	selection_details_scroll.hide()
-	game.selection_health = ProgressBar.new()
-	game.selection_health.show_percentage = false
-	game.selection_health.custom_minimum_size = Vector2(285, 11)
-	game.selection_health.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	game._style_progress_bar(game.selection_health, Color("80ad68"))
-	game.selection_health.hide()
-	selection_column.add_child(game.selection_health)
-	game.selection_progress = ProgressBar.new()
-	game.selection_progress.show_percentage = false
-	game.selection_progress.custom_minimum_size = Vector2(285, 9)
-	game.selection_progress.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	game._style_progress_bar(game.selection_progress, Color("d4af62"))
-	game.selection_progress.hide()
-	selection_column.add_child(game.selection_progress)
-	game.queue_label = Label.new()
-	game.queue_label.add_theme_font_size_override("font_size", RtsUiTypography.CAPTION)
-	game.queue_label.add_theme_color_override("font_color", Color("e5d1a1"))
-	selection_column.add_child(game.queue_label)
+	selection_health = ProgressBar.new()
+	selection_health.show_percentage = false
+	selection_health.custom_minimum_size = Vector2(285, 11)
+	selection_health.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	UiStyle._style_progress_bar(selection_health, Color("80ad68"))
+	selection_health.hide()
+	selection_column.add_child(selection_health)
+	selection_progress = ProgressBar.new()
+	selection_progress.show_percentage = false
+	selection_progress.custom_minimum_size = Vector2(285, 9)
+	selection_progress.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	UiStyle._style_progress_bar(selection_progress, Color("d4af62"))
+	selection_progress.hide()
+	selection_column.add_child(selection_progress)
+	queue_label = Label.new()
+	queue_label.add_theme_font_size_override("font_size", RtsUiTypography.CAPTION)
+	queue_label.add_theme_color_override("font_color", Color("e5d1a1"))
+	selection_column.add_child(queue_label)
 	queue_scroll = ScrollContainer.new()
 	queue_scroll.custom_minimum_size.y = 65
 	queue_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -371,20 +404,20 @@ func _create_hud() -> void:
 	queue_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	queue_scroll.hide()
 	selection_column.add_child(queue_scroll)
-	game.queue_controls = HBoxContainer.new()
-	game.queue_controls.add_theme_constant_override("separation", 4)
-	queue_scroll.add_child(game.queue_controls)
-	game.notice_label = Label.new()
-	game.notice_label.add_theme_color_override("font_color", Color("f0d783"))
-	game.notice_label.add_theme_font_size_override("font_size", RtsUiTypography.CAPTION)
-	selection_column.add_child(game.notice_label)
+	queue_controls = HBoxContainer.new()
+	queue_controls.add_theme_constant_override("separation", 4)
+	queue_scroll.add_child(queue_controls)
+	notice_label = Label.new()
+	notice_label.add_theme_color_override("font_color", Color("f0d783"))
+	notice_label.add_theme_font_size_override("font_size", RtsUiTypography.CAPTION)
+	selection_column.add_child(notice_label)
 	minimap_anchor = Control.new()
 	minimap_anchor.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	dock.add_child(minimap_anchor)
 	minimap_panel = PanelContainer.new()
 	minimap_panel.mouse_filter = Control.MOUSE_FILTER_PASS
-	minimap_panel_style_2d = game._hud_panel_style(Color("30261b"), 7)
-	minimap_panel_style_25d = game._hud_panel_style(Color.TRANSPARENT, 7)
+	minimap_panel_style_2d = UiStyle._hud_panel_style(Color("30261b"), 7)
+	minimap_panel_style_25d = UiStyle._hud_panel_style(Color.TRANSPARENT, 7)
 	minimap_panel_style_25d.border_color = Color.TRANSPARENT
 	minimap_panel_style_25d.shadow_color = Color.TRANSPARENT
 	minimap_panel.add_theme_stylebox_override("panel", minimap_panel_style_2d)
@@ -392,58 +425,14 @@ func _create_hud() -> void:
 	minimap_slot = Control.new()
 	minimap_slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	minimap_panel.add_child(minimap_slot)
-	game.minimap = RtsMinimap.new()
-	minimap_slot.add_child(game.minimap)
-	game.minimap.setup(game)
+	minimap = RtsMinimap.new()
+	minimap_slot.add_child(minimap)
+	minimap.setup(game)
 	minimap_anchor.resized.connect(_layout_minimap)
 	minimap_slot.resized.connect(_layout_minimap)
 	_apply_minimap_size()
 
-	game.menu_panel = PanelContainer.new()
-	game.menu_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	game.menu_panel.custom_minimum_size = Vector2(1050, 610)
-	game.menu_panel.offset_left = -525
-	game.menu_panel.offset_top = -305
-	game.menu_panel.offset_right = 525
-	game.menu_panel.offset_bottom = 305
-	game.menu_panel.add_theme_stylebox_override("panel", game._parchment_style(Color("d1bb8c"), 23))
-	root.add_child(game.menu_panel)
-	game.result_panel = PanelContainer.new()
-	game.result_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	game.result_panel.custom_minimum_size = Vector2(400, 220)
-	game.result_panel.offset_left = -200
-	game.result_panel.offset_top = -110
-	game.result_panel.offset_right = 200
-	game.result_panel.offset_bottom = 110
-	game.result_panel.add_theme_stylebox_override("panel", game._hud_panel_style(Color("30271c"), 18))
-	game.result_panel.hide()
-	root.add_child(game.result_panel)
-	game.pause_overlay = ColorRect.new()
-	game.pause_overlay.color = Color(0.08, 0.06, 0.04, 0.72)
-	game.pause_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	game.pause_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
-	game.pause_overlay.hide()
-	root.add_child(game.pause_overlay)
-	var pause_panel := PanelContainer.new()
-	pause_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	pause_panel.custom_minimum_size = Vector2(380, 340)
-	pause_panel.offset_left = -190
-	pause_panel.offset_top = -170
-	pause_panel.offset_right = 190
-	pause_panel.offset_bottom = 170
-	pause_panel.add_theme_stylebox_override("panel", game._hud_panel_style(Color("30271c"), 20))
-	game.pause_overlay.add_child(pause_panel)
-	var pause_box := VBoxContainer.new()
-	pause_box.add_theme_constant_override("separation", 12)
-	pause_panel.add_child(pause_box)
-	game._add_menu_label(pause_box, "游戏已暂停", RtsUiTypography.PAGE_TITLE)
-	game._add_menu_label(pause_box, "按 Esc 继续游戏", RtsUiTypography.BODY)
-	game._add_pause_button(pause_box, "继续游戏", func() -> void: game._set_paused(false))
-	game._add_pause_button(pause_box, "设置", func() -> void: game._show_settings(true))
-	game._add_pause_button(pause_box, "重新开始", func() -> void: game.start_game(game.selected_civ, -1, game.selected_opponent_civ))
-	game._add_pause_button(pause_box, "返回主界面", func() -> void: game._return_to_menu())
-	game._add_pause_button(pause_box, "退出游戏", func() -> void: game.get_tree().quit())
-	game._create_settings(root)
+	game.menu_ui.create_overlays(root)
 
 func _apply_minimap_size() -> void:
 	var panel_size: Vector2 = Vector2.ONE * (game.minimap_size + 14.0)
@@ -455,20 +444,20 @@ func _apply_minimap_size() -> void:
 	_fit_bottom_hud()
 
 func _fit_bottom_hud() -> void:
-	if game.hud_bottom == null: return
-	var font_scale: float = game.text_scale / maxf(0.01, game.ui_root.scale.x)
+	if hud_bottom == null: return
+	var font_scale: float = game.text_scale / maxf(0.01, ui_root.scale.x)
 	# Allow the villager's title and build tabs to fit at each font scale.
 	var command_width := maxf(300.0, 173.0 + 110.0 * font_scale)
 	if not is_equal_approx(command_panel.custom_minimum_size.x, command_width):
 		command_panel.custom_minimum_size.x = command_width
-	var content_height: float = game.hud_bottom.get_combined_minimum_size().y
+	var content_height: float = hud_bottom.get_combined_minimum_size().y
 	var required_height := maxf(maxf(HUD_BOTTOM_HEIGHT, content_height), _production_hud_floor())
-	if not is_equal_approx(game.hud_bottom.offset_top, -required_height):
-		game.hud_bottom.offset_top = -required_height
+	if not is_equal_approx(hud_bottom.offset_top, -required_height):
+		hud_bottom.offset_top = -required_height
 
 func _production_hud_floor() -> float:
 	if selection_header == null or queue_scroll == null: return HUD_BOTTOM_HEIGHT
-	var header_height := maxf(maxf(selection_header.get_combined_minimum_size().y, selection_details_button.get_combined_minimum_size().y), game.info_label.get_combined_minimum_size().y)
+	var header_height := maxf(maxf(selection_header.get_combined_minimum_size().y, selection_details_button.get_combined_minimum_size().y), info_label.get_combined_minimum_size().y)
 	var summary_font: Font = selection_summary.get_theme_font("font")
 	var summary_size := selection_summary.get_theme_font_size("font_size")
 	var summary_height := summary_font.get_height(summary_size)
@@ -477,15 +466,15 @@ func _production_hud_floor() -> float:
 	if selection_column.size.x > 0.0 and summary_font.get_string_size(town_center_summary, HORIZONTAL_ALIGNMENT_LEFT, -1, summary_size).x > selection_column.size.x:
 		summary_height = summary_height * 2.0 + selection_summary.get_theme_constant("line_spacing")
 	var column_height := header_height + summary_height
-	column_height += game.selection_health.get_combined_minimum_size().y + game.selection_progress.get_combined_minimum_size().y
-	column_height += game.queue_label.get_combined_minimum_size().y + queue_scroll.get_combined_minimum_size().y + game.notice_label.get_combined_minimum_size().y
+	column_height += selection_health.get_combined_minimum_size().y + selection_progress.get_combined_minimum_size().y
+	column_height += queue_label.get_combined_minimum_size().y + queue_scroll.get_combined_minimum_size().y + notice_label.get_combined_minimum_size().y
 	column_height += selection_column.get_theme_constant("separation") * 6
-	var content_height := maxf(game.selection_portrait.get_combined_minimum_size().y, column_height)
-	return content_height + selection_panel.get_theme_stylebox("panel").get_minimum_size().y + game.hud_bottom.get_theme_stylebox("panel").get_minimum_size().y
+	var content_height := maxf(selection_portrait.get_combined_minimum_size().y, column_height)
+	return content_height + selection_panel.get_theme_stylebox("panel").get_minimum_size().y + hud_bottom.get_theme_stylebox("panel").get_minimum_size().y
 
 func _fit_top_hud() -> void:
-	if top_row == null or top_tools == null or game.ui_root == null: return
-	var available_width: float = game.ui_root.size.x - game.hud_top.get_theme_stylebox("panel").get_minimum_size().x
+	if top_row == null or top_tools == null or ui_root == null: return
+	var available_width: float = ui_root.size.x - hud_top.get_theme_stylebox("panel").get_minimum_size().x
 	var single_row_width: float = top_row.get_combined_minimum_size().x
 	if top_tools.get_parent() != top_row:
 		single_row_width += top_tools.get_combined_minimum_size().x + 5.0
@@ -496,28 +485,28 @@ func _fit_top_hud() -> void:
 	_layout_top_overlays()
 
 func _layout_top_overlays() -> void:
-	if game.hud_top == null or game.fps_label == null or game.global_queue_panel == null: return
-	var top_bottom: float = game.hud_top.position.y + game.hud_top.size.y
-	game.fps_label.offset_top = top_bottom + 6.0
-	game.fps_label.offset_bottom = top_bottom + 29.0
-	game.global_queue_panel.offset_top = top_bottom + (35.0 if game.show_fps else 4.0)
-	game.global_queue_panel.offset_bottom = game.global_queue_panel.offset_top + 357.0
+	if hud_top == null or fps_label == null or global_queue_panel == null: return
+	var top_bottom: float = hud_top.position.y + hud_top.size.y
+	fps_label.offset_top = top_bottom + 6.0
+	fps_label.offset_bottom = top_bottom + 29.0
+	global_queue_panel.offset_top = top_bottom + (35.0 if game.show_fps else 4.0)
+	global_queue_panel.offset_bottom = global_queue_panel.offset_top + 357.0
 
 func _layout_minimap() -> void:
-	if game.minimap == null or minimap_slot == null: return
+	if minimap == null or minimap_slot == null: return
 	var panel_style := minimap_panel_style_25d if game.view_mode_25d else minimap_panel_style_2d
 	if minimap_panel.get_theme_stylebox("panel") != panel_style:
 		minimap_panel.add_theme_stylebox_override("panel", panel_style)
 	minimap_panel.position = Vector2(0, minimap_anchor.size.y - minimap_panel.size.y)
 	# Both projections fit in the same frame; changing view never covers the battlefield.
-	game.minimap.size = Vector2.ONE * game.minimap_size
-	game.minimap.position = minimap_slot.size - game.minimap.size
-	game.minimap.queue_redraw()
+	minimap.size = Vector2.ONE * game.minimap_size
+	minimap.position = minimap_slot.size - minimap.size
+	minimap.queue_redraw()
 
 func _update_hud() -> void:
-	if game.top_label == null or game.players.is_empty(): return
+	if top_label == null or game.players.is_empty(): return
 	game._prune_hidden_enemy_selection()
-	if game.global_queue_panel.visible: _refresh_global_queue_panel()
+	if global_queue_panel.visible: _refresh_global_queue_panel()
 	_update_population_hud()
 	_refresh_action_buttons()
 	_update_selection_hud()
@@ -528,20 +517,20 @@ func _update_population_hud() -> void:
 	var used: int = game.population_used(0)
 	var capacity: int = game.population_cap(0)
 	var age_names := ["", "黑暗时代", "封建时代", "城堡时代", "帝王时代"]
-	game.top_label.text = "%s · %s %s%s" % [GameData.CIVILIZATIONS[game.civilizations[0]]["label"], age_names[clampi(bank["age"], 1, 4)], ["", "I", "II", "III", "IV"][clampi(bank["age"], 1, 4)], dynasty_text]
+	top_label.text = "%s · %s %s%s" % [GameData.CIVILIZATIONS[game.civilizations[0]]["label"], age_names[clampi(bank["age"], 1, 4)], ["", "I", "II", "III", "IV"][clampi(bank["age"], 1, 4)], dynasty_text]
 	for kind in ["food", "wood", "gold", "stone"]:
-		game.resource_readouts[kind].text = str(bank[kind])
-	game.population_label.text = "人口 %d/%d" % [used, capacity]
-	game.population_label.tooltip_text = "空余 %d" % maxi(0, capacity - used)
+		resource_readouts[kind].text = str(bank[kind])
+	population_label.text = "人口 %d/%d" % [used, capacity]
+	population_label.tooltip_text = "空余 %d" % maxi(0, capacity - used)
 	var idle_count: int = game.idle_villagers().size()
-	game.idle_villager_button.text = "村民 %d" % idle_count
-	game.idle_villager_button.disabled = idle_count == 0
+	idle_villager_button.text = "村民 %d" % idle_count
+	idle_villager_button.disabled = idle_count == 0
 	call_deferred("_fit_top_hud")
 
 func _update_selection_hud() -> void:
 	var subject: Node2D
 	if game.selected.size() == 1 and is_instance_valid(game.selected[0]): subject = game.selected[0]
-	game.selection_health.visible = subject != null and not subject is RtsResource
+	selection_health.visible = subject != null and not subject is RtsResource
 	var has_progress := subject is RtsResource
 	var selected_building: RtsBuilding = subject if subject is RtsBuilding else null
 	var has_production_actions := selected_building != null and selected_building.owner_id == 0 and _has_production_actions(selected_building)
@@ -551,62 +540,62 @@ func _update_selection_hud() -> void:
 	elif subject is RtsBuilding:
 		var building: RtsBuilding = subject
 		has_progress = not building.is_complete() or building.kind == "farm" or has_production_actions or not building.production_queue.is_empty()
-	game.selection_progress.visible = has_progress
-	game.queue_label.text = ""
+	selection_progress.visible = has_progress
+	queue_label.text = ""
 	queue_scroll.visible = selected_building != null and selected_building.owner_id == 0 and (has_production_actions or not selected_building.production_queue.is_empty())
-	game.selection_portrait.show()
+	selection_portrait.show()
 	multi_selection_scroll.hide()
 	if game.selected.is_empty() or not is_instance_valid(game.selected[0]):
 		_clear_multi_selection_icons()
-		game.selection_portrait.show_subject(null)
-		game.info_label.text = "未选择"
-		game.detail_label.text = "左键选择 · 双击同型单位 · 右键下令 · Esc 暂停"
+		selection_portrait.show_subject(null)
+		info_label.text = "未选择"
+		detail_label.text = "左键选择 · 双击同型单位 · 右键下令 · Esc 暂停"
 		_refresh_selection_summary()
 		return
 	var item: Node2D = game.selected[0]
 	if game.selected.size() > 1:
-		game.selection_portrait.hide()
+		selection_portrait.hide()
 		selection_summary.hide()
 		selection_details_scroll.hide()
 		selection_details_button.hide()
-		game.info_label.text = "已选中 %d 个单位 · 点击图标单独选中" % game.selected.size()
+		info_label.text = "已选中 %d 个单位 · 点击图标单独选中" % game.selected.size()
 		_refresh_multi_selection_icons()
 		multi_selection_scroll.show()
 		return
 	_clear_multi_selection_icons()
-	game.selection_portrait.show_subject(item, Color("b6a877") if item is RtsResource else game.player_color(item.owner_id))
+	selection_portrait.show_subject(item, Color("b6a877") if item is RtsResource else game.player_color(item.owner_id))
 	if item is RtsResource:
-		game.info_label.text = _resource_label(item)
-		game.detail_label.text = "资源类型  %s\n采集单位  %s\n当前状态  %s" % [GameData.RESOURCE_LABELS.get(item.kind, item.kind), "渔船" if item.appearance == "fish" else "村民", _resource_status(item)]
-		game.selection_progress.max_value = maxi(1, item.initial_amount)
-		game.selection_progress.value = item.amount
-		game.selection_progress.show()
-		game.queue_label.text = "剩余 %d / %d" % [item.amount, item.initial_amount]
+		info_label.text = _resource_label(item)
+		detail_label.text = "资源类型  %s\n采集单位  %s\n当前状态  %s" % [GameData.RESOURCE_LABELS.get(item.kind, item.kind), "渔船" if item.appearance == "fish" else "村民", _resource_status(item)]
+		selection_progress.max_value = maxi(1, item.initial_amount)
+		selection_progress.value = item.amount
+		selection_progress.show()
+		queue_label.text = "剩余 %d / %d" % [item.amount, item.initial_amount]
 		_refresh_selection_summary()
 		return
 	var name: String = GameData.UNITS[item.kind]["label"] if item is RtsUnit else item.display_label()
-	game.info_label.text = "敌方 · %s" % name if game.is_enemy(0, item.owner_id) else name
-	game.selection_health.max_value = item.max_hp
-	game.selection_health.value = maxf(0.0, item.hp)
-	game.selection_health.show()
+	info_label.text = "敌方 · %s" % name if game.is_enemy(0, item.owner_id) else name
+	selection_health.max_value = item.max_hp
+	selection_health.value = maxf(0.0, item.hp)
+	selection_health.show()
 	if item is RtsUnit:
-		game.detail_label.text = _unit_stats_text(item)
+		detail_label.text = _unit_stats_text(item)
 		if item.field_build_remaining > 0.0:
-			game.selection_progress.max_value = item.field_build_total
-			game.selection_progress.value = item.field_build_total - item.field_build_remaining
-			game.selection_progress.show()
-			game.queue_label.text = "野外建造 %d%%" % roundi(100.0 * game.selection_progress.value / game.selection_progress.max_value)
-		if item.kind in ["transport_ship", "battering_ram", "siege_tower"]: game.detail_label.text += "   乘员 %d/%d" % [item.passengers.size(), 10 if item.kind == "siege_tower" else 8]
-		if item.kind == "trader": game.detail_label.text += "   右键贸易站往返交易"
-		if item.kind == "monk": game.detail_label.text += "   携带圣物" if item.carried_relic != null else "   可占圣地、拾取圣物"
-		if item.kind == "fishing_boat": game.detail_label.text += "   右键鱼群捕鱼"
+			selection_progress.max_value = item.field_build_total
+			selection_progress.value = item.field_build_total - item.field_build_remaining
+			selection_progress.show()
+			queue_label.text = "野外建造 %d%%" % roundi(100.0 * selection_progress.value / selection_progress.max_value)
+		if item.kind in ["transport_ship", "battering_ram", "siege_tower"]: detail_label.text += "   乘员 %d/%d" % [item.passengers.size(), 10 if item.kind == "siege_tower" else 8]
+		if item.kind == "trader": detail_label.text += "   右键贸易站往返交易"
+		if item.kind == "monk": detail_label.text += "   携带圣物" if item.carried_relic != null else "   可占圣地、拾取圣物"
+		if item.kind == "fishing_boat": detail_label.text += "   右键鱼群捕鱼"
 	else:
-		game.detail_label.text = "生命 %.0f/%.0f   %s" % [item.hp, item.max_hp, "建造中" if not item.is_complete() else "已建成"]
-		if item.kind == "farm" and item.is_complete(): game.detail_label.text += "\n播种 %.1f 工作量 · 收获 %.1f 工作量" % [RtsBuilding.FARM_SOW_WORK, RtsBuilding.FARM_HARVEST_WORK]
-		if item.kind == "monastery": game.detail_label.text += "   圣物 %d（每 4 秒每件 +12 黄金）" % item.relics.size()
-		if not item.garrisoned_units.is_empty(): game.detail_label.text += "   驻军 %d/%d" % [item.garrisoned_units.size(), item.garrison_capacity()]
+		detail_label.text = "生命 %.0f/%.0f   %s" % [item.hp, item.max_hp, "建造中" if not item.is_complete() else "已建成"]
+		if item.kind == "farm" and item.is_complete(): detail_label.text += "\n播种 %.1f 工作量 · 收获 %.1f 工作量" % [RtsBuilding.FARM_SOW_WORK, RtsBuilding.FARM_HARVEST_WORK]
+		if item.kind == "monastery": detail_label.text += "   圣物 %d（每 4 秒每件 +12 黄金）" % item.relics.size()
+		if not item.garrisoned_units.is_empty(): detail_label.text += "   驻军 %d/%d" % [item.garrisoned_units.size(), item.garrison_capacity()]
 		if item.can_set_rally(0):
-			game.detail_label.text += "   右键设置集结点"
+			detail_label.text += "   右键设置集结点"
 		_update_building_progress(item)
 		_refresh_queue_controls(item)
 	_refresh_selection_summary()
@@ -620,7 +609,7 @@ func _refresh_selection_summary() -> void:
 	selection_details_scroll.visible = selection_details_expanded
 	selection_summary.visible = not selection_details_expanded
 	selection_details_button.visible = not game.selected.is_empty()
-	var lines: PackedStringArray = game.detail_label.text.split("\n")
+	var lines: PackedStringArray = detail_label.text.split("\n")
 	selection_summary.text = "\n".join(lines.slice(0, mini(2, lines.size())))
 
 func _clear_multi_selection_icons() -> void:
@@ -679,27 +668,27 @@ func _resource_guide(resource: RtsResource) -> String:
 
 func _update_building_progress(building: RtsBuilding) -> void:
 	if not building.is_complete():
-		game.selection_progress.max_value = maxf(0.1, building.build_total)
-		game.selection_progress.value = building.build_total - building.build_remaining
-		game.selection_progress.show()
-		game.queue_label.text = "施工 %d%% · 村民 %d · 选村民右键继续" % [int(100.0 * game.selection_progress.value / game.selection_progress.max_value), game.count_builders(building)]
+		selection_progress.max_value = maxf(0.1, building.build_total)
+		selection_progress.value = building.build_total - building.build_remaining
+		selection_progress.show()
+		queue_label.text = "施工 %d%% · 村民 %d · 选村民右键继续" % [int(100.0 * selection_progress.value / selection_progress.max_value), game.count_builders(building)]
 	elif building.kind == "farm":
-		game.selection_progress.max_value = building.farm_stage_work()
-		game.selection_progress.value = building.farm_stage_progress
-		game.selection_progress.show()
+		selection_progress.max_value = building.farm_stage_work()
+		selection_progress.value = building.farm_stage_progress
+		selection_progress.show()
 		var farmer: RtsUnit = game.farm_worker(building)
 		var stage_label := "播种" if building.farm_stage == "sowing" else "收获"
 		var remaining := (building.farm_stage_work() - building.farm_stage_progress) / farmer.farm_work_speed() if farmer != null else 0.0
-		game.queue_label.text = "%s %d%% · 速度 %.2f 工作量/秒 · 剩余 %.1f 秒" % [stage_label, roundi(100.0 * building.farm_stage_progress / building.farm_stage_work()), farmer.farm_work_speed(), remaining] if farmer != null else "%s %d%% · 暂停，派村民耕作" % [stage_label, roundi(100.0 * building.farm_stage_progress / building.farm_stage_work())]
+		queue_label.text = "%s %d%% · 速度 %.2f 工作量/秒 · 剩余 %.1f 秒" % [stage_label, roundi(100.0 * building.farm_stage_progress / building.farm_stage_work()), farmer.farm_work_speed(), remaining] if farmer != null else "%s %d%% · 暂停，派村民耕作" % [stage_label, roundi(100.0 * building.farm_stage_progress / building.farm_stage_work())]
 	elif not building.production_queue.is_empty():
 		var job: Dictionary = building.current_job()
-		game.selection_progress.max_value = job["time"]
-		game.selection_progress.value = job["time"] - job["remaining"]
-		game.selection_progress.show()
+		selection_progress.max_value = job["time"]
+		selection_progress.value = job["time"] - job["remaining"]
+		selection_progress.show()
 	elif _has_production_actions(building):
-		game.selection_progress.max_value = 1.0
-		game.selection_progress.value = 0.0
-		game.selection_progress.show()
+		selection_progress.max_value = 1.0
+		selection_progress.value = 0.0
+		selection_progress.show()
 
 func _has_production_actions(building: RtsBuilding) -> bool:
 	if building.owner_id != 0: return false
@@ -759,17 +748,17 @@ func _refresh_queue_controls(building: RtsBuilding) -> void:
 	if jobs == displayed_queue_jobs: return
 	var previous_scroll := queue_scroll.scroll_horizontal if not displayed_queue_jobs.is_empty() and displayed_queue_jobs[0] == jobs[0] else 0
 	displayed_queue_jobs = jobs
-	for child in game.queue_controls.get_children():
-		game.queue_controls.remove_child(child)
+	for child in queue_controls.get_children():
+		queue_controls.remove_child(child)
 		child.queue_free()
 	if building.production_queue.is_empty():
 		var empty := Label.new()
 		empty.text = "生产队列空"
 		empty.add_theme_font_size_override("font_size", RtsUiTypography.CAPTION)
 		empty.add_theme_color_override("font_color", Color("a99b7e"))
-		game.queue_controls.add_child(empty)
+		queue_controls.add_child(empty)
 	for index in building.production_queue.size():
-		game.queue_controls.add_child(_queue_job_button(building, index, building.production_queue[index]))
+		queue_controls.add_child(_queue_job_button(building, index, building.production_queue[index]))
 	queue_scroll.scroll_horizontal = previous_scroll
 
 func _queue_job_button(building: RtsBuilding, index: int, job: Dictionary) -> Button:
@@ -799,21 +788,21 @@ func _queue_job_button(building: RtsBuilding, index: int, job: Dictionary) -> Bu
 	return button
 
 func _toggle_global_queue() -> void:
-	game.global_queue_panel.visible = not game.global_queue_panel.visible
-	if game.global_queue_panel.visible: _refresh_global_queue_panel()
+	global_queue_panel.visible = not global_queue_panel.visible
+	if global_queue_panel.visible: _refresh_global_queue_panel()
 
 func _refresh_global_queue_panel() -> void:
-	for child in game.global_queue_list.get_children(): child.queue_free()
+	for child in global_queue_list.get_children(): child.queue_free()
 	var heading := Label.new()
 	heading.text = "全局生产队列 · 点击定位建筑"
-	game.global_queue_list.add_child(heading)
+	global_queue_list.add_child(heading)
 	var count := 0
 	for building in game.buildings:
 		if not is_instance_valid(building) or building.owner_id != 0 or building.production_queue.is_empty(): continue
 		for index in building.production_queue.size():
 			var job: Dictionary = building.production_queue[index]
 			var row := HBoxContainer.new()
-			game.global_queue_list.add_child(row)
+			global_queue_list.add_child(row)
 			var locate := Button.new()
 			locate.text = "%s · %s%s" % [building.display_label(), _job_label(job), " %.0fs" % building.production_remaining if index == 0 else ""]
 			locate.custom_minimum_size.x = 275
@@ -837,81 +826,62 @@ func _refresh_global_queue_panel() -> void:
 	if count == 0:
 		var empty := Label.new()
 		empty.text = "当前没有训练、研究或升级任务"
-		game.global_queue_list.add_child(empty)
+		global_queue_list.add_child(empty)
 
 func _refresh_action_buttons() -> void:
 	if game.players.is_empty(): return
-	var producer := ""
-	var complete := true
-	var landmark_id := ""
-	var landmark_cooldown := 0.0
-	var landmark_stockpile := {}
-	var ability_ready := {}
-	for ability in game.UNIT_ABILITY_ACTIONS: ability_ready[ability["id"]] = false
-	var ability_reason := {"convert": "需要携带圣物"}
-	var camp_count := 0
-	for building in game.buildings:
-		if is_instance_valid(building) and building.owner_id == 0 and building.kind == "scout_camp": camp_count += 1
-	for selection in game.selected:
-		if not is_instance_valid(selection) or not selection is RtsUnit: continue
-		if selection.kind == "longbow":
-			if selection.paling_cooldown <= 0.0: ability_ready["palings"] = true
-			if selection.volley_cooldown <= 0.0: ability_ready["volley"] = true
-		if selection.kind == "arbaletrier": ability_ready["pavise"] = true
-		if selection.kind == "warship" and selection.helm_cooldown <= 0.0: ability_ready["helmsman"] = true
-		if selection.kind == "cannon" and selection.producer_landmark_id == "fr_college_of_artillery" and selection.artillery_shot_cooldown <= 0.0: ability_ready["artillery_shot"] = true
-		if selection.kind == "monk":
-			if selection.carried_relic != null and selection.conversion_cooldown <= 0.0: ability_ready["convert"] = true
-			elif selection.carried_relic != null: ability_reason["convert"] = "技能冷却中"
-		if game.civilizations[0] == "English" and selection.kind in ["scout", "man_at_arms"] and camp_count < 5: ability_ready["camp"] = true
+	var producer: RtsBuilding
 	if not game.selected.is_empty() and is_instance_valid(game.selected[0]) and game.selected[0] is RtsBuilding:
-		producer = game.selected[0].producer_kind()
-		complete = game.selected[0].is_complete()
-		landmark_id = game.selected[0].landmark_id
-		landmark_cooldown = game.selected[0].landmark_ability_cooldown
-		landmark_stockpile = game.selected[0].landmark_stockpile
-	var context := {
-		"civilization": game.civilizations[0], "age": game.players[0]["age"], "dynasty": game.players[0].get("dynasty", ""), "producer": producer,
-		"researched": game.players[0]["researched"], "queued_research": game.queued_research(0),
-		"landmarks": game.players[0]["landmarks"], "active_landmark": game.active_landmark_id(0),
-		"has_wonder": _has_wonder(0),
-		"resources": game.players[0], "population_used": game.population_used(0), "population_cap": game.population_cap(0),
-		"production_complete": complete,
-		"landmark_id": landmark_id, "landmark_cooldown": landmark_cooldown, "landmark_stockpile": landmark_stockpile,
-		"ability_ready": ability_ready, "ability_reason": ability_reason, "camp_count": camp_count,
-		"producer_building": game.selected[0] if not game.selected.is_empty() and game.selected[0] is RtsBuilding else null, "game": game,
-	}
-	for button in game.command_buttons:
+		producer = game.selected[0]
+	var context := RtsActionAvailability.context_for(game, 0, producer)
+	for button in command_buttons:
 		if not is_instance_valid(button) or button.is_queued_for_deletion(): continue
 		var action_type: String = button.get_meta("action_type")
 		var action_kind: String = button.get_meta("action_kind")
-		var status := RtsActionAvailability.evaluate(action_type, action_kind, context)
-		if action_type in ["train", "research"] and game.selected.size() > 1:
+		var status: Dictionary
+		if action_type in ["train", "research"]:
+			status = RtsActionAvailability.production(game, producer, action_type, action_kind)
+			var found_producer := false
 			for candidate in game.selected:
 				if not is_instance_valid(candidate) or not candidate is RtsBuilding or candidate.owner_id != 0: continue
-				var candidate_context: Dictionary = context.duplicate()
-				candidate_context["producer"] = candidate.producer_kind()
-				candidate_context["production_complete"] = candidate.is_complete()
-				candidate_context["producer_building"] = candidate
-				var candidate_status := RtsActionAvailability.evaluate(action_type, action_kind, candidate_context)
-				if candidate_status["available"]:
-					status = candidate_status
-					break
+				# A union of selected producers supplies the visible actions. Pick failure
+				# details from a producer that actually offers this action as well.
+				var offered: Array = RtsTechTree.all_train_units(game.civilizations[0], candidate.producer_kind()) if action_type == "train" else RtsTechTree.all_researches(game.civilizations[0], candidate.producer_kind())
+				if not offered.has(action_kind): continue
+				var candidate_status := RtsActionAvailability.production(game, candidate, action_type, action_kind)
+				if not found_producer or candidate_status["available"]: status = candidate_status
+				found_producer = true
+				if candidate_status["available"]: break
+		elif action_type == "unit_ability":
+			status = _selected_ability_availability(action_kind)
+		else:
+			status = RtsActionAvailability.evaluate(action_type, action_kind, context)
 		button.set_availability(status["available"], status["reason"], status["cost"])
 
-func _has_wonder(owner_id: int) -> bool:
-	for building in game.buildings:
-		if is_instance_valid(building) and building.owner_id == owner_id and building.kind == "wonder": return true
-	return false
+func _selected_ability_availability(ability_id: String) -> Dictionary:
+	var status := {"available": false, "reason": "没有可使用此技能的单位", "cost": {}}
+	var found := false
+	for ability in game.UNIT_ABILITY_ACTIONS:
+		if ability["id"] != ability_id: continue
+		for candidate in game.selected:
+			if not is_instance_valid(candidate) or not candidate is RtsUnit or candidate.owner_id != 0: continue
+			if not ability["kinds"].has(candidate.kind): continue
+			if ability.has("civilization") and game.civilizations[0] != ability["civilization"]: continue
+			if ability.has("producer_landmark") and candidate.producer_landmark_id != ability["producer_landmark"]: continue
+			var candidate_status: Dictionary = candidate.ability_availability(ability_id)
+			if not found or candidate_status["available"]: status = candidate_status
+			found = true
+			if candidate_status["available"]: return status
+	return status
 
 func _rebuild_actions() -> void:
-	if game.action_bar == null: return
-	for child in game.action_bar.get_children():
-		game.action_bar.remove_child(child)
+	if action_bar == null: return
+	for child in action_bar.get_children():
+		action_bar.remove_child(child)
 		child.queue_free()
-	game.command_buttons.clear()
-	game.hotkey_buttons.clear()
-	game.command_title.text = "命令"
+	command_buttons.clear()
+	hotkey_buttons.clear()
+	command_title.text = "命令"
 	build_tab_bar.hide()
 	if game.selected.is_empty() or not is_instance_valid(game.selected[0]):
 		command_page = 0
@@ -922,20 +892,20 @@ func _rebuild_actions() -> void:
 	if selection_id != command_selection_id:
 		command_page = 0
 		command_selection_id = selection_id
-	game.action_bar.columns = 4
+	action_bar.columns = 4
 	if item is RtsResource:
-		game.command_title.text = "采集方式"
-		game.action_bar.columns = 1
+		command_title.text = "采集方式"
+		action_bar.columns = 1
 		var guide := Label.new()
 		guide.text = _resource_guide(item)
 		guide.custom_minimum_size.x = 270
 		guide.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		guide.add_theme_font_size_override("font_size", RtsUiTypography.BODY)
 		guide.add_theme_color_override("font_color", Color("e9dbbd"))
-		game.action_bar.add_child(guide)
+		action_bar.add_child(guide)
 		return
 	if item.owner_id != 0:
-		game.command_title.text = "敌方建筑 · 情报" if item is RtsBuilding else "敌方单位 · 情报"
+		command_title.text = "敌方建筑 · 情报" if item is RtsBuilding else "敌方单位 · 情报"
 		return
 	if item is RtsUnit: _build_unit_actions(item)
 	elif item is RtsBuilding: _build_building_actions(item)
@@ -962,7 +932,7 @@ func _build_unit_actions(item: RtsUnit) -> void:
 		if game.civilizations[0] == "Chinese": pages.append({"title": "王朝", "kinds": []})
 		game.build_page = posmod(game.build_page, pages.size())
 		var page: Dictionary = pages[game.build_page]
-		game.command_title.text = "村民 · 建造"
+		command_title.text = "村民 · 建造"
 		_show_build_tabs(pages)
 		for kind in page["kinds"]:
 			if kind.is_empty():
@@ -979,7 +949,7 @@ func _build_unit_actions(item: RtsUnit) -> void:
 				_add_landmark_action(choice, keys[action_index] if action_index < keys.size() else KEY_NONE)
 				action_index += 1
 	if (any_military or any_special) and not any_worker:
-		game.command_title.text = "部队 · 命令"
+		command_title.text = "部队 · 命令"
 		if any_military:
 			if game.players[0]["age"] >= 3 and game.selected.any(func(chosen: Node2D) -> bool: return chosen is RtsUnit and chosen.stats.get("tags", []).has("infantry") and not chosen.stats.get("tags", []).has("siege")):
 				for field_kind in ["field_ram", "field_tower"]:
@@ -1070,7 +1040,7 @@ func _show_build_tabs(pages: Array) -> void:
 		var tab := Button.new()
 		tab.text = pages[index]["title"]
 		tab.custom_minimum_size = Vector2(40, 26)
-		game._style_button(tab, tab_index == game.build_page)
+		UiStyle._style_button(tab, tab_index == game.build_page)
 		tab.pressed.connect(func() -> void:
 			game.build_page = tab_index
 			_rebuild_actions()
@@ -1080,12 +1050,12 @@ func _show_build_tabs(pages: Array) -> void:
 	stop.text = "■"
 	stop.tooltip_text = "停止选中村民当前的命令"
 	stop.custom_minimum_size = Vector2(26, 26)
-	game._style_button(stop)
+	UiStyle._style_button(stop)
 	stop.pressed.connect(func() -> void: game._stop_selected_units())
 	build_tab_bar.add_child(stop)
 
 func _paginate_actions() -> void:
-	var actions: Array[Node] = game.action_bar.get_children()
+	var actions: Array[Node] = action_bar.get_children()
 	var page_count := ceili(float(actions.size()) / COMMANDS_PER_PAGE)
 	if page_count <= 1: return
 	command_page = clampi(command_page, 0, page_count - 1)
@@ -1099,7 +1069,7 @@ func _paginate_actions() -> void:
 		tab.text = str(index + 1)
 		tab.tooltip_text = "命令第 %d 页" % (index + 1)
 		tab.custom_minimum_size = Vector2(26, 26)
-		game._style_button(tab, index == command_page)
+		UiStyle._style_button(tab, index == command_page)
 		tab.pressed.connect(func() -> void:
 			command_page = page_index
 			_rebuild_actions()
@@ -1122,7 +1092,7 @@ func _selected_has_ability(ability: Dictionary) -> bool:
 func _build_building_actions(item: RtsBuilding) -> void:
 	var keys := [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9]
 	var action_index := 0
-	game.command_title.text = "%s · 训练与研究" % item.display_label()
+	command_title.text = "%s · 训练与研究" % item.display_label()
 	if item.kind.ends_with("_wall"):
 		var gate_kind := "stone_gate" if item.kind == "stone_wall" else "palisade_gate"
 		var resource := "stone" if gate_kind == "stone_gate" else "wood"
@@ -1177,7 +1147,7 @@ func _add_landmark_action(choice: Dictionary, keycode: int) -> void:
 	_add_action(choice_id, choice["label"], choice["cost"], keycode, "landmark", func() -> void: game._select_landmark_for_placement(choice_id))
 
 func _show_age_choice() -> void:
-	if not game.started or game.game_over or game.age_choice_overlay != null: return
+	if not game.started or game.game_over or age_choice_overlay != null: return
 	var current_age: int = game.players[0]["age"]
 	if not RtsTechTree.can_advance(current_age): return
 	var choices: Array[Dictionary] = []
@@ -1185,19 +1155,19 @@ func _show_age_choice() -> void:
 		if int(choice["age"]) == current_age + 1: choices.append(choice)
 	if choices.is_empty(): return
 	var target_age := current_age + 1
-	game.age_choice_overlay = ColorRect.new()
-	game.age_choice_overlay.color = Color("100f0d", 0.87)
-	game.age_choice_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	game.age_choice_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
-	game.hud_bottom.get_parent().add_child(game.age_choice_overlay)
+	age_choice_overlay = ColorRect.new()
+	age_choice_overlay.color = Color("100f0d", 0.87)
+	age_choice_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	age_choice_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	hud_bottom.get_parent().add_child(age_choice_overlay)
 	var panel := PanelContainer.new()
 	panel.set_anchors_preset(Control.PRESET_CENTER)
 	panel.offset_left = -310
 	panel.offset_right = 310
 	panel.offset_top = -190
 	panel.offset_bottom = 190
-	panel.add_theme_stylebox_override("panel", game._hud_panel_style(Color("30271c"), 18))
-	game.age_choice_overlay.add_child(panel)
+	panel.add_theme_stylebox_override("panel", UiStyle._hud_panel_style(Color("30271c"), 18))
+	age_choice_overlay.add_child(panel)
 	var column := VBoxContainer.new()
 	column.add_theme_constant_override("separation", 12)
 	panel.add_child(column)
@@ -1218,7 +1188,7 @@ func _show_age_choice() -> void:
 		var button := Button.new()
 		button.custom_minimum_size = Vector2(280, 210)
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		game._style_button(button)
+		UiStyle._style_button(button)
 		var card := VBoxContainer.new()
 		card.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		card.offset_left = 8
@@ -1229,7 +1199,7 @@ func _show_age_choice() -> void:
 		card.add_theme_constant_override("separation", 4)
 		button.add_child(card)
 		var icon := TextureRect.new()
-		icon.texture = RtsCommandButton._texture_at("res://assets/ui/command_icons/%s.png" % chosen_id)
+		icon.texture = IconCache.texture_at("res://assets/ui/command_icons/%s.png" % chosen_id)
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.custom_minimum_size = Vector2(80, 80)
 		icon.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
@@ -1267,14 +1237,14 @@ func _show_age_choice() -> void:
 	var cancel := Button.new()
 	cancel.text = "返回"
 	cancel.custom_minimum_size.y = 36
-	game._style_button(cancel)
+	UiStyle._style_button(cancel)
 	cancel.pressed.connect(_close_age_choice)
 	column.add_child(cancel)
 
 func _close_age_choice() -> void:
-	if game.age_choice_overlay == null: return
-	game.age_choice_overlay.queue_free()
-	game.age_choice_overlay = null
+	if age_choice_overlay == null: return
+	age_choice_overlay.queue_free()
+	age_choice_overlay = null
 
 func _add_train_action(kind: String, keycode: int) -> void:
 	_add_action(kind, GameData.UNITS[kind]["label"], GameData.unit_cost(kind), keycode, "train", func() -> void:
@@ -1294,7 +1264,7 @@ func _add_action_spacer() -> void:
 	var spacer := Control.new()
 	spacer.custom_minimum_size = Vector2(54, 54)
 	spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	game.action_bar.add_child(spacer)
+	action_bar.add_child(spacer)
 
 func _add_action(icon_kind: String, label_text: String, cost: Dictionary, keycode: int, action_type: String, callback: Callable) -> void:
 	var button := RtsCommandButton.new()
@@ -1325,9 +1295,9 @@ func _add_action(icon_kind: String, label_text: String, cost: Dictionary, keycod
 	button.set_meta("action_type", action_type)
 	button.set_meta("action_kind", icon_kind)
 	button.pressed.connect(callback)
-	game.action_bar.add_child(button)
-	game.command_buttons.append(button)
-	if keycode != KEY_NONE: game.hotkey_buttons[keycode] = button
+	action_bar.add_child(button)
+	command_buttons.append(button)
+	if keycode != KEY_NONE: hotkey_buttons[keycode] = button
 
 func _research_description(kind: String, technology: Dictionary) -> String:
 	var purpose := ""
@@ -1358,3 +1328,76 @@ func _research_description(kind: String, technology: Dictionary) -> String:
 	for required in technology.get("requires", []): prerequisites.append(str(RtsTechTree.get_technology(str(required)).get("label", required)))
 	if not prerequisites.is_empty(): lines.append("前置科技：%s" % "、".join(prerequisites))
 	return "\n".join(lines)
+
+func _add_resource_readout(parent: HBoxContainer, kind: String) -> void:
+	var chip := PanelContainer.new()
+	chip.custom_minimum_size.x = 92
+	chip.add_theme_stylebox_override("panel", UiStyle._hud_panel_style(Color("352b1e"), 5))
+	parent.add_child(chip)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 4)
+	chip.add_child(row)
+	var icon := TextureRect.new()
+	icon.texture = IconCache.texture_at("res://assets/ui/resource_icons/%s.png" % kind)
+	icon.custom_minimum_size = Vector2(30, 28)
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_child(icon)
+	var value := Label.new()
+	value.text = "0"
+	value.add_theme_font_size_override("font_size", RtsUiTypography.BODY)
+	value.add_theme_color_override("font_color", Color("f4e6c4"))
+	value.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	row.add_child(value)
+	resource_readouts[kind] = value
+	chip.tooltip_text = GameData.RESOURCE_LABELS[kind]
+
+
+func _create_cursor() -> void:
+	var layer := CanvasLayer.new()
+	layer.layer = 10
+	game.add_child(layer)
+	selection_drag_overlay = SelectionDragOverlay.new()
+	layer.add_child(selection_drag_overlay)
+	cursor = GameCursor.new()
+	cursor.text_scale = game.text_scale
+	layer.add_child(cursor)
+	cursor.hide()
+
+
+func _on_ui_node_added(node: Node) -> void:
+	if ui_root == null or not (node is Control or node is PopupMenu) or not ui_root.is_ancestor_of(node) or ui_scale_update_pending: return
+	ui_scale_update_pending = true
+	call_deferred("_apply_ui_scales")
+
+
+func _apply_ui_scales() -> void:
+	ui_scale_update_pending = false
+	if ui_root == null or not is_instance_valid(ui_root): return
+	var viewport_size := game.get_viewport_rect().size
+	var max_scale := minf(viewport_size.x / game.MIN_UI_VIEWPORT_SIZE.x, viewport_size.y / game.MIN_UI_VIEWPORT_SIZE.y)
+	var effective_scale := maxf(0.5, minf(game.ui_scale, max_scale))
+	# CanvasItem font oversampling sees Control transforms, but not CanvasLayer transforms.
+	ui_root.scale = Vector2.ONE * effective_scale
+	ui_root.size = viewport_size / effective_scale
+	RtsUiTypography.apply_tree(ui_root, game.text_scale, effective_scale, game.base_tooltip_font_size)
+	call_deferred("_fit_top_hud")
+	call_deferred("_fit_bottom_hud")
+	if cursor != null:
+		cursor.text_scale = game.text_scale
+		cursor.queue_redraw()
+	if not is_equal_approx(game.applied_world_text_scale, game.text_scale):
+		game.applied_world_text_scale = game.text_scale
+		game._redraw_projected_entities()
+		if game.objectives != null: game.objectives.queue_redraw()
+		game.queue_redraw()
+
+
+func tick_fps(delta: float) -> void:
+	if not game.show_fps or fps_label == null: return
+	fps_update_timer -= delta
+	if fps_update_timer <= 0.0:
+		fps_label.text = "FPS: %d" % Engine.get_frames_per_second()
+		fps_update_timer = 0.5

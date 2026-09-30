@@ -1,0 +1,26 @@
+[gd_resource type="Theme" load_steps=2 format=3]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_page"]
+bg_color = Color(0.14902, 0.129412, 0.101961, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.623529, 0.482353, 0.262745, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_left = 3
+corner_radius_bottom_right = 3
+content_margin_left = 16.0
+content_margin_top = 16.0
+content_margin_right = 16.0
+content_margin_bottom = 16.0
+
+[resource]
+default_font_size = 16
+Label/font_sizes/font_size = 16
+PageTitle/base_type = &"Label"
+PageTitle/colors/font_color = Color(0.956863, 0.87451, 0.682353, 1)
+PageTitle/font_sizes/font_size = 28
+PagePanel/base_type = &"PanelContainer"
+PagePanel/styles/panel = SubResource("StyleBoxFlat_page")

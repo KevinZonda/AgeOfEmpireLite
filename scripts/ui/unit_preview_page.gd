@@ -1,5 +1,10 @@
 class_name RtsUnitPreviewPage
 extends ColorRect
+const PageShell = preload("res://scripts/ui/page_shell.gd")
+const UiStyle = preload("res://scripts/ui/ui_style.gd")
+const IconCache = preload("res://scripts/ui/icon_cache.gd")
+const UnitVisual = preload("res://scripts/entities/visuals/unit_visual.gd")
+const UnitVisualState = preload("res://scripts/entities/visuals/unit_visual_state.gd")
 const RtsUiTypography = preload("res://scripts/ui/typography.gd")
 
 signal close_requested
@@ -55,6 +60,19 @@ class PreviewContext:
 	func player_color(_owner_id: int) -> Color:
 		return Color("4e9bea")
 
+class PreviewUnit:
+	extends Node2D
+	var context: Node2D
+	var state
+	var renderer = UnitVisual.new()
+	var kind: String:
+		get: return state.kind if state != null else ""
+
+	func _draw() -> void:
+		if state == null: return
+		state.update_view(context)
+		renderer.draw(self, state)
+
 class PreviewBackdrop:
 	extends Node2D
 
@@ -83,7 +101,7 @@ var stats_box: VBoxContainer
 var bonus_box: VBoxContainer
 var preview_viewport: SubViewport
 var preview_context: PreviewContext
-var preview_unit: RtsUnit
+var preview_unit: PreviewUnit
 var preview_mode_choice: OptionButton
 var style_button: Callable
 var refresh_timer := 0.0
@@ -96,17 +114,8 @@ func build(parent: Control, initial_civilization: String, button_style: Callable
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	parent.add_child(self)
-	var panel := PanelContainer.new()
-	panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	panel.offset_left = 24
-	panel.offset_top = 20
-	panel.offset_right = -24
-	panel.offset_bottom = -20
-	panel.add_theme_stylebox_override("panel", _style(Color("26211a"), Color("9f7b43"), 16))
-	add_child(panel)
-	var layout := VBoxContainer.new()
-	layout.add_theme_constant_override("separation", 10)
-	panel.add_child(layout)
+	PageShell.attach_to(self, UiStyle.page_panel(Color("26211a"), Color("9f7b43"), 16, 5), Vector4(24, 20, 24, 20))
+	var layout := PageShell.layout(self)
 	_build_header(layout)
 	var divider := ColorRect.new()
 	divider.color = Color("8a6a3e")
@@ -229,10 +238,8 @@ func _build_model(parent: HBoxContainer) -> void:
 	)
 	preview_context = PreviewContext.new()
 	preview_viewport.add_child(preview_context)
-	preview_unit = RtsUnit.new()
-	preview_unit.game = preview_context
-	preview_unit.owner_id = 0
-	preview_unit.kind = selected_kind
+	preview_unit = PreviewUnit.new()
+	preview_unit.context = preview_context
 	preview_context.add_child(preview_unit)
 	preview_unit.set_process(false)
 	preview_unit.scale = Vector2.ONE * 4.0
@@ -283,7 +290,7 @@ func _refresh_roster() -> void:
 		var button := Button.new()
 		var required_age: int = _required_age(unit_kind)
 		button.text = "%s   ·   %s" % [GameData.UNITS[unit_kind]["label"], AGE_LABELS[required_age].split(" ")[0]]
-		button.icon = RtsCommandButton._texture_at("res://assets/ui/command_icons/%s.png" % unit_kind)
+		button.icon = IconCache.texture_at("res://assets/ui/command_icons/%s.png" % unit_kind)
 		button.custom_minimum_size.y = 39
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button.toggle_mode = true
@@ -308,10 +315,9 @@ func _refresh_selection() -> void:
 func _refresh_preview() -> void:
 	if selected_kind.is_empty() or preview_unit == null: return
 	var stats := _resolved_stats()
-	preview_unit.kind = selected_kind
-	preview_unit.stats = stats
-	preview_unit.max_hp = float(stats.get("hp", 1.0))
-	preview_unit.hp = preview_unit.max_hp
+	var previous_phase: float = preview_unit.state.visual_phase if preview_unit.state != null else 0.0
+	preview_unit.state = UnitVisualState.preview(selected_kind, stats, preview_context.player_color(0))
+	preview_unit.state.visual_phase = previous_phase
 	var view_size := Vector2(preview_viewport.size)
 	preview_unit.position = Vector2(view_size.x * 0.5, view_size.y * (0.63 if preview_context.view_mode_25d else 0.52))
 	preview_unit.scale = Vector2.ONE * clampf(minf(view_size.x / 400.0, view_size.y / 420.0) * 4.0, 3.4, 6.0)
@@ -478,13 +484,7 @@ func _label(parent: Node, value: String, font_size: int, font_color: Color) -> L
 	return label
 
 func _style(fill: Color, border: Color, margin: float) -> StyleBoxFlat:
-	var box := StyleBoxFlat.new()
-	box.bg_color = fill
-	box.border_color = border
-	box.set_border_width_all(1)
-	box.set_corner_radius_all(5)
-	box.set_content_margin_all(margin)
-	return box
+	return UiStyle.page_panel(fill, border, margin, 5)
 
 func _clear(parent: Node) -> void:
 	for child in parent.get_children():
@@ -496,5 +496,5 @@ func _process(delta: float) -> void:
 	refresh_timer += delta
 	if refresh_timer < 0.1: return
 	refresh_timer = 0.0
-	preview_unit.visual_phase += 0.18
+	preview_unit.state.visual_phase += 0.18
 	preview_unit.queue_redraw()

@@ -20,7 +20,7 @@ func _run() -> void:
 	var preview_panel: Control = page.get_child(0)
 	assert(preview_panel.get_global_rect().end.x <= game.get_viewport_rect().size.x)
 	assert(preview_panel.get_global_rect().end.y <= game.get_viewport_rect().size.y)
-	assert(page.preview_unit is RtsUnit and page.preview_unit.kind == "villager")
+	assert(page.preview_unit is Node2D and not page.preview_unit is RtsUnit and page.preview_unit.kind == "villager", "preview should render a visual snapshot without a simulation unit")
 	assert(page.roster.has("battering_ram") and page.roster.has("siege_tower"))
 	page.selected_kind = "spearman"
 	page._refresh_selection()
