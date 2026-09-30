@@ -217,7 +217,7 @@ func _create_hud() -> void:
 	population_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	population_row.add_child(population_icon)
 	population_label = Label.new()
-	population_label.custom_minimum_size.x = 102
+	population_label.custom_minimum_size.x = 64
 	population_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	population_label.add_theme_font_size_override("font_size", RtsUiTypography.BODY)
 	population_label.add_theme_color_override("font_color", Color("eee2c7"))
@@ -521,7 +521,7 @@ func _update_population_hud() -> void:
 	top_label.text = "%s · %s %s%s" % [GameData.CIVILIZATIONS[game.civilizations[0]]["label"], age_names[clampi(bank["age"], 1, 4)], ["", "I", "II", "III", "IV"][clampi(bank["age"], 1, 4)], dynasty_text]
 	for kind in ["food", "wood", "gold", "stone"]:
 		resource_readouts[kind].text = str(bank[kind])
-	population_label.text = "人口 %d/%d" % [used, capacity]
+	population_label.text = "%d/%d" % [used, capacity]
 	population_label.tooltip_text = "空余 %d" % maxi(0, capacity - used)
 	var idle_count: int = game.idle_villagers().size()
 	idle_villager_button.text = "村民 %d" % idle_count
