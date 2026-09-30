@@ -8,9 +8,12 @@ const SITE_RADIUS := 95.0
 const CAPTURE_TIME := 8.0
 const SACRED_VICTORY_TIME := 90.0
 const WONDER_VICTORY_TIME := 120.0
+const SiteVisual = preload("res://scripts/entities/sacred_site.gd")
 
 var game: Node2D
 var sacred_sites: Array[Dictionary] = []
+var site_visuals: Array[Node2D] = []
+var _visual_signature: Array = []
 var sacred_holder := -1
 var sacred_remaining := SACRED_VICTORY_TIME
 var wonder_remaining := {0: WONDER_VICTORY_TIME, 1: WONDER_VICTORY_TIME}
@@ -34,6 +37,10 @@ func _is_enemy(a: int, b: int) -> bool:
 
 func setup(game_ref: Node2D) -> void:
 	game = game_ref
+	for visual in site_visuals:
+		if is_instance_valid(visual): visual.free()
+	site_visuals.clear()
+	_visual_signature.clear()
 	sacred_sites.clear()
 	var positions: Array[Vector2] = []
 	if game.world_map.has_method("sacred_site_positions"):
@@ -43,6 +50,11 @@ func setup(game_ref: Node2D) -> void:
 	for desired in positions:
 		var position: Vector2 = game.world_map.nearest_walkable_point(desired)
 		sacred_sites.append({"position": position, "owner_id": -1, "capture_owner": -1, "capture_progress": 0.0, "contested": false})
+	for index in sacred_sites.size():
+		var visual := SiteVisual.new()
+		add_child(visual)
+		visual.setup(game, sacred_sites[index], index)
+		site_visuals.append(visual)
 	reset()
 
 
@@ -60,17 +72,35 @@ func reset() -> void:
 		wonder_remaining[owner_id] = WONDER_VICTORY_TIME
 		wonder_instance_ids[owner_id] = 0
 	_victory_emitted = false
+	_refresh_site_visuals()
 	queue_redraw()
 
 
 func _process(delta: float) -> void:
+	_refresh_site_visuals()
 	if game == null or not game.started or game.paused or game.game_over or _victory_emitted: return
 	var changed := false
 	for index in sacred_sites.size():
 		changed = _tick_site(index, delta) or changed
 	_tick_sacred_victory(delta)
 	_tick_wonder_victory(delta)
-	if changed: queue_redraw()
+	if changed:
+		_refresh_site_visuals()
+		queue_redraw()
+
+
+func _refresh_site_visuals() -> void:
+	var signature: Array = [SiteVisual.isometric_for(game)]
+	if is_inside_tree():
+		var canvas := get_viewport().get_canvas_transform()
+		signature.append([canvas.x, canvas.y])
+	for index in sacred_sites.size():
+		var site: Dictionary = sacred_sites[index]
+		signature.append([site["position"], site["owner_id"], site["contested"], site["capture_owner"], site["capture_progress"], SiteVisual.ground_lift_for(game, site["position"])])
+		if index < site_visuals.size() and is_instance_valid(site_visuals[index]): site_visuals[index].sync_visual()
+	if signature != _visual_signature:
+		_visual_signature = signature
+		queue_redraw()
 
 
 func _tick_site(index: int, delta: float) -> bool:
@@ -182,17 +212,13 @@ func _emit_victory(owner_id: int, reason: String) -> void:
 
 
 func _draw() -> void:
-	var font := ThemeDB.fallback_font
-	for index in sacred_sites.size():
-		var site: Dictionary = sacred_sites[index]
-		var center: Vector2 = site["position"]
-		var color := Color("b7b0a0")
-		if site["owner_id"] >= 0 and game != null:
-			color = game.player_color(site["owner_id"]) if game.has_method("player_color") else GameData.CIVILIZATIONS[game.civilizations[site["owner_id"]]]["color"]
+	for site in sacred_sites:
+		var center: Vector2 = site["position"] + SiteVisual.ground_lift_for(game, site["position"])
+		var color := SiteVisual.owner_color(game, int(site["owner_id"]))
 		if site["contested"]: color = Color("ead667")
-		draw_circle(center, 28.0, Color(color, 0.2))
-		draw_arc(center, 31.0, 0.0, TAU, 36, color, 4.0)
+		# Ground overlays surround the stone podium and stay below its faces.
+		draw_circle(center, 59.0, Color(color, 0.09))
+		draw_arc(center, 62.0, 0.0, TAU, 48, Color(color, 0.70), 2.5)
 		draw_arc(center, SITE_RADIUS, 0.0, TAU, 48, Color(color, 0.32), 2.0)
 		if site["capture_owner"] >= 0 and site["capture_progress"] > 0.0:
-			draw_arc(center, 37.0, -PI * 0.5, -PI * 0.5 + TAU * float(site["capture_progress"]) / CAPTURE_TIME, 24, Color("f3e8b1"), 4.0)
-		if font != null: draw_string(font, center + Vector2(-8, 7), ["I", "II", "III"][index], HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color.WHITE)
+			draw_arc(center, 67.0, -PI * 0.5, -PI * 0.5 + TAU * float(site["capture_progress"]) / CAPTURE_TIME, 36, Color("f3e8b1"), 3.0)
