@@ -2,6 +2,8 @@ extends "res://scripts/entities/visuals/landmark_visual.gd"
 
 const MilitaryTraining = preload("res://scripts/entities/visuals/military_training_geometry.gd")
 const StableCamp = preload("res://scripts/entities/visuals/stable_camp_geometry.gd")
+const TownMill = preload("res://scripts/entities/visuals/town_mill_geometry.gd")
+const ProductionCamps = preload("res://scripts/entities/visuals/production_camp_geometry.gd")
 
 # Reuse the landmark BSP for intersecting roofs, beams and workshop furniture.
 # Cache canonical projections too, so portraits share the exact map geometry.
@@ -13,7 +15,7 @@ var accent := Color.WHITE
 var variant := 0
 
 static func handles(kind: String) -> bool:
-	return kind in ["house", "blacksmith", "market", "barracks", "archery_range", "stable", "scout_camp"]
+	return kind in ["house", "blacksmith", "market", "barracks", "archery_range", "stable", "scout_camp", "town_center", "mill", "lumber_camp", "mining_camp", "siege_workshop"]
 
 func _init(kind: String, size: Vector2, civ: String, player: Color, variation: int, colors: Dictionary) -> void:
 	dimensions = size
@@ -30,6 +32,8 @@ func _init(kind: String, size: Vector2, civ: String, player: Color, variation: i
 		"market": _market()
 		"barracks", "archery_range": MilitaryTraining.populate(self, kind)
 		"stable", "scout_camp": StableCamp.populate(self, kind)
+		"town_center", "mill": TownMill.populate(self, kind)
+		"lumber_camp", "mining_camp", "siege_workshop": ProductionCamps.populate(self, kind)
 	prepare()
 	_cache_projections()
 
