@@ -96,6 +96,14 @@ func _run() -> void:
 	var before := soldier.position
 	soldier._move_toward(soldier.destination, 0.1, 6.0)
 	check(soldier.position.distance_to(before) > 0.0 and soldier.position.distance_to(before) <= soldier.effective_speed() * 0.1 + 0.001, "movement_component_preserves_speed_limit")
+	var ram := make_unit(game, "battering_ram", soldier.position + Vector2(40, 0))
+	soldier.route_goal = Vector2(700, 300)
+	game.navigation.background_jobs.request(soldier, soldier.route_goal, Vector2.INF)
+	check(ram.garrison_unit(soldier) and not game.navigation.background_jobs.has_request(soldier) and soldier.route.is_empty(), "transport_garrison_cancels_inflight_movement")
+	soldier.garrisoned_in = null
+	ram.passengers.clear()
+	soldier.position -= Vector2(40, 0)
+	game.navigation.invalidate_spatial_index()
 	var worker := make_unit(game, "villager", Vector2(600, 600))
 	var resource := RtsResource.new()
 	resource.kind = "wood"
@@ -127,6 +135,19 @@ func _run() -> void:
 	shield.order_move(Vector2(1100, 800))
 	shield._move_toward(shield.destination, 0.1, 6.0)
 	check(shield.shield_timer == 0.0 and shield.attack_range() == base_range and shield.stats.armor.ranged == base_armor, "movement_removes_pavise_from_profiles_and_projection")
+	shield.activate_ability("pavise")
+	var squad: Array[RtsUnit] = [shield]
+	var group := RtsMovementGroup.new(game, squad, Vector2(1200, 800))
+	shield.issue_command("group_move", Vector2(1200, 800), null, false, group)
+	shield._move_with_group(0.1)
+	check(shield.shield_timer == 0.0 and shield.attack_range() == base_range, "formation_movement_also_interrupts_pavise")
+	var ship := make_unit(game, "warship", Vector2(1300, 1000))
+	var base_speed := ship.effective_speed()
+	check(ship.ability_availability("helmsman").available and ship.activate_ability("helmsman") and is_equal_approx(ship.effective_speed(), base_speed * 1.4), "helmsman_speed_buff_applies_once")
+	ship._tick_status(3.0)
+	check(ship.helm_timer == 7.0 and ship.helm_cooldown == 27.0, "helmsman_timer_and_cooldown_tick_once")
+	ship.order_attack(shield)
+	check(ship.helm_timer == 0.0 and ship.helm_cooldown == 27.0 and ship.effective_speed() == base_speed, "attacking_interrupts_helmsman_without_resetting_cooldown")
 	var monk := make_unit(game, "monk", Vector2(1200, 300))
 	check(not monk.ability_availability("convert").available and not monk.activate_ability("convert"), "conversion_requires_relic")
 	var relic := RtsRelic.new()
@@ -134,6 +155,11 @@ func _run() -> void:
 	check(monk.ability_availability("convert").available and monk.activate_ability("convert"), "conversion_with_relic_starts")
 	monk.issue_command("move", Vector2(1300, 300))
 	check(monk.conversion_timer == 0.0 and monk.conversion_cooldown == 120.0, "new_command_interrupts_conversion_only")
+	var convert_target := make_unit(game, "spearman", Vector2(1250, 300), 1)
+	monk.conversion_cooldown = 0.0
+	monk.activate_ability("convert")
+	monk._tick_status(3.0)
+	check(convert_target.owner_id == 0 and monk.conversion_timer == 0.0 and monk.conversion_cooldown == 117.0, "conversion_channel_completes_once")
 	var cannon := make_unit(game, "cannon", Vector2(1200, 900), 1)
 	check(not cannon.ability_availability("artillery_shot").available and not cannon.activate_ability("artillery_shot"), "artillery_requires_producer_landmark")
 	cannon.producer_landmark_id = "fr_college_of_artillery"

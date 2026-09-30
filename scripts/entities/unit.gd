@@ -14,6 +14,7 @@ const UnitStats = preload("res://scripts/entities/unit_stats.gd")
 const UnitCombat = preload("res://scripts/entities/unit_combat.gd")
 
 var unit_visual = UnitVisual.new()
+var unit_visual_state = UnitVisualState.new()
 var movement = UnitMovement.new()
 var abilities = UnitAbilities.new()
 
@@ -875,4 +876,4 @@ func take_damage(damage: float) -> void:
 	UnitCombat.take_damage(self, damage)
 
 func _draw() -> void:
-	unit_visual.draw(self, UnitVisualState.capture(self))
+	unit_visual.draw(self, UnitVisualState.capture(self, unit_visual_state))
