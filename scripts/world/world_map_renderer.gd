@@ -182,6 +182,9 @@ static func projected_vertex(map: RtsWorldMap, x: int, y: int) -> Vector2:
 
 
 static func relief_color(terrain: int, height: float) -> Color:
+	# Generated lakes are flat. Preserve water material for legacy/manual maps
+	# whose raised water vertices still require a projected relief surface.
+	if terrain == RtsWorldMap.Terrain.WATER: return Color("437e9f")
 	if terrain == RtsWorldMap.Terrain.MOUNTAIN:
 		return Color("777b71").lerp(Color("d8d6c5"), clampf((height - 70.0) / 110.0, 0.0, 1.0))
 	var grass := Color("88a36e") if terrain == RtsWorldMap.Terrain.MEADOW else Color("759761")

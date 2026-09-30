@@ -189,9 +189,19 @@ func _build_elevations() -> void:
 	maximum_elevation = 0.0
 	for y in grid_size.y + 1:
 		for x in grid_size.x + 1:
-			var height := _mountain_height_at(Vector2(x, y) * CELL_SIZE)
+			# Water is a horizontal plane. Shore cells share these same vertices,
+			# so their slopes meet the waterline without a crack or raised lake.
+			var height := 0.0 if _vertex_touches_water(x, y) else _mountain_height_at(Vector2(x, y) * CELL_SIZE)
 			elevation_vertices[_vertex_index(x, y)] = height
 			maximum_elevation = maxf(maximum_elevation, height)
+
+func _vertex_touches_water(x: int, y: int) -> bool:
+	for cell_y in [y - 1, y]:
+		if cell_y < 0 or cell_y >= grid_size.y: continue
+		for cell_x in [x - 1, x]:
+			if cell_x < 0 or cell_x >= grid_size.x: continue
+			if cells[_index(Vector2i(cell_x, cell_y))] == Terrain.WATER: return true
+	return false
 
 func elevation_at(point: Vector2) -> float:
 	if elevation_vertices.is_empty(): return 0.0

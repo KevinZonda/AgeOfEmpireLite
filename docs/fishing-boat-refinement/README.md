@@ -13,9 +13,13 @@
 
 捕鱼读取真实采集订单、鱼群余量、距离和工作计时器，短暂的采集动作结束后仍继续捕鱼循环。停船捕鱼时船体侧转，让右舷渔网朝向鱼群；航行方向与导航状态不受影响。袋状渔网使用菱形网格，随循环撒出、浸水、提起和收回，渔夫同时改变手臂姿态。驶向鱼群的船、正在移动的船和资源耗尽的船会收起渔网。头像使用稳定姿态，并按模型范围适配内框；单位预览增加“停泊／航行／捕鱼”和八方向选择。
 
+靠山的水格曾继承山坡高度，并被 2.5D 高地材质绘成草地，造成船和鱼看起来上岸。水格四角现在统一为零高度，邻接岸坡共用这些水线顶点；高地绘制也显式保留水域材质。游戏内截图使用修复后的同一种子和原有船位。
+
 ## 验证
 
 `tests/fishing_boat_rendering.gd` 使用生产渲染器验证 16 个投影／航向、8 个捕鱼目标方向、航行尾波和强制收网、4 个捕鱼阶段、3 种头像内框，以及 144 个单位预览尺寸／动作／方向组合。新增动作与方向控件在 150%、175%、200% 文字缩放下均不溢出。另检查真实单位快照的捕鱼连续性、移动／距离／余量／订单切换，以及可见未选中渔船的水纹动画和隐藏后的停止更新。
+
+`tests/water_surface_rendering.gd` 检查四种地图、三个种子的 2431 个水格和 207 处鱼群，并在两种视角采样种子 431 出错位置的水面像素，验证船、鱼与地图水位一致。
 
 像素检查需要带图形驱动的 Godot；`--headless` 不会生成可用于检查的船体纹理。
 
@@ -26,6 +30,7 @@ docs/godot/bin/godot.macos.template_debug.arm64 --path . --script tools/fishing_
 docs/godot/bin/godot.macos.template_debug.arm64 --path . --script tools/fishing_boat_preview.gd -- res://docs/fishing-boat-refinement portrait
 docs/godot/bin/godot.macos.template_debug.arm64 --path . --script tools/fishing_boat_game_preview.gd
 docs/godot/bin/godot.macos.template_debug.arm64 --path . --script tests/fishing_boat_rendering.gd
+docs/godot/bin/godot.macos.template_debug.arm64 --path . --script tests/water_surface_rendering.gd
 ```
 
 `before.png` 是改动前保存的基线；在新实现上运行 `before` 模式会覆盖该基线。

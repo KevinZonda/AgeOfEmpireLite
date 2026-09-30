@@ -10,7 +10,8 @@ const CASES := [
 ]
 
 # Baseline hashes include terrain, decoration/resource ordering, elevations and RNG state.
-const EXPECTED := ["82e3e26cc3b908882df1f612a69b23959188d3efcacaf88849fa5cc21420bd1a", "96a1c63800bbd3b1948c806fb3ea376b3c8d2a6ca3fbdfdd0c629dec35b52871", "efd048fed4c2e27a2a7d43957d36b0512713413e7a0dd19b6cac08a84e8d0fb4", "ea3223b6685280e4e904ac0df189453e8d5817959defc1ff606a77fe7c1c896e", "82e3e26cc3b908882df1f612a69b23959188d3efcacaf88849fa5cc21420bd1a", "1071af2847d8fcc359f8c867a63b4be9465c72ed98a6478034b5ef86c5e288da"]
+# Water-adjacent shared vertices stay at zero, including lakes near mountains.
+const EXPECTED := ["82e3e26cc3b908882df1f612a69b23959188d3efcacaf88849fa5cc21420bd1a", "54a2b4dd6381eb3808cbb39b207b1a61bc2046a3837464dfa24cf9e323888e3b", "623d7e1c60f2abcc83847fea287ea2ced7233759eb622f918701c13b1cecd5c9", "ea3223b6685280e4e904ac0df189453e8d5817959defc1ff606a77fe7c1c896e", "82e3e26cc3b908882df1f612a69b23959188d3efcacaf88849fa5cc21420bd1a", "1071af2847d8fcc359f8c867a63b4be9465c72ed98a6478034b5ef86c5e288da"]
 
 func _initialize() -> void:
 	for i in CASES.size():
