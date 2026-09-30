@@ -26,7 +26,7 @@ func draw(item: CanvasItem, snapshot: VisualState) -> void:
 	var swing := state.swing
 	var outline := Color("1b2928")
 	canvas_item.draw_circle(Vector2(2, 5), r + 2.0, Color("172322", 0.53))
-	canvas_item.draw_set_transform_matrix(Transform2D(0.0, Vector2(0, idle_bob - absf(gait) * 0.35 - swing * 1.5)))
+	canvas_item.draw_set_transform_matrix(_figure_transform(Transform2D(0.0, Vector2(0, idle_bob - absf(gait) * 0.35 - swing * 1.5))))
 	if NavalVisual.handles(state.kind):
 		NavalVisual.draw_2d(canvas_item, state.kind, r, color, state.passenger_count)
 	elif state.tags.has("siege"):
@@ -100,7 +100,7 @@ func _draw_isometric() -> void:
 	# The footprint follows the ground projection; the figure faces the screen.
 	canvas_item.draw_set_transform_matrix(Transform2D(0.0, ground_lift))
 	canvas_item.draw_circle(Vector2.ZERO, state.radius + 3.0, Color("1c2928", 0.62))
-	canvas_item.draw_set_transform_matrix(RtsIsoProjection.upright(canvas, ground_lift + RtsIsoProjection.world_delta(canvas, Vector2(0, idle_bob - absf(gait) * 0.35 - swing * 1.5)), state.zoom))
+	canvas_item.draw_set_transform_matrix(_figure_transform(RtsIsoProjection.upright(canvas, ground_lift + RtsIsoProjection.world_delta(canvas, Vector2(0, idle_bob - absf(gait) * 0.35 - swing * 1.5)), state.zoom)))
 	if NavalVisual.handles(state.kind):
 		NavalVisual.draw_25d(canvas_item, state.kind, state.radius, color, state.passenger_count)
 	elif state.tags.has("siege"):
@@ -131,7 +131,7 @@ func _draw_isometric() -> void:
 		canvas_item.draw_line(Vector2(4, body_bottom), Vector2(5 - gait, 2), Color("302f2a"), 2.5)
 		canvas_item.draw_circle(Vector2(0, body_top - 5), 6.5, outline)
 		canvas_item.draw_circle(Vector2(0, body_top - 5), 5.0, color.darkened(0.32) if state.facing_back else Color("e7d1ac"))
-		if not state.facing_back: canvas_item.draw_circle(Vector2(2.0 if state.facing_right else -2.0, body_top - 5), 1.25, Color("443a32"))
+		if not state.facing_back: canvas_item.draw_circle(Vector2(2.0, body_top - 5), 1.25, Color("443a32"))
 		if state.kind == "monk":
 			canvas_item.draw_line(Vector2(9, -24), Vector2(9, 0), Color("e9dca6"), 2.0)
 			canvas_item.draw_line(Vector2(5, -19), Vector2(13, -19), Color("e9dca6"), 2.0)
@@ -162,3 +162,10 @@ func _draw_isometric() -> void:
 		canvas_item.draw_rect(Rect2(-bar_width * 0.5, bar_y, bar_width, 4), Color("422f2d"))
 		canvas_item.draw_rect(Rect2(-bar_width * 0.5, bar_y, bar_width * clampf(state.hp / state.max_hp, 0.0, 1.0), 4), Color("82dd8b"))
 	canvas_item.draw_set_transform_matrix(Transform2D.IDENTITY)
+
+func _figure_transform(transform: Transform2D) -> Transform2D:
+	# Flip the figure in its upright screen space. Ground shadows and overlays
+	# are drawn outside this transform; ships and siege engines keep their poses.
+	if not state.facing_right and not NavalVisual.handles(state.kind) and not state.tags.has("siege"):
+		transform.x = -transform.x
+	return transform

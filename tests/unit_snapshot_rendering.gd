@@ -42,6 +42,7 @@ func _run() -> void:
 				unit.stats = GameData.UNITS[kind].duplicate(true)
 				unit.visual_phase = 1.3
 				unit.visual_moving = pose == 1
+				unit.facing_right = pose == 0
 				unit.visual_action = "attack"
 				unit.visual_action_length = 1.0
 				unit.visual_action_timer = 0.3

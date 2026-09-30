@@ -481,8 +481,11 @@ func _refresh_slope_visual(previous_position: Vector2) -> void:
 		queue_redraw()
 
 func _update_facing(previous_position: Vector2) -> void:
-	if not game.view_mode_25d or previous_position.distance_squared_to(position) < 0.25: return
-	var screen_move := get_viewport().get_canvas_transform().basis_xform(position - previous_position)
+	_face_direction(position - previous_position)
+
+func _face_direction(world_direction: Vector2) -> void:
+	if world_direction.length_squared() < 0.25: return
+	var screen_move := get_viewport().get_canvas_transform().basis_xform(world_direction)
 	var next_right := facing_right if absf(screen_move.x) < 0.5 else screen_move.x > 0.0
 	var next_back := facing_back if absf(screen_move.y) < 0.5 else screen_move.y < 0.0
 	if next_right != facing_right or next_back != facing_back:
@@ -493,6 +496,8 @@ func _update_facing(previous_position: Vector2) -> void:
 func _tick_visual(delta: float) -> void:
 	visual_moving = visual_last_position != Vector2.INF and position.distance_squared_to(visual_last_position) > 0.16
 	visual_last_position = position
+	if not visual_moving and visual_action_timer > 0.0 and order in ["attack", "gather", "build", "repair"] and is_instance_valid(target) and not target.is_queued_for_deletion():
+		_face_direction(target.position - position)
 	if visual_moving: visual_phase += delta * (11.0 if stats.get("tags", []).has("cavalry") else 8.0)
 	if visual_action_timer > 0.0: visual_action_timer = maxf(0.0, visual_action_timer - delta)
 	visual_redraw_timer -= delta
@@ -511,6 +516,10 @@ func _tick_visual(delta: float) -> void:
 			queue_redraw()
 
 func _start_visual_action(action: String, duration: float) -> void:
+	if is_instance_valid(target) and not target.is_queued_for_deletion():
+		_face_direction(target.position - position)
+	elif action == "attack" and order == "attack_ground":
+		_face_direction(destination - position)
 	visual_action = action
 	visual_action_length = duration
 	visual_action_timer = duration
