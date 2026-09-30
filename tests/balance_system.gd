@@ -81,9 +81,7 @@ func _run() -> void:
 	game.selected.clear()
 	game.selected.append(longbow)
 	game._rebuild_actions()
-	var volley_button: RtsCommandButton
-	for button in game.command_buttons:
-		if button.icon_kind == "volley": volley_button = button
+	var volley_button: RtsCommandButton = _visible_command(game, "volley")
 	assert(volley_button != null and not volley_button.disabled)
 	volley_button.pressed.emit()
 	assert(longbow.volley_timer > 0.0)
@@ -94,9 +92,7 @@ func _run() -> void:
 	game.selected.clear()
 	game.selected.append(monk)
 	game._rebuild_actions()
-	var convert_button: RtsCommandButton
-	for button in game.command_buttons:
-		if button.icon_kind == "convert": convert_button = button
+	var convert_button: RtsCommandButton = _visible_command(game, "convert")
 	assert(convert_button != null and convert_button.disabled and convert_button.availability_reason.contains("圣物"))
 	monk.carried_relic = game.relics[0]
 	var convert_target: RtsUnit = game.spawn_unit(1, "spearman", monk.position + Vector2(55, 0))
@@ -115,3 +111,16 @@ func _run() -> void:
 	french_game.free()
 	print("BALANCE_SYSTEM_OK")
 	quit()
+
+func _visible_command(game: Node, kind: String) -> RtsCommandButton:
+	# Exercise the same visible page a player uses; hidden tiles are intentionally
+	# ineligible even if their gameplay availability would otherwise permit them.
+	for page in 4:
+		for button in game.command_buttons:
+			if button.icon_kind == kind and button.visible: return button
+		var more: Button
+		for button in game.hud_ui.command_side_buttons:
+			if button.text == "⋯": more = button
+		if more == null: return null
+		more.pressed.emit()
+	return null

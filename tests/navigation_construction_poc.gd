@@ -34,6 +34,9 @@ func worker(point: Vector2) -> RtsUnit:
 
 func tick(units: Array[RtsUnit], steps: int) -> void:
 	for step in steps:
+		# Manual simulation replaces the game frame, including recovery dispatch
+		# and completion reaping. Pending jobs cannot progress on unit ticks alone.
+		if game.navigation.background_recovery_enabled: game.navigation.background_jobs.tick(game.navigation)
 		for unit in units:
 			var previous := unit.position
 			unit._process(0.05)

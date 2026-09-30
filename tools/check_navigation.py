@@ -66,22 +66,43 @@ def main():
         log_path = args.output / f"{name}.log"
         started = time.monotonic()
         timed_out = False
+        terminated_on_error = False
         with log_path.open("w") as log:
+            process = subprocess.Popen(
+                [args.godot, "--headless", "--log-file", str(log_path.with_suffix(".engine.log").resolve()), "--path", str(args.path),
+                 "--script", f"res://tests/{name}.gd"],
+                stdout=log, stderr=subprocess.STDOUT,
+            )
             try:
-                result = subprocess.run(
-                    [args.godot, "--headless", "--log-file", str(log_path.with_suffix(".engine.log").resolve()), "--path", str(args.path),
-                     "--script", f"res://tests/{name}.gd"],
-                    stdout=log, stderr=subprocess.STDOUT, timeout=args.timeout,
-                    check=False,
-                )
-                code = result.returncode
-            except subprocess.TimeoutExpired:
-                code, timed_out = -1, True
+                while process.poll() is None:
+                    # A Godot assertion aborts the test coroutine but can leave
+                    # SceneTree running forever. Preserve the failure and stop
+                    # that engine instead of consuming the full timeout.
+                    output = log_path.read_text()
+                    if any(token in output for token in ["SCRIPT ERROR:", "ERROR:", "POC_FAIL"]):
+                        terminated_on_error = True
+                        process.terminate()
+                        break
+                    if time.monotonic() - started >= args.timeout:
+                        timed_out = True
+                        process.terminate()
+                        break
+                    time.sleep(0.1)
+                try:
+                    code = process.wait(timeout=3)
+                except subprocess.TimeoutExpired:
+                    process.kill()
+                    code = process.wait()
+                if timed_out: code = -1
+            finally:
+                if process.poll() is None:
+                    process.kill()
+                    process.wait()
         output = log_path.read_text()
         errors = any(token in output for token in ["SCRIPT ERROR:", "ERROR:", "POC_FAIL"])
         passed = code == 0 and not errors and ("_OK" in output or "failures=0" in output or "PERFORMANCE_" in output or "FOG_UNIT_FLASH_FIXED" in output)
         results.append(dict(test=name, passed=passed, exit_code=code,
-                            timeout=timed_out, seconds=round(time.monotonic() - started, 3),
+                            timeout=timed_out, terminated_on_error=terminated_on_error, seconds=round(time.monotonic() - started, 3),
                             log=str(log_path.resolve())))
         print(f'{"PASS" if passed else "FAIL"} {name} ({results[-1]["seconds"]:.2f}s)', flush=True)
     (args.output / "results.json").write_text(json.dumps(results, indent=2) + "\n")

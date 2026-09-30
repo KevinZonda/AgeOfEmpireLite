@@ -33,6 +33,8 @@ func _run() -> void:
 	assert(group != null and group.route.size() > 1)
 	var crossed := 0
 	for step in 2200:
+		# Crowd recovery is a game-frame service, independent of unit processing.
+		if game.navigation.background_recovery_enabled: game.navigation.background_jobs.tick(game.navigation)
 		for platoon in groups: platoon.last_frame = -1
 		for unit in squad:
 			if unit.order != "idle": unit._process(0.05)
