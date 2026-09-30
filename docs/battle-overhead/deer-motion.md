@@ -37,3 +37,20 @@ make run RUN_ARGS='--script res://tools/deer_motion_preview.gd --windowed --reso
 # 空格切换 2D／2.5D；指定环境变量可渲染预览图并退出
 RTS_DEER_PROJECTION=2d RTS_DEER_CAPTURE=/tmp/deer-motion-2d.png make run RUN_ARGS='--script res://tools/deer_motion_preview.gd --windowed --resolution 1280x800'
 ```
+
+## 羊与野猪
+
+原野猪将目标扫描和移动绑定在同一个 0.25 秒计时器上，每次直接前进 11 像素。60 FPS 的 0.75 秒追逐实测只有 3 帧移动、42 帧静止。现在保留扫描结果，扫描之间按 44 px/s 连续追逐；目标死亡、删除、驻军或离开 110 像素范围时立即停止追逐。近身攻击仍造成 11 点伤害、冷却 1.2 秒，配合 0.36 秒前倾动作，动作不移动碰撞锚点。
+
+羊保持认领、跟随斥候和在城镇中心附近停留的规则。跟随最高速度 67 px/s，起步和接近跟随距离时平滑变速，停下后收腿吃草。首次采集将羊切为尸体并停止跟随，剩余羊肉留在原地供后续采集。羊和野猪的整段移动也采用鹿的沿途地形采样，避免长帧越过水域。
+
+`quadruped_visual.gd` 共用屏幕朝向与四腿步态，`livestock_visual.gd` 分别绘制羊毛、吃草、野猪獠牙、嗅地、追逐、攻击和静止尸体。所有步态按真实位移推进，暂停和死亡停止动画；2D／2.5D 均保持蹄子接近地面阴影。
+
+`livestock_movement_poc.gd` 的 28 项断言覆盖 30／60／120 FPS 下连续追逐及相同速度、步态与朝向、攻击冷却、目标失效、羊认领与跟随、交付城镇中心、采集后停止、岸边、暂停和死亡。鹿的 31 项移动回归也通过。
+
+```sh
+make run RUN_ARGS='--headless --script res://tests/livestock_movement_poc.gd'
+make run RUN_ARGS='--script res://tools/livestock_motion_preview.gd --windowed --resolution 1280x800'
+# 空格切换视角；可渲染预览图并自动退出
+RTS_ANIMAL_PROJECTION=2d RTS_ANIMAL_CAPTURE=/tmp/livestock-2d.png make run RUN_ARGS='--script res://tools/livestock_motion_preview.gd --windowed --resolution 1280x800'
+```

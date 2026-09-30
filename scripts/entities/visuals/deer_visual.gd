@@ -1,30 +1,16 @@
 extends RefCounted
 
 const OUTLINE := Color("26352d")
+const Quadruped = preload("res://scripts/entities/visuals/quadruped_visual.gd")
 
 # Direction is projected into screen space by the caller. Keep the animal
 # upright in both camera modes, with a narrower silhouette toward/away.
 static func draw(item: CanvasItem, base: Transform2D, direction: Vector2, phase: float, gait: float, graze: float, time: float, running: float) -> void:
-	# Near-vertical projected directions can contain tiny +/- X rounding noise.
-	# Give them a stable silhouette instead of flipping on that noise.
-	var facing := -1.0 if direction.x < -0.15 else 1.0
-	var width := lerpf(0.65, 1.0, absf(direction.x))
-	var figure := base * Transform2D(0.0, Vector2(facing * width, 1.0), 0.0, Vector2(0, -18))
+	var figure := Quadruped.figure_transform(base, direction)
 	item.draw_set_transform_matrix(figure)
 	# Opposite diagonal pairs step together. Hooves lift on the forward swing;
 	# gait is driven by distance travelled, so standing deer never tread in place.
-	for far_side in [true, false]:
-		for front in [false, true]:
-			var x := 7.0 if front else -12.0
-			var leg_phase := phase + (PI if front != far_side else 0.0)
-			var stride := sin(leg_phase) * lerpf(3.0, 6.0, running) * gait
-			var lift := maxf(0.0, cos(leg_phase)) * 3.0 * gait
-			var hip := Vector2(x + (3.0 if far_side else 0.0), 4)
-			var knee := hip + Vector2(stride * 0.4, 7.0 - lift * 0.4)
-			var hoof := Vector2(hip.x + stride, 19.0 - lift - (1.0 if far_side else 0.0))
-			var color := Color("73513a") if far_side else Color("543f31")
-			item.draw_polyline(PackedVector2Array([hip, knee, hoof]), color, 2.5)
-			item.draw_line(hoof + Vector2(-1.5, 0), hoof + Vector2(2, 0), OUTLINE, 2.0)
+	Quadruped.draw_legs(item, phase, gait, -12.0, 7.0, 4.0, 19.0, lerpf(3.0, 6.0, running), 3.0, Color("543f31"), Color("73513a"))
 	# One rise per diagonal step pair. Doubling phase here and then taking abs
 	# caused four body jolts per stride, especially visible during escape.
 	var bob := -absf(sin(phase)) * lerpf(0.35, 0.8, running) * gait
