@@ -1062,7 +1062,7 @@ func _civic_geometry():
 func _civic_display_geometry():
 	if state.kind == "dock": return DockBuildingVisual.geometry(state.dimensions, _architecture_palette(), state.civilization, state.player_color)
 	if state.kind == "farm": return _farm_geometry()
-	if state.kind == "wonder": return _landmark_geometry()
+	if state.kind in ["wonder", "landmark"]: return _landmark_geometry()
 	return _civic_geometry()
 
 func _cache_civic_portrait(snapshot: VisualState) -> void:

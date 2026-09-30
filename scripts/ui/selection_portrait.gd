@@ -105,7 +105,7 @@ func _draw_empty() -> void:
 func _draw_building() -> void:
 	var center := Vector2(size.x * 0.5, size.y * 0.5)
 	var building: RtsBuilding = subject
-	if building.kind in ["wonder", "university", "monastery", "dock", "farm"]:
+	if building.kind in ["landmark", "wonder", "university", "monastery", "dock", "farm"]:
 		building_portrait_renderer.draw_civic_portrait(self, building.visual_snapshot(), Rect2(Vector2(17, 20), size - Vector2(34, 40)))
 		return
 	if RefinedGeometry.handles(building.kind):

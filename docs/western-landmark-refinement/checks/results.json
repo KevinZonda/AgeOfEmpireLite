@@ -1,0 +1,102 @@
+[
+  {
+    "test": "architecture_redraw_geometry",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "terminated_on_error": false,
+    "rendering": false,
+    "seconds": 1.144,
+    "log": "/Users/kevin/Desktop/AgeOfEmpireLite/docs/western-landmark-refinement/checks/architecture_redraw_geometry.log"
+  },
+  {
+    "test": "landmark_occlusion",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "terminated_on_error": false,
+    "rendering": false,
+    "seconds": 14.407,
+    "log": "/Users/kevin/Desktop/AgeOfEmpireLite/docs/western-landmark-refinement/checks/landmark_occlusion.log"
+  },
+  {
+    "test": "landmark_selection",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "terminated_on_error": false,
+    "rendering": false,
+    "seconds": 7.674,
+    "log": "/Users/kevin/Desktop/AgeOfEmpireLite/docs/western-landmark-refinement/checks/landmark_selection.log"
+  },
+  {
+    "test": "landmark_catalog",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "terminated_on_error": false,
+    "rendering": false,
+    "seconds": 0.519,
+    "log": "/Users/kevin/Desktop/AgeOfEmpireLite/docs/western-landmark-refinement/checks/landmark_catalog.log"
+  },
+  {
+    "test": "landmark_roles",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "terminated_on_error": false,
+    "rendering": false,
+    "seconds": 1.855,
+    "log": "/Users/kevin/Desktop/AgeOfEmpireLite/docs/western-landmark-refinement/checks/landmark_roles.log"
+  },
+  {
+    "test": "rally_landmarks",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "terminated_on_error": false,
+    "rendering": false,
+    "seconds": 2.802,
+    "log": "/Users/kevin/Desktop/AgeOfEmpireLite/docs/western-landmark-refinement/checks/rally_landmarks.log"
+  },
+  {
+    "test": "western_landmark_portrait",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "terminated_on_error": false,
+    "rendering": false,
+    "seconds": 0.822,
+    "log": "/Users/kevin/Desktop/AgeOfEmpireLite/docs/western-landmark-refinement/checks/western_landmark_portrait.log"
+  },
+  {
+    "test": "fog_building_memory",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "terminated_on_error": false,
+    "rendering": false,
+    "seconds": 1.354,
+    "log": "/Users/kevin/Desktop/AgeOfEmpireLite/docs/western-landmark-refinement/checks/fog_building_memory.log"
+  },
+  {
+    "test": "isometric_view",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "terminated_on_error": false,
+    "rendering": false,
+    "seconds": 1.46,
+    "log": "/Users/kevin/Desktop/AgeOfEmpireLite/docs/western-landmark-refinement/checks/isometric_view.log"
+  },
+  {
+    "test": "smoke",
+    "passed": true,
+    "exit_code": 0,
+    "timeout": false,
+    "terminated_on_error": false,
+    "rendering": false,
+    "seconds": 1.87,
+    "log": "/Users/kevin/Desktop/AgeOfEmpireLite/docs/western-landmark-refinement/checks/smoke.log"
+  }
+]

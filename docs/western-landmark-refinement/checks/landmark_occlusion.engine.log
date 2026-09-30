@@ -1,0 +1,27 @@
+Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
+
+POC_PASS flat_four_sided_battlements sides=[6, 6, 7, 7]
+POC_PASS clock_four_sided_battlements sides=[6, 6, 7, 7]
+POC_PASS eng_council_hall wrong_pixels=0 faces=188 fragments=961
+POC_PASS eng_kings_mill wrong_pixels=0 faces=166 fragments=807
+POC_PASS eng_white_tower wrong_pixels=0 faces=340 fragments=1283
+POC_PASS eng_abbey wrong_pixels=0 faces=225 fragments=1565
+POC_PASS eng_berkshire_fortress wrong_pixels=0 faces=602 fragments=1323
+POC_PASS eng_wynguard_palace wrong_pixels=0 faces=340 fragments=2010
+POC_PASS fr_school_of_cavalry wrong_pixels=0 faces=137 fragments=519
+POC_PASS fr_chamber_of_commerce wrong_pixels=0 faces=327 fragments=1134
+POC_PASS fr_royal_institute wrong_pixels=0 faces=277 fragments=1801
+POC_PASS fr_guild_hall wrong_pixels=0 faces=157 fragments=1103
+POC_PASS fr_red_palace wrong_pixels=0 faces=408 fragments=1294
+POC_PASS fr_college_of_artillery wrong_pixels=0 faces=550 fragments=2653
+POC_PASS zh_imperial_academy wrong_pixels=0 faces=361 fragments=1385
+POC_PASS zh_barbican wrong_pixels=0 faces=419 fragments=1457
+POC_PASS zh_clocktower wrong_pixels=0 faces=366 fragments=1571
+POC_PASS zh_imperial_palace wrong_pixels=0 faces=404 fragments=1596
+POC_PASS zh_gatehouse wrong_pixels=0 faces=296 fragments=1115
+POC_PASS zh_spirit_way wrong_pixels=0 faces=302 fragments=1074
+POC_PASS wonder wrong_pixels=0 faces=263 fragments=1116
+POC_PASS crossed_wings wrong_pixels=0 faces=6 fragments=8
+POC_PASS crossed_wings_reversed_submission wrong_pixels=0 faces=6 fragments=9
+LANDMARK_OCCLUSION samples=1965 failures=0 elapsed_ms=13735.1
+LANDMARK_PREPARATION total_ms=341.69 models=19
