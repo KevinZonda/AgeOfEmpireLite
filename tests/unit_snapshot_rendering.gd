@@ -35,7 +35,7 @@ func _run() -> void:
 	for kind in GameData.UNITS:
 		for mode in 2:
 			context.view_mode_25d = mode == 1
-			for pose in 2:
+			for pose in (3 if kind == "villager" else 2):
 				var unit := RtsUnit.new()
 				unit.game = context
 				unit.kind = kind
@@ -46,6 +46,9 @@ func _run() -> void:
 				unit.visual_action = "attack"
 				unit.visual_action_length = 1.0
 				unit.visual_action_timer = 0.3
+				if kind == "villager" and pose == 2:
+					unit.visual_action = "hunt"
+					unit.hunt_windup = 0.1
 				unit.paling_timer = float(pose)
 				unit.position = Vector2(110, 125)
 				unit.scale = Vector2.ONE * 2.0

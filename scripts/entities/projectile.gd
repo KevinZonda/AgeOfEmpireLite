@@ -95,11 +95,23 @@ func _draw() -> void:
 	var screen_travel := canvas.basis_xform(global_position - previous_position).normalized()
 	if screen_travel == Vector2.ZERO: screen_travel = Vector2.RIGHT
 	var screen_lift := Vector2(0, -arc_height)
+	var hunting: bool = attack_profile.get("hunting", false)
+	if hunting: screen_lift.y -= 12.0
 	if game.view_mode_25d:
 		screen_lift += canvas.basis_xform(RtsIsoProjection.ground_lift(game, global_position))
 		draw_set_transform_matrix(RtsIsoProjection.upright(canvas, RtsIsoProjection.world_delta(canvas, screen_lift)))
 	else:
 		draw_set_transform_matrix(Transform2D(0.0, screen_lift))
+	if hunting:
+		var tail := -screen_travel * 18.0
+		var side := screen_travel.orthogonal() * 3.0
+		draw_line(tail, Vector2.ZERO, Color("302820"), 3.5)
+		draw_line(tail, Vector2.ZERO, Color("e4c894"), 1.8)
+		draw_colored_polygon(PackedVector2Array([screen_travel * 4.0, -screen_travel * 3.0 + side, -screen_travel * 3.0 - side]), Color("e1e6dc"))
+		draw_line(tail + screen_travel * 4.0, tail + side, Color("efe2bf"), 1.7)
+		draw_line(tail + screen_travel * 4.0, tail - side, Color("efe2bf"), 1.7)
+		draw_set_transform_matrix(Transform2D.IDENTITY)
+		return
 	var size := 4.2 if splash_radius > 0.0 else 2.8
 	draw_line(-screen_travel * (size + 7.0), -screen_travel * size, Color("ffe4a0", 0.68), 2.0)
 	draw_circle(Vector2.ZERO, size + 1.6, Color("2f2921", 0.86))

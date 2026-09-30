@@ -11,11 +11,11 @@ const GOLD := Color("e2bd65")
 static func handles(kind: String) -> bool:
 	return kind in ["villager", "spearman", "monk"]
 
-static func draw_2d(canvas: CanvasItem, kind: String, team: Color, gait: float, swing: float, gather_kind: String = "", has_relic: bool = false, braced: bool = false) -> void:
-	_match_2d(canvas, kind, team, gait, swing, gather_kind, has_relic, braced)
+static func draw_2d(canvas: CanvasItem, kind: String, team: Color, gait: float, swing: float, gather_kind: String = "", has_relic: bool = false, braced: bool = false, hunting: bool = false, hunt_draw: float = 0.0) -> void:
+	_match_2d(canvas, kind, team, gait, swing, gather_kind, has_relic, braced, hunting, hunt_draw)
 
-static func draw_25d(canvas: CanvasItem, kind: String, team: Color, gait: float, swing: float, gather_kind: String = "", has_relic: bool = false, braced: bool = false) -> void:
-	_match_25d(canvas, kind, team, gait, swing, gather_kind, has_relic, braced)
+static func draw_25d(canvas: CanvasItem, kind: String, team: Color, gait: float, swing: float, gather_kind: String = "", has_relic: bool = false, braced: bool = false, hunting: bool = false, hunt_draw: float = 0.0) -> void:
+	_match_25d(canvas, kind, team, gait, swing, gather_kind, has_relic, braced, hunting, hunt_draw)
 
 static func _poly(canvas: CanvasItem, points: Array, fill: Color) -> void:
 	var shape := PackedVector2Array(points)
@@ -52,6 +52,26 @@ static func _spear(canvas: CanvasItem, base: Vector2, braced: bool) -> void:
 	_poly(canvas, [tip - direction * 2 + side, tip + direction * 10, tip - direction * 2 - side], IRON)
 	canvas.draw_line(tip - direction * 3, tip - direction * 9, GOLD, 1.4)
 
+static func _hunting_bow(canvas: CanvasItem, center: Vector2, team: Color, pull: float) -> void:
+	var grip := center + Vector2(13, 0)
+	var string_top := center + Vector2(6, -13)
+	var string_bottom := center + Vector2(6, 13)
+	var draw_hand := center + Vector2(6 - pull * 14, 0)
+	# An extended bow arm and a retreating string hand make the windup readable.
+	canvas.draw_line(center + Vector2(-5, -4), grip, EDGE, 5.0)
+	canvas.draw_line(center + Vector2(-5, -4), grip, team.darkened(0.15), 3.0)
+	canvas.draw_line(center + Vector2(-6, 3), draw_hand, EDGE, 5.0)
+	canvas.draw_line(center + Vector2(-6, 3), draw_hand, team.darkened(0.15), 3.0)
+	canvas.draw_arc(center + Vector2(1, 0), 13.0, -PI * 0.38, PI * 0.38, 16, EDGE, 4.5)
+	canvas.draw_arc(center + Vector2(1, 0), 13.0, -PI * 0.38, PI * 0.38, 16, WOOD.lightened(0.25), 2.5)
+	canvas.draw_polyline(PackedVector2Array([string_top, draw_hand, string_bottom]), Color("eee0bd"), 1.3)
+	if pull > 0.0:
+		var tip := draw_hand + Vector2(26, 0)
+		canvas.draw_line(draw_hand, tip, WOOD.lightened(0.35), 1.8)
+		_poly(canvas, [tip + Vector2(5, 0), tip + Vector2(-1, -2.5), tip + Vector2(-1, 2.5)], IRON)
+	canvas.draw_circle(grip, 2.2, SKIN)
+	canvas.draw_circle(draw_hand, 2.2, SKIN)
+
 static func _staff(canvas: CanvasItem, base: Vector2, has_relic: bool, swing: float) -> void:
 	var top := base + Vector2(2 + swing * 2, -29 - swing * 3)
 	canvas.draw_line(base, top, EDGE, 4.5)
@@ -65,7 +85,7 @@ static func _staff(canvas: CanvasItem, base: Vector2, has_relic: bool, swing: fl
 		canvas.draw_circle(held, 1.6, Color("5f8f8a"))
 		canvas.draw_line(held + Vector2(-5, 4), held + Vector2(5, 4), Color("fff1bd"), 1.5)
 
-static func _match_2d(canvas: CanvasItem, kind: String, team: Color, gait: float, swing: float, gather_kind: String, has_relic: bool, braced: bool) -> void:
+static func _match_2d(canvas: CanvasItem, kind: String, team: Color, gait: float, swing: float, gather_kind: String, has_relic: bool, braced: bool, hunting: bool, hunt_draw: float) -> void:
 	_boots(canvas, Vector2(-5, 6), Vector2(5, 6), gait)
 	var cloth := team.darkened(0.27) if kind == "monk" else team.darkened(0.18)
 	_poly(canvas, [Vector2(-8, -7), Vector2(8, -7), Vector2(9, 8), Vector2(-9, 8)], cloth)
@@ -77,7 +97,8 @@ static func _match_2d(canvas: CanvasItem, kind: String, team: Color, gait: float
 			_poly(canvas, [Vector2(-10, -15), Vector2(10, -15), Vector2(6, -19), Vector2(-6, -19)], Color("aa8c55"))
 			canvas.draw_line(Vector2(-8, -15), Vector2(8, -15), Color("e0c584"), 1.5)
 			canvas.draw_circle(Vector2(-10, 4), 3.4, Color("bd945b"))
-			_tool(canvas, Vector2(10, 6), gather_kind, swing)
+			if hunting: _hunting_bow(canvas, Vector2(2, -1), team, hunt_draw)
+			else: _tool(canvas, Vector2(10, 6), gather_kind, swing)
 		"spearman":
 			_poly(canvas, [Vector2(-7, -15), Vector2(7, -15), Vector2(5, -19), Vector2(-5, -19)], Color("a5a9a4"))
 			_poly(canvas, [Vector2(-13, -4), Vector2(-6, -7), Vector2(-3, 3), Vector2(-9, 8)], team.darkened(0.25))
@@ -87,7 +108,7 @@ static func _match_2d(canvas: CanvasItem, kind: String, team: Color, gait: float
 			canvas.draw_circle(Vector2(-2, -1), 2.3, GOLD)
 			_staff(canvas, Vector2(11, 8), has_relic, swing)
 
-static func _match_25d(canvas: CanvasItem, kind: String, team: Color, gait: float, swing: float, gather_kind: String, has_relic: bool, braced: bool) -> void:
+static func _match_25d(canvas: CanvasItem, kind: String, team: Color, gait: float, swing: float, gather_kind: String, has_relic: bool, braced: bool, hunting: bool, hunt_draw: float) -> void:
 	_boots(canvas, Vector2(-5, -4), Vector2(5, -4), gait)
 	var cloth := team.darkened(0.27) if kind == "monk" else team.darkened(0.18)
 	_poly(canvas, [Vector2(-8, -20), Vector2(8, -20), Vector2(9, -4), Vector2(-9, -4)], cloth)
@@ -101,7 +122,8 @@ static func _match_25d(canvas: CanvasItem, kind: String, team: Color, gait: floa
 			_poly(canvas, [Vector2(-11, -28), Vector2(11, -28), Vector2(6, -34), Vector2(-6, -34)], Color("ac8d55"))
 			canvas.draw_line(Vector2(-9, -28), Vector2(9, -28), Color("dfc589"), 1.5)
 			canvas.draw_circle(Vector2(-10, -8), 3.5, Color("bc985f"))
-			_tool(canvas, Vector2(10, -5), gather_kind, swing)
+			if hunting: _hunting_bow(canvas, Vector2(2, -14), team, hunt_draw)
+			else: _tool(canvas, Vector2(10, -5), gather_kind, swing)
 		"spearman":
 			_poly(canvas, [Vector2(-6, -29), Vector2(6, -29), Vector2(4, -35), Vector2(-4, -35)], Color("a8b0aa"))
 			_poly(canvas, [Vector2(-13, -17), Vector2(-5, -19), Vector2(-4, -7), Vector2(-12, -6)], team.darkened(0.2))

@@ -38,7 +38,7 @@ func draw(item: CanvasItem, snapshot: VisualState) -> void:
 	elif InfantryVisual.handles(state.kind):
 		InfantryVisual.draw_2d(canvas_item, state.kind, color, gait, swing, state.paling)
 	elif SupportVisual.handles(state.kind):
-		SupportVisual.draw_2d(canvas_item, state.kind, color, gait, swing, state.gather_kind, state.carries_relic, state.braced)
+		SupportVisual.draw_2d(canvas_item, state.kind, color, gait, swing, state.gather_kind, state.carries_relic, state.braced, state.hunting, state.hunt_draw)
 	elif state.tags.has("cavalry"):
 		var horse := PackedVector2Array([Vector2(-r + 2, -5), Vector2(r - 5, -8), Vector2(r + 3, -2), Vector2(r - 3, 8), Vector2(-r + 1, 7)])
 		FilledPolygon.draw(canvas_item, horse, Color("95734e"))
@@ -112,7 +112,7 @@ func _draw_isometric() -> void:
 	elif InfantryVisual.handles(state.kind):
 		InfantryVisual.draw_25d(canvas_item, state.kind, color, gait, swing, state.paling)
 	elif SupportVisual.handles(state.kind):
-		SupportVisual.draw_25d(canvas_item, state.kind, color, gait, swing, state.gather_kind, state.carries_relic, state.braced)
+		SupportVisual.draw_25d(canvas_item, state.kind, color, gait, swing, state.gather_kind, state.carries_relic, state.braced, state.hunting, state.hunt_draw)
 	else:
 		var cavalry: bool = state.tags.has("cavalry")
 		if cavalry:

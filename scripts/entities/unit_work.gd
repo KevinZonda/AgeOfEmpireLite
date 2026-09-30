@@ -1,5 +1,8 @@
 extends RefCounted
 
+const HUNT_WINDUP := 0.4
+const HUNT_ACTION_LENGTH := 0.65
+
 # Economic and worker behavior. The unit retains order state and exposes the
 # existing methods; these helpers operate on that state without owning it.
 static func gathering_amount(unit) -> int:
@@ -80,15 +83,14 @@ static func process_trade_order(unit, delta: float) -> void:
 		unit._reset_route()
 
 static func process_gather_order(unit, delta: float) -> void:
+	if unit.target is RtsResource and unit.target.appearance == "deer" and unit.target.wildlife_hp > 0.0:
+		process_hunt_order(unit, delta)
+		return
+	unit.hunt_windup = -1.0
+	# Let the release finish before switching back to the gathering tool.
+	if unit.visual_action == "hunt" and unit.visual_action_timer > 0.0: return
 	var gathering_distance: float = unit.target.radius + unit.radius() + 2.0 if unit.target is RtsResource else unit.target.size().x * 0.5 + unit.radius() + 2.0
 	if not unit._move_toward(unit.target.position, delta, gathering_distance): return
-	if unit.target is RtsResource and unit.target.appearance == "deer" and unit.target.wildlife_hp > 0.0:
-		if unit.attack_timer > 0.0: return
-		var hunt_profile: Dictionary = unit.stats.get("profiles", {}).get("hunt_melee", {})
-		unit.target.take_damage(float(hunt_profile.get("damage", unit.attack_damage())))
-		unit.attack_timer = float(hunt_profile.get("cooldown", unit.attack_cooldown()))
-		unit._start_visual_action("attack", 0.30)
-		return
 	if unit.target is RtsBuilding and unit.target.kind == "farm":
 		if not unit.target.is_complete(): return
 		if unit.game.civilizations[unit.owner_id] == "English" and unit.game.players[unit.owner_id]["researched"].has("enclosures"):
@@ -120,3 +122,32 @@ static func process_gather_order(unit, delta: float) -> void:
 		unit._start_visual_action("gather", 0.42)
 		unit.work_timer = 1.1
 		if unit.target is RtsResource and unit.target.amount <= 0: continue_gather(unit)
+
+static func cancel_hunt(unit) -> void:
+	unit.hunt_windup = -1.0
+	if unit.visual_action == "hunt":
+		unit.visual_action = ""
+		unit.visual_action_timer = 0.0
+		unit.queue_redraw()
+
+static func process_hunt_order(unit, delta: float) -> void:
+	var profile: Dictionary = unit.stats.get("profiles", {}).get("hunt_ranged", {})
+	var reach: float = float(profile.get("range", 86.4)) + unit.target.radius
+	if not unit._move_toward(unit.target.position, delta, reach):
+		cancel_hunt(unit)
+		return
+	unit._face_direction(unit.target.position - unit.position)
+	if unit.hunt_windup < 0.0:
+		if unit.attack_timer > 0.0: return
+		unit.hunt_windup = HUNT_WINDUP
+		unit._start_visual_action("hunt", HUNT_ACTION_LENGTH)
+		return
+	unit.hunt_windup = maxf(0.0, unit.hunt_windup - delta)
+	if unit.hunt_windup > 0.0: return
+	var arrow := RtsProjectile.new()
+	arrow.setup(unit.game, unit.owner_id, unit.global_position, unit.target, float(profile.get("damage", 3.0)), float(unit.stats.get("projectile_speed", 350.0)), 0.0, unit.stats, profile)
+	arrow.attack_profile["hunting"] = true
+	unit.game.add_child(arrow)
+	unit.hunt_windup = -1.0
+	unit.attack_timer = float(profile.get("cooldown", 1.584))
+	unit.queue_redraw()

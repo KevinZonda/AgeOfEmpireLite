@@ -43,6 +43,7 @@ var target: Node2D:
 	get: return orders.target
 	set(value): orders.target = value
 var attack_timer := 0.0
+var hunt_windup := -1.0
 var hit_flash_timer := 0.0
 var work_timer := 0.0
 var farm_gain_display_amount := 0
@@ -525,7 +526,7 @@ func _start_visual_action(action: String, duration: float) -> void:
 	visual_action_timer = duration
 	queue_redraw()
 	if owner_id == 0 and game.has_method("play_feedback"):
-		game.play_feedback("attack" if action == "attack" else "gather" if action == "gather" else "build")
+		game.play_feedback("attack" if action in ["attack", "hunt"] else "gather" if action == "gather" else "build")
 
 func _action_swing() -> float:
 	if visual_action_timer <= 0.0 or visual_action_length <= 0.0: return 0.0

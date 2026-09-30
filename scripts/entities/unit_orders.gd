@@ -104,6 +104,7 @@ func start(unit: RtsUnit, command: Dictionary) -> bool:
 func exit(unit: RtsUnit) -> void:
 	resume_order = ""
 	auto_engaged = false
+	unit.UnitWork.cancel_hunt(unit)
 	unit.abilities.interrupt_command()
 	unit.movement.begin_command()
 	unit._reset_route()

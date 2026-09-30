@@ -17,6 +17,8 @@ var facing_right := true
 var passenger_count := 0
 var paling := false
 var gather_kind := ""
+var hunting := false
+var hunt_draw := 0.0
 var carries_relic := false
 var braced := false
 var hit_flash_timer := 0.0
@@ -39,6 +41,8 @@ static func capture(unit, existing_state = null):
 	result.facing_back = unit.facing_back
 	result.facing_right = unit.facing_right
 	result.gather_kind = unit.gather_kind
+	result.hunting = unit.kind == "villager" and (unit.visual_action == "hunt" or unit.order == "gather" and is_instance_valid(unit.target) and unit.target is RtsResource and unit.target.appearance == "deer" and unit.target.wildlife_hp > 0.0)
+	result.hunt_draw = clampf(1.0 - unit.hunt_windup / unit.UnitWork.HUNT_WINDUP, 0.0, 1.0) if unit.hunt_windup >= 0.0 else 0.0
 	result.hit_flash_timer = unit.hit_flash_timer
 	result.hp = unit.hp
 	result.max_hp = unit.max_hp
