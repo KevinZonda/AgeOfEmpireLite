@@ -1,0 +1,12 @@
+Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
+
+POC_PASS shared_route_created
+POC_PASS distant_motion_reuses_shared_route
+POC_PASS distant_motion_preserves_route_and_slots
+POC_PASS shared_route_tracks_verified_revision
+POC_PASS construction_replans_blocked_shared_route
+POC_PASS shared_detour_respects_new_building
+POC_PASS empty_shared_route_retries_on_change
+POC_PASS blocked_shared_goal_uses_fallback
+POC_PASS cleared_shared_goal_restored
+GROUP_REPLANNING checks=9 failures=0

@@ -1,0 +1,9 @@
+Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
+
+POC_PASS short_fine_route_is_safe
+RANGE_STALL_OPEN {"labeled_cells":0,"native_searches":1,"us":156}
+POC_PASS reachable_short_route_does_not_flood_whole_world
+POC_PASS sealed_wall_is_unreachable
+POC_PASS second_disconnected_goal_is_unreachable
+POC_PASS failed_component_is_reused
+NAVIGATION_RANGE_STALL_POC checks=5 failures=0

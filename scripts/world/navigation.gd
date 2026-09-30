@@ -29,6 +29,7 @@ var clearance_grids: Dictionary = {}
 var fine_grids: Dictionary = {}
 var local_fine_grids: Array[Dictionary] = []
 var grid_components: Dictionary = {}
+var grid_component_sizes: Dictionary = {}
 var corner_graphs: Dictionary = {}
 # Valid only within a single synchronous range query. It avoids repeating
 # identical geometry sweeps while comparing candidate approaches, and is
@@ -36,6 +37,10 @@ var corner_graphs: Dictionary = {}
 var range_query_unit: RtsUnit
 var range_query_radius := 0.0
 var range_query_segments: Array[Dictionary] = []
+var destination_query_unit: RtsUnit
+var destination_origin_cells: Dictionary = {}
+var destination_origin_connections: Dictionary = {}
+var destination_origin_components: Dictionary = {}
 var obstacle_signature := -1
 var obstacle_revision := 0
 # Resource motion changes collision geometry, but must not wake every failed
@@ -92,6 +97,7 @@ func _refresh_grids() -> void:
 	fine_grids.clear()
 	local_fine_grids.clear()
 	grid_components.clear()
+	grid_component_sizes.clear()
 	corner_graphs.clear()
 	obstacle_revision += 1
 	obstacle_signature = _obstacle_signature()
@@ -308,6 +314,14 @@ func _grid_for(unit: RtsUnit) -> AStarGrid2D:
 	return grid
 
 func _connected_cell(point: Vector2, grid: AStarGrid2D, radius: float, unit: RtsUnit) -> Vector2i:
+	var cache_origin := unit != null and unit == destination_query_unit and point == unit.position
+	var key := grid.get_instance_id()
+	if cache_origin and destination_origin_connections.has(key): return destination_origin_connections[key]
+	var result := _find_connected_cell(point, grid, radius, unit)
+	if cache_origin: destination_origin_connections[key] = result
+	return result
+
+func _find_connected_cell(point: Vector2, grid: AStarGrid2D, radius: float, unit: RtsUnit) -> Vector2i:
 	var origin := world_map.cell_at(point)
 	var best := Vector2i(-1, -1)
 	var best_distance := INF
@@ -323,12 +337,18 @@ func _connected_cell(point: Vector2, grid: AStarGrid2D, radius: float, unit: Rts
 	return best
 
 func _visible_cells(point: Vector2, grid: AStarGrid2D, radius: float, unit: RtsUnit, origin: Vector2i, extent: int) -> Array[Vector2i]:
+	# A destination query changes only the endpoint. Reuse the same source
+	# attachments, including an empty set, across its candidate searches.
+	var cache_origin := unit != null and unit == destination_query_unit and point == unit.position
+	var key := [grid.get_instance_id(), origin, extent, radius]
+	if cache_origin and destination_origin_cells.has(key): return destination_origin_cells[key]
 	var result: Array[Vector2i] = []
 	for y in range(maxi(0, origin.y - extent), mini(grid.region.size.y, origin.y + extent + 1)):
 		for x in range(maxi(0, origin.x - extent), mini(grid.region.size.x, origin.x + extent + 1)):
 			var cell := Vector2i(x, y)
 			if not grid.is_point_solid(cell) and _static_segment_clear(point, grid.get_point_position(cell), radius, unit): result.append(cell)
 	result.sort_custom(func(a: Vector2i, b: Vector2i) -> bool: return point.distance_squared_to(grid.get_point_position(a)) < point.distance_squared_to(grid.get_point_position(b)))
+	if cache_origin: destination_origin_cells[key] = result
 	return result
 
 func _safe_point_path(grid: AStarGrid2D, start: Vector2i, end: Vector2i, unit: RtsUnit) -> PackedVector2Array:
@@ -381,6 +401,7 @@ func _components_for(grid: AStarGrid2D, cache := true) -> PackedInt32Array:
 	var queue := PackedInt32Array()
 	queue.resize(labels.size())
 	var component := 0
+	var sizes := PackedInt32Array()
 	for index in labels.size():
 		if labels[index] != -1: continue
 		var origin := Vector2i(index % size.x, index / size.x)
@@ -406,8 +427,11 @@ func _components_for(grid: AStarGrid2D, cache := true) -> PackedInt32Array:
 				labels[neighbor] = component
 				queue[tail] = neighbor
 				tail += 1
+		sizes.append(tail)
 		component += 1
-	if cache: grid_components[key] = labels
+	if cache:
+		grid_components[key] = labels
+		grid_component_sizes[key] = sizes
 	if profiling_enabled: _record_profile(&"components", started)
 	return labels
 
@@ -427,15 +451,20 @@ func _path_between(from: Vector2, to: Vector2, unit: RtsUnit, smooth: bool, allo
 	if unit != null and (not can_occupy(from, radius, unit, false) or not can_occupy(to, radius, unit, false)): return PackedVector2Array()
 	if smooth and _static_segment_clear(from, to, radius, unit):
 		return PackedVector2Array([from, to]) if from.distance_squared_to(to) > 1.0 else PackedVector2Array([from])
+	if _destination_source_disconnected(from, to, unit): return PackedVector2Array()
 	var grid := _grid_for(unit)
 	var start := _connected_cell(from, grid, radius, unit) if unit != null else nearest_open_cell(from, grid)
-	var end := _connected_cell(to, grid, radius, unit) if unit != null else nearest_open_cell(to, grid)
-	var raw := _safe_point_path(grid, start, end, unit)
+	var end := Vector2i(-1, -1)
+	var raw := PackedVector2Array()
+	if start.x >= 0:
+		end = _connected_cell(to, grid, radius, unit) if unit != null else nearest_open_cell(to, grid)
+		raw = _safe_point_path(grid, start, end, unit)
 	if raw.is_empty() and unit != null:
 		# Try other visible attachments at BOTH ends: the nearest center can
 		# be isolated by geometry that fits between coarse grid centers.
 		var starts := _visible_cells(from, grid, radius, unit, world_map.cell_at(from), 2)
-		var ends := _visible_cells(to, grid, radius, unit, world_map.cell_at(to), 2)
+		var ends: Array[Vector2i] = []
+		if not starts.is_empty(): ends = _visible_cells(to, grid, radius, unit, world_map.cell_at(to), 2)
 		for last in ends:
 			for first in starts:
 				if first == start and last == end: continue
@@ -450,6 +479,48 @@ func _path_between(from: Vector2, to: Vector2, unit: RtsUnit, smooth: bool, allo
 		if from.distance_squared_to(raw[0]) > 1.0: raw.insert(0, from)
 		if to.distance_squared_to(raw[raw.size() - 1]) > 1.0: raw.append(to)
 	return raw
+
+func _destination_source_disconnected(from: Vector2, to: Vector2, unit: RtsUnit) -> bool:
+	if unit == null or unit != destination_query_unit or from != unit.position: return false
+	var key := _grid_key(unit)
+	if not fine_grids.has(key): return false
+	var grid: AStarGrid2D = fine_grids[key]
+	var id := grid.get_instance_id()
+	if not destination_origin_components.has(id):
+		# A fine-grid rejection alone is not authoritative: a narrow passage
+		# may still have a coarse or exact corner route. Only use it when
+		# BOTH of those alternatives cannot attach this particular source.
+		var coarse := _grid_for(unit)
+		var coarse_starts := _visible_cells(from, coarse, unit.radius(), unit, world_map.cell_at(from), 2)
+		var rejectable := coarse_starts.is_empty() and not _static_segment_clear(from, from, unit.radius(), unit, false)
+		var components := {}
+		var fine_starts: Array[Vector2i] = []
+		if rejectable: fine_starts = _fine_visible_cells(from, grid, unit)
+		if rejectable and grid_components.has(id):
+			var labels: PackedInt32Array = grid_components[id]
+			for cell in fine_starts:
+				var label := labels[cell.y * grid.region.size.x + cell.x]
+				if label >= 0: components[label] = true
+		# Do not retain a negative result before the first failed native A*
+		# has built connectivity. The next candidate can then reuse it.
+		if not rejectable: destination_origin_components[id] = {"rejectable": false}
+		elif fine_starts.is_empty(): destination_origin_components[id] = {"rejectable": true, "empty": true}
+		elif grid_components.has(id): destination_origin_components[id] = {"rejectable": true, "empty": false, "labels": components}
+		else: return false
+	var source: Dictionary = destination_origin_components[id]
+	if not source.rejectable: return false
+	# Local fine grids use the same world-aligned lattice and footprints;
+	# their source neighborhood cannot provide an attachment missing here.
+	if source.empty: return true
+	var labels: PackedInt32Array = grid_components[id]
+	var origin := Vector2i(((to - grid.offset) / grid.cell_size).round())
+	# This is only a necessary-condition filter. Include every neighboring
+	# label, even without a clear endpoint sweep, so it cannot reject a route
+	# the fine search would accept. Direct paths were checked by the caller.
+	for y in range(maxi(0, origin.y - 1), mini(grid.region.size.y, origin.y + 2)):
+		for x in range(maxi(0, origin.x - 1), mini(grid.region.size.x, origin.x + 2)):
+			if source.labels.has(labels[y * grid.region.size.x + x]): return false
+	return true
 
 func _fine_static_path(from: Vector2, to: Vector2, unit: RtsUnit, corner_fallback := true) -> PackedVector2Array:
 	# Reachability cannot depend on the request's bounding box: the only
@@ -484,6 +555,7 @@ func _fine_components_disconnect(from: Vector2, to: Vector2, unit: RtsUnit, grid
 
 func _search_fine_grid(from: Vector2, to: Vector2, unit: RtsUnit, grid: AStarGrid2D) -> PackedVector2Array:
 	var starts := _fine_visible_cells(from, grid, unit)
+	if starts.is_empty(): return PackedVector2Array()
 	var ends := _fine_visible_cells(to, grid, unit)
 	for start in starts:
 		for end in ends:
@@ -507,6 +579,7 @@ func _local_fine_grid_for(from: Vector2, to: Vector2, unit: RtsUnit, key: Vector
 	if local_fine_grids.size() >= MAX_FINE_GRIDS:
 		var oldest: Dictionary = local_fine_grids.pop_front()
 		grid_components.erase(oldest["grid"].get_instance_id())
+		grid_component_sizes.erase(oldest["grid"].get_instance_id())
 	var grid := _make_fine_grid(unit, bounds)
 	local_fine_grids.append({"key": key, "bounds": bounds, "grid": grid})
 	return grid
@@ -516,6 +589,15 @@ func _obstacle_corner_path(from: Vector2, to: Vector2, unit: RtsUnit) -> PackedV
 	# a resource/building, no such edge can leave/enter it. Ordinary coarse and
 	# fine routing still handle legal overlap escape before this fallback.
 	if not _static_segment_clear(from, from, unit.radius(), unit, false) or not _static_segment_clear(to, to, unit.radius(), unit, false): return PackedVector2Array()
+	# Strict corner edges are symmetric. An enclosed destination can have a
+	# tiny component while the origin sees most of the map: search from the
+	# smaller side instead of exhausting the whole outside visibility graph.
+	# Connectivity chooses a direction only; it never rejects narrow routes.
+	var reverse_search := _corner_search_from_target(from, to, unit)
+	if reverse_search:
+		var original_from := from
+		from = to
+		to = original_from
 	# Even a fine lattice can miss a legal 1px-wide band between expanded
 	# footprints or terrain and a resource. Boundary corners provide portals
 	# independent of the lattice; every connecting edge still uses a full sweep.
@@ -579,6 +661,7 @@ func _obstacle_corner_path(from: Vector2, to: Vector2, unit: RtsUnit) -> PackedV
 				result.append(points[current])
 				current = parents[current]
 			result.reverse()
+			if reverse_search: result.reverse()
 			return result
 		closed[current] = 1
 		for next in points.size():
@@ -602,12 +685,33 @@ func _obstacle_corner_path(from: Vector2, to: Vector2, unit: RtsUnit) -> PackedV
 	# GDScript requires a terminal return even though the loop exits above.
 	return PackedVector2Array()
 
+func _corner_search_from_target(from: Vector2, to: Vector2, unit: RtsUnit) -> bool:
+	var key := _grid_key(unit)
+	if not fine_grids.has(key): return false
+	var grid: AStarGrid2D = fine_grids[key]
+	var id := grid.get_instance_id()
+	if not grid_components.has(id) or not grid_component_sizes.has(id): return false
+	var labels: PackedInt32Array = grid_components[id]
+	var sizes: PackedInt32Array = grid_component_sizes[id]
+	var counts: Array[int] = []
+	for point in [from, to]:
+		var count := 0
+		var seen := {}
+		for cell in _fine_visible_cells(point, grid, unit):
+			var label := labels[cell.y * grid.region.size.x + cell.x]
+			if label < 0 or seen.has(label): continue
+			seen[label] = true
+			count += sizes[label]
+		counts.append(count)
+	return counts[1] < counts[0]
+
 func _fine_grid_for(unit: RtsUnit) -> AStarGrid2D:
 	var key := _grid_key(unit)
 	if fine_grids.has(key): return fine_grids[key]
 	if fine_grids.size() >= MAX_FINE_GRIDS:
 		var oldest: Vector3 = fine_grids.keys()[0]
 		grid_components.erase(fine_grids[oldest].get_instance_id())
+		grid_component_sizes.erase(fine_grids[oldest].get_instance_id())
 		fine_grids.erase(oldest)
 	var grid := _make_fine_grid(unit, Rect2(Vector2.ZERO, world_map.world_size))
 	fine_grids[key] = grid
@@ -890,6 +994,35 @@ func nearest_walkable_point(point: Vector2, radius := CLEARANCE, self_unit: RtsU
 	return result
 
 func _nearest_walkable_point(point: Vector2, radius: float, self_unit: RtsUnit, require_path: bool, include_units: bool) -> Vector2:
+	if not require_path or self_unit == null:
+		return _search_nearest_walkable_point(point, radius, self_unit, require_path, include_units)
+	# These caches live only for this synchronous query. In particular, deer
+	# movement, another unit, or a later obstacle edit cannot reuse them.
+	var previous_unit := destination_query_unit
+	var previous_cells := destination_origin_cells
+	var previous_connections := destination_origin_connections
+	var previous_components := destination_origin_components
+	var previous_range_unit := range_query_unit
+	var previous_radius := range_query_radius
+	var previous_segments := range_query_segments
+	destination_query_unit = self_unit
+	destination_origin_cells = {}
+	destination_origin_connections = {}
+	destination_origin_components = {}
+	range_query_unit = self_unit
+	range_query_radius = radius
+	range_query_segments = [{}, {}, {}, {}]
+	var result := _search_nearest_walkable_point(point, radius, self_unit, require_path, include_units)
+	destination_query_unit = previous_unit
+	destination_origin_cells = previous_cells
+	destination_origin_connections = previous_connections
+	destination_origin_components = previous_components
+	range_query_unit = previous_range_unit
+	range_query_radius = previous_radius
+	range_query_segments = previous_segments
+	return result
+
+func _search_nearest_walkable_point(point: Vector2, radius: float, self_unit: RtsUnit, require_path: bool, include_units: bool) -> Vector2:
 	_ensure_current()
 	# Directly reachable points need no grid, even when a path is required.
 	var check_path := require_path and self_unit != null
@@ -924,6 +1057,9 @@ func _nearest_walkable_point(point: Vector2, radius: float, self_unit: RtsUnit, 
 			if not can_occupy(candidate, radius, self_unit, include_units, false): continue
 			if _path_between(self_unit.position, candidate, self_unit, true).is_empty(): continue
 			return candidate
+		# An open cell is not necessarily reachable from this source. Holding
+		# position finishes an impossible move instead of retrying a false goal.
+		return self_unit.position
 	return world_map.cell_center(nearest_open_cell(clamped, grid))
 
 # Final destinations cannot use movement-only overlap escape allowances.

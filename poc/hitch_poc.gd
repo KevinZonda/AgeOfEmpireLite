@@ -2,7 +2,8 @@ extends SceneTree
 
 # Hitch reproduction POC. Runs the REAL game loop headless with scripted
 # gameplay (army clashes, building destruction/construction, an unreachable
-# order target) and attributes every frame spike to its cause.
+# order target). Navigation timings and activity flags help locate frame
+# spikes; flags show coincidence, not a measured cost or proven cause.
 #
 # Run: RTS_NAV_PROFILE=1 docs/godot/bin/godot.macos.template_debug.arm64 \
 #        --headless --path . -s res://poc/hitch_poc.gd
@@ -71,29 +72,35 @@ func _run() -> void:
 	var elapsed := 0.0
 	var sim_start := Time.get_ticks_usec()
 	var last_report := -1
+	var frame_start := Time.get_ticks_usec()
 	while elapsed < SIM_SECONDS and Time.get_ticks_usec() - sim_start < WALL_LIMIT_US:
-		var frame_start := Time.get_ticks_usec()
 		await process_frame
-		var wall_us := Time.get_ticks_usec() - frame_start
 		elapsed = game.match_statistics.elapsed
+		var actions: Array[String] = []
 		if int(elapsed) != last_report:
 			last_report = int(elapsed)
 			print("... sim t=%ds frames=%d wall=%ds" % [last_report, frames.size(), (Time.get_ticks_usec() - sim_start) / 1_000_000])
 		if elapsed >= next_order:
+			actions.append("group_order")
 			next_order += 4.0
 			order_flip = not order_flip
 			game.issue_group_order(army0, Vector2(1900, 1700) if order_flip else Vector2(400, 500))
 			game.issue_group_order(army1, Vector2(400, 500) if order_flip else Vector2(1800, 1700))
 		if elapsed >= next_siege:
+			actions.append("building_edit")
 			next_siege += 7.0
 			var victim: RtsBuilding = decoys.pop_front()
 			if victim != null and is_instance_valid(victim):
 				game.entity_destroyed(victim)
 				decoys.append(game.spawn_building(1, "house", Vector2(900 + randi() % 300, 1100 + randi() % 200)))
 		if elapsed >= next_probe:
+			actions.append("unreachable_order")
 			next_probe += 10.0
 			var probe_group: Array[RtsUnit] = [probe]
 			game.issue_group_order(probe_group, cage_center)
+		# Include synchronous command/construction work in the same interval
+		# as its navigation delta. The old timer stopped before these calls.
+		var wall_us := Time.get_ticks_usec() - frame_start
 		# Per-frame attribution snapshot.
 		var profile: Dictionary = game.navigation.profile_snapshot()
 		var nav_added := {}
@@ -112,16 +119,21 @@ func _run() -> void:
 		var ai_now := float(game.ai_think_timers.get(1, 0.0))
 		if ai_now > prev_ai_timer: flags.append("ai_tick")
 		prev_ai_timer = ai_now
-		frames.append({"t": elapsed, "us": wall_us, "flags": flags, "nav": nav_added})
+		frames.append({"t": elapsed, "us": wall_us, "flags": flags, "actions": actions, "nav": nav_added})
+		frame_start = Time.get_ticks_usec()
 	_report()
 
 func _report() -> void:
 	var times: Array[int] = []
 	for frame in frames: times.append(frame["us"])
+	if times.is_empty():
+		print("HITCH_POC_FAIL no frames sampled")
+		quit(1)
+		return
 	times.sort()
 	var median := times[times.size() / 2]
 	var p95 := times[int(times.size() * 0.95)]
-	print("\n=== frame wall time over %d frames (%.1f sim s) ===" % [frames.size(), SIM_SECONDS])
+	print("\n=== frame wall time over %d frames (%.1f sim s, profiling=%s) ===" % [frames.size(), game.match_statistics.elapsed, game.navigation.profiling_enabled])
 	print("median %.1f ms | p95 %.1f ms | max %.1f ms" % [median / 1000.0, p95 / 1000.0, times.back() / 1000.0])
 	var nav_totals := {}
 	var cause_totals := {}
@@ -143,11 +155,12 @@ func _report() -> void:
 		var nav_str := ""
 		for op in frame["nav"].keys():
 			nav_str += " %s=%.1fms" % [op, frame["nav"][op] / 1000.0]
-		print("t=%5.1fs  %6.1f ms  flags=%s%s" % [frame["t"], frame["us"] / 1000.0, frame["flags"], nav_str])
-	print("\n=== spike time by cause (a spike can count toward several) ===")
+		print("t=%5.1fs  %6.1f ms  flags=%s actions=%s%s" % [frame["t"], frame["us"] / 1000.0, frame["flags"], frame["actions"], nav_str])
+	print("\n=== spike time by coincident activity (not exclusive measured costs) ===")
 	for cause in cause_totals.keys():
 		print("%-14s %8.1f ms total" % [cause, cause_totals[cause] / 1000.0])
 	print("\n=== nav profile totals across whole run ===")
 	for op in nav_totals.keys():
 		print("%-24s %8.1f ms" % [op, nav_totals[op] / 1000.0])
+	game.navigation.background_jobs.shutdown()
 	quit()

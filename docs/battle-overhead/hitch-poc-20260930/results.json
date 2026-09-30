@@ -1,0 +1,184 @@
+{
+  "platform": "Apple M2",
+  "headless": true,
+  "profiling": false,
+  "sim_seconds": 15,
+  "seed": 7,
+  "initial_units": 153,
+  "initial_buildings": 23,
+  "baseline_navigation_sha256": "3fcf49788dcee4a6c696aa31dd222cbf9df4adbfb4bce16197fa2930e4b02c2b",
+  "candidate_navigation_sha256": "d77160def12fe6e171e233c02a6f80d5c402f76a56b51cb32efcd20731c90a7e",
+  "runs": [
+    {
+      "name": "baseline-1",
+      "frames": 1146,
+      "spikes": 266,
+      "median_ms": 8.3,
+      "p95_ms": 29.3,
+      "max_ms": 3043.8,
+      "order_at_6s": [
+        "t=  6.0s  2085.5 ms  flags=[] actions=[\"group_order\", \"unreachable_order\"]"
+      ],
+      "log": "baseline-1.log"
+    },
+    {
+      "name": "baseline-2",
+      "frames": 1118,
+      "spikes": 267,
+      "median_ms": 8.4,
+      "p95_ms": 30.0,
+      "max_ms": 2085.2,
+      "order_at_6s": [
+        "t=  6.0s  2085.2 ms  flags=[] actions=[\"group_order\", \"unreachable_order\"]"
+      ],
+      "log": "baseline-2.log"
+    },
+    {
+      "name": "candidate-1",
+      "frames": 1223,
+      "spikes": 260,
+      "median_ms": 8.4,
+      "p95_ms": 29.2,
+      "max_ms": 512.2,
+      "order_at_6s": [
+        "t=  6.0s   140.1 ms  flags=[\"fog\"] actions=[\"group_order\", \"unreachable_order\"]"
+      ],
+      "log": "candidate-1.log"
+    },
+    {
+      "name": "candidate-2",
+      "frames": 1153,
+      "spikes": 258,
+      "median_ms": 8.3,
+      "p95_ms": 29.4,
+      "max_ms": 795.2,
+      "order_at_6s": [
+        "t=  6.0s   795.2 ms  flags=[] actions=[\"group_order\", \"unreachable_order\"]"
+      ],
+      "log": "candidate-2.log"
+    }
+  ],
+  "checks": [
+    {
+      "test": "navigation_destination_poc",
+      "passed": true,
+      "exit_code": 0,
+      "timeout": false,
+      "seconds": 0.545,
+      "log": "regression-navigation_destination_poc.log"
+    },
+    {
+      "test": "navigation_corner_poc",
+      "passed": true,
+      "exit_code": 0,
+      "timeout": false,
+      "seconds": 10.424,
+      "log": "regression-navigation_corner_poc.log"
+    },
+    {
+      "test": "navigation_poc_matrix",
+      "passed": true,
+      "exit_code": 0,
+      "timeout": false,
+      "seconds": 3.424,
+      "log": "regression-navigation_poc_matrix.log"
+    },
+    {
+      "test": "navigation_replanning",
+      "passed": true,
+      "exit_code": 0,
+      "timeout": false,
+      "seconds": 0.564,
+      "log": "regression-navigation_replanning.log"
+    },
+    {
+      "test": "navigation_search_work",
+      "passed": true,
+      "exit_code": 0,
+      "timeout": false,
+      "seconds": 0.544,
+      "log": "regression-navigation_search_work.log"
+    },
+    {
+      "test": "navigation_dense_poc",
+      "passed": true,
+      "exit_code": 0,
+      "timeout": false,
+      "seconds": 1.516,
+      "log": "regression-navigation_dense_poc.log"
+    },
+    {
+      "test": "navigation_state_poc",
+      "passed": true,
+      "exit_code": 0,
+      "timeout": false,
+      "seconds": 10.354,
+      "log": "regression-navigation_state_poc.log"
+    },
+    {
+      "test": "navigation_async_poc",
+      "passed": true,
+      "exit_code": 0,
+      "timeout": false,
+      "seconds": 2.284,
+      "log": "regression-navigation_async_poc.log"
+    },
+    {
+      "test": "navigation_routes",
+      "passed": true,
+      "exit_code": 0,
+      "timeout": false,
+      "seconds": 0.438,
+      "log": "regression-navigation_routes.log"
+    },
+    {
+      "test": "navigation_grid_raster",
+      "passed": true,
+      "exit_code": 0,
+      "timeout": false,
+      "seconds": 1.418,
+      "log": "regression-navigation_grid_raster.log"
+    },
+    {
+      "test": "navigation_range_stall_poc",
+      "passed": true,
+      "exit_code": 0,
+      "timeout": false,
+      "seconds": 0.556,
+      "log": "regression-navigation_range_stall_poc.log"
+    },
+    {
+      "test": "navigation_wildlife_churn_poc",
+      "passed": true,
+      "exit_code": 0,
+      "timeout": false,
+      "seconds": 1.509,
+      "log": "regression-navigation_wildlife_churn_poc.log"
+    },
+    {
+      "test": "group_replanning",
+      "passed": true,
+      "exit_code": 0,
+      "timeout": false,
+      "seconds": 0.434,
+      "log": "regression-group_replanning.log"
+    },
+    {
+      "test": "group_multiplayer",
+      "passed": true,
+      "exit_code": 0,
+      "timeout": false,
+      "seconds": 1.924,
+      "log": "regression-group_multiplayer.log"
+    },
+    {
+      "test": "group_mass_chokepoint",
+      "passed": true,
+      "exit_code": 0,
+      "timeout": false,
+      "seconds": 3.96,
+      "log": "regression-group_mass_chokepoint.log"
+    }
+  ],
+  "known_failure": "navigation_range_corner_poc: range_candidates_reuse_origin_visibility fails on baseline and candidate"
+}
