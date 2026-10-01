@@ -92,7 +92,14 @@ func _test_busy_farm_queue() -> void:
 			unit.issue_command("move", Vector2(650, 450), null, true)
 			tick([unit], 100)
 			if occupied and not extra_farm:
-				check(not unit.command_queue.is_empty() or unit.position.distance_to(Vector2(650, 450)) < 7, "busy_farm_preserves_followup_move", "order=%s queue=%d pos=%s" % [unit.order, unit.command_queue.size(), unit.position])
+				var followup := Vector2(650, 450)
+				print("BUSY_FARM_PROGRESS sample_ticks=100 order=%s queue=%d pos=%s remaining=%.3f" % [unit.order, unit.command_queue.size(), unit.position, unit.position.distance_to(followup)])
+				var followup_active := unit.order == "move" and unit.destination.is_equal_approx(followup)
+				var followup_queued := unit.command_queue.any(func(command: Dictionary) -> bool: return command.get("type") == "move" and command.get("point", Vector2.INF).is_equal_approx(followup))
+				var followup_finished := unit.order == "idle" and unit.position.distance_to(followup) < 7
+				check(followup_active or followup_queued or followup_finished, "busy_farm_preserves_followup_move", "order=%s queue=%d pos=%s" % [unit.order, unit.command_queue.size(), unit.position])
+				tick([unit], 100)
+				check(unit.order == "idle" and unit.command_queue.is_empty() and unit.position.distance_to(followup) < 7, "busy_farm_followup_arrives_within_200_ticks", "order=%s queue=%d pos=%s" % [unit.order, unit.command_queue.size(), unit.position])
 			else:
 				check(unit.order == "gather" and unit.command_queue.size() == 1, "farm_queue_control_occupied%s_extra%s" % [occupied, extra_farm], "order=%s queue=%d" % [unit.order, unit.command_queue.size()])
 
