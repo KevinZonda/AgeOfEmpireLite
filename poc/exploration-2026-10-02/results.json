@@ -1,545 +1,690 @@
 [
-	{
-		"evidence": {
-			"dt": 0.1,
-			"expected": 41.7,
-			"hp_after": 141.7,
-			"hp_before": 38.6666666666667,
-			"undamaged_before": 138.666666666667
-		},
-		"id": "construction_damage",
-		"status": "bug"
-	},
-	{
-		"evidence": {
-			"dt": 0.0,
-			"expected": 38.6666666666667,
-			"hp_after": 138.666666666667,
-			"hp_before": 38.6666666666667,
-			"undamaged_before": 138.666666666667
-		},
-		"id": "construction_zero",
-		"status": "bug"
-	},
-	{
-		"evidence": {
-			"dt": 0.1,
-			"expected": 81.7,
-			"hp_after": 141.7,
-			"hp_before": 78.6666666666667,
-			"undamaged_before": 138.666666666667
-		},
-		"id": "construction_repair",
-		"status": "bug"
-	},
-	{
-		"evidence": {
-			"gold_gain_in_10_ticks": 120,
-			"home": "(760.0, 600.0)",
-			"position": "(1200.0, 600.0)",
-			"post": "(1200.0, 600.0)"
-		},
-		"id": "trade_reissue",
-		"status": "bug"
-	},
-	{
-		"evidence": {
-			"gold_gain_in_10_ticks": 60,
-			"home": "(760.0, 600.0)",
-			"position": "(760.0, 600.0)",
-			"post": "(760.0, 600.0)"
-		},
-		"id": "trade_overlap",
-		"status": "observation"
-	},
-	{
-		"evidence": {
-			"available": true,
-			"carrier_valid": false
-		},
-		"id": "elimination_relic",
-		"status": "pass"
-	},
-	{
-		"evidence": {
-			"available": true,
-			"carrier_valid": false
-		},
-		"id": "death_relic",
-		"status": "pass"
-	},
-	{
-		"evidence": {
-			"available": true,
-			"position": "(1105.0, 800.0)"
-		},
-		"id": "destroy_monastery",
-		"status": "pass"
-	},
-	{
-		"evidence": {
-			"admitted": true,
-			"capacity": 10,
-			"slots_after_death": 1
-		},
-		"id": "dead_garrison_slot",
-		"status": "observation"
-	},
-	{
-		"evidence": {
-			"admitted": true,
-			"slots_after_death": 1
-		},
-		"id": "dead_passenger_slot",
-		"status": "observation"
-	},
-	{
-		"evidence": {
-			"admitted": true,
-			"kind": "warship",
-			"tags": [
-				"naval",
-				"military",
-				"ranged",
-				"heavy"
-			]
-		},
-		"id": "naval_garrison",
-		"status": "bug"
-	},
-	{
-		"evidence": {
-			"admitted": false,
-			"kind": "monk",
-			"tags": [
-				"religious",
-				"light"
-			]
-		},
-		"id": "monk_garrison",
-		"status": "observation"
-	},
-	{
-		"evidence": {
-			"hp_after": 80.0,
-			"hp_before": 90.0,
-			"new_owner": 0
-		},
-		"id": "conversion_projectile",
-		"status": "bug"
-	},
-	{
-		"evidence": {
-			"converted_owner": 0,
-			"home_owner": 1,
-			"original_market": 1,
-			"resumed_without_own_market": true
-		},
-		"id": "conversion_trader",
-		"status": "bug"
-	},
-	{
-		"evidence": {
-			"official_count_after_conversion": 5
-		},
-		"id": "conversion_official_limit",
-		"status": "observation"
-	},
-	{
-		"evidence": {
-			"new_owner": 0,
-			"still_on_enemy_wall": true,
-			"wall_owner": 1
-		},
-		"id": "conversion_wall",
-		"status": "observation"
-	},
-	{
-		"evidence": {
-			"distance": 20.0,
-			"min_range": 82.5,
-			"range": 480.0,
-			"shots": 1
-		},
-		"id": "ground_min_range",
-		"status": "bug"
-	},
-	{
-		"evidence": {
-			"activated": true,
-			"cooldown": 0.0,
-			"ready_after_shot": true,
-			"shots": 1
-		},
-		"id": "ground_artillery_ability",
-		"status": "bug"
-	},
-	{
-		"evidence": {
-			"cap": 10,
-			"unit_count_after": 13,
-			"unit_count_before": 12,
-			"used": 14
-		},
-		"id": "population_house_loss",
-		"status": "observation"
-	},
-	{
-		"evidence": {
-			"original_worker": "gather",
-			"trained_order": "idle"
-		},
-		"id": "rally_full_farm",
-		"status": "bug"
-	},
-	{
-		"evidence": {
-			"queue_size": 0,
-			"units_after": 12,
-			"units_before": 12
-		},
-		"id": "rally_dead_fish",
-		"status": "bug"
-	},
-	{
-		"evidence": {
-			"builders": 0,
-			"placed": true,
-			"wood_spent": 80
-		},
-		"id": "garrison_builders",
-		"status": "observation"
-	},
-	{
-		"evidence": {
-			"first": "gather",
-			"second": "idle"
-		},
-		"id": "farm_exclusive",
-		"status": "pass"
-	},
-	{
-		"evidence": {
-			"after": 10000,
-			"before": 10000,
-			"double_cancel": false
-		},
-		"id": "cancel_refund",
-		"status": "pass"
-	},
-	{
-		"evidence": {
-			"gold_delta": -350
-		},
-		"id": "market_roundtrip",
-		"status": "pass"
-	},
-	{
-		"evidence": {
-			"destination": "(1200.0, 650.0)",
-			"order": "move"
-		},
-		"id": "queued_invalid_target",
-		"status": "pass"
-	},
-	{
-		"evidence": {
-			"defeated": [
-				1
-			],
-			"holder": 1,
-			"site_owner_after_elimination": 1,
-			"teams": [
-				0,
-				1,
-				0,
-				1
-			]
-		},
-		"id": "team_sacred_elimination",
-		"status": "observation"
-	},
-	{
-		"evidence": {
-			"multiplier_after": 1.0,
-			"multiplier_before": 1.25
-		},
-		"id": "gatehouse_destroyed",
-		"status": "pass"
-	},
-	{
-		"evidence": {
-			"armor_after": 5.0,
-			"armor_before": 5.0,
-			"shield_timer_after_stop": 99999.0
-		},
-		"id": "pavise_stop",
-		"status": "pass"
-	},
-	{
-		"evidence": {
-			"converted": true,
-			"position_unchanged": true,
-			"vertical": true
-		},
-		"id": "wall_vertical_gate",
-		"status": "pass"
-	},
-	{
-		"evidence": {
-			"passenger_survived": false
-		},
-		"id": "transport_deep_death",
-		"status": "pass"
-	},
-	{
-		"evidence": {
-			"dt": 4.0,
-			"expected": 160.0,
-			"hp_after": 260.0,
-			"hp_before": 38.6666666666667,
-			"undamaged_before": 138.666666666667
-		},
-		"id": "construction_completion_damage",
-		"status": "bug"
-	},
-	{
-		"evidence": {
-			"distance_to_market": 68.0,
-			"income_on_return": 0,
-			"market_half_width": 56.0,
-			"order": "trade",
-			"returning": true,
-			"trader_radius": 11.0
-		},
-		"id": "trade_return_market",
-		"status": "bug"
-	},
-	{
-		"evidence": {
-			"building_size": "(144.0, 144.0)",
-			"distance": 87.25,
-			"official_order": "supervise",
-			"radius": 11.0,
-			"work_rate": 1.0
-		},
-		"id": "supervise_town_center",
-		"status": "bug"
-	},
-	{
-		"evidence": {
-			"building_size": "(112.0, 104.0)",
-			"distance": 71.25,
-			"official_order": "supervise",
-			"radius": 11.0,
-			"work_rate": 1.0
-		},
-		"id": "supervise_barracks",
-		"status": "bug"
-	},
-	{
-		"evidence": {
-			"queue_after": 0,
-			"units_after": 12,
-			"units_before": 12
-		},
-		"id": "rally_dead_tree",
-		"status": "bug"
-	},
-	{
-		"evidence": {
-			"queue_after": 0,
-			"units_after": 12,
-			"units_before": 12
-		},
-		"id": "rally_dead_farm",
-		"status": "bug"
-	},
-	{
-		"evidence": {
-			"queue_after": 0,
-			"units_after": 13,
-			"units_before": 12
-		},
-		"id": "rally_queued_target",
-		"status": "pass"
-	},
-	{
-		"evidence": {
-			"enabled_build_buttons": 11,
-			"garrisoned": true,
-			"selected": true,
-			"wood_spent": 80,
-			"worker_order": "idle"
-		},
-		"id": "selection_after_garrison",
-		"status": "bug"
-	},
-	{
-		"evidence": {
-			"admitted_to_second": true,
-			"first_slots": 1,
-			"second_slots": 1
-		},
-		"id": "garrison_double_host",
-		"status": "observation"
-	},
-	{
-		"evidence": {
-			"enemy_detected": false,
-			"enemy_position": "(2000.0, 1900.0)",
-			"live_route_goal": "(2000.0, 1900.0)",
-			"order": "attack",
-			"still_tracks_enemy": true
-		},
-		"id": "hidden_attack_tracking",
-		"status": "bug"
-	},
-	{
-		"evidence": {
-			"enemy_damage": 0.0,
-			"remaining_construction": 10.0
-		},
-		"id": "field_siege_unfinished_attack",
-		"status": "pass"
-	},
-	{
-		"evidence": {
-			"boarded": false,
-			"remaining_construction": 10.0
-		},
-		"id": "field_siege_unfinished_boarding",
-		"status": "pass"
-	},
-	{
-		"evidence": {
-			"defeated": [
-				1
-			],
-			"game_over": true,
-			"remaining": 0.0,
-			"sacred_holder": 1
-		},
-		"id": "sacred_eliminated_wins",
-		"status": "bug"
-	},
-	{
-		"evidence": {
-			"can_cross": true,
-			"enemy": false,
-			"position": "(1060.0, 780.0)"
-		},
-		"id": "ally_gate",
-		"status": "pass"
-	},
-	{
-		"evidence": {
-			"can_cross": false,
-			"enemy": true,
-			"position": "(1060.0, 780.0)"
-		},
-		"id": "enemy_gate",
-		"status": "pass"
-	},
-	{
-		"evidence": {
-			"distance": 83.25,
-			"order": "siege_tower_docked",
-			"tower_radius": 19.0,
-			"wall_width": 120.0
-		},
-		"id": "siege_tower_docking",
-		"status": "pass"
-	},
-	{
-		"evidence": {
-			"complete": true,
-			"gathering_berries": false,
-			"gathering_farm": true,
-			"worker_order": "gather"
-		},
-		"id": "farm_builder_followup",
-		"status": "pass"
-	},
-	{
-		"evidence": {
-			"complete": true,
-			"gathering_berries": false,
-			"gathering_farm": false,
-			"worker_order": "gather"
-		},
-		"id": "mill_builder_followup",
-		"status": "pass"
-	},
-	{
-		"evidence": {
-			"remaining_after": 11.0,
-			"remaining_before": 11.0
-		},
-		"id": "pause_production",
-		"status": "pass"
-	},
-	{
-		"evidence": {
-			"old_projectile_queued_for_deletion": true
-		},
-		"id": "restart_projectiles",
-		"status": "pass"
-	},
-	{
-		"evidence": {
-			"commands_after": 0,
-			"commands_before": 0,
-			"new_owner": 0
-		},
-		"id": "conversion_selection",
-		"status": "bug"
-	},
-	{
-		"evidence": {
-			"boarded": false,
-			"resumed_order": "trade"
-		},
-		"id": "trade_garrison_resume",
-		"status": "observation"
-	},
-	{
-		"evidence": {
-			"order": "move",
-			"queue_size": 0
-		},
-		"id": "depleted_resource_queue",
-		"status": "pass"
-	},
-	{
-		"evidence": {
-			"alternative_distance": -1.0,
-			"alternative_exists": false,
-			"order_after_activation": "idle",
-			"queued_gather_commands": 0
-		},
-		"id": "queued_farm_frees_later",
-		"status": "bug"
-	},
-	{
-		"evidence": {
-			"alternative_distance": 144.222045898438,
-			"alternative_exists": true,
-			"order_after_activation": "idle",
-			"queued_gather_commands": 0
-		},
-		"id": "queued_farm_alternative",
-		"status": "bug"
-	},
-	{
-		"evidence": {
-			"construction_progress_seconds": 0.999999999999996,
-			"expected": 72.8833333333332,
-			"hp_after": 112.883333333333,
-			"hp_before": 42.55,
-			"worker_order": "build"
-		},
-		"id": "construction_real_worker",
-		"status": "bug"
-	}
+  {
+    "evidence": {
+      "dt": 0.1,
+      "expected": 41.7,
+      "hp_after": 141.7,
+      "hp_before": 38.6666666666667,
+      "undamaged_before": 138.666666666667
+    },
+    "id": "construction_damage",
+    "status": "bug",
+    "log": "logs/explore.log"
+  },
+  {
+    "evidence": {
+      "dt": 0.0,
+      "expected": 38.6666666666667,
+      "hp_after": 138.666666666667,
+      "hp_before": 38.6666666666667,
+      "undamaged_before": 138.666666666667
+    },
+    "id": "construction_zero",
+    "status": "bug",
+    "log": "logs/explore.log"
+  },
+  {
+    "evidence": {
+      "dt": 0.1,
+      "expected": 81.7,
+      "hp_after": 141.7,
+      "hp_before": 78.6666666666667,
+      "undamaged_before": 138.666666666667
+    },
+    "id": "construction_repair",
+    "status": "bug",
+    "log": "logs/explore.log"
+  },
+  {
+    "evidence": {
+      "gold_gain_in_10_ticks": 120,
+      "home": "(760.0, 600.0)",
+      "position": "(1200.0, 600.0)",
+      "post": "(1200.0, 600.0)"
+    },
+    "id": "trade_reissue",
+    "status": "bug",
+    "log": "logs/repeat.log"
+  },
+  {
+    "evidence": {
+      "gold_gain_in_10_ticks": 60,
+      "home": "(760.0, 600.0)",
+      "position": "(760.0, 600.0)",
+      "post": "(760.0, 600.0)"
+    },
+    "id": "trade_overlap",
+    "status": "observation",
+    "log": "logs/explore.log"
+  },
+  {
+    "evidence": {
+      "available": true,
+      "carrier_valid": false
+    },
+    "id": "elimination_relic",
+    "status": "pass",
+    "log": "logs/explore.log"
+  },
+  {
+    "evidence": {
+      "available": true,
+      "carrier_valid": false
+    },
+    "id": "death_relic",
+    "status": "pass",
+    "log": "logs/explore.log"
+  },
+  {
+    "evidence": {
+      "available": true,
+      "position": "(1105.0, 800.0)"
+    },
+    "id": "destroy_monastery",
+    "status": "pass",
+    "log": "logs/explore.log"
+  },
+  {
+    "evidence": {
+      "admitted": true,
+      "capacity": 10,
+      "slots_after_death": 1
+    },
+    "id": "dead_garrison_slot",
+    "status": "observation",
+    "log": "logs/explore.log"
+  },
+  {
+    "evidence": {
+      "admitted": true,
+      "slots_after_death": 1
+    },
+    "id": "dead_passenger_slot",
+    "status": "observation",
+    "log": "logs/explore.log"
+  },
+  {
+    "evidence": {
+      "admitted": true,
+      "kind": "warship",
+      "tags": [
+        "naval",
+        "military",
+        "ranged",
+        "heavy"
+      ]
+    },
+    "id": "naval_garrison",
+    "status": "observation",
+    "log": "logs/repeat.log"
+  },
+  {
+    "evidence": {
+      "admitted": false,
+      "kind": "monk",
+      "tags": [
+        "religious",
+        "light"
+      ]
+    },
+    "id": "monk_garrison",
+    "status": "observation",
+    "log": "logs/explore.log"
+  },
+  {
+    "evidence": {
+      "hp_after": 80.0,
+      "hp_before": 90.0,
+      "new_owner": 0
+    },
+    "id": "conversion_projectile",
+    "status": "bug",
+    "log": "logs/repeat.log"
+  },
+  {
+    "evidence": {
+      "converted_owner": 0,
+      "home_owner": 1,
+      "original_market": 1,
+      "resumed_without_own_market": true
+    },
+    "id": "conversion_trader",
+    "status": "bug",
+    "log": "logs/repeat.log"
+  },
+  {
+    "evidence": {
+      "official_count_after_conversion": 5
+    },
+    "id": "conversion_official_limit",
+    "status": "observation",
+    "log": "logs/explore.log"
+  },
+  {
+    "evidence": {
+      "new_owner": 0,
+      "still_on_enemy_wall": true,
+      "wall_owner": 1
+    },
+    "id": "conversion_wall",
+    "status": "observation",
+    "log": "logs/explore.log"
+  },
+  {
+    "evidence": {
+      "distance": 20.0,
+      "min_range": 82.5,
+      "range": 480.0,
+      "shots": 1
+    },
+    "id": "ground_min_range",
+    "status": "bug",
+    "log": "logs/repeat.log"
+  },
+  {
+    "evidence": {
+      "activated": true,
+      "cooldown": 0.0,
+      "ready_after_shot": true,
+      "shots": 1
+    },
+    "id": "ground_artillery_ability",
+    "status": "bug",
+    "log": "logs/repeat.log"
+  },
+  {
+    "evidence": {
+      "cap": 10,
+      "unit_count_after": 13,
+      "unit_count_before": 12,
+      "used": 14
+    },
+    "id": "population_house_loss",
+    "status": "observation",
+    "log": "logs/explore.log"
+  },
+  {
+    "evidence": {
+      "original_worker": "gather",
+      "trained_order": "idle"
+    },
+    "id": "rally_full_farm",
+    "status": "bug",
+    "log": "logs/repeat.log"
+  },
+  {
+    "evidence": {
+      "queue_size": 0,
+      "units_after": 12,
+      "units_before": 12
+    },
+    "id": "rally_dead_fish",
+    "status": "bug",
+    "log": "logs/repeat.log"
+  },
+  {
+    "evidence": {
+      "builders": 0,
+      "placed": true,
+      "wood_spent": 80
+    },
+    "id": "garrison_builders",
+    "status": "observation",
+    "log": "logs/explore.log"
+  },
+  {
+    "evidence": {
+      "first": "gather",
+      "second": "idle"
+    },
+    "id": "farm_exclusive",
+    "status": "pass",
+    "log": "logs/explore.log"
+  },
+  {
+    "evidence": {
+      "after": 10000,
+      "before": 10000,
+      "double_cancel": false
+    },
+    "id": "cancel_refund",
+    "status": "pass",
+    "log": "logs/explore.log"
+  },
+  {
+    "evidence": {
+      "gold_delta": -350
+    },
+    "id": "market_roundtrip",
+    "status": "pass",
+    "log": "logs/explore.log"
+  },
+  {
+    "evidence": {
+      "destination": "(1200.0, 650.0)",
+      "order": "move"
+    },
+    "id": "queued_invalid_target",
+    "status": "pass",
+    "log": "logs/explore.log"
+  },
+  {
+    "evidence": {
+      "defeated": [
+        1
+      ],
+      "holder": 1,
+      "site_owner_after_elimination": 1,
+      "teams": [
+        0,
+        1,
+        0,
+        1
+      ]
+    },
+    "id": "team_sacred_elimination",
+    "status": "observation",
+    "log": "logs/explore.log"
+  },
+  {
+    "evidence": {
+      "multiplier_after": 1.0,
+      "multiplier_before": 1.25
+    },
+    "id": "gatehouse_destroyed",
+    "status": "pass",
+    "log": "logs/explore.log"
+  },
+  {
+    "evidence": {
+      "armor_after": 5.0,
+      "armor_before": 5.0,
+      "shield_timer_after_stop": 99999.0
+    },
+    "id": "pavise_stop",
+    "status": "pass",
+    "log": "logs/explore.log"
+  },
+  {
+    "evidence": {
+      "converted": true,
+      "position_unchanged": true,
+      "vertical": true
+    },
+    "id": "wall_vertical_gate",
+    "status": "pass",
+    "log": "logs/explore.log"
+  },
+  {
+    "evidence": {
+      "passenger_survived": false
+    },
+    "id": "transport_deep_death",
+    "status": "pass",
+    "log": "logs/explore.log"
+  },
+  {
+    "evidence": {
+      "dt": 4.0,
+      "expected": 160.0,
+      "hp_after": 260.0,
+      "hp_before": 38.6666666666667,
+      "undamaged_before": 138.666666666667
+    },
+    "id": "construction_completion_damage",
+    "status": "bug",
+    "log": "logs/explore.log"
+  },
+  {
+    "evidence": {
+      "distance_to_market": 68.0,
+      "income_on_return": 0,
+      "market_half_width": 56.0,
+      "order": "trade",
+      "returning": true,
+      "trader_radius": 11.0
+    },
+    "id": "trade_return_market",
+    "status": "bug",
+    "log": "logs/repeat.log"
+  },
+  {
+    "evidence": {
+      "building_size": "(144.0, 144.0)",
+      "distance": 87.25,
+      "official_order": "supervise",
+      "radius": 11.0,
+      "work_rate": 1.0
+    },
+    "id": "supervise_town_center",
+    "status": "bug",
+    "log": "logs/repeat.log"
+  },
+  {
+    "evidence": {
+      "building_size": "(112.0, 104.0)",
+      "distance": 71.25,
+      "official_order": "supervise",
+      "radius": 11.0,
+      "work_rate": 1.0
+    },
+    "id": "supervise_barracks",
+    "status": "bug",
+    "log": "logs/repeat.log"
+  },
+  {
+    "evidence": {
+      "queue_after": 0,
+      "units_after": 12,
+      "units_before": 12
+    },
+    "id": "rally_dead_tree",
+    "status": "bug",
+    "log": "logs/repeat.log"
+  },
+  {
+    "evidence": {
+      "queue_after": 0,
+      "units_after": 12,
+      "units_before": 12
+    },
+    "id": "rally_dead_farm",
+    "status": "bug",
+    "log": "logs/repeat.log"
+  },
+  {
+    "evidence": {
+      "queue_after": 0,
+      "units_after": 13,
+      "units_before": 12
+    },
+    "id": "rally_queued_target",
+    "status": "pass",
+    "log": "logs/explore.log"
+  },
+  {
+    "evidence": {
+      "enabled_build_buttons": 11,
+      "garrisoned": true,
+      "selected": true,
+      "wood_spent": 80,
+      "worker_order": "idle"
+    },
+    "id": "selection_after_garrison",
+    "status": "bug",
+    "log": "logs/repeat.log"
+  },
+  {
+    "evidence": {
+      "admitted_to_second": true,
+      "first_slots": 1,
+      "second_slots": 1
+    },
+    "id": "garrison_double_host",
+    "status": "observation",
+    "log": "logs/explore.log"
+  },
+  {
+    "evidence": {
+      "enemy_detected": false,
+      "enemy_position": "(2000.0, 1900.0)",
+      "live_route_goal": "(2000.0, 1900.0)",
+      "order": "attack",
+      "still_tracks_enemy": true
+    },
+    "id": "hidden_attack_tracking",
+    "status": "bug",
+    "log": "logs/repeat.log"
+  },
+  {
+    "evidence": {
+      "enemy_damage": 0.0,
+      "remaining_construction": 10.0
+    },
+    "id": "field_siege_unfinished_attack",
+    "status": "pass",
+    "log": "logs/explore.log"
+  },
+  {
+    "evidence": {
+      "boarded": false,
+      "remaining_construction": 10.0
+    },
+    "id": "field_siege_unfinished_boarding",
+    "status": "pass",
+    "log": "logs/explore.log"
+  },
+  {
+    "evidence": {
+      "defeated": [
+        1
+      ],
+      "game_over": true,
+      "remaining": 0.0,
+      "sacred_holder": 1
+    },
+    "id": "sacred_eliminated_wins",
+    "status": "bug",
+    "log": "logs/repeat.log"
+  },
+  {
+    "evidence": {
+      "can_cross": true,
+      "enemy": false,
+      "position": "(1060.0, 780.0)"
+    },
+    "id": "ally_gate",
+    "status": "pass",
+    "log": "logs/explore.log"
+  },
+  {
+    "evidence": {
+      "can_cross": false,
+      "enemy": true,
+      "position": "(1060.0, 780.0)"
+    },
+    "id": "enemy_gate",
+    "status": "pass",
+    "log": "logs/explore.log"
+  },
+  {
+    "evidence": {
+      "distance": 83.25,
+      "order": "siege_tower_docked",
+      "tower_radius": 19.0,
+      "wall_width": 120.0
+    },
+    "id": "siege_tower_docking",
+    "status": "pass",
+    "log": "logs/explore.log"
+  },
+  {
+    "evidence": {
+      "complete": true,
+      "gathering_berries": false,
+      "gathering_farm": true,
+      "worker_order": "gather"
+    },
+    "id": "farm_builder_followup",
+    "status": "pass",
+    "log": "logs/explore.log"
+  },
+  {
+    "evidence": {
+      "complete": true,
+      "gathering_berries": false,
+      "gathering_farm": false,
+      "worker_order": "gather"
+    },
+    "id": "mill_builder_followup",
+    "status": "pass",
+    "log": "logs/explore.log"
+  },
+  {
+    "evidence": {
+      "remaining_after": 11.0,
+      "remaining_before": 11.0
+    },
+    "id": "pause_production",
+    "status": "pass",
+    "log": "logs/explore.log"
+  },
+  {
+    "evidence": {
+      "old_projectile_queued_for_deletion": true
+    },
+    "id": "restart_projectiles",
+    "status": "pass",
+    "log": "logs/explore.log"
+  },
+  {
+    "evidence": {
+      "commands_after": 0,
+      "commands_before": 0,
+      "new_owner": 0
+    },
+    "id": "conversion_selection",
+    "status": "bug",
+    "log": "logs/repeat.log"
+  },
+  {
+    "evidence": {
+      "boarded": false,
+      "resumed_order": "trade"
+    },
+    "id": "trade_garrison_resume",
+    "status": "observation",
+    "log": "logs/explore-initial.log"
+  },
+  {
+    "evidence": {
+      "order": "move",
+      "queue_size": 0
+    },
+    "id": "depleted_resource_queue",
+    "status": "pass",
+    "log": "logs/explore-initial.log"
+  },
+  {
+    "evidence": {
+      "alternative_distance": -1.0,
+      "alternative_exists": false,
+      "order_after_activation": "idle",
+      "queued_gather_commands": 0
+    },
+    "id": "queued_farm_frees_later",
+    "status": "bug",
+    "log": "logs/repeat.log"
+  },
+  {
+    "evidence": {
+      "alternative_distance": 144.222045898438,
+      "alternative_exists": true,
+      "order_after_activation": "idle",
+      "queued_gather_commands": 0
+    },
+    "id": "queued_farm_alternative",
+    "status": "bug",
+    "log": "logs/repeat.log"
+  },
+  {
+    "evidence": {
+      "construction_progress_seconds": 0.999999999999996,
+      "expected": 72.8833333333332,
+      "hp_after": 112.883333333333,
+      "hp_before": 42.55,
+      "worker_order": "build"
+    },
+    "id": "construction_real_worker",
+    "status": "bug",
+    "log": "logs/repeat.log"
+  },
+  {
+    "evidence": {
+      "detected": false,
+      "patch_position": "(1079.012, 2286.993)",
+      "teams": [
+        0,
+        1,
+        0,
+        1
+      ],
+      "terrain_visible": true,
+      "unit_owner": 2,
+      "visible": false
+    },
+    "id": "allied_forest_visibility",
+    "status": "bug",
+    "log": "logs/repeat-new.log"
+  },
+  {
+    "evidence": {
+      "detected": false,
+      "patch_position": "(1079.012, 2286.993)",
+      "teams": [
+        0,
+        1,
+        0,
+        1
+      ],
+      "terrain_visible": true,
+      "unit_owner": 1,
+      "visible": false
+    },
+    "id": "allied_scout_detection",
+    "status": "bug",
+    "log": "logs/repeat-new.log"
+  },
+  {
+    "evidence": {
+      "detected": true,
+      "patch_position": "(1079.012, 2286.993)",
+      "teams": [
+        0,
+        1,
+        0,
+        1
+      ],
+      "terrain_visible": true,
+      "unit_owner": 1,
+      "visible": true
+    },
+    "id": "own_scout_detection",
+    "status": "pass",
+    "log": "logs/repeat-new.log"
+  },
+  {
+    "evidence": {
+      "hp_after": 60.0,
+      "hp_before": 60.0,
+      "same_team": true,
+      "unit_owner": 2
+    },
+    "id": "monk_heal_teammate",
+    "status": "bug",
+    "log": "logs/repeat-new.log"
+  },
+  {
+    "evidence": {
+      "hp_after": 67.0,
+      "hp_before": 60.0,
+      "same_team": true,
+      "unit_owner": 0
+    },
+    "id": "monk_heal_own",
+    "status": "pass",
+    "log": "logs/repeat-new.log"
+  },
+  {
+    "evidence": {
+      "bonus_active": false,
+      "distance": 197.989898681641,
+      "influence_limit": 180.0,
+      "keep_position": "(2120.0, 1200.0)",
+      "stable_position": "(2260.0, 1060.0)"
+    },
+    "id": "french_keep_influence_snap",
+    "status": "bug",
+    "log": "logs/repeat-new.log"
+  }
 ]

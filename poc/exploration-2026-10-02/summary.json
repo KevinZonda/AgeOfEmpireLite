@@ -1,0 +1,17 @@
+{
+  "scenarios": 63,
+  "scenario_statuses": {
+    "bug": 27,
+    "observation": 12,
+    "pass": 24
+  },
+  "root_causes": 18,
+  "repeat_cases": 26,
+  "existing_scripts": 69,
+  "existing_statuses": {
+    "timeout": 9,
+    "passed": 53,
+    "failed": 7
+  },
+  "missing": []
+}
