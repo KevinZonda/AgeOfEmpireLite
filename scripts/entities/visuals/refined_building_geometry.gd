@@ -24,8 +24,8 @@ func _init(kind: String, size: Vector2, civ: String, player: Color, variation: i
 	variant = variation
 	palette = colors.duplicate()
 	if kind == "market" and civ == "English": palette["roof"] = Color("59656a")
+	# Details are authored on a two-unit floor; lower the whole model together.
 	base_z = 2.0
-	box(Vector2.ZERO, dimensions * 0.96, 0, 2, Color("9c9680"))
 	match kind:
 		"house": _house()
 		"blacksmith": _smith()
@@ -34,6 +34,8 @@ func _init(kind: String, size: Vector2, civ: String, player: Color, variation: i
 		"stable", "scout_camp": StableCamp.populate(self, kind)
 		"town_center", "mill": TownMill.populate(self, kind)
 		"lumber_camp", "mining_camp", "siege_workshop": ProductionCamps.populate(self, kind)
+	translate_faces(Vector3(0, 0, -base_z))
+	base_z = 0.0
 	prepare()
 	_cache_projections()
 

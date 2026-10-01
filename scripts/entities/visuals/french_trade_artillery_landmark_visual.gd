@@ -16,11 +16,6 @@ static func populate(g, id: String, player: Color) -> bool:
 	g.palette["trim"] = Color("e0d4b7")
 	g.palette["roof"] = Color("556e80")
 	g.palette["roof_dark"] = Color("354958")
-	g.box(Vector2.ZERO, g.dimensions * 0.94, 0, 0.5, Color("a69c84"))
-	for row in [0.58, 0.70, 0.82, 0.92]:
-		var a := _p(g, 0.07, row, 0.56)
-		var b := _p(g, 0.93, row, 0.56)
-		g.face([a, b, b + Vector3(0, 0.30, 0), a + Vector3(0, 0.30, 0)], Color("928975"))
 	if id == "fr_chamber_of_commerce":
 		_merchant_hall(g, player)
 	else:

@@ -10,8 +10,9 @@ func _init(kind: String, size: Vector2, civilization: String, player: Color, col
 	dimensions = size
 	palette = colors.duplicate()
 	base_z = 2.0
-	box(Vector2.ZERO, dimensions * 0.96, 0.0, base_z, Color("a8a18a"))
 	Academic.populate(self, kind, civilization, player)
+	translate_faces(Vector3(0, 0, -base_z))
+	base_z = 0.0
 	prepare()
 	# Looking straight down requires height order rather than the iso BSP order.
 	var surfaces := faces.duplicate()

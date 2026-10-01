@@ -206,7 +206,8 @@ func _draw_isometric() -> void:
 		FilledPolygon.draw(canvas_item, PackedVector2Array([ne, se, se + se_ground, ne + ne_ground]), Color("625d4e"))
 		FilledPolygon.draw(canvas_item, PackedVector2Array([sw, se, se + se_ground, sw + sw_ground]), Color("817866"))
 		canvas_item.draw_line(sw + sw_ground, se + se_ground, Color("3a3c32", 0.75), 1.4)
-	if not fortification and state.kind != "dock":
+	# The footprint marks a construction site; completed buildings have no slab.
+	if construction_ratio < 0.65 and not fortification and state.kind != "dock":
 		FilledPolygon.draw(canvas_item, PackedVector2Array([nw, ne, se, sw]), Color("273a30", 0.22 if state.kind in ["keep", "outpost"] else 0.65))
 	if height > 0.0 and not fortification and not RefinedGeometry.handles(state.kind) and state.kind not in ["farm", "dock", "wonder", "keep", "outpost"] and not CivicGeometry.handles(state.kind):
 		FilledPolygon.draw(canvas_item, PackedVector2Array([ne + wall_lift, se + wall_lift, se, ne]), color.darkened(0.26))
@@ -216,10 +217,9 @@ func _draw_isometric() -> void:
 	var roof_color: Color = Color("a79f89") if state.kind == "landmark" else palette["roof"]
 	if art_kind == "farm": roof_color = Color("735035")
 	if construction_ratio >= 0.65:
-		if not fortification and not RefinedGeometry.handles(state.kind) and state.kind not in ["farm", "dock", "wonder", "keep", "outpost"] and not CivicGeometry.handles(state.kind):
+		if height > 0.0 and not fortification and not RefinedGeometry.handles(state.kind) and state.kind not in ["farm", "dock", "wonder", "keep", "outpost"] and not CivicGeometry.handles(state.kind):
 			FilledPolygon.draw(canvas_item, PackedVector2Array([nw + wall_lift, ne + wall_lift, se + wall_lift, sw + wall_lift]), roof_color if not open_yard else palette["timber"])
 			canvas_item.draw_polyline(PackedVector2Array([nw + wall_lift, ne + wall_lift, se + wall_lift, sw + wall_lift, nw + wall_lift]), Color("1f2929"), 2.0)
-		if state.kind in ["keep", "outpost"]: _draw_defense_foundation(canvas_item, bounds, palette, canvas, state.zoom)
 		_draw_iso_architecture(art_kind, nw, ne, se, sw, lift, palette, canvas)
 		if state.kind == "landmark" or state.kind == "wonder": _draw_iso_landmark_architecture(lift, canvas)
 	else:
@@ -1054,7 +1054,7 @@ func _visible_height(construction_ratio: float) -> float:
 		return _refined_geometry().height_above_origin
 	var base := state.isometric_height() * (0.25 + 0.75 * construction_ratio)
 	if construction_ratio >= 0.65: return base + state.visual_feature_height() + _landmark_extra_height()
-	# The low finished plinth must not shrink the early structural scaffold.
+	# Landmark scaffolds follow the full structure even without a finished slab.
 	if state.kind == "landmark": return base + _landmark_extra_height() * maxf(0.2, construction_ratio)
 	if state.kind in ["wonder", "dock"] or CivicGeometry.handles(state.kind): return _civic_display_geometry().height_above_origin * maxf(0.2, construction_ratio)
 	return base
@@ -1095,18 +1095,6 @@ func draw_civic_portrait(item: CanvasItem, snapshot: VisualState, frame: Rect2) 
 	item.draw_set_transform_matrix(Transform2D(0.0, Vector2.ONE * fit, 0.0, frame.get_center() - civic_portrait_bounds.get_center() * fit))
 	for polygon in civic_portrait_faces: FilledPolygon.draw(item, polygon["points"], polygon["color"])
 	item.draw_set_transform_matrix(Transform2D.IDENTITY)
-
-
-func _draw_defense_foundation(item: CanvasItem, bounds: Rect2, palette: Dictionary, canvas: Transform2D, zoom: float) -> void:
-	var a := bounds.position
-	var b := Vector2(bounds.end.x, bounds.position.y)
-	var c := bounds.end
-	var d := Vector2(bounds.position.x, bounds.end.y)
-	var up := Geometry.up(canvas, zoom, KeepMonasteryVisual.FOUNDATION_HEIGHT)
-	FilledPolygon.draw(item, PackedVector2Array([b, c, c + up, b + up]), palette["wall"].darkened(0.28))
-	FilledPolygon.draw(item, PackedVector2Array([d, c, c + up, d + up]), palette["wall"].darkened(0.13))
-	FilledPolygon.draw(item, PackedVector2Array([a + up, b + up, c + up, d + up]), Color("9a937a"))
-	item.draw_polyline(PackedVector2Array([d + up, c + up, b + up]), Color(palette["trim"], 0.55), 0.7)
 
 
 # The procedural defenses use the same projection and draw calls as the map.
@@ -1152,7 +1140,6 @@ func draw_defense_portrait(item: CanvasItem, snapshot: VisualState, frame: Rect2
 	var lift := Geometry.up(projection, 1.0, snapshot.isometric_height())
 	var palette := _architecture_palette()
 	if snapshot.kind in ["keep", "outpost"]:
-		_draw_defense_foundation(item, footprint, palette, projection, 1.0)
 		KeepMonasteryVisual.draw_iso(item, snapshot.kind, nw, ne, se, sw, lift, palette, snapshot.player_color, snapshot.civilization, projection, 1.0)
 	else:
 		FortificationVisual.draw_iso(item, snapshot.kind, nw, ne, se, sw, lift, palette, snapshot.player_color, snapshot.civilization, snapshot.wall_vertical, projection, 1.0)

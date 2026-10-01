@@ -1,6 +1,6 @@
 extends RefCounted
 
-# Civic and food buildings keep a shallow foundation and an open working yard.
+# Civic and food buildings keep an open working yard and local entrance steps.
 # The bell and windmill sails are physical meshes in the shared face ordering.
 static func populate(mesh, kind: String) -> void:
 	if kind == "town_center": _town_center(mesh)

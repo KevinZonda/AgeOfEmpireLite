@@ -19,11 +19,6 @@ static func populate(g, id: String, player: Color) -> bool:
 	g.palette["trim"] = Color("ded3b7")
 	g.palette["roof"] = Color("57636b")
 	g.palette["roof_dark"] = Color("38464c")
-	g.box(Vector2.ZERO, g.dimensions * 0.94, g.base_z, 0.5, Color("aaa18a"))
-	for row in [0.75, 0.84, 0.93]:
-		var a := _p(g, 0.09, row, 0.55)
-		var b := _p(g, 0.91, row, 0.55)
-		g.face([a, b, b + Vector3(0, 0.35, 0), a + Vector3(0, 0.35, 0)], Color("948b79"))
 	if id == "eng_council_hall":
 		_council(g, player)
 	else:

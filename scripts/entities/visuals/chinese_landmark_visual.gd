@@ -80,10 +80,10 @@ static func _box(g, uv: Vector2, span: Vector2, bottom: float, height: float, co
 	g.box(_center(g, uv), span * g.dimensions, bottom + g.base_z, height, color)
 
 static func _paving(g) -> void:
-	_box(g, Vector2(0.5, 0.51), Vector2(0.95, 0.94), 0, 0.6, Color("a7a596"))
-	_box(g, Vector2(0.5, 0.64), Vector2(0.17, 0.66), 0.61, 0.15, Color("c4bca5"))
+	# Keep the narrow ceremonial path without a slab under the whole footprint.
+	_box(g, Vector2(0.5, 0.64), Vector2(0.17, 0.66), 0.0, 0.15, Color("c4bca5"))
 	for v in [0.42, 0.58, 0.74, 0.9]:
-		_box(g, Vector2(0.5, v), Vector2(0.17, 0.008), 0.77, 0.05, Color("969788"))
+		_box(g, Vector2(0.5, v), Vector2(0.17, 0.008), 0.16, 0.05, Color("969788"))
 
 static func _steps(g, uv: Vector2, width: float) -> void:
 	for i in 3:

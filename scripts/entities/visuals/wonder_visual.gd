@@ -11,7 +11,6 @@ const GOLD := Color("cfad61")
 
 static func populate(g, civilization: String, player: Color) -> bool:
 	if civilization not in ["English", "French", "Chinese"]: return false
-	g.box(Vector2.ZERO, g.dimensions * 0.95, 0, 0.65, Color("a8a392"))
 	match civilization:
 		"English":
 			# A cruciform cathedral with a tall clerestory and twin west towers.

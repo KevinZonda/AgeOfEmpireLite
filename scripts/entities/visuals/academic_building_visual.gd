@@ -32,12 +32,6 @@ static func populate(g, kind: String, civilization: String, player: Color) -> vo
 	elif civilization == "Chinese":
 		g.palette["roof"] = Color("8c7053")
 		g.palette["roof_dark"] = Color("594837")
-	g.box(Vector2.ZERO, g.dimensions * 0.95, g.base_z, 0.7, Color("a99e86"))
-	# Low paving and a wide empty center make both courts legible at game zoom.
-	for row in [0.5, 0.66, 0.79, 0.93]:
-		var a := _p(g, 0.1, row, 0.76)
-		var b := _p(g, 0.9, row, 0.76)
-		g.face([a, b, b + Vector3(0, 0.3, 0), a + Vector3(0, 0.3, 0)], Color("8e8975"))
 	for form in _layout(kind, civilization): _hall(g, form, civilization)
 	if civilization == "Chinese":
 		# A paired finial on the main ridge, distinct from a pagoda pyramid.

@@ -4,12 +4,12 @@ extends RefCounted
 const Geometry = preload("res://scripts/entities/visuals/building_geometry.gd")
 const FilledPolygon = preload("res://scripts/entities/visuals/filled_polygon.gd")
 
-const FOUNDATION_HEIGHT := 2.0
+const FOUNDATION_HEIGHT := 0.0
 const OUTPOST_GALLERY_HEIGHT := 12.0
 const OUTPOST_ROOF_RISE := 11.0
 const OUTPOST_CHINESE_ROOF_RISE := 14.0
 
-# Finished defenses share a shallow stone foundation with their map portraits.
+# Finished defenses stand on the ground plane in both the map and portraits.
 static func draw_topdown(c: CanvasItem, kind: String, bounds: Rect2, palette: Dictionary, accent: Color, civ: String) -> void:
 	match kind:
 		"keep": _keep_2d(c, bounds, palette, accent, civ)

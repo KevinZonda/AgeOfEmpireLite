@@ -33,12 +33,6 @@ static func populate(g, id: String, player: Color) -> bool:
 	g.palette["roof_dark"] = Color("38464c")
 	if id == "eng_white_tower": g.palette["wall"] = Color("c8c9bc")
 	if id == "fr_red_palace": g.palette["roof"] = Color("8f5145")
-	# A paved, low court replaces the closed generic palace under every model.
-	g.box(Vector2.ZERO, g.dimensions * 0.94, 0, 0.5, Color("a59b83"))
-	for row in [0.67, 0.80, 0.91]:
-		var a := _p(g, 0.10, row, 0.56)
-		var b := _p(g, 0.90, row, 0.56)
-		g.face([a, b, b + Vector3(0, 0.35, 0), a + Vector3(0, 0.35, 0)], Color("8e8775"))
 	for form in _layout(id): _hall(g, form, player)
 	match id:
 		"eng_kings_mill":

@@ -178,6 +178,13 @@ func _traverse(tree: Dictionary, toward_camera: Vector3) -> void:
 	ordered_faces.append_array(tree["same"])
 	_traverse(tree["back"] if front_first else tree["front"], toward_camera)
 
+func translate_faces(offset: Vector3) -> void:
+	# Apply before preparing so rendering, portraits and picking share the origin.
+	for polygon in faces:
+		var points: PackedVector3Array = polygon["points"]
+		for i in points.size(): points[i] += offset
+		polygon["points"] = points
+
 func prepare() -> void:
 	projected_cache.clear()
 	projected_cache_up = Vector2.INF
@@ -276,4 +283,3 @@ func populate(kind: String, landmark_id: String, player: Color, civilization := 
 		"zh_spirit_way":
 			for u in [0.2, 0.8]: block(u, 0.62, 0.16, 0.25, 30, "flat")
 			block(0.5, 0.37, 0.59, 0.31, 29, "pagoda")
-
