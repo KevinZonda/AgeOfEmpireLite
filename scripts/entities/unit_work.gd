@@ -128,6 +128,9 @@ static func process_trade_order(unit, delta: float) -> void:
 		unit._reset_route()
 
 static func process_gather_order(unit, delta: float) -> void:
+	if unit.target is RtsResource and unit.target.appearance == "boar" and unit.target.wildlife_hp > 0.0:
+		unit.UnitCombat.process_attack_order(unit, delta)
+		return
 	if unit.target is RtsResource and unit.target.appearance == "deer" and unit.target.wildlife_hp > 0.0:
 		process_hunt_order(unit, delta)
 		return
@@ -178,8 +181,8 @@ static func cancel_hunt(unit) -> void:
 		unit.visual_charge_impact = false
 		unit.queue_redraw()
 
-static func process_hunt_order(unit, delta: float) -> void:
-	var profile: Dictionary = unit.stats.get("profiles", {}).get("hunt_ranged", {})
+static func process_hunt_order(unit, delta: float, profile: Dictionary = {}) -> void:
+	if profile.is_empty(): profile = unit.stats.get("profiles", {}).get("hunt_ranged", {})
 	var reach: float = float(profile.get("range", 86.4)) + unit.target.radius
 	if not unit._move_toward(unit.target.position, delta, reach):
 		cancel_hunt(unit)

@@ -118,15 +118,28 @@ static func primary_attack_type(stats: Dictionary) -> String:
 	var profile := primary_attack(stats)
 	return "ranged" if profile.get("damage_kind") == "ranged" or stats.get("primary_profile") == "siege" and float(profile.get("range", 0.0)) > 70.0 else "melee"
 
-static func attack_profile(stats: Dictionary, defender: Dictionary, charging := false) -> Dictionary:
+static func attack_profile(stats: Dictionary, defender: Dictionary, charging := false, target_distance := INF) -> Dictionary:
 	var profiles: Dictionary = stats.get("profiles", {})
 	var target_tags: Array = defender.get("target_tags", defender.get("tags", []))
 	if target_tags.has("structure") or target_tags.has("building"):
 		for key in ["structure", "torch", "siege"]:
 			if profiles.has(key): return profiles[key]
 	if charging and profiles.has("charge"): return profiles["charge"]
+	# Distance is measured to the target's edge, matching combat reach checks.
+	# Hunting weapons are separate from the villager/scout's combat weapon.
+	if target_tags.has("wildlife"):
+		var hunting_melee: Dictionary = profiles.get("hunt_melee", profiles.get("melee", {}))
+		var hunting_ranged: Dictionary = profiles.get("hunt_ranged", profiles.get("ranged", {}))
+		if not hunting_ranged.is_empty():
+			if not hunting_melee.is_empty() and target_distance <= float(hunting_melee.get("range", 0.0)) + 0.5:
+				return hunting_melee
+			return hunting_ranged
 	var primary: String = stats.get("primary_profile", "")
-	return profiles.get(primary, {})
+	var profile: Dictionary = profiles.get(primary, {})
+	var melee: Dictionary = profiles.get("melee", {})
+	if profile.get("damage_kind", "") == "ranged" and not melee.is_empty() and target_distance <= float(melee.get("range", 0.0)) + 0.5:
+		return melee
+	return profile
 
 static func project_legacy_primary(stats: Dictionary) -> void:
 	stats["damage"] = primary_damage(stats)

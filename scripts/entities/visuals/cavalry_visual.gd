@@ -26,7 +26,10 @@ static func draw(canvas: CanvasItem, state, pose: Pose) -> void:
 	var lowered: bool = state.charging or (attack and state.charge_impact) or (state.kind == "fire_lancer" and attack)
 	var progress: float = state.action_progress
 	var hit := 1.0 - smoothstep(0.15, 1.0, progress) if attack and state.action_released else 0.0
-	if lowered:
+	if state.hunting:
+		pose.near_hand = pose.chest + pose.aim * 12.0 + Vector2(0, 2)
+		pose.far_hand = pose.chest - pose.aim * (state.hunt_draw * 8.0 + 1.0) + Vector2(0, 3)
+	elif lowered:
 		pose.near_hand = pose.chest + Vector2(0, 7) + pose.aim * (8 + hit * 7)
 	elif attack:
 		var ready := clampf(progress / 0.45, 0.0, 1.0)
@@ -175,7 +178,9 @@ static func _rider(canvas: CanvasItem, state, pose: Pose, heavy: bool) -> void:
 static func _weapon(canvas: CanvasItem, state, pose: Pose, lowered: bool, attack: bool, hit: float) -> void:
 	var grip: Vector2 = pose.near_hand
 	var progress: float = state.action_progress
-	if lowered or state.kind == "fire_lancer":
+	if state.hunting:
+		Art._bow(canvas, grip, pose.far_hand, pose.aim, 11.5, state.hunt_draw, state.visual_action == "hunt" and not state.action_released)
+	elif lowered or state.kind == "fire_lancer":
 		var rest_angle := Vector2(pose.direction.x * 0.15, -1).angle()
 		var angle := pose.aim.angle() if lowered else rest_angle
 		var axis := Vector2.RIGHT.rotated(angle)

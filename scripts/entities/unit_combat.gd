@@ -40,17 +40,24 @@ static func process_attack_order(unit, delta: float) -> void:
 		unit.orders.resume(unit)
 		return
 	var target_radius := 18.0
+	if unit.target is RtsResource: target_radius = unit.target.radius
 	if unit.target is RtsUnit: target_radius = unit.target.radius()
 	if unit.target is RtsBuilding: target_radius = maxf(unit.target.size().x, unit.target.size().y) * 0.5 + unit.radius() + 3.0
-	var defender_stats: Dictionary = unit.target.stats if unit.target is RtsUnit or unit.target is RtsBuilding else {}
+	var defender_stats: Dictionary = unit.target.stats if unit.target is RtsUnit or unit.target is RtsBuilding else {"tags": ["wildlife"]}
 	var charged: bool = unit.charging and unit.charge_distance >= 60.0
-	var profile := RtsStatResolver.attack_profile(unit.stats, defender_stats, charged)
+	var profile := RtsStatResolver.attack_profile(unit.stats, defender_stats, charged, maxf(0.0, unit.position.distance_to(unit.target.position) - target_radius))
 	if profile.is_empty(): return
+	if unit.kind in ["villager", "scout"] and unit.target is RtsResource:
+		if profile.get("damage_kind", "") == "ranged":
+			unit.UnitWork.process_hunt_order(unit, delta, profile)
+			return
+		unit.UnitWork.cancel_hunt(unit)
 	if unit.target is RtsUnit and is_instance_valid(unit.target.wall_host) and unit.target.wall_host != unit.wall_host and profile.get("damage_kind", "melee") == "melee":
 		unit._advance_command()
 		return
 	var reach: float = float(profile.get("range", unit.attack_range())) + target_radius
-	var min_reach: float = float(profile.get("min_range", unit.stats.get("min_range", 0.0))) + target_radius
+	var min_range: float = float(profile.get("min_range", unit.stats.get("min_range", 0.0)))
+	var min_reach: float = min_range + target_radius if min_range > 0.0 else 0.0
 	if min_reach > 0.0 and unit.position.distance_to(unit.target.position) < min_reach:
 		if is_instance_valid(unit.wall_host):
 			unit._advance_command()
@@ -79,7 +86,7 @@ static func process_attack_order(unit, delta: float) -> void:
 		if unit.attack_timer <= 0.16 and unit.visual_action != "attack": unit._start_visual_action("attack", 0.34)
 		return
 	charged = unit.charging and unit.charge_distance >= 60.0
-	profile = RtsStatResolver.attack_profile(unit.stats, defender_stats, charged)
+	profile = RtsStatResolver.attack_profile(unit.stats, defender_stats, charged, maxf(0.0, unit.position.distance_to(unit.target.position) - target_radius))
 	if charged and unit.target is RtsUnit and unit.target.is_braced() and unit.stats.get("tags", []).has("cavalry"):
 		var brace_damage := 19.0 + 5.0 * maxi(0, int(unit.target.stats.get("rank_age", 2)) - 2) if unit.target.kind == "longbow" else RtsCombatRules.profile_damage(unit.target.stats, unit.stats, RtsStatResolver.attack_profile(unit.target.stats, unit.stats), {"brace_impact": true})
 		unit.take_damage(brace_damage)

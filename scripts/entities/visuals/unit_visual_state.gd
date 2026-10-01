@@ -79,7 +79,7 @@ static func capture(unit, existing_state = null):
 		var fishing_heading: Vector2 = unit.get_viewport().get_canvas_transform().basis_xform((unit.target.position - unit.position).rotated(-PI * 0.5))
 		if not fishing_heading.is_zero_approx():
 			result.facing_direction = Vector2.RIGHT.rotated(round(fishing_heading.angle() / (PI / 4.0)) * (PI / 4.0))
-	result.hunting = unit.kind == "villager" and (unit.visual_action == "hunt" or unit.order == "gather" and is_instance_valid(unit.target) and unit.target is RtsResource and unit.target.appearance == "deer" and unit.target.wildlife_hp > 0.0)
+	result.hunting = unit.kind in ["villager", "scout"] and (unit.visual_action == "hunt" or unit.order == "gather" and is_instance_valid(unit.target) and unit.target is RtsResource and unit.target.appearance == "deer" and unit.target.wildlife_hp > 0.0)
 	result.hunt_draw = clampf(1.0 - unit.hunt_windup / unit.UnitWork.HUNT_WINDUP, 0.0, 1.0) if unit.hunt_windup >= 0.0 else 0.0
 	# The hit flash is a self_modulate tint on the unit; no redraw-time ring.
 	result.hit_flash_timer = 0.0

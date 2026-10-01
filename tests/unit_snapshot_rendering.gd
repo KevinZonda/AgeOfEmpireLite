@@ -67,7 +67,7 @@ func _run() -> void:
 					if kind == "villager" and pose >= 4:
 						unit.visual_action = "build" if pose == 7 else "gather"
 						unit.gather_kind = "gold" if pose == 5 else "food" if pose == 6 else "wood"
-				if kind == "villager" and pose == 2:
+				if kind in ["villager", "scout"] and pose == 2:
 					unit.visual_action = "hunt"
 					unit.hunt_windup = 0.1
 				unit.paling_timer = float(pose)
