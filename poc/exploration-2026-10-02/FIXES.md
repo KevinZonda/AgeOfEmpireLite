@@ -7,7 +7,8 @@
 |编号|修复|全量测试|新增失败|验证提交 / 推送|
 |---|---|---|---|---|
 |B01|Prevent repeated trade income|[结果](fixes/B01-r2/summary.json)：158通过 / 6已有失败 / 0超时，PoC 63/63，范围 regression|0|[ab877f8b](https://github.com/KevinZonda/AgeOfEmpireLite/commit/ab877f8b7875aa032ac9f47ab25a7bca45fc41ed) · 已推送|
-|B02|Preserve training with expired rally targets|[结果](fixes/B02-parallel/summary.json)：159通过 / 6已有失败 / 0超时，PoC 63/63，范围 regression|0|生成验证提交中 · 待推送|
+|B02|Preserve training with expired rally targets|[结果](fixes/B02-parallel/summary.json)：159通过 / 6已有失败 / 0超时，PoC 63/63，范围 regression|0|[883162b7](https://github.com/KevinZonda/AgeOfEmpireLite/commit/883162b7bcdcf852a1e7867a8b651cb9aa662c2c) · 已推送|
+|B03|Prevent eliminated teams winning objectives|[结果](fixes/B03-r2/summary.json)：160通过 / 6已有失败 / 0超时，PoC 63/63，范围 regression|0|生成验证提交中 · 待推送|
 
 重跑任一修复的完整验证：
 

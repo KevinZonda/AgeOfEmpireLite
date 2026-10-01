@@ -1,0 +1,12 @@
+Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
+
+POC_PASS sacred_ruin_0_d4c69eff wrong_pixels=0 faces=245 fragments=604
+POC_PASS sacred_ruin_0_4e9beaff wrong_pixels=0 faces=245 fragments=604
+POC_PASS sacred_ruin_0_d66557ff wrong_pixels=0 faces=245 fragments=604
+POC_PASS sacred_ruin_1_d4c69eff wrong_pixels=0 faces=245 fragments=600
+POC_PASS sacred_ruin_1_4e9beaff wrong_pixels=0 faces=245 fragments=600
+POC_PASS sacred_ruin_1_d66557ff wrong_pixels=0 faces=245 fragments=600
+POC_PASS sacred_ruin_2_d4c69eff wrong_pixels=0 faces=245 fragments=600
+POC_PASS sacred_ruin_2_4e9beaff wrong_pixels=0 faces=245 fragments=600
+POC_PASS sacred_ruin_2_d66557ff wrong_pixels=0 faces=245 fragments=600
+SACRED_SITE_GEOMETRY polygons=5412 projected_checks=28908 visible_samples=177 failures=0 lifecycle_checks=170

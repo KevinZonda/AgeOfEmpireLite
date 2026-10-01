@@ -118,6 +118,67 @@
       }
     },
     "verified_at": "2026-10-02T03:26:21.591254+08:00",
+    "pushed": true,
+    "phase": "pushed",
+    "commit": "883162b7bcdcf852a1e7867a8b651cb9aa662c2c",
+    "remote_commit": "883162b7bcdcf852a1e7867a8b651cb9aa662c2c"
+  },
+  {
+    "id": "B03",
+    "title": "Prevent eliminated teams winning objectives",
+    "prepared_patches": [
+      "3203d895"
+    ],
+    "output": "fixes/B03-r2",
+    "summary": {
+      "revision": "d38ecdcaf56522690373241f3e52d07bd5610403",
+      "seconds": 1284.422,
+      "profile": "regression",
+      "deferred_benchmarks": [
+        "tests/balance_multiseed.gd"
+      ],
+      "regression": {
+        "passed": 160,
+        "failed": 6,
+        "timeout": 0,
+        "unresolved_bugs": 0,
+        "skipped": 0,
+        "cancelled": 0
+      },
+      "audit": {
+        "pass": 29,
+        "bug": 22,
+        "observation": 12
+      },
+      "expected_audit_cases": 63,
+      "executed_audit_cases": 63,
+      "changed_sources_during_run": [],
+      "cancelled": false,
+      "expected_regression_scripts": 166,
+      "executed_regression_scripts": 166,
+      "complete": true,
+      "complete_all": false,
+      "passed": false,
+      "comparison": {
+        "previous": "/Users/kevin/Desktop/AgeOfEmpireLite/poc/exploration-2026-10-02/fixes/B02-parallel/results.json",
+        "profile": "regression",
+        "deferred_benchmarks": [
+          "tests/balance_multiseed.gd"
+        ],
+        "new_regression_failures": [],
+        "new_failure_diagnostics": {},
+        "regressed_audit_cases": [],
+        "fixed_audit_cases": [
+          "sacred_eliminated_wins"
+        ],
+        "missing_scripts": [],
+        "missing_cases": [],
+        "exploration_execution_failures": [],
+        "incomplete_scripts": [],
+        "no_new_failures": true
+      }
+    },
+    "verified_at": "2026-10-02T04:04:19.280740+08:00",
     "pushed": false,
     "phase": "verified"
   }

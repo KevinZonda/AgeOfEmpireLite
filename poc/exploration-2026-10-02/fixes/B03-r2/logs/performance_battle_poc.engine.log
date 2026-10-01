@@ -1,0 +1,9 @@
+Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
+
+BATTLE_PROGRESS step=60 simulation_ms=16.12 frame_ms=26.57
+BATTLE_PROGRESS step=120 simulation_ms=18.82 frame_ms=21.01
+BATTLE_PROGRESS step=180 simulation_ms=7.48 frame_ms=22.28
+BATTLE_PROGRESS step=240 simulation_ms=9.44 frame_ms=19.15
+BATTLE_PROGRESS step=300 simulation_ms=12.34 frame_ms=16.39
+BATTLE_POC {"flat":true,"frame":{"max_ms":1603.576,"mean_ms":23.6182066666667,"p50_ms":15.212,"p95_ms":42.193},"headless":true,"hp_lost":1980.0,"navigation":{},"other_cpu":{"max_ms":9.806,"mean_ms":0.26105,"p50_ms":0.057,"p95_ms":0.582},"projection_25d":true,"side":40,"siege":false,"simulation":{"max_ms":75.25,"mean_ms":13.0129,"p50_ms":10.875,"p95_ms":27.595},"steps":300,"survivors":64,"viewport":"(1280, 720)"}
+BATTLE_POC_OK

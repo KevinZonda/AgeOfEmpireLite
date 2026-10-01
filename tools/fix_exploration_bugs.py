@@ -79,8 +79,8 @@ def write_ledger(records):
         test = f"[结果]({r['output']}/summary.json)：{reg.get('passed', 0)}通过 / {reg.get('failed', 0)}已有失败 / {reg.get('timeout', 0)}超时，PoC {s['executed_audit_cases']}/{s['expected_audit_cases']}，范围 {s.get('profile', 'all')}"
         lines.append(f"|{r['id']}|{r['title']}|{test}|0|{commit} · {state}|")
     lines += ["", "重跑任一修复的完整验证：", "", "```sh",
-              "python3 tools/run_full_tests.py --output /tmp/ageofempirelite-full-recheck --jobs 4 --timeout 600 --compare poc/exploration-2026-10-02/fixes/baseline", "```", "",
-              "默认保留 AI 6000 步与四种子各 480 秒的完整模拟；渲染/原生窗口测试单独串行，user:// 使用每项测试独立目录。初始报告、原始失败证据与复现步骤见 [探索报告](README.md)。", ""]
+              "python3 tools/run_full_tests.py --output /tmp/ageofempirelite-full-recheck --profile all --jobs 2 --timeout 1800 --compare poc/exploration-2026-10-02/fixes/baseline", "```", "",
+              "保留 AI 长局原有的 6000 步上限，以及四种子各 480 秒模拟上限（自然胜负可提前结束）；渲染/原生窗口测试单独串行，user:// 使用每项测试独立目录。初始报告、原始失败证据与复现步骤见 [探索报告](README.md)。", ""]
     (AUDIT / "FIXES.md").write_text("\n".join(lines))
 
 
@@ -206,6 +206,7 @@ def main():
     parser.add_argument("--profile", choices=("all", "regression"), default="all")
     parser.add_argument("--output-suffix", default="")
     parser.add_argument("--final-all", action="store_true", help="After every planned repair is pushed, run and publish the full all profile")
+    parser.add_argument("--reuse-final-results", type=Path, help="Reuse an independently completed all-profile run of the identical final source")
     parser.add_argument("--wait-for-results", action="store_true", help="Wait for already-running cumulative-worktree suites before publication")
     args = parser.parse_args()
     if command(["git", "branch", "--show-current"], True) != "main":
@@ -284,16 +285,25 @@ def main():
     if args.final_all:
         if {e["id"] for e in plan} != {r["id"] for r in records if r.get("pushed")}:
             raise RuntimeError("Final verification requires every planned repair to be pushed")
-        output = AUDIT / "fixes" / "final-all"
+        output = args.reuse_final_results.resolve() if args.reuse_final_results else AUDIT / "fixes" / "final-all"
         print("FINAL_ALL_BEGIN", flush=True)
-        ACTIVE = subprocess.Popen([sys.executable, str(ROOT / "tools/run_full_tests.py"),
-                                   "--output", str(output), "--jobs", str(args.jobs),
-                                   "--timeout", str(args.timeout), "--profile", "all",
-                                   "--compare", str(previous)], cwd=ROOT)
-        code = ACTIVE.wait()
-        ACTIVE = None
-        if code not in (0, 1):
-            raise RuntimeError(f"Final full test aborted: {code}")
+        if args.reuse_final_results:
+            output.relative_to(AUDIT / "fixes")
+            deadline = time.monotonic() + args.timeout * 6
+            while not (output / "results.json").exists():
+                if not args.wait_for_results or time.monotonic() > deadline:
+                    raise RuntimeError(f"Completed final evidence is not available: {output}")
+                time.sleep(1)
+            recompare(output, previous)
+        else:
+            ACTIVE = subprocess.Popen([sys.executable, str(ROOT / "tools/run_full_tests.py"),
+                                       "--output", str(output), "--jobs", str(args.jobs),
+                                       "--timeout", str(args.timeout), "--profile", "all",
+                                       "--compare", str(previous)], cwd=ROOT)
+            code = ACTIVE.wait()
+            ACTIVE = None
+            if code not in (0, 1):
+                raise RuntimeError(f"Final full test aborted: {code}")
         summary = verify(plan[-1], output, fixed, "all")
         if not summary.get("complete_all") or not summary.get("passed"):
             raise RuntimeError(f"Final all profile is not fully green: {summary}")
@@ -301,7 +311,7 @@ def main():
         final = AUDIT / "fixes/final-verification.json"
         final.write_text(json.dumps({"summary": summary, "verified_source_revision": command(["git", "rev-parse", "HEAD"], True)}, indent=2, ensure_ascii=False) + "\n")
         with (AUDIT / "FIXES.md").open("a") as report:
-            report.write("\n最终 all 范围全部通过，含四种子平衡性实验。证据：[最终全量结果](fixes/final-all/results.json)。\n")
+            report.write(f"\n最终 all 范围全部通过，含四种子平衡性实验。证据：[最终全量结果]({output.relative_to(AUDIT)}/results.json)。\n")
         paths = {str(output.relative_to(ROOT)), str(final.relative_to(ROOT)),
                  str(LEDGER.relative_to(ROOT)), str((AUDIT / "FIXES.md").relative_to(ROOT))}
         command(["git", "add", "--", *sorted(paths)])

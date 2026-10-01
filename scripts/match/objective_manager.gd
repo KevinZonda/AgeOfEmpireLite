@@ -37,6 +37,17 @@ func _is_enemy(a: int, b: int) -> bool:
 	if game != null and game.has_method("is_enemy"): return game.is_enemy(a, b)
 	return a != b
 
+# Sacred ownership is shared by teams, including a defeated ally's sites.
+# Only a team with a living member can still win an objective victory.
+func _living_team_member(owner_id: int) -> int:
+	if owner_id < 0 or owner_id >= _player_count(): return -1
+	var defeated: Variant = game.get("defeated_players")
+	for candidate in _player_count():
+		if _is_enemy(owner_id, candidate): continue
+		if defeated is Array and defeated.has(candidate): continue
+		return candidate
+	return -1
+
 func setup(game_ref: Node2D) -> void:
 	game = game_ref
 	for visual in site_visuals:
@@ -161,6 +172,10 @@ func _tick_sacred_victory(delta: float) -> void:
 			sacred_holder = -1
 			sacred_remaining = SACRED_VICTORY_TIME
 			return
+	if _living_team_member(owner) < 0:
+		sacred_holder = -1
+		sacred_remaining = SACRED_VICTORY_TIME
+		return
 	if sacred_holder != owner:
 		sacred_holder = owner
 		sacred_remaining = SACRED_VICTORY_TIME
@@ -213,8 +228,10 @@ func status_for(owner_id: int) -> Dictionary:
 
 func _emit_victory(owner_id: int, reason: String) -> void:
 	if _victory_emitted: return
+	var winner := _living_team_member(owner_id)
+	if winner < 0: return
 	_victory_emitted = true
-	victory.emit(owner_id, reason)
+	victory.emit(winner, reason)
 
 
 func _draw() -> void:
