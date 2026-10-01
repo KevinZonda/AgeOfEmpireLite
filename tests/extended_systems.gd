@@ -3,6 +3,46 @@ extends SceneTree
 func _initialize() -> void:
 	call_deferred("_run")
 
+
+# Place fixtures through the same footprint and reachability rules as players.
+func buildable_site(game, kind: String, preferred: Vector2, worker: RtsUnit) -> Vector2:
+	for ring in 20:
+		for y in range(-ring, ring + 1):
+			for x in range(-ring, ring + 1):
+				if maxi(absi(x), absi(y)) != ring: continue
+				var point: Vector2 = game.snap_build_point(kind, preferred + Vector2(x, y) * GameData.BUILD_GRID_SIZE)
+				if not game.can_place(kind, point): continue
+				var size: Vector2 = GameData.BUILDINGS[kind]["size"]
+				for direction in [Vector2.RIGHT, Vector2.DOWN, Vector2.LEFT, Vector2.UP]:
+					var approach: Vector2 = point + direction * (size.x * 0.5 + worker.radius() + 3.0)
+					if game.navigation.can_occupy(approach, worker.radius(), worker, false) and not game.navigation.path_between(worker.position, approach, worker).is_empty(): return point
+	return Vector2.INF
+
+func building_contact(game, building: RtsBuilding, unit: RtsUnit) -> Vector2:
+	for direction in [Vector2.RIGHT, Vector2.DOWN, Vector2.LEFT, Vector2.UP]:
+		var point: Vector2 = building.position + direction * (building.size().x * 0.5 + unit.radius() + 0.1)
+		if game.navigation.can_occupy(point, unit.radius(), unit, false) and not game.navigation.path_between(unit.position, point, unit).is_empty(): return point
+	return Vector2.INF
+
+func wall_fixture_start(game, preferred: Vector2, worker: RtsUnit, enemy: RtsUnit) -> Vector2:
+	var spacing: float = game.build_footprint_size("palisade_wall").x
+	for ring in 20:
+		for y in range(-ring, ring + 1):
+			for x in range(-ring, ring + 1):
+				if maxi(absi(x), absi(y)) != ring: continue
+				var start: Vector2 = game.snap_build_point("palisade_wall", preferred + Vector2(x, y) * GameData.BUILD_GRID_SIZE)
+				var sites: Array[Vector2] = game._wall_positions(start, start + Vector2(spacing * 2.0, 0))
+				if sites.size() != 3 or not sites.all(func(point: Vector2) -> bool: return game.can_place("palisade_wall", point)): continue
+				var gate_point: Vector2 = sites.back()
+				var cell: Vector2i = game.world_map.cell_at(gate_point)
+				if game.navigation._grid_for(worker).is_point_solid(cell) or game.navigation._grid_for(enemy).is_point_solid(cell): continue
+				var entry := gate_point + Vector2(0, -85)
+				var exit := gate_point + Vector2(0, 85)
+				if not game.navigation.can_occupy(entry, worker.radius(), worker, false) or not game.navigation.can_occupy(exit, worker.radius(), worker, false): continue
+				if game.navigation.path_between(entry, exit, worker).is_empty(): continue
+				return start
+	return Vector2.INF
+
 func _run() -> void:
 	var game = load("res://scenes/main.tscn").instantiate()
 	root.add_child(game)
@@ -68,7 +108,8 @@ func _run() -> void:
 	assert(game.navigation.can_occupy(trader.position, trader.radius(), trader, false))
 	trader._process(0.0)
 	assert(game.players[0]["gold"] > gold_before, "completed trade route should earn gold")
-	var monastery_point: Vector2 = game._scaled_point(Vector2(680, 860))
+	var monastery_point: Vector2 = buildable_site(game, "monastery", game._scaled_point(Vector2(680, 860)), workers[0])
+	assert(monastery_point != Vector2.INF, "a reachable monastery fixture must exist")
 	assert(game.can_place("monastery", monastery_point))
 	assert(game.place_building(0, "monastery", monastery_point, workers))
 	var monastery: RtsBuilding = game.buildings.back()
@@ -79,7 +120,8 @@ func _run() -> void:
 	monk.position = relic.position
 	monk._process(0.0)
 	assert(monk.carried_relic == relic and monk.order == "deposit_relic")
-	monk.position = monastery.position + Vector2(48, 0)
+	monk.position = building_contact(game, monastery, monk)
+	assert(monk.position != Vector2.INF and game.navigation.can_occupy(monk.position, monk.radius(), monk, false), "relic deposit must start outside the monastery body")
 	monk._process(0.0)
 	assert(relic.stored_in == monastery and monastery.relics.size() == 1)
 	gold_before = game.players[0]["gold"]
@@ -88,8 +130,9 @@ func _run() -> void:
 	var second_monk: RtsUnit = game.spawn_unit(0, "monk", game.objectives.sacred_sites[0]["position"])
 	game.objectives._process(8.1)
 	assert(game.objectives.sacred_sites[0]["owner_id"] == 0)
-	var wall_start: Vector2 = game._scaled_point(Vector2(600, 650))
-	var wall_end := wall_start + Vector2(136, 0)
+	var wall_start: Vector2 = wall_fixture_start(game, game._scaled_point(Vector2(600, 650)), workers[0], game.units[5])
+	assert(wall_start != Vector2.INF, "three legal walls and a clear gate crossing must exist")
+	var wall_end: Vector2 = wall_start + Vector2(game.build_footprint_size("palisade_wall").x * 2.0, 0)
 	for point in game._wall_positions(wall_start, wall_end): assert(game.can_place("palisade_wall", point))
 	game.selected.clear()
 	game.selected.append(workers[0])
