@@ -16,6 +16,16 @@ var view_mode_25d := false
 var world_map: RtsWorldMap
 var navigation: RtsNavigation
 
+func _exit_tree() -> void:
+	# Match the live game's teardown: reaping worker tasks must happen before
+	# the engine shuts down its script language and worker pool.
+	if navigation != null: navigation.shutdown_jobs()
+
+func _notification(what: int) -> void:
+	# A fixture may also be freed without ever entering a SceneTree.
+	if what == NOTIFICATION_PREDELETE and navigation != null:
+		navigation.shutdown_jobs()
+
 func is_enemy(first: int, second: int) -> bool:
 	return first != second
 
