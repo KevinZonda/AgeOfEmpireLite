@@ -5,6 +5,7 @@ extends RefCounted
 var game: Node2D
 enum Mode { SELECT, BUILD, TARGET }
 enum SelectionDragPhase { IDLE, BLOCKED, CANDIDATE, ACTIVE }
+const HUD_EDGE_SCROLL_MARGIN := 2.0
 
 var build_mode := ""
 var pending_landmark_id := ""
@@ -92,17 +93,19 @@ func _edge_pan_direction(screen_point: Vector2, viewport_size: Vector2) -> Vecto
 	# Confined mouse coordinates can land exactly on the right or bottom edge.
 	# Clamping also keeps edge scrolling continuous during a focus transition.
 	var point := screen_point.clamp(Vector2.ZERO, (viewport_size - Vector2.ONE).max(Vector2.ZERO))
-	# Command buttons and the minimap can overlap the edge-scroll strip.
-	# Hovering the HUD must not move the battlefield while clicking a command.
-	if game.hud_top != null and game.hud_top.visible and game.hud_top.get_global_rect().has_point(point): return Vector2.ZERO
-	if game.hud_bottom != null and game.hud_bottom.visible and game.hud_bottom.get_global_rect().has_point(point): return Vector2.ZERO
-	if game.global_queue_panel != null and game.global_queue_panel.visible and game.global_queue_panel.get_global_rect().has_point(point): return Vector2.ZERO
-	if game.hud_ui != null and game.hud_ui.minimap_panel != null and game.hud_ui.minimap_panel.visible and game.hud_ui.minimap_panel.get_global_rect().has_point(point): return Vector2.ZERO
+	# Keep HUD interactions stationary, but reserve the outer window rim for
+	# scrolling: the full-width top and bottom panels cover both vertical edges.
+	var margin: float = game.EDGE_SCROLL_MARGIN
+	var minimap_panel: Control = game.hud_ui.minimap_panel if game.hud_ui != null else null
+	for control in [game.hud_top, game.hud_bottom, game.global_queue_panel, minimap_panel]:
+		if control != null and control.is_visible_in_tree() and control.get_global_rect().has_point(point):
+			margin = HUD_EDGE_SCROLL_MARGIN
+			break
 	var direction := Vector2.ZERO
-	if point.x <= game.EDGE_SCROLL_MARGIN: direction.x -= 1
-	if point.x >= viewport_size.x - game.EDGE_SCROLL_MARGIN: direction.x += 1
-	if point.y <= game.EDGE_SCROLL_MARGIN: direction.y -= 1
-	if point.y >= viewport_size.y - game.EDGE_SCROLL_MARGIN: direction.y += 1
+	if point.x <= margin: direction.x -= 1
+	if point.x >= viewport_size.x - margin: direction.x += 1
+	if point.y <= margin: direction.y -= 1
+	if point.y >= viewport_size.y - margin: direction.y += 1
 	return direction
 
 func _reset_selection_pointer() -> void:
