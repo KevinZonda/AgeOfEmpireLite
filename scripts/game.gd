@@ -1260,16 +1260,17 @@ func _tick_presentation(delta: float) -> void:
 	_compact_timed_entries(hit_lines, delta)
 	_compact_timed_entries(order_markers, delta)
 	_compact_timed_entries(world_effects, delta)
-	if build_mode != "":
-		# Build and wall previews must track the mouse every frame.
+	var selection_follows_unit := false
+	for entity in selected:
+		if is_instance_valid(entity) and entity is RtsUnit:
+			selection_follows_unit = true
+			break
+	if build_mode != "" or selection_follows_unit:
+		# Rings and route origins use world positions on this canvas, so redraw
+		# every frame to follow unit translation, just like mouse previews.
 		queue_redraw()
 	else:
 		var effects_active := not hit_lines.is_empty() or not order_markers.is_empty() or not world_effects.is_empty()
-		if not effects_active:
-			for entity in selected:
-				if is_instance_valid(entity) and entity is RtsUnit:
-					effects_active = true
-					break
 		if effects_active:
 			_effects_redraw_timer -= delta
 			if _effects_redraw_timer <= 0.0:
