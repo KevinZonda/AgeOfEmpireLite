@@ -966,22 +966,22 @@ func _render_command(descriptor: Dictionary) -> Control:
 
 func _add_shortcut_badge(button: Button, keycode: int) -> void:
 	if keycode == KEY_NONE: return
-	var badge := PanelContainer.new()
+	var badge := Label.new()
 	badge.name = "ShortcutBadge"
-	badge.position = Vector2(2, 2)
 	badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color("211b14")
-	style.content_margin_left = 3
-	style.content_margin_right = 3
-	badge.add_theme_stylebox_override("panel", style)
-	var label := Label.new()
-	label.text = OS.get_keycode_string(keycode)
-	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	label.add_theme_font_size_override("font_size", 11)
-	label.add_theme_color_override("font_color", Color("f1d99b"))
-	badge.add_child(label)
+	badge.text = OS.get_keycode_string(keycode)
+	badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	badge.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+	badge.add_theme_font_size_override("font_size", 11)
+	badge.add_theme_color_override("font_color", Color.WHITE)
+	badge.add_theme_color_override("font_outline_color", Color("211b14"))
+	badge.add_theme_constant_override("outline_size", 2)
 	button.add_child(badge)
+	badge.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	badge.offset_left = 2
+	badge.offset_top = 2
+	badge.offset_right = -3
+	badge.offset_bottom = -2
 
 func _show_age_choice() -> void:
 	if not game.started or game.game_over or age_choice_overlay != null: return
