@@ -1,0 +1,618 @@
+[
+  {
+    "script": "res://tests/smoke.gd",
+    "status": "timeout",
+    "exit_code": null,
+    "seconds": 45.014,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/smoke.gd"
+    ]
+  },
+  {
+    "script": "res://tests/production_queue_regression.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 3.638,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/production_queue_regression.gd"
+    ]
+  },
+  {
+    "script": "res://tests/unit_orders_regression.gd",
+    "status": "failed",
+    "exit_code": 1,
+    "seconds": 0.938,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/unit_orders_regression.gd"
+    ]
+  },
+  {
+    "script": "res://tests/player_input_actions_regression.gd",
+    "status": "timeout",
+    "exit_code": null,
+    "seconds": 45.012,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/player_input_actions_regression.gd"
+    ]
+  },
+  {
+    "script": "res://tests/session_rules_regression.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 4.319,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/session_rules_regression.gd"
+    ]
+  },
+  {
+    "script": "res://tests/simulation_runtime.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 7.583,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/simulation_runtime.gd"
+    ]
+  },
+  {
+    "script": "res://tests/match_services.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 1.661,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/match_services.gd"
+    ]
+  },
+  {
+    "script": "res://tests/match_changes.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 7.453,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/match_changes.gd"
+    ]
+  },
+  {
+    "script": "res://tests/match_simulation_regression.gd",
+    "status": "failed",
+    "exit_code": 1,
+    "seconds": 0.191,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/match_simulation_regression.gd"
+    ]
+  },
+  {
+    "script": "res://tests/selection.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 6.35,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/selection.gd"
+    ]
+  },
+  {
+    "script": "res://tests/enemy_inspection.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 6.544,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/enemy_inspection.gd"
+    ]
+  },
+  {
+    "script": "res://tests/right_click_selection.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 6.434,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/right_click_selection.gd"
+    ]
+  },
+  {
+    "script": "res://tests/lobby_setup.gd",
+    "status": "timeout",
+    "exit_code": null,
+    "seconds": 45.024,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/lobby_setup.gd"
+    ]
+  },
+  {
+    "script": "res://tests/build_grid.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 5.904,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/build_grid.gd"
+    ]
+  },
+  {
+    "script": "res://tests/build_selection.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 6.29,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/build_selection.gd"
+    ]
+  },
+  {
+    "script": "res://tests/farm_cycle.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 6.098,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/farm_cycle.gd"
+    ]
+  },
+  {
+    "script": "res://tests/sheep_gathering.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 3.405,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/sheep_gathering.gd"
+    ]
+  },
+  {
+    "script": "res://tests/deer_gathering.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 3.702,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/deer_gathering.gd"
+    ]
+  },
+  {
+    "script": "res://tests/villager_boar_escape.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 6.556,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/villager_boar_escape.gd"
+    ]
+  },
+  {
+    "script": "res://tests/villager_post_construction.gd",
+    "status": "failed",
+    "exit_code": 1,
+    "seconds": 2.056,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/villager_post_construction.gd"
+    ]
+  },
+  {
+    "script": "res://tests/trade_post_targeting.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 7.065,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/trade_post_targeting.gd"
+    ]
+  },
+  {
+    "script": "res://tests/rally_landmarks.gd",
+    "status": "timeout",
+    "exit_code": null,
+    "seconds": 45.015,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/rally_landmarks.gd"
+    ]
+  },
+  {
+    "script": "res://tests/fog_of_war.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 7.492,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/fog_of_war.gd"
+    ]
+  },
+  {
+    "script": "res://tests/fog_building_memory.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 5.324,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/fog_building_memory.gd"
+    ]
+  },
+  {
+    "script": "res://tests/fog_unit_flash_poc.gd",
+    "status": "failed",
+    "exit_code": 3,
+    "seconds": 4.428,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/fog_unit_flash_poc.gd"
+    ]
+  },
+  {
+    "script": "res://tests/chinese.gd",
+    "status": "timeout",
+    "exit_code": null,
+    "seconds": 45.013,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/chinese.gd"
+    ]
+  },
+  {
+    "script": "res://tests/extended_systems.gd",
+    "status": "timeout",
+    "exit_code": null,
+    "seconds": 45.009,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/extended_systems.gd"
+    ]
+  },
+  {
+    "script": "res://tests/objectives.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 0.913,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/objectives.gd"
+    ]
+  },
+  {
+    "script": "res://tests/strategic_expansion.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 5.075,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/strategic_expansion.gd"
+    ]
+  },
+  {
+    "script": "res://tests/combat_rules.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 0.725,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/combat_rules.gd"
+    ]
+  },
+  {
+    "script": "res://tests/attack_weapon_selection.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 2.446,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/attack_weapon_selection.gd"
+    ]
+  },
+  {
+    "script": "res://tests/balance_system.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 3.775,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/balance_system.gd"
+    ]
+  },
+  {
+    "script": "res://tests/landmark_catalog.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 0.719,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/landmark_catalog.gd"
+    ]
+  },
+  {
+    "script": "res://tests/landmark_roles.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 3.898,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/landmark_roles.gd"
+    ]
+  },
+  {
+    "script": "res://tests/siege_rules.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 0.719,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/siege_rules.gd"
+    ]
+  },
+  {
+    "script": "res://tests/siege_actions.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 1.496,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/siege_actions.gd"
+    ]
+  },
+  {
+    "script": "res://tests/economy_siege_controls.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 1.58,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/economy_siege_controls.gd"
+    ]
+  },
+  {
+    "script": "res://tests/aoe4_requested_systems.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 2.855,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/aoe4_requested_systems.gd"
+    ]
+  },
+  {
+    "script": "res://tests/battle_experience.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 2.468,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/battle_experience.gd"
+    ]
+  },
+  {
+    "script": "res://tests/navigation.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 3.426,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/navigation.gd"
+    ]
+  },
+  {
+    "script": "res://tests/group_multiplayer.gd",
+    "status": "timeout",
+    "exit_code": null,
+    "seconds": 45.009,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/group_multiplayer.gd"
+    ]
+  },
+  {
+    "script": "res://tests/map_generator.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 6.252,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/map_generator.gd"
+    ]
+  },
+  {
+    "script": "res://tests/map_strategy.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 2.065,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/map_strategy.gd"
+    ]
+  },
+  {
+    "script": "res://tests/map_fairness.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 6.727,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/map_fairness.gd"
+    ]
+  }
+]
