@@ -1,0 +1,155 @@
+Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
+
+SPIKE frame=0 ms=31.3
+SPIKE frame=1 ms=33.6
+SPIKE frame=2 ms=33.2
+SPIKE frame=15 ms=43.9
+SPIKE frame=39 ms=33.3
+SPIKE frame=58 ms=41.1
+SPIKE frame=159 ms=35.6
+  stuck owner=2 kind=villager order=gather failures=1 pos=(386.8931, 1903.461) dest=(0.0, 0.0)
+SPIKE frame=412 ms=35.2
+  stuck owner=2 kind=villager order=gather failures=1 pos=(386.8931, 1903.461) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2003.65, 787.8587) dest=(0.0, 0.0)
+SPIKE frame=413 ms=48.3
+  stuck owner=2 kind=villager order=gather failures=1 pos=(386.8931, 1903.461) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2003.65, 787.8587) dest=(0.0, 0.0)
+SPIKE frame=415 ms=33.2
+  stuck owner=2 kind=villager order=gather failures=1 pos=(386.8931, 1903.461) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2003.65, 787.8587) dest=(0.0, 0.0)
+  stuck owner=3 kind=scout order=move failures=1 pos=(2166.296, 709.5667) dest=(1275.0, 1075.0)
+SPIKE frame=450 ms=35.3
+  stuck owner=2 kind=villager order=gather failures=1 pos=(386.8931, 1903.461) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2003.65, 787.8587) dest=(0.0, 0.0)
+  stuck owner=3 kind=scout order=move failures=1 pos=(2175.0, 725.0) dest=(1275.0, 1075.0)
+SPIKE frame=545 ms=35.2
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(386.8931, 1903.461) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2003.65, 787.8587) dest=(0.0, 0.0)
+SPIKE frame=617 ms=39.1
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(386.8931, 1903.461) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2003.65, 787.8587) dest=(0.0, 0.0)
+SPIKE frame=687 ms=73.5
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(386.8931, 1903.461) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2003.65, 787.8587) dest=(0.0, 0.0)
+SPIKE frame=690 ms=36.1
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(386.8931, 1903.461) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2003.65, 787.8587) dest=(0.0, 0.0)
+SPIKE frame=718 ms=37.4
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(386.8931, 1903.461) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2003.65, 787.8587) dest=(0.0, 0.0)
+SPIKE frame=827 ms=47.8
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(386.8931, 1903.461) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2003.65, 787.8587) dest=(0.0, 0.0)
+SPIKE frame=945 ms=40.4
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(386.8931, 1903.461) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2003.65, 787.8587) dest=(0.0, 0.0)
+SPIKE frame=947 ms=32.2
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(386.8931, 1903.461) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2003.65, 787.8587) dest=(0.0, 0.0)
+SPIKE frame=1306 ms=30.0
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(386.8931, 1903.461) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2003.65, 787.8587) dest=(0.0, 0.0)
+SPIKE frame=1356 ms=37.5
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(386.8931, 1903.461) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2003.65, 787.8587) dest=(0.0, 0.0)
+SPIKE frame=1411 ms=38.9
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(386.8931, 1903.461) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2003.65, 787.8587) dest=(0.0, 0.0)
+SPIKE frame=1551 ms=33.4
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(386.8931, 1903.461) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2003.65, 787.8587) dest=(0.0, 0.0)
+SPIKE frame=1689 ms=32.6
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(386.8931, 1903.461) dest=(0.0, 0.0)
+SPIKE frame=1792 ms=102.5
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(386.8931, 1903.461) dest=(0.0, 0.0)
+SPIKE frame=1799 ms=37.2
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(386.8931, 1903.461) dest=(0.0, 0.0)
+SPIKE frame=1894 ms=34.5
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(386.8931, 1903.461) dest=(0.0, 0.0)
+SPIKE frame=1973 ms=64.6
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(386.8931, 1903.461) dest=(0.0, 0.0)
+SPIKE frame=1985 ms=176.2
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+SPIKE frame=2067 ms=34.1
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=build failures=1 pos=(329.6389, 1948.446) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2160.0, 416.33) dest=(0.0, 0.0)
+SPIKE frame=2069 ms=41.5
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=build failures=1 pos=(410.9894, 1535.248) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=build failures=1 pos=(329.6389, 1948.446) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2160.0, 416.33) dest=(0.0, 0.0)
+SPIKE frame=2071 ms=63.7
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=build failures=1 pos=(410.9894, 1535.248) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=build failures=1 pos=(329.6389, 1948.446) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2160.0, 416.33) dest=(0.0, 0.0)
+SPIKE frame=2181 ms=121.9
+  stuck owner=2 kind=villager order=build failures=1 pos=(410.9894, 1535.248) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=build failures=1 pos=(329.6389, 1948.446) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2160.0, 416.33) dest=(0.0, 0.0)
+SPIKE frame=2305 ms=34.6
+  stuck owner=2 kind=villager order=build failures=1 pos=(410.9894, 1535.248) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=build failures=1 pos=(265.5343, 1483.65) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=build failures=1 pos=(329.6389, 1948.446) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2160.0, 416.33) dest=(0.0, 0.0)
+SPIKE frame=2379 ms=96.7
+  stuck owner=2 kind=villager order=build failures=1 pos=(410.9894, 1535.248) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=build failures=1 pos=(265.5343, 1483.65) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=build failures=1 pos=(329.6389, 1948.446) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2160.0, 416.33) dest=(0.0, 0.0)
+SPIKE frame=2380 ms=41.2
+  stuck owner=2 kind=villager order=build failures=1 pos=(410.9894, 1535.248) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=build failures=1 pos=(265.5343, 1483.65) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=build failures=1 pos=(329.6389, 1948.446) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2160.0, 416.33) dest=(0.0, 0.0)
+SPIKE frame=2384 ms=47.0
+  stuck owner=2 kind=villager order=build failures=1 pos=(410.9894, 1535.248) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=build failures=1 pos=(265.5343, 1483.65) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=build failures=1 pos=(329.6389, 1948.446) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2160.0, 416.33) dest=(0.0, 0.0)
+frames=2400 mean=9.67 p50=8.43 p90=15.10 p99=35.23 max=176.20
+frames with obstacle_revision bump: 7/2400, with grid_refresh: 0/2400
+first wildlife: 38, last wildlife: 38, last units: 25, last buildings: 19
+--- slowest 15 frames ---
+{"astar_ms":0.0,"buildings":15,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":1985,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":176.2,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":17,"rev_delta":3,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":19,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":2181,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":121.92,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":20,"rev_delta":3,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":11,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":1792,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":102.54,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":12,"rev_delta":3,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":19,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":2379,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":96.67,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":20,"rev_delta":0,"units":25,"wildlife":38}
+{"astar_ms":0.0,"buildings":7,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":687,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":73.49,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":8,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":11,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":1973,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":64.55,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":14,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":15,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":2071,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":63.74,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":17,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":7,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":413,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":48.34,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":8,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":7,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":827,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":47.8,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":8,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":19,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":2384,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":47.0,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":20,"rev_delta":0,"units":25,"wildlife":38}
+{"astar_ms":0.0,"buildings":7,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":15,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":43.86,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":8,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":15,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":2069,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":41.51,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":17,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":19,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":2380,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":41.19,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":20,"rev_delta":0,"units":25,"wildlife":38}
+{"astar_ms":0.0,"buildings":7,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":58,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":41.07,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":8,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":7,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":945,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":40.45,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":8,"rev_delta":0,"units":24,"wildlife":38}
+--- sample every 300 frames ---
+{"astar_ms":0.0,"buildings":7,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":0,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":31.29,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":8,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":7,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":300,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":11.74,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":8,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":7,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":600,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":6.84,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":8,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":7,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":900,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":10.89,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":8,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":7,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":1200,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":17.61,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":8,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":7,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":1500,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":2.59,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":8,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":11,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":1800,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":8.4,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":12,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":15,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":2100,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":7.73,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":17,"rev_delta":0,"units":24,"wildlife":38}

@@ -15,6 +15,7 @@ from pathlib import Path
 import signal
 import subprocess
 import sys
+import time
 
 ROOT = Path(__file__).resolve().parents[1]
 AUDIT = ROOT / "poc/exploration-2026-10-02"
@@ -96,6 +97,11 @@ def verify(entry, output, already_fixed, profile):
     if summary["executed_audit_cases"] != summary["expected_audit_cases"]:
         raise RuntimeError("Incomplete audit")
     by_script = {r["script"]: r for r in result["regression"]}
+    expected = {str(p.relative_to(ROOT)) for p in runner.discover() + list((ROOT / "tests").glob("*.js"))}
+    if profile == "regression":
+        expected.discard("tests/balance_multiseed.gd")
+    if set(by_script) != expected or len(result["regression"]) != len(expected):
+        raise RuntimeError("Executed script inventory differs from current project")
     required = entry.get("tests", [entry["test"]])
     for script in required:
         if by_script.get(script, {}).get("status") != "passed":
@@ -104,9 +110,59 @@ def verify(entry, output, already_fixed, profile):
     for case in set(entry["cases"]) | already_fixed:
         if cases.get(case, {}).get("status") != "pass":
             raise RuntimeError(f"Fixed audit case regressed: {case}")
-    if runner.snapshot() != result["source_after"]:
+    if business_sources(runner.snapshot()) != business_sources(result["source_after"]):
         raise RuntimeError("Source inventory or contents changed since tests")
     return summary
+
+
+def generated_artifact(path):
+    return Path(path).name == ".DS_Store" or path.startswith("assets/ui/command_icons/") and path.endswith(".library.translation")
+
+
+def business_sources(snapshot):
+    return {p: h for p, h in snapshot.items() if not generated_artifact(p)}
+
+
+def recompare(output, previous):
+    """Compare completed cumulative-worktree evidence to the actual predecessor."""
+    file = output / "results.json"
+    result = json.loads(file.read_text())
+    previous_file = previous / "results.json"
+    prior = json.loads(previous_file.read_text())
+    summary = result["summary"]
+    old_tests = {r["script"]: r for r in prior["regression"]}
+    now_tests = {r["script"]: r for r in result["regression"]}
+    old_cases = {c["id"]: c for r in prior["exploration"] for c in r["cases"]}
+    now_cases = {c["id"]: c for r in result["exploration"] for c in r["cases"]}
+    added_diagnostics = {}
+    new_failures = []
+    for script, record in now_tests.items():
+        old = old_tests.get(script)
+        if record["status"] != "passed" and (not old or old["status"] == "passed"):
+            new_failures.append(script)
+        if record["status"] == "failed" and old and old["status"] == "failed":
+            added = runner.previous_failure_signatures(record, file) - runner.previous_failure_signatures(old, previous_file)
+            if added:
+                added_diagnostics[script] = sorted(added)
+    deferred = set(summary.get("deferred_benchmarks", []))
+    comp = {"previous": str(previous_file), "profile": summary["profile"],
+            "deferred_benchmarks": sorted(deferred), "new_regression_failures": sorted(new_failures),
+            "new_failure_diagnostics": added_diagnostics,
+            "regressed_audit_cases": [c for c, r in now_cases.items() if r["status"] == "bug" and old_cases.get(c, {}).get("status") == "pass"],
+            "fixed_audit_cases": [c for c, r in now_cases.items() if r["status"] == "pass" and old_cases.get(c, {}).get("status") == "bug"],
+            "missing_scripts": sorted(set(old_tests) - set(now_tests) - deferred),
+            "missing_cases": sorted(set(old_cases) - set(now_cases)),
+            "exploration_execution_failures": [r["name"] for r in result["exploration"] if r["status"] not in ("passed", "unresolved_bugs")],
+            "incomplete_scripts": [r["script"] for r in result["regression"] if r["status"] in ("timeout", "cancelled", "skipped")]}
+    gates = ["new_regression_failures", "new_failure_diagnostics", "regressed_audit_cases", "missing_scripts", "missing_cases", "exploration_execution_failures", "incomplete_scripts"]
+    comp["no_new_failures"] = bool(summary.get("complete")) and not summary.get("changed_sources_during_run") and not any(comp[key] for key in gates)
+    original = output / "comparison-precomputed.json"
+    if not original.exists():
+        original.write_text(json.dumps(summary.get("comparison", {}), indent=2, ensure_ascii=False) + "\n")
+    summary["comparison"] = comp
+    file.write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\n")
+    (output / "summary.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False) + "\n")
+    (output / "comparison.json").write_text(json.dumps(comp, indent=2, ensure_ascii=False) + "\n")
 
 
 def verify_index(output, allowed):
@@ -118,7 +174,7 @@ def verify_index(output, allowed):
     for path, digest in sources.items():
         # The audit also hashes local generated artifacts for stability. These
         # two ignored artifact types have no committed source blob.
-        generated = Path(path).name == ".DS_Store" or path.startswith("assets/ui/command_icons/") and path.endswith(".library.translation")
+        generated = generated_artifact(path)
         if generated and subprocess.run(["git", "check-ignore", "-q", "--", path], cwd=ROOT).returncode == 0:
             continue
         blob = subprocess.check_output(["git", "show", f":{path}"], cwd=ROOT)
@@ -150,6 +206,7 @@ def main():
     parser.add_argument("--profile", choices=("all", "regression"), default="all")
     parser.add_argument("--output-suffix", default="")
     parser.add_argument("--final-all", action="store_true", help="After every planned repair is pushed, run and publish the full all profile")
+    parser.add_argument("--wait-for-results", action="store_true", help="Wait for already-running cumulative-worktree suites before publication")
     args = parser.parse_args()
     if command(["git", "branch", "--show-current"], True) != "main":
         raise RuntimeError("Expected main branch")
@@ -193,6 +250,13 @@ def main():
             ACTIVE = None
             if code not in (0, 1):
                 raise RuntimeError(f"Full test runner aborted: {code}")
+        if bug in args.reuse_results or pending:
+            deadline = time.monotonic() + args.timeout * 6
+            while not (output / "results.json").exists():
+                if not args.wait_for_results or time.monotonic() > deadline:
+                    raise RuntimeError(f"Completed evidence is not available: {output}")
+                time.sleep(1)
+            recompare(output, previous)
         summary = verify(entry, output, fixed, args.profile)
         record = {"id": bug, "title": entry["title"], "prepared_patches": entry["patches"],
                   "output": str(output.relative_to(AUDIT)), "summary": summary,

@@ -1,0 +1,72 @@
+[
+	{
+		"evidence": {
+			"complete": true,
+			"gathering_berries": false,
+			"gathering_farm": false,
+			"worker_order": "gather"
+		},
+		"id": "mill_builder_followup",
+		"status": "pass"
+	},
+	{
+		"evidence": {
+			"remaining_after": 11.0,
+			"remaining_before": 11.0
+		},
+		"id": "pause_production",
+		"status": "pass"
+	},
+	{
+		"evidence": {
+			"old_projectile_queued_for_deletion": true
+		},
+		"id": "restart_projectiles",
+		"status": "pass"
+	},
+	{
+		"evidence": {
+			"commands_after": 0,
+			"commands_before": 0,
+			"new_owner": 0
+		},
+		"id": "conversion_selection",
+		"status": "bug"
+	},
+	{
+		"evidence": {
+			"boarded": false,
+			"resumed_order": "trade"
+		},
+		"id": "trade_garrison_resume",
+		"status": "observation"
+	},
+	{
+		"evidence": {
+			"order": "move",
+			"queue_size": 0
+		},
+		"id": "depleted_resource_queue",
+		"status": "pass"
+	},
+	{
+		"evidence": {
+			"alternative_distance": -1.0,
+			"alternative_exists": false,
+			"order_after_activation": "idle",
+			"queued_gather_commands": 0
+		},
+		"id": "queued_farm_frees_later",
+		"status": "bug"
+	},
+	{
+		"evidence": {
+			"alternative_distance": 144.222045898438,
+			"alternative_exists": true,
+			"order_after_activation": "idle",
+			"queued_gather_commands": 0
+		},
+		"id": "queued_farm_alternative",
+		"status": "bug"
+	}
+]

@@ -380,6 +380,9 @@ func _process(delta: float) -> void:
 				break
 	production_remaining = maxf(0.0, production_remaining - delta * supervise_work_rate)
 	if production_remaining > 0.0: return
+	# Released objects cannot be passed to spawn_unit's typed Node2D argument.
+	# Preserve the rally point/resource kind so spawning can choose a fallback.
+	if not is_instance_valid(rally_target) or rally_target.is_queued_for_deletion(): rally_target = null
 	game.session.changes.begin_transaction()
 	var job: Dictionary = production_queue.pop_front()
 	if job["type"] == "train":
