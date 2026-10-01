@@ -514,12 +514,14 @@ func _ready() -> void:
 	_apply_ui_scales()
 	_create_cursor()
 	_show_menu()
+	platform_pointer.setup_web_gestures()
 	queue_redraw()
 
 func _load_ui_font() -> void:
 	UI_STYLE.load_font()
 
 func _exit_tree() -> void:
+	platform_pointer.release_web_gestures()
 	player_actions.clear()
 	if navigation != null: navigation.shutdown_jobs()
 	if get_tree().node_added.is_connected(_on_ui_node_added): get_tree().node_added.disconnect(_on_ui_node_added)
