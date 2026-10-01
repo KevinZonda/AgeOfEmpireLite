@@ -4,7 +4,13 @@ func _initialize() -> void:
 	call_deferred("_run")
 
 func _run() -> void:
+	# Exercise a fixed 720p / 100% configuration independently of startup defaults.
+	root.size = Vector2i(1280, 720)
 	var game = load("res://scenes/main.tscn").instantiate()
+	game.selected_view_mode_25d = false
+	game.ui_scale = 1.0
+	game.text_scale = 1.0
+	game.minimap_size = 216
 	root.add_child(game)
 	await process_frame
 	assert(game.menu_panel.visible)

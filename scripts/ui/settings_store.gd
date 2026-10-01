@@ -7,16 +7,21 @@ const UI_SCALE_OPTIONS := [0.75, 1.0, 1.25, 1.5]
 const TEXT_SCALE_OPTIONS := [0.75, 1.0, 1.25, 1.5, 1.75, 2.0]
 const MINIMAP_SIZE_OPTIONS := [160, 216, 264]
 const HEALTH_BAR_MODES := ["always", "damaged", "changed"]
+const DEFAULT_VIEW_MODE_25D := true
+const DEFAULT_UI_SCALE := 1.5
+const DEFAULT_TEXT_SCALE := 2.0
+const DEFAULT_MINIMAP_SIZE := 264
+const DEFAULT_WINDOWED_RESOLUTION := Vector2i(1920, 1080)
 
-var selected_view_mode_25d := false
-var ui_scale := 1.0
-var text_scale := 1.0
-var minimap_size := 216
+var selected_view_mode_25d := DEFAULT_VIEW_MODE_25D
+var ui_scale := DEFAULT_UI_SCALE
+var text_scale := DEFAULT_TEXT_SCALE
+var minimap_size := DEFAULT_MINIMAP_SIZE
 var show_building_icons := true
 var show_building_names := true
 var show_fps := false
 var health_bar_mode := "damaged"
-var windowed_resolution := Vector2i.ZERO
+var windowed_resolution := DEFAULT_WINDOWED_RESOLUTION
 var adaptive_resolution_enabled := false
 var fullscreen_enabled := false
 var edge_scroll_enabled := true
@@ -47,7 +52,7 @@ func load_preferences(display) -> void:
 	apply_preferences(config)
 	# The browser owns the canvas size; fullscreen needs a fresh user gesture.
 	if OS.has_feature("web"): return
-	var resolution: Variant = config.get_value("display", "window_size", Vector2i.ZERO)
+	var resolution: Variant = config.get_value("display", "window_size", DEFAULT_WINDOWED_RESOLUTION)
 	if bool(config.get_value("display", "adaptive_resolution", false)):
 		display._apply_window_resolution(Vector2i.ZERO, false)
 	elif resolution is Vector2i and resolution.x > 0 and resolution.y > 0:
@@ -64,17 +69,17 @@ func read_config(path: String = SETTINGS_PATH, legacy_path: String = LEGACY_DISP
 	return config
 
 func apply_preferences(config: ConfigFile) -> void:
-	selected_view_mode_25d = bool(config.get_value("display", "view_mode_25d", false))
+	selected_view_mode_25d = bool(config.get_value("display", "view_mode_25d", DEFAULT_VIEW_MODE_25D))
 	show_building_icons = bool(config.get_value("display", "show_building_icons", true))
 	show_building_names = bool(config.get_value("display", "show_building_names", true))
 	show_fps = bool(config.get_value("display", "show_fps", false))
 	var saved_health_bar_mode: String = str(config.get_value("display", "health_bar_mode", "damaged"))
 	health_bar_mode = saved_health_bar_mode if HEALTH_BAR_MODES.has(saved_health_bar_mode) else "damaged"
-	var saved_ui_scale: float = float(config.get_value("display", "ui_scale", 1.0))
-	var saved_text_scale: float = float(config.get_value("display", "text_scale", 1.0))
-	var saved_minimap_size: int = int(config.get_value("display", "minimap_size", 216))
-	ui_scale = saved_ui_scale if UI_SCALE_OPTIONS.has(saved_ui_scale) else 1.0
-	text_scale = saved_text_scale if TEXT_SCALE_OPTIONS.has(saved_text_scale) else 1.0
-	minimap_size = saved_minimap_size if MINIMAP_SIZE_OPTIONS.has(saved_minimap_size) else 216
+	var saved_ui_scale: float = float(config.get_value("display", "ui_scale", DEFAULT_UI_SCALE))
+	var saved_text_scale: float = float(config.get_value("display", "text_scale", DEFAULT_TEXT_SCALE))
+	var saved_minimap_size: int = int(config.get_value("display", "minimap_size", DEFAULT_MINIMAP_SIZE))
+	ui_scale = saved_ui_scale if UI_SCALE_OPTIONS.has(saved_ui_scale) else DEFAULT_UI_SCALE
+	text_scale = saved_text_scale if TEXT_SCALE_OPTIONS.has(saved_text_scale) else DEFAULT_TEXT_SCALE
+	minimap_size = saved_minimap_size if MINIMAP_SIZE_OPTIONS.has(saved_minimap_size) else DEFAULT_MINIMAP_SIZE
 	edge_scroll_enabled = bool(config.get_value("controls", "edge_scroll_enabled", true))
 	zoom_gesture_enabled = bool(config.get_value("controls", "zoom_gesture_enabled", true))

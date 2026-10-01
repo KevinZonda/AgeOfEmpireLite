@@ -5,6 +5,7 @@ func _initialize() -> void:
 
 func _run() -> void:
 	var game: Node2D = load("res://scenes/main.tscn").instantiate()
+	game.selected_view_mode_25d = false
 	root.add_child(game)
 	await process_frame
 	game.start_game("French", 12345)

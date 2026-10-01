@@ -5,6 +5,8 @@ func _initialize() -> void:
 
 func _run() -> void:
 	var game = load("res://scenes/main.tscn").instantiate()
+	game.ui_scale = 1.0
+	game.text_scale = 1.0
 	root.add_child(game)
 	await process_frame
 	var entry: Button

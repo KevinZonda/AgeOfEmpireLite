@@ -5,6 +5,9 @@ func _initialize() -> void:
 
 func _run() -> void:
 	var game: Variant = load("res://scenes/main.tscn").instantiate()
+	game.ui_scale = 1.0
+	game.text_scale = 1.0
+	game.minimap_size = 216
 	root.add_child(game)
 	await process_frame
 	game.start_game("English", 4242)
