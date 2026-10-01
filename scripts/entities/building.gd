@@ -189,11 +189,14 @@ func work_farm(delta: float, speed: float, harvest_yield: int) -> int:
 
 func advance_construction(delta: float) -> void:
 	if is_complete(): return
-	build_remaining = maxf(0.0, build_remaining - delta)
+	var work_done := minf(build_remaining, maxf(0.0, delta))
+	build_remaining -= work_done
 	# hp changes every tick; repaint scaffolding progress on quantized steps
 	# instead of letting the hp setter redraw the whole building every frame.
 	_hp_redraw_suspended = true
-	hp = max_hp * (1.0 - 0.7 * build_remaining / maxf(0.1, build_total))
+	# Construction grants only the health represented by newly completed work.
+	# Damage and paid repairs must survive both progress ticks and completion.
+	hp = minf(max_hp, hp + max_hp * 0.7 * work_done / maxf(0.1, build_total))
 	_hp_redraw_suspended = false
 	var progress := 1.0 - build_remaining / maxf(0.1, build_total)
 	construction_redraw_timer += delta

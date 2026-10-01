@@ -1,0 +1,79 @@
+[
+	{
+		"evidence": {
+			"dt": 0.1,
+			"expected": 41.7,
+			"hp_after": 41.7,
+			"hp_before": 38.6666666666667,
+			"undamaged_before": 138.666666666667
+		},
+		"id": "construction_damage",
+		"status": "pass"
+	},
+	{
+		"evidence": {
+			"dt": 0.0,
+			"expected": 38.6666666666667,
+			"hp_after": 38.6666666666667,
+			"hp_before": 38.6666666666667,
+			"undamaged_before": 138.666666666667
+		},
+		"id": "construction_zero",
+		"status": "pass"
+	},
+	{
+		"evidence": {
+			"dt": 0.1,
+			"expected": 81.7,
+			"hp_after": 81.7,
+			"hp_before": 78.6666666666667,
+			"undamaged_before": 138.666666666667
+		},
+		"id": "construction_repair",
+		"status": "pass"
+	},
+	{
+		"evidence": {
+			"gold_gain_in_10_ticks": 12,
+			"home": "(760.0, 600.0)",
+			"position": "(1200.0, 600.0)",
+			"post": "(1200.0, 600.0)"
+		},
+		"id": "trade_reissue",
+		"status": "pass"
+	},
+	{
+		"evidence": {
+			"gold_gain_in_10_ticks": 60,
+			"home": "(760.0, 600.0)",
+			"position": "(760.0, 600.0)",
+			"post": "(760.0, 600.0)"
+		},
+		"id": "trade_overlap",
+		"status": "observation"
+	},
+	{
+		"evidence": {
+			"available": true,
+			"carrier_valid": false
+		},
+		"id": "elimination_relic",
+		"status": "pass"
+	},
+	{
+		"evidence": {
+			"available": true,
+			"carrier_valid": false
+		},
+		"id": "death_relic",
+		"status": "pass"
+	},
+	{
+		"evidence": {
+			"available": true,
+			"position": "(1105.0, 800.0)"
+		},
+		"id": "destroy_monastery",
+		"status": "pass"
+	}
+]
