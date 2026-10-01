@@ -29,6 +29,8 @@ make run
 
 Web 版本执行 `make run-web`，自动构建、导出并启动 <http://127.0.0.1:8060> 预览。需要 Emscripten；macOS 会自动准备普通版导出编辑器。构建与部署要求见 [Web 构建说明](BUILD.md#web-构建导出与预览)。
 
+[GitHub Actions](.github/workflows/web-pages.yml) 支持在推送 `main` 后自动导出 Web 游戏、提交产物至 `pages` 分支并发布 GitHub Pages。首次需将仓库 Pages 的 Source 设为「GitHub Actions」，详见 [自动部署说明](BUILD.md#github-actions-与-pages)。
+
 补丁位于 `patches/godot-4.7.2-macos-frame-wait.patch`，构建产物位于 `docs/godot/bin/`。macOS 的 120 FPS 上限配合该引擎补丁生效，单独限帧无法修复。Godot 编辑器仍可编辑 `project.godot`；直接使用未打补丁的官方引擎运行时，Magnet 干扰仍可能出现。测量、根因和复现方法见 [输入延迟 POC](poc/input-poc/README.md)。
 
 构建还会应用 `patches/godot-4.7.2-macos-headless-wait.patch`，让无窗口任务正常等待下一帧并跳过 Magnet 查询。下方测试命令统一通过 `make run` 使用本地运行时；空项目复现和回归检查见 [headless 等待 PoC](docs/headless-wait-poc/README.md)。
