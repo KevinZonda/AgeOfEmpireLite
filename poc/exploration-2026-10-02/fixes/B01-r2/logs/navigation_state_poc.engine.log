@@ -1,0 +1,233 @@
+Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
+
+POC_PASS auto_gather_sep24_angle0 remaining=951 order=gather
+POC_PASS auto_gather_sep24_angle1 remaining=951 order=gather
+POC_PASS auto_gather_sep24_angle2 remaining=951 order=gather
+POC_PASS auto_gather_sep24_angle3 remaining=951 order=gather
+POC_PASS auto_gather_sep30_angle0 remaining=951 order=gather
+POC_PASS auto_gather_sep30_angle1 remaining=951 order=gather
+POC_PASS auto_gather_sep30_angle2 remaining=951 order=gather
+POC_PASS auto_gather_sep30_angle3 remaining=951 order=gather
+POC_PASS auto_gather_sep40_angle0 remaining=951 order=gather
+POC_PASS auto_gather_sep40_angle1 remaining=951 order=gather
+POC_PASS auto_gather_sep40_angle2 remaining=951 order=gather
+POC_PASS auto_gather_sep40_angle3 remaining=951 order=gather
+POC_PASS auto_gather_sep48_angle0 remaining=951 order=gather
+POC_PASS auto_gather_sep48_angle1 remaining=951 order=gather
+POC_PASS auto_gather_sep48_angle2 remaining=951 order=gather
+POC_PASS auto_gather_sep48_angle3 remaining=951 order=gather
+POC_PASS auto_gather_sep64_angle0 remaining=951 order=gather
+POC_PASS auto_gather_sep64_angle1 remaining=951 order=gather
+POC_PASS auto_gather_sep64_angle2 remaining=951 order=gather
+POC_PASS auto_gather_sep64_angle3 remaining=951 order=gather
+POC_PASS depleted_gather_follows_explicit_queue_neighborfalse order=idle queue=0 pos=(653.5591, 600.0)
+POC_PASS depleted_gather_follows_explicit_queue_neighbortrue order=idle queue=0 pos=(653.5591, 600.0)
+POC_PASS farm_queue_control_occupiedfalse_extrafalse order=gather queue=1
+POC_PASS farm_queue_control_occupiedfalse_extratrue order=gather queue=1
+POC_PASS busy_farm_preserves_followup_move order=idle queue=0 pos=(653.0747, 454.8587)
+POC_FAIL farm_queue_control_occupiedtrue_extratrue order=idle queue=0
+POC_PASS busy_farm_long_queue_drains_iteratively 
+POC_PASS unload_town_center_villager_2_serialfalse_setup 2 boarded
+POC_PASS unload_town_center_villager_2_serialfalse_exits 
+POC_PASS unload_town_center_villager_2_serialfalse_no_overlap 0 pairs [(776.0, 702.0), (800.0, 702.0)]
+POC_PASS unload_town_center_villager_4_serialfalse_setup 4 boarded
+POC_PASS unload_town_center_villager_4_serialfalse_exits 
+POC_PASS unload_town_center_villager_4_serialfalse_no_overlap 0 pairs [(776.0, 702.0), (800.0, 702.0), (824.0, 702.0), (776.0, 724.0)]
+POC_PASS unload_town_center_villager_8_serialfalse_setup 8 boarded
+POC_PASS unload_town_center_villager_8_serialfalse_exits 
+POC_PASS unload_town_center_villager_8_serialfalse_no_overlap 0 pairs [(776.0, 702.0), (800.0, 702.0), (824.0, 702.0), (776.0, 724.0), (800.0, 724.0), (824.0, 724.0), (776.0, 746.0), (800.0, 746.0)]
+POC_PASS unload_town_center_villager_2_serialtrue_setup 2 boarded
+POC_PASS unload_town_center_villager_2_serialtrue_exits 
+POC_PASS unload_town_center_villager_2_serialtrue_no_overlap 0 pairs [(776.0, 702.0), (790.0188, 682.5199)]
+POC_PASS unload_town_center_villager_4_serialtrue_setup 4 boarded
+POC_PASS unload_town_center_villager_4_serialtrue_exits 
+POC_PASS unload_town_center_villager_4_serialtrue_no_overlap 0 pairs [(776.0, 702.0), (790.0188, 682.5199), (756.5199, 687.9812), (799.362, 707.4969)]
+POC_PASS unload_town_center_villager_8_serialtrue_setup 8 boarded
+POC_PASS unload_town_center_villager_8_serialtrue_exits 
+POC_PASS unload_town_center_villager_8_serialtrue_no_overlap 0 pairs [(776.0, 702.0), (790.0188, 682.5199), (756.5199, 687.9812), (799.362, 707.4969), (755.5936, 714.6325), (779.8618, 725.6873), (823.3746, 694.2765), (729.276, 691.0061)]
+POC_PASS unload_town_center_knight_2_serialfalse_setup 2 boarded
+POC_PASS unload_town_center_knight_2_serialfalse_exits 
+POC_PASS unload_town_center_knight_2_serialfalse_no_overlap 0 pairs [(776.0, 702.0), (805.7402, 688.1418)]
+POC_PASS unload_town_center_knight_4_serialfalse_setup 4 boarded
+POC_PASS unload_town_center_knight_4_serialfalse_exits 
+POC_PASS unload_town_center_knight_4_serialfalse_no_overlap 0 pairs [(776.0, 702.0), (805.7402, 688.1418), (836.175, 693.2383), (788.5149, 732.269)]
+POC_PASS unload_town_center_knight_8_serialfalse_setup 8 boarded
+POC_PASS unload_town_center_knight_8_serialfalse_exits 
+POC_PASS unload_town_center_knight_8_serialfalse_no_overlap 0 pairs [(776.0, 702.0), (805.7402, 688.1418), (836.175, 693.2383), (788.5149, 732.269), (830.0, 724.0), (817.9954, 753.3929), (761.3942, 749.4163), (788.5195, 773.7164)]
+POC_PASS unload_town_center_knight_2_serialtrue_setup 2 boarded
+POC_PASS unload_town_center_knight_2_serialtrue_exits 
+POC_PASS unload_town_center_knight_2_serialtrue_no_overlap 0 pairs [(776.0, 702.0), (820.4136, 694.7592)]
+POC_PASS unload_town_center_knight_4_serialtrue_setup 4 boarded
+POC_PASS unload_town_center_knight_4_serialtrue_exits 
+POC_PASS unload_town_center_knight_4_serialtrue_no_overlap 0 pairs [(776.0, 702.0), (820.4136, 694.7592), (732.1962, 691.6932), (812.5251, 728.2852)]
+POC_PASS unload_town_center_knight_8_serialtrue_setup 8 boarded
+POC_PASS unload_town_center_knight_8_serialtrue_exits 
+POC_PASS unload_town_center_knight_8_serialtrue_no_overlap 0 pairs [(776.0, 702.0), (820.4136, 694.7592), (732.1962, 691.6932), (812.5251, 728.2852), (737.738, 725.686), (783.2408, 746.4136), (849.0063, 719.1779), (702.9937, 684.822)]
+POC_PASS unload_battering_ram_villager_2_serialfalse_setup 2 boarded
+POC_PASS unload_battering_ram_villager_2_serialfalse_exits 
+POC_PASS unload_battering_ram_villager_2_serialfalse_no_overlap 0 pairs [(777.0, 640.0), (800.0, 640.0)]
+POC_PASS unload_battering_ram_villager_4_serialfalse_setup 4 boarded
+POC_PASS unload_battering_ram_villager_4_serialfalse_exits 
+POC_PASS unload_battering_ram_villager_4_serialfalse_no_overlap 0 pairs [(777.0, 640.0), (800.0, 640.0), (823.0, 640.0), (777.0, 663.0)]
+POC_PASS unload_battering_ram_villager_8_serialfalse_setup 8 boarded
+POC_PASS unload_battering_ram_villager_8_serialfalse_exits 
+POC_PASS unload_battering_ram_villager_8_serialfalse_no_overlap 0 pairs [(777.0, 640.0), (800.0, 640.0), (823.0, 640.0), (777.0, 663.0), (800.0, 663.0), (823.0, 663.0), (777.0, 686.0), (800.0, 686.0)]
+POC_PASS unload_battering_ram_villager_2_serialtrue_setup 2 boarded
+POC_PASS unload_battering_ram_villager_2_serialtrue_exits 
+POC_PASS unload_battering_ram_villager_2_serialtrue_no_overlap 0 pairs [(777.0, 640.0), (800.1712, 633.7474)]
+POC_PASS unload_battering_ram_villager_4_serialtrue_setup 4 boarded
+POC_PASS unload_battering_ram_villager_4_serialtrue_exits 
+POC_PASS unload_battering_ram_villager_4_serialtrue_no_overlap 0 pairs [(777.0, 640.0), (800.1712, 633.7474), (770.7474, 616.8288), (791.6439, 659.0146)]
+POC_PASS unload_battering_ram_villager_8_serialtrue_setup 8 boarded
+POC_PASS unload_battering_ram_villager_8_serialtrue_exits 
+POC_PASS unload_battering_ram_villager_8_serialtrue_no_overlap 0 pairs [(777.0, 640.0), (800.1712, 633.7474), (770.7474, 616.8288), (791.6439, 659.0146), (753.1998, 636.9094), (765.0367, 660.8057), (823.3425, 627.4949), (764.4949, 593.6575)]
+POC_PASS unload_battering_ram_knight_2_serialfalse_setup 2 boarded
+POC_PASS unload_battering_ram_knight_2_serialfalse_exits 
+POC_PASS unload_battering_ram_knight_2_serialfalse_no_overlap 0 pairs [(777.0, 640.0), (813.8582, 634.2598)]
+POC_PASS unload_battering_ram_knight_4_serialfalse_setup 4 boarded
+POC_PASS unload_battering_ram_knight_4_serialfalse_exits 
+POC_PASS unload_battering_ram_knight_4_serialfalse_no_overlap 0 pairs [(777.0, 640.0), (813.8582, 634.2598), (841.3048, 616.2317), (791.0903, 668.1441)]
+POC_PASS unload_battering_ram_knight_8_serialfalse_setup 8 boarded
+POC_PASS unload_battering_ram_knight_8_serialfalse_exits 
+POC_PASS unload_battering_ram_knight_8_serialfalse_no_overlap 0 pairs [(777.0, 640.0), (813.8582, 634.2598), (841.3048, 616.2317), (791.0903, 668.1441), (830.0, 663.0), (821.7208, 692.9727), (762.5093, 682.1246), (788.5195, 713.7164)]
+POC_PASS unload_battering_ram_knight_2_serialtrue_setup 2 boarded
+POC_PASS unload_battering_ram_knight_2_serialtrue_exits 
+POC_PASS unload_battering_ram_knight_2_serialtrue_no_overlap 0 pairs [(777.0, 640.0), (803.0072, 654.9542)]
+POC_PASS unload_battering_ram_knight_4_serialtrue_setup 4 boarded
+POC_PASS unload_battering_ram_knight_4_serialtrue_exits 
+POC_PASS unload_battering_ram_knight_4_serialtrue_no_overlap 0 pairs [(777.0, 640.0), (803.0072, 654.9542), (750.9928, 625.0458), (762.0458, 666.0072)]
+POC_PASS unload_battering_ram_knight_8_serialtrue_setup 8 boarded
+POC_PASS unload_battering_ram_knight_8_serialtrue_exits 
+POC_PASS unload_battering_ram_knight_8_serialtrue_no_overlap 0 pairs [(777.0, 640.0), (803.0072, 654.9542), (750.9928, 625.0458), (762.0458, 666.0072), (820.446, 628.2765), (765.2765, 596.554), (788.7235, 683.446), (733.554, 651.7235)]
+POC_PASS unload_transport_ship_villager_2_serialfalse_setup 2 boarded
+POC_PASS unload_transport_ship_villager_2_serialfalse_exits 
+POC_PASS unload_transport_ship_villager_2_serialfalse_no_overlap 0 pairs [(752.0, 525.0), (775.0, 525.0)]
+POC_PASS unload_transport_ship_villager_4_serialfalse_setup 4 boarded
+POC_PASS unload_transport_ship_villager_4_serialfalse_exits 
+POC_PASS unload_transport_ship_villager_4_serialfalse_no_overlap 0 pairs [(752.0, 525.0), (775.0, 525.0), (788.8156, 547.1731), (752.0, 548.0)]
+POC_PASS unload_transport_ship_villager_8_serialfalse_setup 8 boarded
+POC_PASS unload_transport_ship_villager_8_serialfalse_exits 
+POC_PASS unload_transport_ship_villager_8_serialfalse_no_overlap 0 pairs [(752.0, 525.0), (775.0, 525.0), (788.8156, 547.1731), (752.0, 548.0), (770.8373, 559.2548), (781.615, 580.0551), (752.0, 571.0), (764.9005, 592.7715)]
+POC_PASS unload_transport_ship_villager_2_serialtrue_setup 2 boarded
+POC_PASS unload_transport_ship_villager_2_serialtrue_exits 
+POC_PASS unload_transport_ship_villager_2_serialtrue_no_overlap 0 pairs [(752.0, 525.0), (776.0, 525.0)]
+POC_PASS unload_transport_ship_villager_4_serialtrue_setup 4 boarded
+POC_PASS unload_transport_ship_villager_4_serialtrue_exits 
+POC_PASS unload_transport_ship_villager_4_serialtrue_no_overlap 0 pairs [(752.0, 525.0), (776.0, 525.0), (761.1844, 547.1731), (761.1844, 502.8269)]
+POC_PASS unload_transport_ship_villager_8_serialtrue_setup 8 boarded
+POC_PASS unload_transport_ship_villager_8_serialtrue_exits 
+POC_PASS unload_transport_ship_villager_8_serialtrue_no_overlap 0 pairs [(752.0, 525.0), (776.0, 525.0), (761.1844, 547.1731), (761.1844, 502.8269), (735.0294, 541.9706), (735.0294, 508.0294), (716.0, 525.0), (785.9411, 558.9411)]
+POC_PASS unload_transport_ship_knight_2_serialfalse_setup 2 boarded
+POC_PASS unload_transport_ship_knight_2_serialfalse_exits 
+POC_PASS unload_transport_ship_knight_2_serialfalse_no_overlap 0 pairs [(752.0, 525.0), (780.7402, 538.8582)]
+POC_PASS unload_transport_ship_knight_4_serialfalse_setup 4 boarded
+POC_PASS unload_transport_ship_knight_4_serialfalse_exits 
+POC_PASS unload_transport_ship_knight_4_serialfalse_no_overlap 0 pairs [(752.0, 525.0), (780.7402, 538.8582), (776.7868, 503.7868), (756.5076, 562.3067)]
+POC_PASS unload_transport_ship_knight_8_serialfalse_setup 8 boarded
+POC_PASS unload_transport_ship_knight_8_serialfalse_exits 
+POC_PASS unload_transport_ship_knight_8_serialfalse_no_overlap 0 pairs [(752.0, 525.0), (780.7402, 538.8582), (776.7868, 503.7868), (756.5076, 562.3067), (776.7294, 592.9667), (749.365, 490.9068), (727.5109, 553.6713), (732.7446, 586.475)]
+POC_PASS unload_transport_ship_knight_2_serialtrue_setup 2 boarded
+POC_PASS unload_transport_ship_knight_2_serialtrue_exits 
+POC_PASS unload_transport_ship_knight_2_serialtrue_no_overlap 0 pairs [(752.0, 525.0), (782.0, 525.0)]
+POC_PASS unload_transport_ship_knight_4_serialtrue_setup 4 boarded
+POC_PASS unload_transport_ship_knight_4_serialtrue_exits 
+POC_PASS unload_transport_ship_knight_4_serialtrue_no_overlap 0 pairs [(752.0, 525.0), (782.0, 525.0), (752.0, 555.0), (752.0, 495.0)]
+POC_PASS unload_transport_ship_knight_8_serialtrue_setup 8 boarded
+POC_PASS unload_transport_ship_knight_8_serialtrue_exits 
+POC_PASS unload_transport_ship_knight_8_serialtrue_no_overlap 0 pairs [(752.0, 525.0), (782.0, 525.0), (752.0, 555.0), (752.0, 495.0), (722.0, 525.0), (783.8198, 556.8198), (783.8198, 493.1802), (720.1802, 556.8198)]
+POC_PASS boarding_battering_ram_sealedfalse_route_control 
+POC_PASS boarding_battering_ram_sealedfalse_respects_barrier boarded=true pos=(900.0, 650.0)
+POC_PASS boarding_battering_ram_wall0_placeable 
+POC_PASS boarding_battering_ram_wall1_placeable 
+POC_PASS boarding_battering_ram_wall2_placeable 
+POC_PASS boarding_battering_ram_wall3_placeable 
+POC_PASS boarding_battering_ram_sealedtrue_route_control 
+POC_PASS boarding_battering_ram_sealedtrue_respects_barrier boarded=false pos=(900.0, 575.0)
+POC_PASS boarding_siege_tower_sealedfalse_route_control 
+POC_PASS boarding_siege_tower_sealedfalse_respects_barrier boarded=true pos=(900.0, 650.0)
+POC_PASS boarding_siege_tower_wall0_placeable 
+POC_PASS boarding_siege_tower_wall1_placeable 
+POC_PASS boarding_siege_tower_wall2_placeable 
+POC_PASS boarding_siege_tower_wall3_placeable 
+POC_PASS boarding_siege_tower_sealedtrue_route_control 
+POC_PASS boarding_siege_tower_sealedtrue_respects_barrier boarded=false pos=(900.0, 575.0)
+POC_PASS retreat_mangonel_obstructedfalse_witness 
+POC_PASS retreat_mangonel_obstructedfalse_can_fire minimum=102.0 pos=(852.0, 600.0) goal=(843.0, 600.0)
+POC_PASS retreat_mangonel_obstructedtrue_witness 
+POC_PASS retreat_mangonel_obstructedtrue_can_fire minimum=102.0 pos=(879.5028, 530.9795) goal=(875.804, 520.804)
+POC_PASS retreat_trebuchet_obstructedfalse_witness 
+POC_PASS retreat_trebuchet_obstructedfalse_can_fire minimum=94.5 pos=(860.3203, 600.0) goal=(850.5, 600.0)
+POC_PASS retreat_trebuchet_obstructedtrue_witness 
+POC_PASS retreat_trebuchet_obstructedtrue_can_fire minimum=94.5 pos=(883.7272, 537.6073) goal=(881.1074, 526.1074)
+POC_PASS retreat_bombard_obstructedfalse_witness 
+POC_PASS retreat_bombard_obstructedfalse_can_fire minimum=77.0 pos=(877.0001, 600.0) goal=(868.0, 600.0)
+POC_PASS retreat_bombard_obstructedtrue_witness 
+POC_PASS retreat_bombard_obstructedtrue_can_fire minimum=77.0 pos=(924.0014, 527.9958) goal=(893.4817, 538.4817)
+POC_PASS landing_variant0_setup 
+POC_PASS landing_variant0_boat_start_valid 
+POC_PASS landing_variant0_pair_exists 
+POC_PASS landing_variant0_land_is_free { "land": (775.0, 525.0), "water": (825.0, 525.0) }
+POC_PASS landing_variant0_finishes_safely (752.0, 525.0)
+POC_PASS landing_variant1_setup 
+POC_PASS landing_variant1_boat_start_valid 
+POC_PASS landing_variant1_pair_exists 
+POC_PASS landing_variant1_land_is_free { "land": (775.0, 525.0), "water": (825.0, 525.0) }
+POC_PASS landing_variant1_finishes_safely (776.0, 525.0)
+POC_PASS landing_variant2_setup 
+POC_PASS landing_variant2_boat_start_valid 
+POC_PASS landing_variant2_pair_exists 
+POC_PASS landing_variant2_land_is_free { "land": (775.0, 575.0), "water": (825.0, 575.0) }
+POC_PASS landing_variant2_finishes_safely (752.0, 575.0)
+POC_PASS landing_route_spacing80_boarded 
+POC_PASS landing_route_spacing80_pair_exists 
+POC_PASS landing_route_spacing80_water_reachable pair={ "land": (375.0, 525.0), "water": (425.0, 525.0) } points=1
+POC_PASS landing_route_spacing80_fallback_witness 
+POC_PASS landing_route_spacing80_unloads order=idle pos=(425.0, 525.0)
+POC_PASS landing_route_spacing100_boarded 
+POC_PASS landing_route_spacing100_pair_exists 
+POC_PASS landing_route_spacing100_water_reachable pair={ "land": (1025.0, 525.0), "water": (975.0, 525.0) } points=3
+POC_PASS landing_route_spacing100_fallback_witness 
+POC_PASS landing_route_spacing100_unloads order=idle pos=(960.3394, 522.0679)
+POC_PASS landing_route_spacing125_boarded 
+POC_PASS landing_route_spacing125_pair_exists 
+POC_PASS landing_route_spacing125_water_reachable pair={ "land": (1025.0, 525.0), "water": (975.0, 525.0) } points=3
+POC_PASS landing_route_spacing125_fallback_witness 
+POC_PASS landing_route_spacing125_unloads order=idle pos=(960.3394, 522.0679)
+POC_PASS spawn_villager_2_no_overlap 0 pairs [(800.0, 600.0), (824.0, 600.0)]
+POC_PASS spawn_villager_4_no_overlap 0 pairs [(800.0, 600.0), (824.0, 600.0), (809.1844, 622.1731), (809.1844, 577.8269)]
+POC_PASS spawn_villager_8_no_overlap 0 pairs [(800.0, 600.0), (824.0, 600.0), (809.1844, 622.1731), (809.1844, 577.8269), (783.0294, 616.9706), (783.0294, 583.0294), (764.0, 600.0), (848.0, 600.0)]
+POC_PASS spawn_knight_2_no_overlap 0 pairs [(800.0, 600.0), (830.0, 600.0)]
+POC_PASS spawn_knight_4_no_overlap 0 pairs [(800.0, 600.0), (830.0, 600.0), (800.0, 630.0), (800.0, 570.0)]
+POC_PASS spawn_knight_8_no_overlap 0 pairs [(800.0, 600.0), (830.0, 600.0), (800.0, 630.0), (800.0, 570.0), (770.0, 600.0), (831.8198, 631.8198), (831.8198, 568.1802), (768.1802, 631.8198)]
+POC_PASS spawn_battering_ram_2_no_overlap 0 pairs [(800.0, 600.0), (836.0, 600.0)]
+POC_PASS spawn_battering_ram_4_no_overlap 0 pairs [(800.0, 600.0), (836.0, 600.0), (800.0, 636.0), (800.0, 564.0)]
+POC_PASS spawn_battering_ram_8_no_overlap 0 pairs [(800.0, 600.0), (836.0, 600.0), (800.0, 636.0), (800.0, 564.0), (764.0, 600.0), (838.1838, 638.1838), (838.1838, 561.8162), (761.8162, 638.1838)]
+POC_PASS production_spearman_setup 8 trained
+POC_PASS production_spearman_no_overlap 0 pairs [(983.0, 613.5185), (983.0, 642.4655), (1007.0, 602.7383), (1007.0, 628.6501), (1016.26, 655.404), (983.0, 581.0461), (1031.0, 609.317), (1038.433, 641.139)]
+POC_PASS production_knight_setup 8 trained
+POC_PASS production_knight_no_overlap 0 pairs [(983.0, 613.5185), (998.0, 642.4655), (1013.0, 602.7383), (983.0, 673.6501), (1028.0, 641.6274), (1000.221, 575.4716), (1043.0, 609.317), (1036.033, 671.2111)]
+POC_PASS target_spearman_visible_attack_control 
+POC_PASS target_spearman_deleted_not_attacked_after_transition 
+POC_PASS target_spearman_deleted_queue_resumes order=idle queue=0 pos=(601.6129, 403.2257)
+POC_PASS target_spearman_garrisoned_setup 
+POC_PASS target_spearman_garrisoned_not_attacked_after_transition 
+POC_PASS target_spearman_garrisoned_queue_resumes order=idle queue=0 pos=(601.6129, 403.2257)
+POC_PASS target_spearman_embarked_setup 
+POC_PASS target_spearman_embarked_not_attacked_after_transition 
+POC_PASS target_spearman_embarked_queue_resumes order=idle queue=0 pos=(601.6129, 403.2257)
+POC_PASS target_spearman_converted_setup 
+POC_PASS target_spearman_converted_not_attacked_after_transition 
+POC_PASS target_spearman_converted_queue_resumes order=idle queue=0 pos=(601.6129, 403.2257)
+POC_PASS target_archer_visible_attack_control 
+POC_PASS target_archer_deleted_not_attacked_after_transition 
+POC_PASS target_archer_deleted_queue_resumes order=idle queue=0 pos=(601.6129, 403.2257)
+POC_PASS target_archer_garrisoned_setup 
+POC_PASS target_archer_garrisoned_not_attacked_after_transition 
+POC_PASS target_archer_garrisoned_queue_resumes order=idle queue=0 pos=(601.6129, 403.2257)
+POC_PASS target_archer_embarked_setup 
+POC_PASS target_archer_embarked_not_attacked_after_transition 
+POC_PASS target_archer_embarked_queue_resumes order=idle queue=0 pos=(601.6129, 403.2257)
+POC_PASS target_archer_converted_setup 
+POC_PASS target_archer_converted_not_attacked_after_transition 
+POC_PASS target_archer_converted_queue_resumes order=idle queue=0 pos=(601.6129, 403.2257)
+NAVIGATION_STATE_POC checks=230 failures=1

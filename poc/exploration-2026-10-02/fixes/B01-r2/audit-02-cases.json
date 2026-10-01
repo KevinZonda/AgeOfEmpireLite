@@ -1,0 +1,75 @@
+[
+	{
+		"evidence": {
+			"distance": 20.0,
+			"min_range": 82.5,
+			"range": 480.0,
+			"shots": 1
+		},
+		"id": "ground_min_range",
+		"status": "bug"
+	},
+	{
+		"evidence": {
+			"activated": true,
+			"cooldown": 0.0,
+			"ready_after_shot": true,
+			"shots": 1
+		},
+		"id": "ground_artillery_ability",
+		"status": "bug"
+	},
+	{
+		"evidence": {
+			"cap": 10,
+			"unit_count_after": 13,
+			"unit_count_before": 12,
+			"used": 14
+		},
+		"id": "population_house_loss",
+		"status": "observation"
+	},
+	{
+		"evidence": {
+			"original_worker": "gather",
+			"trained_order": "idle"
+		},
+		"id": "rally_full_farm",
+		"status": "bug"
+	},
+	{
+		"evidence": {
+			"queue_size": 0,
+			"units_after": 12,
+			"units_before": 12
+		},
+		"id": "rally_dead_fish",
+		"status": "bug"
+	},
+	{
+		"evidence": {
+			"builders": 0,
+			"placed": true,
+			"wood_spent": 80
+		},
+		"id": "garrison_builders",
+		"status": "observation"
+	},
+	{
+		"evidence": {
+			"first": "gather",
+			"second": "idle"
+		},
+		"id": "farm_exclusive",
+		"status": "pass"
+	},
+	{
+		"evidence": {
+			"after": 10000,
+			"before": 10000,
+			"double_cancel": false
+		},
+		"id": "cancel_refund",
+		"status": "pass"
+	}
+]

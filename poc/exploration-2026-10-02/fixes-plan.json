@@ -1,0 +1,234 @@
+[
+  {
+    "id": "B01",
+    "patches": [
+      "93531de"
+    ],
+    "cases": [
+      "trade_reissue"
+    ],
+    "test": "tests/exploration_b01_trade_reissue.gd",
+    "title": "Prevent repeated trade income"
+  },
+  {
+    "id": "B02",
+    "patches": [
+      "3c8f612"
+    ],
+    "cases": [
+      "rally_dead_fish",
+      "rally_dead_tree",
+      "rally_dead_farm"
+    ],
+    "test": "tests/exploration_b02_stale_rally.gd",
+    "title": "Preserve training with expired rally targets"
+  },
+  {
+    "id": "B03",
+    "patches": [
+      "3203d895"
+    ],
+    "cases": [
+      "sacred_eliminated_wins"
+    ],
+    "test": "tests/exploration_b03_objective_defeat.gd",
+    "title": "Prevent eliminated teams winning objectives"
+  },
+  {
+    "id": "B04",
+    "patches": [
+      "baa7f51"
+    ],
+    "cases": [
+      "construction_damage",
+      "construction_zero",
+      "construction_repair",
+      "construction_completion_damage",
+      "construction_real_worker"
+    ],
+    "test": "tests/exploration_b04_construction_health.gd",
+    "title": "Preserve construction damage and repairs"
+  },
+  {
+    "id": "B05",
+    "patches": [
+      "0306e22",
+      "06caa6b"
+    ],
+    "cases": [
+      "trade_return_market"
+    ],
+    "test": "tests/exploration_b05_trade_return.gd",
+    "title": "Reach market settlement without overlapping trade zones"
+  },
+  {
+    "id": "B06",
+    "patches": [
+      "0269639",
+      "41b955d"
+    ],
+    "cases": [
+      "supervise_town_center",
+      "supervise_barracks"
+    ],
+    "test": "tests/exploration_b06_supervision.gd",
+    "title": "Use reachable supervision distance for players and AI"
+  },
+  {
+    "id": "B07",
+    "patches": [
+      "af903bb"
+    ],
+    "cases": [
+      "hidden_attack_tracking"
+    ],
+    "test": "tests/exploration_b07_fog_attack.gd",
+    "title": "Stop tracking hidden mobile attack targets"
+  },
+  {
+    "id": "B08",
+    "patches": [
+      "c3f31ce",
+      "5a72701"
+    ],
+    "cases": [
+      "selection_after_garrison"
+    ],
+    "test": "tests/exploration_b08_garrison_build.gd",
+    "title": "Exclude garrisoned villagers from selection and construction"
+  },
+  {
+    "id": "B09",
+    "patches": [
+      "56fea01"
+    ],
+    "cases": [
+      "queued_farm_frees_later",
+      "queued_farm_alternative"
+    ],
+    "test": "tests/exploration_b09_queued_farms.gd",
+    "title": "Assign queued farms at activation"
+  },
+  {
+    "id": "B10",
+    "patches": [
+      "09d3901"
+    ],
+    "cases": [
+      "rally_full_farm"
+    ],
+    "test": "tests/exploration_b10_busy_farm_rally.gd",
+    "title": "Move recruits when farm gathering cannot be assigned"
+  },
+  {
+    "id": "B11",
+    "patches": [
+      "e7d9597"
+    ],
+    "cases": [
+      "conversion_projectile"
+    ],
+    "test": "tests/exploration_b11_projectile_diplomacy.gd",
+    "title": "Recheck projectile impact diplomacy"
+  },
+  {
+    "id": "B12",
+    "patches": [
+      "be18281"
+    ],
+    "cases": [
+      "conversion_trader"
+    ],
+    "test": "tests/exploration_b12_converted_trader.gd",
+    "title": "Use owned markets after trader conversion"
+  },
+  {
+    "id": "B13",
+    "patches": [
+      "067bd72"
+    ],
+    "cases": [
+      "ground_min_range"
+    ],
+    "test": "tests/exploration_b13_ground_min_range.gd",
+    "title": "Respect minimum range in ground attacks"
+  },
+  {
+    "id": "B14",
+    "patches": [
+      "9709f9d"
+    ],
+    "cases": [
+      "ground_artillery_ability"
+    ],
+    "test": "tests/exploration_b14_ground_artillery.gd",
+    "title": "Consume artillery abilities when firing at ground"
+  },
+  {
+    "id": "B15",
+    "patches": [
+      "a264390"
+    ],
+    "cases": [
+      "conversion_selection"
+    ],
+    "test": "tests/exploration_b15_conversion_hud.gd",
+    "title": "Refresh entities and selection after conversion"
+  },
+  {
+    "id": "B16",
+    "patches": [
+      "ff9a3cc4"
+    ],
+    "cases": [
+      "allied_forest_visibility",
+      "allied_scout_detection"
+    ],
+    "test": "tests/exploration_b16_team_detection.gd",
+    "title": "Share forest detection between teammates"
+  },
+  {
+    "id": "B17",
+    "patches": [
+      "25cc1afb"
+    ],
+    "cases": [
+      "monk_heal_teammate"
+    ],
+    "test": "tests/exploration_b17_team_healing.gd",
+    "title": "Heal injured teammates"
+  },
+  {
+    "id": "B18",
+    "patches": [
+      "48a1d628"
+    ],
+    "cases": [
+      "french_keep_influence_snap"
+    ],
+    "test": "tests/exploration_b18_french_keep_grid.gd",
+    "title": "Place French keeps within actual snapped influence"
+  },
+  {
+    "id": "B19",
+    "patches": [
+      "0e24246"
+    ],
+    "cases": [],
+    "test": "tests/exploration_b19_dirty_collision_radius.gd",
+    "title": "Refresh collision radii before calculating spatial queries"
+  },
+  {
+    "id": "B20",
+    "patches": [
+      "83d468be"
+    ],
+    "cases": [],
+    "test": "tests/visual_state.gd",
+    "tests": [
+      "tests/visual_state.gd",
+      "tests/unit_snapshot_rendering.gd"
+    ],
+    "title": "Keep persistent unit snapshots independent from mutable tags"
+  }
+]

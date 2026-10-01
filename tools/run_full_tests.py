@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-"""Run every executable tests/*.gd and every audit PoC without hiding failures.
+"""Run the discovered regression suite and every audit PoC without hiding failures.
 
+The default all profile runs every executable tests/*.gd and tests/*.js;
+regression explicitly defers only the four-seed balance experiment.
 Each invocation creates its own output directory. Exit 1 means a regression,
 timeout, runtime error, incomplete exploration, or an unresolved audit bug.
 Observations in the original audit are recorded but are not failures.
@@ -8,6 +10,7 @@ Observations in the original audit are recorded but are not failures.
 import argparse
 import concurrent.futures
 import datetime
+import fcntl
 import hashlib
 import json
 import os
@@ -25,6 +28,29 @@ ROOT = Path(__file__).resolve().parents[1]
 AUDIT = ROOT / "poc/exploration-2026-10-02/explore.gd"
 PRINT_LOCK = threading.Lock()
 NODE = "node"
+CANCELLED = threading.Event()
+
+
+def request_cancel(_signum, _frame):
+    # A handler only requests shutdown. Worker threads own and reap their
+    # process groups, and the main thread still writes a complete partial index.
+    CANCELLED.set()
+
+
+def publish(record, output):
+    with PRINT_LOCK:
+        if record["status"] != "cancelled" or record["seconds"]:
+            print(f"{record['status'].upper():16} {record['name']} ({record['seconds']:.1f}s)", flush=True)
+        with (output / "progress.jsonl").open("a") as stream:
+            stream.write(json.dumps(record, ensure_ascii=False) + "\n")
+    return record
+
+
+def cancelled_record(script, name, timeout, rendering):
+    return {"name": name, "script": str(script.relative_to(ROOT)), "status": "cancelled",
+            "rendering": rendering, "exit_code": None, "seconds": 0,
+            "timeout_seconds": timeout, "terminated_early": False, "first_error": None,
+            "command": [], "log": None, "cases": [], "started": False}
 
 
 def scene_tree_script(path, visited=None):
@@ -77,11 +103,43 @@ def isolated_project(path, output, name):
 
 
 def snapshot():
-    paths = [ROOT / "project.godot"]
-    for directory in ("scripts", "tests", "data"):
-        paths += sorted(p for p in (ROOT / directory).rglob("*") if p.is_file() and p.suffix != ".uid")
+    paths = [ROOT / "project.godot", ROOT / "tools/web_shell.html"]
+    for directory in ("scripts", "tests", "data", "scenes", "assets"):
+        paths += sorted(p for p in (ROOT / directory).rglob("*") if p.is_file() and p.suffix not in (".uid", ".import"))
     paths.append(AUDIT)
     return {str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
+
+
+def failure_signatures(contents):
+    """Stable diagnostic identities; assertion evidence and traces are omitted."""
+    signatures = set()
+    contents = re.sub(r"\x1b\[[0-9;]*m", "", contents)
+    for raw in contents.splitlines():
+        line = raw.strip()
+        marker = re.match(r"^POC_FAIL\s+([\w:./-]+)", line)
+        if marker:
+            signatures.add("POC_FAIL " + marker.group(1))
+        elif line.startswith(("SCRIPT ERROR:", "ERROR:")):
+            # Source line numbers shift when code is repaired. Keep the error
+            # itself, but never treat trace locations or changing float values
+            # in diagnostic evidence as a new failure.
+            line = re.sub(r"(?<=\.gd):\d+(?::\d+)?", ":<line>", line)
+            line = re.sub(r"(?<![\w.])[-+]?(?:\d+\.\d+(?:[eE][-+]?\d+)?|\d+[eE][-+]?\d+)(?![\w.])", "<float>", line)
+            signatures.add(line)
+    return sorted(signatures)
+
+
+def previous_failure_signatures(record, previous_file):
+    if "failure_signatures" in record:
+        return set(record["failure_signatures"])
+    log = record.get("log")
+    if log:
+        path = Path(log)
+        if not path.is_absolute():
+            path = previous_file.parent / path
+        if path.exists():
+            return set(failure_signatures(path.read_text(errors="replace")))
+    return set()
 
 
 def stop_process(process):
@@ -98,8 +156,28 @@ def stop_process(process):
 
 
 def execute(engine, script, name, output, timeout, case_ids=None, rendering=False):
+    if not rendering:
+        return execute_unlocked(engine, script, name, output, timeout, case_ids, rendering)
+    # Different cumulative worktrees can validate concurrently, while native
+    # windows and frame benchmarks share one renderer admission lock.
+    lock_path = Path(tempfile.gettempdir()) / "ageofempirelite-native-regression.lock"
+    with lock_path.open("a") as lock:
+        while True:
+            if CANCELLED.is_set():
+                return publish(cancelled_record(script, name, timeout, rendering), output)
+            try:
+                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                break
+            except BlockingIOError:
+                time.sleep(0.1)
+        return execute_unlocked(engine, script, name, output, timeout, case_ids, rendering)
+
+
+def execute_unlocked(engine, script, name, output, timeout, case_ids=None, rendering=False):
     if script.suffix == ".js":
         name += "-js"
+    if CANCELLED.is_set():
+        return publish(cancelled_record(script, name, timeout, rendering), output)
     temporary = tempfile.TemporaryDirectory(prefix="ageofempirelite-test-")
     project = Path(temporary.name)
     user_dir = isolated_project(project, output, name)
@@ -115,6 +193,11 @@ def execute(engine, script, name, output, timeout, case_ids=None, rendering=Fals
     artifact = output / "images" / ("farm.png" if script.stem == "farm_rendering" else name)
     artifact.parent.mkdir(exist_ok=True)
     env["RTS_RENDER_OUTPUT"] = str(artifact)
+    if script.stem == "balance_multiseed":
+        # This is the complete default suite, independent of shorter benchmark
+        # flags inherited from the invoking shell. Trace shows progress during
+        # these long runs without changing the simulated duration or scenario.
+        env.update(RTS_BALANCE_SEEDS="17,431,9021,4242", RTS_BALANCE_SECONDS="480", RTS_BALANCE_MATRIX="0", RTS_BALANCE_TRACE="1")
     if script.stem == "relic_rendering":
         command += ["--", str(artifact)]
     log_path = output / "logs" / f"{name}.log"
@@ -122,10 +205,17 @@ def execute(engine, script, name, output, timeout, case_ids=None, rendering=Fals
     halted = None
     error_line = None
     with log_path.open("wb") as log:
+        if CANCELLED.is_set():
+            temporary.cleanup()
+            return publish(cancelled_record(script, name, timeout, rendering), output)
         process = subprocess.Popen(command, cwd=ROOT, stdout=log, stderr=subprocess.STDOUT, env=env, start_new_session=True)
         consumed = 0
         tail = ""
         while process.poll() is None:
+            if CANCELLED.is_set():
+                halted = "cancelled"
+                stop_process(process)
+                break
             if time.monotonic() - started >= timeout:
                 halted = "timeout"
                 stop_process(process)
@@ -170,7 +260,10 @@ def execute(engine, script, name, output, timeout, case_ids=None, rendering=Fals
     else:
         bad_output = "SCRIPT ERROR:" in contents or "POC_FAIL" in contents or bool(re.search(r"^ERROR:|\bchecks=\d+\s+failures=[1-9]\d*", contents, re.M))
         status = "passed" if process.returncode == 0 and not bad_output else "failed"
-    if re.search(r"\b(?:SKIP|SKIPPED)\b", contents):
+    balance_seeds = re.findall(r"^BALANCE seed=(\d+)\b", contents, re.M) if script.stem == "balance_multiseed" else None
+    if balance_seeds is not None and status == "passed" and sorted(balance_seeds) != sorted(["17", "431", "9021", "4242"]):
+        status = "failed"
+    if status == "passed" and re.search(r"\b(?:SKIP|SKIPPED)\b", contents):
         status = "skipped"
     if user_dir.exists():
         saved = output / "userdata" / name
@@ -181,14 +274,16 @@ def execute(engine, script, name, output, timeout, case_ids=None, rendering=Fals
         shutil.copytree(project / "tmp", output / "images" / f"{name}-tmp")
     temporary.cleanup()
     record = {"name": name, "script": str(script.relative_to(ROOT)), "status": status,
+              "failure_signatures": failure_signatures(contents),
+              "started": True,
               "rendering": rendering, "isolated_user_dir": str(user_dir),
               "exit_code": process.returncode, "seconds": round(time.monotonic() - started, 3),
               "timeout_seconds": timeout, "terminated_early": halted == "failed", "first_error": error_line,
               "command": command, "log": str(log_path.relative_to(output)), "cases": cases}
-    with PRINT_LOCK:
-        print(f"{status.upper():16} {name} ({record['seconds']:.1f}s)", flush=True)
-        (output / "progress.jsonl").open("a").write(json.dumps(record, ensure_ascii=False) + "\n")
-    return record
+    if balance_seeds is not None:
+        record["balance_seeds_executed"] = balance_seeds
+        record["balance_seconds_per_seed"] = 480
+    return publish(record, output)
 
 
 def main():
@@ -200,15 +295,21 @@ def main():
     parser.add_argument("--engine", default=os.environ.get("GODOT"))
     parser.add_argument("--node", default=os.environ.get("NODE"), help="Node executable; automatically probes PATH and /usr/local/bin/node")
     parser.add_argument("--compare", type=Path, help="Previous results.json (or its directory); report new failures without masking current failures")
+    parser.add_argument("--profile", choices=("all", "regression"), default="all", help="all includes the complete four-seed balance experiment; regression explicitly defers only that benchmark")
     parser.add_argument("--list", action="store_true", help="Print discovered scripts/cases without running")
     args = parser.parse_args()
     if args.jobs < 1 or args.timeout <= 0:
         parser.error("--jobs and --timeout must be positive")
-    scripts = discover() + sorted((ROOT / "tests").glob("*.js"))
+    full_scripts = discover() + sorted((ROOT / "tests").glob("*.js"))
+    deferred = ["tests/balance_multiseed.gd"] if args.profile == "regression" else []
+    scripts = [path for path in full_scripts if str(path.relative_to(ROOT)) not in deferred]
     cases = audit_cases()
     if args.list:
-        print(json.dumps({"scripts": [str(p.relative_to(ROOT)) for p in scripts], "rendering_scripts": [str(p.relative_to(ROOT)) for p in scripts if p.suffix == ".gd" and needs_renderer(p)], "audit_cases": cases}, indent=2))
+        print(json.dumps({"profile": args.profile, "deferred_benchmarks": deferred, "scripts": [str(p.relative_to(ROOT)) for p in scripts], "rendering_scripts": [str(p.relative_to(ROOT)) for p in scripts if p.suffix == ".gd" and needs_renderer(p)], "audit_cases": cases}, indent=2))
         return 0
+    CANCELLED.clear()
+    signal.signal(signal.SIGINT, request_cancel)
+    signal.signal(signal.SIGTERM, request_cancel)
     engine = args.engine or (str(ROOT / f"docs/godot/bin/godot.macos.template_debug.{platform.machine()}") if platform.system() == "Darwin" else "godot")
     candidates = [args.node] if args.node else list(dict.fromkeys([shutil.which("node"), "/usr/local/bin/node", "node"]))
     for candidate in candidates:
@@ -232,11 +333,13 @@ def main():
     started = time.monotonic()
     revision = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
     metadata = {"revision": revision, "engine": engine, "engine_version": subprocess.check_output([engine, "--version"], text=True).strip(),
+                "runner_pid": os.getpid(),
+                "profile": args.profile, "deferred_benchmarks": deferred,
                 "node": NODE, "node_version": subprocess.check_output([NODE, "--version"], text=True).strip(),
                 "started_at": datetime.datetime.now().astimezone().isoformat(), "jobs": args.jobs,
-                "timeout_seconds": args.timeout, "regression_count": len(scripts), "audit_count": len(cases), "source_before": before}
+                "timeout_seconds": args.timeout, "discovered_full_script_count": len(full_scripts), "regression_count": len(scripts), "audit_count": len(cases), "source_before": before}
     (output / "environment.json").write_text(json.dumps(metadata, indent=2))
-    print(f"Running {len(scripts)} regression scripts and {len(cases)} audit cases; evidence: {output}", flush=True)
+    print(f"Profile {args.profile}: running {len(scripts)} regression scripts and {len(cases)} audit cases; deferred benchmarks: {deferred}; evidence: {output}", flush=True)
     windowed = [path for path in scripts if path.suffix == ".gd" and needs_renderer(path)]
     headless = [path for path in scripts if path not in windowed]
     with concurrent.futures.ThreadPoolExecutor(max_workers=args.jobs) as pool:
@@ -252,12 +355,24 @@ def main():
     after = snapshot()
     changed = sorted(path for path in before.keys() | after.keys() if before.get(path) != after.get(path))
     flat_cases = [case for result in exploration for case in result["cases"]]
-    statuses = ("passed", "failed", "timeout", "unresolved_bugs", "skipped")
+    statuses = ("passed", "failed", "timeout", "unresolved_bugs", "skipped", "cancelled")
     summary = {"revision": revision, "seconds": round(time.monotonic() - started, 3),
+               "profile": args.profile, "deferred_benchmarks": deferred,
                "regression": {status: sum(r["status"] == status for r in regression) for status in statuses},
                "audit": {status: sum(c["status"] == status for c in flat_cases) for status in ("pass", "bug", "observation")},
                "expected_audit_cases": len(cases), "executed_audit_cases": len(flat_cases), "changed_sources_during_run": changed}
-    passed = not changed and all(r["status"] == "passed" for r in regression + exploration) and len(flat_cases) == len(cases)
+    summary["cancelled"] = CANCELLED.is_set()
+    expected_scripts = {str(path.relative_to(ROOT)) for path in scripts}
+    actual_scripts = {r["script"] for r in regression}
+    complete_script_inventory = actual_scripts == expected_scripts and len(regression) == len(scripts)
+    complete_case_inventory = {c["id"] for c in flat_cases} == set(cases) and len(flat_cases) == len(cases)
+    summary["expected_regression_scripts"] = len(scripts)
+    summary["executed_regression_scripts"] = sum(r.get("started", False) for r in regression)
+    complete_regression = not any(r["status"] in ("timeout", "cancelled", "skipped") for r in regression)
+    complete_balance = all(len(r.get("balance_seeds_executed", [])) == 4 for r in regression if r["script"] == "tests/balance_multiseed.gd")
+    summary["complete"] = not CANCELLED.is_set() and complete_script_inventory and complete_case_inventory and complete_regression and complete_balance
+    summary["complete_all"] = summary["complete"] and not deferred
+    passed = not CANCELLED.is_set() and not changed and all(r["status"] == "passed" for r in regression + exploration) and len(flat_cases) == len(cases)
     summary["passed"] = passed
     if args.compare:
         previous_file = args.compare / "results.json" if args.compare.is_dir() else args.compare
@@ -265,23 +380,34 @@ def main():
         old_tests = {r["script"]: r for r in previous["regression"]}
         old_cases = {c["id"]: c for r in previous["exploration"] for c in r["cases"]}
         newly_failed = [r["script"] for r in regression if r["status"] != "passed" and (r["script"] not in old_tests or old_tests[r["script"]]["status"] == "passed")]
+        new_failure_diagnostics = {}
+        for current in regression:
+            old = old_tests.get(current["script"])
+            if current["status"] == "failed" and old and old["status"] == "failed":
+                added = set(current["failure_signatures"]) - previous_failure_signatures(old, previous_file)
+                if added:
+                    new_failure_diagnostics[current["script"]] = sorted(added)
         regressed_cases = [c["id"] for c in flat_cases if c["status"] == "bug" and old_cases.get(c["id"], {}).get("status") == "pass"]
         fixed_cases = [c["id"] for c in flat_cases if c["status"] == "pass" and old_cases.get(c["id"], {}).get("status") == "bug"]
-        missing_tests = sorted(set(old_tests) - {r["script"] for r in regression})
+        missing_tests = sorted(set(old_tests) - {r["script"] for r in regression} - set(deferred))
         missing_cases = sorted(set(old_cases) - {c["id"] for c in flat_cases})
         exploration_failures = [r["name"] for r in exploration if r["status"] not in ("passed", "unresolved_bugs")]
+        incomplete_scripts = [r["script"] for r in regression if r["status"] in ("timeout", "cancelled", "skipped")]
         comparison = {"previous": str(previous_file), "new_regression_failures": newly_failed,
+                      "new_failure_diagnostics": new_failure_diagnostics,
                       "regressed_audit_cases": regressed_cases, "fixed_audit_cases": fixed_cases,
                       "missing_scripts": missing_tests, "missing_cases": missing_cases,
+                      "profile": args.profile, "deferred_benchmarks": deferred,
                       "exploration_execution_failures": exploration_failures,
-                      "no_new_failures": not (changed or newly_failed or regressed_cases or missing_tests or missing_cases or exploration_failures)}
+                      "incomplete_scripts": incomplete_scripts,
+                      "no_new_failures": summary["complete"] and not (changed or newly_failed or new_failure_diagnostics or regressed_cases or missing_tests or missing_cases or exploration_failures or incomplete_scripts)}
         summary["comparison"] = comparison
         (output / "comparison.json").write_text(json.dumps(comparison, indent=2, ensure_ascii=False))
     result = {"summary": summary, "regression": regression, "exploration": exploration, "source_after": after}
     (output / "results.json").write_text(json.dumps(result, indent=2, ensure_ascii=False))
     (output / "summary.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False))
     print(json.dumps(summary, ensure_ascii=False), flush=True)
-    return 0 if passed else 1
+    return 130 if CANCELLED.is_set() else 0 if passed else 1
 
 
 if __name__ == "__main__":

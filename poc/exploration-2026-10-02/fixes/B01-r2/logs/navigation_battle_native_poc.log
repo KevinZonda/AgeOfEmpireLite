@@ -1,0 +1,20 @@
+Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
+
+POC_PASS native_search_returns_safe_detour 
+POC_PASS native_search_returns_safe_detour 
+POC_PASS native_search_returns_safe_detour 
+POC_PASS native_search_returns_safe_detour 
+POC_PASS native_search_returns_safe_detour 
+POC_PASS native_search_returns_safe_detour 
+POC_PASS native_search_returns_safe_detour 
+POC_PASS native_search_returns_safe_detour 
+POC_PASS native_search_returns_safe_detour 
+POC_PASS native_search_returns_safe_detour 
+NATIVE_POC requests=10 elapsed_ms=50.504 flood_cells=0
+POC_PASS reachable_exit_does_not_need_script_flood 
+POC_PASS shared_recovery_preserves_astar_override 
+POC_PASS profiled_recovery_returns_route 
+POC_PASS shared_recovery_preserves_profiling 
+POC_PASS sealed_mover_cannot_cross_units 
+POC_PASS failed_probe_filters_small_connected_pocket 
+NAVIGATION_BATTLE_NATIVE_POC checks=16 failures=0

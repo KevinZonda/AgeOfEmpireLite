@@ -1,0 +1,18 @@
+{
+  "previous": "/Users/kevin/Desktop/AgeOfEmpireLite/poc/exploration-2026-10-02/fixes/baseline/results.json",
+  "new_regression_failures": [],
+  "new_failure_diagnostics": {},
+  "regressed_audit_cases": [],
+  "fixed_audit_cases": [
+    "trade_reissue"
+  ],
+  "missing_scripts": [],
+  "missing_cases": [],
+  "profile": "regression",
+  "deferred_benchmarks": [
+    "tests/balance_multiseed.gd"
+  ],
+  "exploration_execution_failures": [],
+  "incomplete_scripts": [],
+  "no_new_failures": true
+}
