@@ -155,6 +155,8 @@ Web 触控板连续双指滚动由 `scripts/player/web_gestures.js` 转换为平
 
 回归命令：`node tests/web_gestures.js` 和 `make run RUN_ARGS='--headless --script res://tests/web_gestures.gd'`。两项覆盖平移／捏合分流、横向与斜向平移、快速平移、高 DPI 坐标、普通滚轮、关闭捏合、暂停、覆盖页面和监听器释放。Chrome 的 Web 构建另用 DOM wheel 事件验证了回调接入及无重复缩放事件；此项为合成事件验证，未自动模拟物理触控板。
 
+本次另运行已有 `player_input_actions_regression.gd`，其第 159 行读取 `ShortcutBadge` 子控件时失败；在 Web 手势修复前的独立 checkout 中也能复现同一错误。该已有 HUD 测试失败未包含在上述两项通过结果中。
+
 2026-09-30 已完成源码模板编译与 release 导出，并在 Chrome 验证开始菜单、设置保存及刷新、1v1 对局、资源增长、图标与中文字体、2D／2.5D 切换和 1280×720 画布尺寸变化。浏览器确认 `crossOriginIsolated=true`，引擎报告多线程构建，最终运行日志无错误或警告。本机 `smoke.gd`、`settings_store.gd`、`display_settings.gd` 与 `player_input_actions_regression.gd` 均通过。此记录覆盖基本运行与平台适配，不代表大规模战斗性能基准。
 
 ## GitHub Actions 与 Pages
