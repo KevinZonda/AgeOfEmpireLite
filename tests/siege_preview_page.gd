@@ -35,8 +35,8 @@ func _run() -> void:
 						var projected: Vector2 = page.preview_unit.position + point * page.preview_unit.scale
 						assert(area.has_point(projected), "%s clipped at %s in projection %s: %s" % [kind, viewport_size, mode, projected])
 				cases += 1
-			# Existing humanoid and naval preview sizing stays unchanged.
-			for kind in ["spearman", "warship"]:
+			# Humanoids keep their fixed preview sizing; naval solids fit their bounds.
+			for kind in ["spearman"]:
 				page.selected_kind = kind
 				page._refresh_preview()
 				var view_size := Vector2(viewport_size)

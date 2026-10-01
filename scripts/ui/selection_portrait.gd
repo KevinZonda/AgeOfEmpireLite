@@ -17,6 +17,7 @@ var owner_tint := Color("8a9a8e")
 var figure_renderer := Figure.new()
 var siege_renderer := Siege.new()
 var fishing_renderer := Fishing.new()
+var naval_renderer := NavalVisual.new()
 var humanoid_state := UnitVisualState.new()
 var building_portrait_renderer := BuildingVisual.new()
 
@@ -140,11 +141,8 @@ func _draw_unit() -> void:
 	if unit.kind == "fishing_boat":
 		fishing_renderer.draw_portrait(self, unit.kind, owner_tint, Rect2(Vector2(17, 20), size - Vector2(34, 40)))
 		return
-	draw_colored_polygon(PackedVector2Array([center + Vector2(-32, 39), center + Vector2(-23, 33), center + Vector2(23, 33), center + Vector2(32, 39), center + Vector2(23, 45), center + Vector2(-23, 45)]), Color("1c2524", 0.65))
 	if naval:
-		draw_set_transform_matrix(Transform2D(Vector2(1.5, 0), Vector2(0, 1.5), center + Vector2(0, 21)))
-		NavalVisual.draw_25d(self, unit.kind, float(unit.stats.get("radius", 18.0)), owner_tint, unit.passengers.size())
-		draw_set_transform_matrix(Transform2D.IDENTITY)
+		naval_renderer.draw_portrait(self, unit.kind, owner_tint, Rect2(Vector2(17, 20), size - Vector2(34, 40)), unit.passengers.size())
 
 func _draw_figure_portrait(unit: RtsUnit, center: Vector2) -> void:
 	# Stable three-quarter pose with the same proportions and equipment as the map.

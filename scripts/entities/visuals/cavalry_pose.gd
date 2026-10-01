@@ -44,7 +44,7 @@ func update(state) -> void:
 	if state.charge_impact and state.visual_action == "attack": lean_amount = maxf(lean_amount, 3.2 * (1.0 - state.action_progress))
 	var lean := aim * lean_amount
 	chest = saddle + Vector2(-aim.x * bob * 0.45, -13.0 - bob * 0.45) + lean
-	head = chest + Vector2(direction.x, -10.0)
+	head = chest + Vector2(direction.x, -8.0)
 	var rider_width := lerpf(5.5, 3.8, profile)
 	var rider_across := Vector2(rider_width * (-1.0 if direction.x < -0.1 else 1.0), direction.x * 1.2)
 	near_shoulder = chest + rider_across

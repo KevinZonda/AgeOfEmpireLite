@@ -7,6 +7,7 @@ const UnitVisual = preload("res://scripts/entities/visuals/unit_visual.gd")
 const UnitVisualState = preload("res://scripts/entities/visuals/unit_visual_state.gd")
 const Siege = preload("res://scripts/entities/visuals/siege_visual.gd")
 const Fishing = preload("res://scripts/entities/visuals/fishing_boat_visual.gd")
+const Naval = preload("res://scripts/entities/visuals/naval_visual.gd")
 const UnitStatText = preload("res://scripts/ui/unit_stat_text.gd")
 const RtsUiTypography = preload("res://scripts/ui/typography.gd")
 
@@ -124,6 +125,7 @@ var style_button: Callable
 var refresh_timer := 0.0
 var siege_renderer = Siege.new()
 var fishing_renderer = Fishing.new()
+var naval_renderer = Naval.new()
 
 func build(parent: Control, initial_civilization: String, button_style: Callable) -> void:
 	style_button = button_style
@@ -363,7 +365,7 @@ func _refresh_preview() -> void:
 	preview_unit.state.visual_phase = previous_phase
 	preview_unit.state.update_view(preview_context)
 	fishing_preview_controls.visible = selected_kind == "fishing_boat"
-	preview_backdrop.water = selected_kind == "fishing_boat"
+	preview_backdrop.water = Naval.handles(selected_kind)
 	preview_backdrop.queue_redraw()
 	if selected_kind == "fishing_boat":
 		preview_unit.state.facing_direction = Vector2.RIGHT.rotated(fishing_preview_heading * PI / 4.0)
@@ -376,10 +378,13 @@ func _refresh_preview() -> void:
 	var view_size := Vector2(preview_viewport.size)
 	preview_unit.position = Vector2(view_size.x * 0.5, view_size.y * (0.63 if preview_context.view_mode_25d else 0.52))
 	preview_unit.scale = Vector2.ONE * clampf(minf(view_size.x / 400.0, view_size.y / 420.0) * 4.0, 3.4, 6.0)
-	if Siege.handles(selected_kind) or selected_kind == "fishing_boat":
+	if Siege.handles(selected_kind) or Naval.handles(selected_kind):
 		# Projected bounds include raised equipment and the deployed fishing net.
 		# Fit the complete model inside the panel for either viewing angle.
-		var bounds: Rect2 = fishing_renderer.bounds(preview_unit.state).grow(5.0) if selected_kind == "fishing_boat" else siege_renderer.geometry(preview_unit.state).bounds.grow(5.0)
+		var bounds: Rect2
+		if selected_kind == "fishing_boat": bounds = fishing_renderer.bounds(preview_unit.state).grow(5.0)
+		elif Naval.handles(selected_kind): bounds = naval_renderer.bounds(preview_unit.state).grow(5.0)
+		else: bounds = siege_renderer.geometry(preview_unit.state).bounds.grow(5.0)
 		var margin: float = clampf(minf(view_size.x, view_size.y) * 0.06, 12.0, 28.0)
 		var usable := Rect2(Vector2.ONE * margin, (view_size - Vector2.ONE * margin * 2.0).max(Vector2.ONE))
 		var fit: float = minf(usable.size.x / maxf(bounds.size.x, 1.0), usable.size.y / maxf(bounds.size.y, 1.0))

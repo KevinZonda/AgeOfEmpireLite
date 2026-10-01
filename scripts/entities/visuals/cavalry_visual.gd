@@ -135,6 +135,9 @@ static func _rider_leg(canvas: CanvasItem, hip: Vector2, foot: Vector2, far_side
 static func _rider(canvas: CanvasItem, state, pose: Pose, heavy: bool) -> void:
 	var width := lerpf(5.5, 4, pose.profile)
 	var coat: Color = STEEL.darkened(0.1 if pose.back else 0) if heavy else state.player_color.darkened(0.18 if pose.back else 0)
+	# Draw behind the collar and chin so the rider stays connected in every pose.
+	Art._stroke(canvas, PackedVector2Array([pose.head + Vector2(0, 3), pose.chest + Vector2(0, 1)]), EDGE, 3.8)
+	Art._stroke(canvas, PackedVector2Array([pose.head + Vector2(0, 3), pose.chest + Vector2(0, 1)]), STEEL.darkened(0.2) if heavy else LEATHER if pose.back else SKIN, 2.2)
 	Art._poly(canvas, [pose.chest + Vector2(-width, -2), pose.chest + Vector2(width, -2), pose.saddle + Vector2(width * 0.8, 1), pose.saddle + Vector2(-width * 0.8, 1)], coat)
 	canvas.draw_line(pose.saddle - Vector2(width * 0.8, 2), pose.saddle + Vector2(width * 0.8, -2), LEATHER, 1.7)
 	if heavy:
