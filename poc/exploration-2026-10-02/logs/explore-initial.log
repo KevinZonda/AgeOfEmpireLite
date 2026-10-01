@@ -24,7 +24,7 @@ SCRIPT ERROR: Invalid type in function 'spawn_unit' in base 'Node2D (game.gd)'. 
           at: RtsBuilding._process (res://scripts/entities/building.gd:386)
           GDScript backtrace (most recent call first):
               [0] _process (res://scripts/entities/building.gd:386)
-              [1] run_case (res://poc/exploration-2026-10-02/explore.gd:236)
+              [1] run_case (res://poc/exploration-2026-10-02/explore.gd:233)
 CASE {"evidence":{"queue_size":0,"units_after":12,"units_before":12},"id":"rally_dead_fish","status":"bug"}
 CASE {"evidence":{"builders":0,"placed":true,"wood_spent":80},"id":"garrison_builders","status":"observation"}
 CASE {"evidence":{"first":"gather","second":"idle"},"id":"farm_exclusive","status":"pass"}
@@ -44,13 +44,13 @@ SCRIPT ERROR: Invalid type in function 'spawn_unit' in base 'Node2D (game.gd)'. 
           at: RtsBuilding._process (res://scripts/entities/building.gd:386)
           GDScript backtrace (most recent call first):
               [0] _process (res://scripts/entities/building.gd:386)
-              [1] run_case (res://poc/exploration-2026-10-02/explore.gd:352)
+              [1] run_case (res://poc/exploration-2026-10-02/explore.gd:349)
 CASE {"evidence":{"queue_after":0,"units_after":12,"units_before":12},"id":"rally_dead_tree","status":"bug"}
 SCRIPT ERROR: Invalid type in function 'spawn_unit' in base 'Node2D (game.gd)'. The Object-derived class of argument 5 (previously freed) is not a subclass of the expected argument class.
           at: RtsBuilding._process (res://scripts/entities/building.gd:386)
           GDScript backtrace (most recent call first):
               [0] _process (res://scripts/entities/building.gd:386)
-              [1] run_case (res://poc/exploration-2026-10-02/explore.gd:352)
+              [1] run_case (res://poc/exploration-2026-10-02/explore.gd:349)
 CASE {"evidence":{"queue_after":0,"units_after":12,"units_before":12},"id":"rally_dead_farm","status":"bug"}
 CASE {"evidence":{"queue_after":0,"units_after":13,"units_before":12},"id":"rally_queued_target","status":"pass"}
 CASE {"evidence":{"enabled_build_buttons":11,"garrisoned":true,"selected":true,"wood_spent":80,"worker_order":"idle"},"id":"selection_after_garrison","status":"bug"}
@@ -66,3 +66,10 @@ CASE {"evidence":{"complete":true,"gathering_berries":false,"gathering_farm":tru
 CASE {"evidence":{"complete":true,"gathering_berries":false,"gathering_farm":false,"worker_order":"gather"},"id":"mill_builder_followup","status":"pass"}
 CASE {"evidence":{"remaining_after":11.0,"remaining_before":11.0},"id":"pause_production","status":"pass"}
 CASE {"evidence":{"old_projectile_queued_for_deletion":true},"id":"restart_projectiles","status":"pass"}
+CASE {"evidence":{"commands_after":0,"commands_before":0,"new_owner":0},"id":"conversion_selection","status":"bug"}
+CASE {"evidence":{"boarded":false,"resumed_order":"trade"},"id":"trade_garrison_resume","status":"observation"}
+CASE {"evidence":{"order":"move","queue_size":0},"id":"depleted_resource_queue","status":"pass"}
+CASE {"evidence":{"alternative_distance":-1.0,"alternative_exists":false,"order_after_activation":"idle","queued_gather_commands":0},"id":"queued_farm_frees_later","status":"bug"}
+CASE {"evidence":{"alternative_distance":144.222045898438,"alternative_exists":true,"order_after_activation":"idle","queued_gather_commands":0},"id":"queued_farm_alternative","status":"bug"}
+CASE {"evidence":{"construction_progress_seconds":0.999999999999996,"expected":72.8833333333332,"hp_after":112.883333333333,"hp_before":42.55,"worker_order":"build"},"id":"construction_real_worker","status":"bug"}
+EXPLORATION_COMPLETE cases=57 bugs=24

@@ -10,13 +10,22 @@ var cases := [
 	"conversion_wall", "ground_min_range", "ground_artillery_ability", "population_house_loss",
 	"rally_full_farm", "rally_dead_fish", "garrison_builders", "farm_exclusive", "cancel_refund",
 	"market_roundtrip", "queued_invalid_target", "team_sacred_elimination", "gatehouse_destroyed",
-	"pavise_stop", "wall_vertical_gate", "transport_deep_death", "construction_completion_damage"
+	"pavise_stop", "wall_vertical_gate", "transport_deep_death", "construction_completion_damage",
+	"trade_return_market", "supervise_town_center", "supervise_barracks", "rally_dead_tree", "rally_dead_farm",
+	"rally_queued_target", "selection_after_garrison", "garrison_double_host", "hidden_attack_tracking",
+	"field_siege_unfinished_attack", "field_siege_unfinished_boarding", "sacred_eliminated_wins",
+	"ally_gate", "enemy_gate", "siege_tower_docking", "farm_builder_followup", "mill_builder_followup",
+	"pause_production", "restart_projectiles", "conversion_selection", "trade_garrison_resume", "depleted_resource_queue",
+	"queued_farm_frees_later", "queued_farm_alternative", "construction_real_worker",
+	"allied_forest_visibility", "allied_scout_detection", "own_scout_detection", "monk_heal_teammate", "monk_heal_own",
+	"french_keep_influence_snap"
 ]
+const OBSERVATIONS := ["trade_overlap", "monk_garrison", "naval_garrison", "conversion_official_limit", "conversion_wall", "population_house_loss", "dead_garrison_slot", "dead_passenger_slot", "garrison_double_host", "garrison_builders", "trade_garrison_resume", "team_sacred_elimination"]
 
 func _initialize() -> void: call_deferred("_run")
 
 func record(id: String, ok: bool, evidence: Dictionary) -> void:
-	results.append({"id": id, "status": "pass" if ok else "bug", "evidence": evidence})
+	results.append({"id": id, "status": "pass" if ok else "observation" if OBSERVATIONS.has(id) else "bug", "evidence": evidence})
 	print("CASE ", JSON.stringify(results.back()))
 
 func setup_case() -> void:
@@ -46,6 +55,20 @@ func carry(monk: RtsUnit) -> RtsRelic:
 func projectiles() -> Array:
 	return game.get_children().filter(func(n): return n is RtsProjectile and not n.is_queued_for_deletion())
 
+func free_site(kind: String, near := Vector2(900, 650)) -> Vector2:
+	for ring in range(0, 1000, 40):
+		for i in 32:
+			var point: Vector2 = game.snap_build_point(kind, near + Vector2.from_angle(TAU * i / 32.0) * ring)
+			if game.can_place(kind, point): return point
+	return Vector2.INF
+
+func tick_units(units: Array, count := 300) -> void:
+	for i in count:
+		game.navigation.simulation_frame += 1
+		for u in units:
+			if is_instance_valid(u) and not u.is_queued_for_deletion(): u._process(0.05)
+
+
 func _run() -> void:
 	Engine.max_fps = 0
 	var chosen := OS.get_cmdline_user_args()
@@ -58,7 +81,9 @@ func _run() -> void:
 		game.navigation.shutdown_jobs()
 		game.queue_free()
 		await process_frame
-	var file := FileAccess.open("res://poc/exploration-2026-10-02/results.json", FileAccess.WRITE)
+	var path := OS.get_environment("RTS_POC_RESULTS")
+	if path.is_empty(): path = "res://poc/exploration-2026-10-02/results.json"
+	var file := FileAccess.open(path, FileAccess.WRITE)
 	file.store_string(JSON.stringify(results, "\t"))
 	print("EXPLORATION_COMPLETE cases=", results.size(), " bugs=", results.filter(func(r): return r.status == "bug").size())
 	quit()
@@ -256,7 +281,7 @@ func run_case(id: String) -> void:
 			u._advance_command()
 			record(id, u.order == "move" and u.destination.distance_to(Vector2(1200, 650)) < 60.0, {"order": u.order, "destination": str(u.destination)})
 		"team_sacred_elimination":
-			game.match_mode = "teams"
+			game.match_mode = "team2"
 			game.start_game("English", 431, "French")
 			game.process_mode = Node.PROCESS_MODE_DISABLED
 			game.fog.active = false
@@ -270,9 +295,12 @@ func run_case(id: String) -> void:
 			var landmark: RtsBuilding = game.spawn_building(0, "landmark", Vector2(850, 650), false, "zh_gatehouse")
 			game.complete_age(0, 2, "zh_gatehouse")
 			var wall: RtsBuilding = game.spawn_building(0, "stone_wall", Vector2(1000, 650))
-			var before := wall.max_hp
+			var u := soldier("archer", 0, wall.position)
+			u.wall_host = wall
+			var before: float = RtsCivilizationRules.wall_ranged_multiplier(game, u)
 			landmark.take_damage(99999.0)
-			record(id, wall.max_hp < before, {"hp_with_landmark": before, "hp_after_destroy": wall.max_hp, "base_hp": GameData.BUILDINGS["stone_wall"]["hp"]})
+			var after: float = RtsCivilizationRules.wall_ranged_multiplier(game, u)
+			record(id, before > after and after == 1.0, {"multiplier_before": before, "multiplier_after": after})
 		"pavise_stop":
 			game.civilizations[0] = "French"
 			var u := soldier("arbaletrier")
@@ -294,3 +322,221 @@ func run_case(id: String) -> void:
 			ship.take_damage(99999.0)
 			await process_frame
 			record(id, not is_instance_valid(u), {"passenger_survived": is_instance_valid(u)})
+		"trade_return_market":
+			var market: RtsBuilding = game.spawn_building(0, "market", free_site("market"))
+			var post: RtsTradePost = game.trade_posts[0]
+			var u := soldier("trader", 0, market.position + Vector2(100, 0))
+			u.issue_command("trade", Vector2.INF, post)
+			u.position = post.position
+			u._process_trade_order(0.01)
+			u.position = game.navigation.nearest_walkable_point(market.position + Vector2(market.size().x * 0.5 + u.radius() + 1.0, 0), u.radius(), u)
+			var before: int = game.players[0]["gold"]
+			tick_units([u], 600)
+			record(id, game.players[0]["gold"] > before, {"income_on_return": game.players[0]["gold"] - before, "distance_to_market": u.position.distance_to(market.position), "market_half_width": market.size().x * 0.5, "trader_radius": u.radius(), "order": u.order, "returning": u.trade_returning})
+		"supervise_town_center", "supervise_barracks":
+			game.civilizations[0] = "Chinese"
+			var b: RtsBuilding = game._player_center(0) if id == "supervise_town_center" else game.spawn_building(0, "barracks", free_site("barracks"))
+			var u := soldier("imperial_official", 0, b.position + Vector2(140, 0))
+			u.issue_command("supervise", Vector2.INF, b)
+			tick_units([u], 200)
+			game.train_unit(b, "villager" if b.kind == "town_center" else "spearman")
+			b._process(0.1)
+			record(id, b.supervise_work_rate > 1.0, {"work_rate": b.supervise_work_rate, "distance": u.position.distance_to(b.position), "official_order": u.order, "radius": u.radius(), "building_size": str(b.size())})
+		"rally_dead_tree", "rally_dead_farm", "rally_queued_target":
+			var center: RtsBuilding = game._player_center(0)
+			var target_ref: Node2D = game.spawn_building(0, "farm", free_site("farm")) if id == "rally_dead_farm" else game.resources.filter(func(r): return r.kind == "wood")[0]
+			center.set_rally(target_ref.position, target_ref)
+			game.train_unit(center, "villager")
+			var before: int = game.units.size()
+			target_ref.queue_free()
+			if id != "rally_queued_target": await process_frame
+			center._process(center.production_remaining + 0.1)
+			record(id, game.units.size() == before + 1, {"units_before": before, "units_after": game.units.size(), "queue_after": center.production_queue.size()})
+		"selection_after_garrison":
+			var center: RtsBuilding = game._player_center(0)
+			var u := soldier("villager", 0, center.position + Vector2(0, 95))
+			game.selected.assign([u])
+			u.issue_command("garrison", Vector2.INF, center)
+			tick_units([u], 50)
+			game._rebuild_actions()
+			var enabled_builds: int = game.command_buttons.filter(func(b): return b.get_meta("action_type", "") == "build" and not b.disabled).size()
+			var site := free_site("house", center.position + Vector2(200, 0))
+			game.build_mode = "house"
+			var before: int = game.players[0]["wood"]
+			game._confirm_build(site)
+			record(id, not game.selected.has(u) or game.players[0]["wood"] == before, {"garrisoned": u.garrisoned_in == center, "selected": game.selected.has(u), "enabled_build_buttons": enabled_builds, "wood_spent": before - game.players[0]["wood"], "worker_order": u.order})
+		"garrison_double_host":
+			var a: RtsBuilding = game._player_center(0)
+			var b: RtsBuilding = game.spawn_building(0, "outpost", free_site("outpost"))
+			var u := soldier("villager")
+			a.garrison_unit(u)
+			var second: bool = b.garrison_unit(u)
+			record(id, not second, {"admitted_to_second": second, "first_slots": a.garrisoned_units.size(), "second_slots": b.garrisoned_units.size()})
+		"hidden_attack_tracking":
+			game.fog.active = true
+			var u := soldier("longbow", 0, Vector2(1000, 650))
+			var enemy := soldier("spearman", 1, u.position + Vector2(100, 0))
+			game.fog.update_visibility()
+			u.issue_command("attack", Vector2.INF, enemy)
+			enemy.position = game.world_map.nearest_walkable_point(Vector2(2000, 1900))
+			game.fog.update_visibility()
+			var seen: bool = game.fog.can_detect_unit(0, enemy)
+			tick_units([u], 2)
+			record(id, u.target != enemy or u.route_goal.distance_to(enemy.position) > 50.0, {"enemy_detected": seen, "enemy_position": str(enemy.position), "live_route_goal": str(u.route_goal), "order": u.order, "still_tracks_enemy": u.target == enemy})
+		"field_siege_unfinished_attack", "field_siege_unfinished_boarding":
+			var ram := soldier("battering_ram")
+			ram.field_build_remaining = 10.0
+			if id == "field_siege_unfinished_attack":
+				var enemy: RtsBuilding = game._player_center(1)
+				ram.issue_command("attack", Vector2.INF, enemy)
+				var before := enemy.hp
+				tick_units([ram], 10)
+				record(id, enemy.hp == before, {"enemy_damage": before - enemy.hp, "remaining_construction": ram.field_build_remaining})
+			else:
+				var u := soldier("spearman", 0, ram.position + Vector2(30, 0))
+				var boarded: bool = ram.garrison_unit(u)
+				record(id, not boarded, {"boarded": boarded, "remaining_construction": ram.field_build_remaining})
+		"sacred_eliminated_wins":
+			game.match_mode = "ffa3"
+			game.start_game("English", 431, "French")
+			game.fog.active = false
+			for site in game.objectives.sacred_sites: site["owner_id"] = 1
+			game.objectives._process(0.1)
+			game._player_center(1).take_damage(99999.0)
+			game.objectives._process(91.0)
+			record(id, not game.game_over, {"defeated": game.defeated_players, "game_over": game.game_over, "sacred_holder": game.objectives.sacred_holder, "remaining": game.objectives.sacred_remaining})
+		"ally_gate", "enemy_gate":
+			game.match_mode = "team2"
+			game.start_game("English", 431, "French")
+			var gate: RtsBuilding = game.spawn_building(2, "palisade_gate", free_site("palisade_gate"))
+			var u := soldier("spearman", 0 if id == "ally_gate" else 1, gate.position + Vector2(120, 0))
+			game.navigation.refresh()
+			var occupied: bool = game.navigation.can_occupy(gate.position, u.radius(), u, false, false)
+			record(id, occupied if id == "ally_gate" else not occupied, {"can_cross": occupied, "enemy": game.is_enemy(u.owner_id, gate.owner_id), "position": str(gate.position)})
+		"siege_tower_docking":
+			var wall: RtsBuilding = game.spawn_building(1, "stone_wall", free_site("stone_wall"))
+			var tower := soldier("siege_tower", 0, wall.position + Vector2(140, 0))
+			tower.issue_command("assault_wall", Vector2.INF, wall)
+			tick_units([tower], 150)
+			record(id, tower.order == "siege_tower_docked", {"order": tower.order, "distance": tower.position.distance_to(wall.position), "wall_width": wall.size().x, "tower_radius": tower.radius()})
+		"farm_builder_followup", "mill_builder_followup":
+			var kind := "farm" if id == "farm_builder_followup" else "mill"
+			var site := free_site(kind)
+			var b: RtsBuilding = game.spawn_building(0, kind, site, true)
+			var u := soldier("villager", 0, site + Vector2(100, 0))
+			var target_ref: RtsResource
+			if kind == "mill": target_ref = game.spawn_resource("food", site + Vector2(0, 100), 1000, "berries")
+			u.issue_command("build", Vector2.INF, b)
+			tick_units([u], 400)
+			record(id, b.is_complete() and u.order == "gather", {"complete": b.is_complete(), "worker_order": u.order, "gathering_farm": u.target == b, "gathering_berries": u.target == target_ref})
+		"pause_production":
+			var b: RtsBuilding = game._player_center(0)
+			game.train_unit(b, "villager")
+			var before := b.production_remaining
+			game._set_paused(true)
+			b._process(10.0)
+			record(id, b.production_remaining == before, {"remaining_before": before, "remaining_after": b.production_remaining})
+		"restart_projectiles":
+			var bolt := RtsProjectile.new()
+			bolt.setup_point(game, 0, Vector2(400, 400), Vector2(800, 800), 100.0, 100.0, 100.0, {}, {})
+			game.add_child(bolt)
+			game.start_game("English", 432, "French")
+			record(id, bolt.is_queued_for_deletion(), {"old_projectile_queued_for_deletion": bolt.is_queued_for_deletion()})
+		"conversion_selection":
+			var monk := soldier("monk")
+			carry(monk)
+			var u := soldier("spearman", 1, monk.position + Vector2(30, 0))
+			game.selected.assign([u])
+			game._rebuild_actions()
+			game._update_hud()
+			var before: int = game.command_buttons.size()
+			monk._finish_conversion()
+			game._update_hud()
+			var after: int = game.command_buttons.size()
+			record(id, after > 0, {"new_owner": u.owner_id, "commands_before": before, "commands_after": after})
+		"trade_garrison_resume":
+			var center: RtsBuilding = game._player_center(0)
+			game.spawn_building(0, "market", free_site("market"))
+			var u := soldier("trader", 0, center.position + Vector2(100, 0))
+			u.issue_command("trade", Vector2.INF, game.trade_posts[0])
+			u.remember_work()
+			var boarded: bool = center.garrison_unit(u)
+			center.ungarrison_all(true)
+			record(id, boarded and u.order == "trade", {"boarded": boarded, "resumed_order": u.order})
+		"depleted_resource_queue":
+			var u := soldier("villager")
+			var resource: RtsResource = game.spawn_resource("wood", u.position + Vector2(25, 0), 1)
+			u.issue_command("gather", Vector2.INF, resource)
+			u.issue_command("move", Vector2(1200, 650), null, true)
+			u._process_gather_order(0.1)
+			record(id, u.order == "move", {"order": u.order, "queue_size": u.command_queue.size()})
+		"queued_farm_frees_later", "queued_farm_alternative":
+			var farm: RtsBuilding = game.spawn_building(0, "farm", free_site("farm"))
+			var current := soldier("villager", 0, farm.position + Vector2(55, 0))
+			current.order_gather(farm)
+			var other: RtsBuilding
+			if id == "queued_farm_alternative": other = game.spawn_building(0, "farm", free_site("farm", farm.position + Vector2(0, 100)))
+			var u := soldier("villager", 0, farm.position + Vector2(-400, 0))
+			u.issue_command("move", farm.position + Vector2(-180, 0))
+			u.issue_command("gather", Vector2.INF, farm, true)
+			var queued := u.command_queue.size()
+			if id == "queued_farm_frees_later": current.order_stop()
+			u._advance_command()
+			record(id, queued == 1 and u.order == "gather", {"queued_gather_commands": queued, "order_after_activation": u.order, "alternative_exists": other != null, "alternative_distance": other.position.distance_to(farm.position) if other != null else -1.0})
+		"construction_real_worker":
+			var site := free_site("house")
+			var b: RtsBuilding = game.spawn_building(0, "house", site, true)
+			var u := soldier("villager", 0, site + Vector2(100, 0))
+			u.issue_command("build", Vector2.INF, b)
+			tick_units([u], 12)
+			b.take_damage(40.0)
+			var before := b.hp
+			var remaining := b.build_remaining
+			tick_units([u], 20)
+			var expected: float = before + b.max_hp * 0.7 * (remaining - b.build_remaining) / b.build_total
+			record(id, is_equal_approx(b.hp, expected), {"hp_before": before, "hp_after": b.hp, "expected": expected, "construction_progress_seconds": remaining - b.build_remaining, "worker_order": u.order})
+		"allied_forest_visibility", "allied_scout_detection", "own_scout_detection":
+			game.match_mode = "team2"
+			game.start_game("English", 431, "French")
+			game.fog.active = true
+			var patch: Dictionary = game.world_map.stealth_patches[0]
+			# Keep human observers away; only the specified scout grants detection.
+			for u in game.units:
+				if u.owner_id == 0: u.position = game.spawn_point_for(0); u.order_stop()
+			var point: Vector2 = patch["position"]
+			var u := soldier("spearman", 2 if id == "allied_forest_visibility" else 1, point)
+			u.position = point
+			if id != "allied_forest_visibility":
+				var scout := soldier("scout", 0 if id == "own_scout_detection" else 2, point + Vector2(0, 55))
+				scout.position = point + Vector2(0, 55)
+			game.navigation.invalidate_spatial_index()
+			game.fog.update_visibility()
+			var detected: bool = game.fog.can_detect_unit(0, u)
+			record(id, detected and u.visible, {"detected": detected, "visible": u.visible, "terrain_visible": game.fog.can_see(0, u.position), "unit_owner": u.owner_id, "patch_position": str(point), "teams": game.teams})
+		"monk_heal_teammate", "monk_heal_own":
+			game.match_mode = "team2"
+			game.start_game("English", 431, "French")
+			var monk := soldier("monk")
+			var u := soldier("spearman", 0 if id == "monk_heal_own" else 2, monk.position + Vector2(35, 0))
+			u.hp -= 30.0
+			var before := u.hp
+			monk._heal_ally(1.0)
+			record(id, u.hp > before, {"hp_before": before, "hp_after": u.hp, "same_team": not game.is_enemy(monk.owner_id, u.owner_id), "unit_owner": u.owner_id})
+		"french_keep_influence_snap":
+			var base: Vector2 = game.spawn_point_for(1)
+			var stable_point := Vector2.INF
+			for radius in [200.0, 270.0, 340.0]:
+				for i in 16:
+					var point: Vector2 = base + Vector2.from_angle(TAU * i / 16.0) * radius
+					if game.can_place("stable", point): stable_point = point; break
+				if stable_point != Vector2.INF: break
+			var stable: RtsBuilding = game.spawn_building(1, "stable", stable_point)
+			game.ai._economy._construct_french_keep()
+			var keeps: Array = game.buildings.filter(func(b): return b.owner_id == 1 and b.kind == "keep")
+			if keeps.is_empty():
+				record(id, false, {"keeps": 0, "stable_position": str(stable.position)})
+				return
+			var keep: RtsBuilding = keeps[0]
+			keep.advance_construction(100.0)
+			var distance := keep.position.distance_to(stable.position)
+			record(id, distance <= 180.0 and RtsCivilizationRules.french_keep_influence(game, stable), {"distance": distance, "influence_limit": 180.0, "keep_position": str(keep.position), "stable_position": str(stable.position), "bonus_active": RtsCivilizationRules.french_keep_influence(game, stable)})

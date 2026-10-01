@@ -1,0 +1,282 @@
+[
+  {
+    "script": "res://tests/navigation_poc.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 1.033,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/navigation_poc.gd"
+    ]
+  },
+  {
+    "script": "res://tests/navigation_poc_matrix.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 3.996,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/navigation_poc_matrix.gd"
+    ]
+  },
+  {
+    "script": "res://tests/navigation_range_stall_poc.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 0.769,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/navigation_range_stall_poc.gd"
+    ]
+  },
+  {
+    "script": "res://tests/navigation_range_corner_poc.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 0.668,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/navigation_range_corner_poc.gd"
+    ]
+  },
+  {
+    "script": "res://tests/navigation_range_siege_poc.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 3.417,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/navigation_range_siege_poc.gd"
+    ]
+  },
+  {
+    "script": "res://tests/navigation_destination_poc.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 0.821,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/navigation_destination_poc.gd"
+    ]
+  },
+  {
+    "script": "res://tests/navigation_state_poc.gd",
+    "status": "failed",
+    "exit_code": 1,
+    "seconds": 16.78,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/navigation_state_poc.gd"
+    ]
+  },
+  {
+    "script": "res://tests/navigation_tasks_poc.gd",
+    "status": "failed",
+    "exit_code": 1,
+    "seconds": 31.146,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/navigation_tasks_poc.gd"
+    ]
+  },
+  {
+    "script": "res://tests/navigation_corner_poc.gd",
+    "status": "failed",
+    "exit_code": 1,
+    "seconds": 14.003,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/navigation_corner_poc.gd"
+    ]
+  },
+  {
+    "script": "res://tests/navigation_construction_poc.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 1.913,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/navigation_construction_poc.gd"
+    ]
+  },
+  {
+    "script": "res://tests/navigation_replanning.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 0.765,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/navigation_replanning.gd"
+    ]
+  },
+  {
+    "script": "res://tests/navigation_routes.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 0.666,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/navigation_routes.gd"
+    ]
+  },
+  {
+    "script": "res://tests/navigation_boundaries.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 2.454,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/navigation_boundaries.gd"
+    ]
+  },
+  {
+    "script": "res://tests/group_replanning.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 0.776,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/group_replanning.gd"
+    ]
+  },
+  {
+    "script": "res://tests/group_chokepoint.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 2.964,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/group_chokepoint.gd"
+    ]
+  },
+  {
+    "script": "res://tests/group_mass_chokepoint.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 5.746,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/group_mass_chokepoint.gd"
+    ]
+  },
+  {
+    "script": "res://tests/navigation_async_poc.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 2.555,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/navigation_async_poc.gd"
+    ]
+  },
+  {
+    "script": "res://tests/navigation_battle_retry_poc.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 0.771,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/navigation_battle_retry_poc.gd"
+    ]
+  },
+  {
+    "script": "res://tests/navigation_battle_recovery_poc.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 0.833,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/navigation_battle_recovery_poc.gd"
+    ]
+  },
+  {
+    "script": "res://tests/navigation_battle_goal_poc.gd",
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 0.773,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://tests/navigation_battle_goal_poc.gd"
+    ]
+  }
+]
