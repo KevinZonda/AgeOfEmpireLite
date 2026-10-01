@@ -93,6 +93,10 @@ var _match_actions_dirty := false
 var _match_refresh_queued := false
 var _global_queue_signature: Array[String] = []
 var _global_queue_locators: Array[Button] = []
+var _owned_counts_dirty := true
+var _owned_unit_counts: Dictionary = {}
+var _owned_building_counts: Dictionary = {}
+var _owned_landmark_counts: Dictionary = {}
 
 # Match commits flush constantly (every gather credit); the live facts stay
 # current on each flush while the scan-heavy action view rides this cadence.
@@ -113,6 +117,7 @@ func _init(game_ref: Node2D) -> void:
 func _on_match_changed(owner_id: int, domains: Array[StringName]) -> void:
 	# Enemy entities may be inspected, but their resource/queue changes are private.
 	if owner_id != 0 and not domains.has(&"entities") and not domains.has(&"selection"): return
+	if domains.has(&"entities"): _owned_counts_dirty = true
 	_match_dirty = true
 	_actions_context_serial += 1
 	_match_actions_dirty = _match_actions_dirty or domains.has(&"research") or domains.has(&"market") or domains.has(&"selection") or domains.has(&"age") or domains.has(&"landmarks") or domains.has(&"dynasty")
@@ -498,6 +503,7 @@ func _refresh_live_hud() -> void:
 	if global_queue_panel.visible: _refresh_global_queue_panel()
 	_update_population_hud()
 	_update_selection_hud()
+	_refresh_owned_counts()
 	queue_label.visible = not queue_label.text.is_empty()
 
 static func _set_label_text(control: Control, value: String) -> void:
@@ -879,6 +885,7 @@ func _rebuild_actions() -> void:
 func _render_actions() -> void:
 	if action_bar == null: return
 	_actions_context_frame = -1
+	_owned_counts_dirty = true
 	for child in action_bar.get_children():
 		action_bar.remove_child(child)
 		child.queue_free()
@@ -914,6 +921,7 @@ func _render_actions() -> void:
 	rendered.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a["slot"] < b["slot"])
 	for index in rendered.size(): action_bar.move_child(rendered[index]["control"], index)
 	command_side_buttons.sort_custom(func(a: Button, b: Button) -> bool: return a.get_meta("side_order") < b.get_meta("side_order"))
+	_refresh_owned_counts()
 	_refresh_action_buttons()
 
 func _render_command(descriptor: Dictionary) -> Control:
@@ -955,6 +963,7 @@ func _render_command(descriptor: Dictionary) -> Control:
 	button.set_meta("action_type", descriptor["type"])
 	button.set_meta("action_kind", descriptor["kind"])
 	button.set_meta("action_id", action_id)
+	_add_owned_count_badge(button, descriptor)
 	button.pressed.connect(func() -> void: game.execute_player_action(action_id))
 	action_bar.add_child(button)
 	command_buttons.append(button)
@@ -966,12 +975,15 @@ func _render_command(descriptor: Dictionary) -> Control:
 
 func _add_shortcut_badge(button: Button, keycode: int) -> void:
 	if keycode == KEY_NONE: return
-	var badge := Label.new()
-	badge.name = "ShortcutBadge"
-	badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var badge := _add_corner_label(button, "ShortcutBadge", HORIZONTAL_ALIGNMENT_RIGHT, VERTICAL_ALIGNMENT_BOTTOM)
 	badge.text = OS.get_keycode_string(keycode)
-	badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	badge.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+
+func _add_corner_label(button: Button, label_name: String, horizontal: HorizontalAlignment, vertical: VerticalAlignment) -> Label:
+	var badge := Label.new()
+	badge.name = label_name
+	badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	badge.horizontal_alignment = horizontal
+	badge.vertical_alignment = vertical
 	badge.add_theme_font_size_override("font_size", 11)
 	badge.add_theme_color_override("font_color", Color.WHITE)
 	badge.add_theme_color_override("font_outline_color", Color("211b14"))
@@ -982,6 +994,53 @@ func _add_shortcut_badge(button: Button, keycode: int) -> void:
 	badge.offset_top = 2
 	badge.offset_right = -3
 	badge.offset_bottom = -2
+	return badge
+
+func _add_owned_count_badge(button: RtsCommandButton, descriptor: Dictionary) -> void:
+	var category := ""
+	var kind: String = descriptor["kind"]
+	match descriptor["type"]:
+		"train": category = "unit"
+		"build", "convert_gate": category = "building"
+		"landmark": category = "landmark"
+		"order":
+			if kind in ["field_ram", "field_tower"]:
+				category = "unit"
+				kind = "battering_ram" if kind == "field_ram" else "siege_tower"
+		"unit_ability":
+			if kind == "camp":
+				category = "building"
+				kind = "scout_camp"
+	if category.is_empty(): return
+	button.set_meta("count_category", category)
+	button.set_meta("count_kind", kind)
+	_add_corner_label(button, "OwnedCountBadge", HORIZONTAL_ALIGNMENT_LEFT, VERTICAL_ALIGNMENT_TOP)
+
+func _refresh_owned_counts() -> void:
+	if command_buttons.is_empty(): return
+	if _owned_counts_dirty:
+		_owned_unit_counts.clear()
+		_owned_building_counts.clear()
+		_owned_landmark_counts.clear()
+		# One pass per entity change, shared by all command icons. Queued units
+		# are excluded; construction sites and garrisoned units already exist.
+		for unit in game.session.entities.units:
+			if not is_instance_valid(unit) or unit.is_queued_for_deletion() or unit.owner_id != 0: continue
+			_owned_unit_counts[unit.kind] = int(_owned_unit_counts.get(unit.kind, 0)) + 1
+		for building in game.session.entities.buildings:
+			if not is_instance_valid(building) or building.is_queued_for_deletion() or building.owner_id != 0: continue
+			_owned_building_counts[building.kind] = int(_owned_building_counts.get(building.kind, 0)) + 1
+			if not building.landmark_id.is_empty():
+				_owned_landmark_counts[building.landmark_id] = int(_owned_landmark_counts.get(building.landmark_id, 0)) + 1
+		_owned_counts_dirty = false
+	for button in command_buttons:
+		if not is_instance_valid(button) or button.is_queued_for_deletion() or not button.has_meta("count_category"): continue
+		var counts: Dictionary
+		match button.get_meta("count_category"):
+			"unit": counts = _owned_unit_counts
+			"building": counts = _owned_building_counts
+			"landmark": counts = _owned_landmark_counts
+		_set_label_text(button.get_node("OwnedCountBadge"), str(counts.get(button.get_meta("count_kind"), 0)))
 
 func _show_age_choice() -> void:
 	if not game.started or game.game_over or age_choice_overlay != null: return
