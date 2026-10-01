@@ -151,6 +151,10 @@ Cross-Origin-Embedder-Policy: require-corp
 
 浏览器决定画布尺寸，游戏的分辨率选项显示「跟随浏览器」；全屏仍通过玩家点击设置按钮触发，刷新网页时不会自动恢复全屏。浏览器对局隐藏系统鼠标并使用游戏光标，不锁定鼠标到画布内。其他显示与操作偏好继续存入 `user://`。此流程生成 Web release 版本。
 
+Web 触控板连续双指滚动由 `scripts/player/web_gestures.js` 转换为平移手势，捏合的 `ctrlKey` wheel 事件转换为缩放手势，再经 `platform_pointer.gd` 进入原有 GUI／游戏输入路由。普通鼠标的离散滚轮继续缩放。这样不会把双指平移交给 Godot Web 的滚轮缩放路径，也保留暂停、覆盖页面和捏合设置的优先级。[浏览器事件说明](https://developer.mozilla.org/en-US/docs/Web/API/Element/wheel_event)。浏览器不提供统一的滚轮设备类型，离散滚轮判断使用事件单位、常见步进量及 Chromium 的连续滚动增量。
+
+回归命令：`node tests/web_gestures.js` 和 `make run RUN_ARGS='--headless --script res://tests/web_gestures.gd'`。两项覆盖平移／捏合分流、横向与斜向平移、快速平移、高 DPI 坐标、普通滚轮、关闭捏合、暂停、覆盖页面和监听器释放。Chrome 的 Web 构建另用 DOM wheel 事件验证了回调接入及无重复缩放事件；此项为合成事件验证，未自动模拟物理触控板。
+
 2026-09-30 已完成源码模板编译与 release 导出，并在 Chrome 验证开始菜单、设置保存及刷新、1v1 对局、资源增长、图标与中文字体、2D／2.5D 切换和 1280×720 画布尺寸变化。浏览器确认 `crossOriginIsolated=true`，引擎报告多线程构建，最终运行日志无错误或警告。本机 `smoke.gd`、`settings_store.gd`、`display_settings.gd` 与 `player_input_actions_regression.gd` 均通过。此记录覆盖基本运行与平台适配，不代表大规模战斗性能基准。
 
 ## GitHub Actions 与 Pages

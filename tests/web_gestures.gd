@@ -32,7 +32,7 @@ func _run() -> void:
 	gesture(game, ["pan", 16.0, 24.0, 600.0, 250.0])
 	assert(game.camera.position == position, "Paused Web gestures must not move the camera")
 	game.paused = false
-	game.tech_tree_overlay = Control.new()
+	game.tech_tree_overlay = ColorRect.new()
 	game.add_child(game.tech_tree_overlay)
 	gesture(game, ["pan", 16.0, 24.0, 600.0, 250.0])
 	assert(game.camera.position == position, "An input overlay must block Web camera movement")
