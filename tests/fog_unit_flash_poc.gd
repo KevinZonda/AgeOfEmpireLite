@@ -10,6 +10,10 @@ func _run() -> void:
 	root.add_child(game)
 	await process_frame
 	game.start_game("English", 12345)
+	# This fixture probes 2D world-space figure bounds, independently of relief.
+	if game.view_mode_25d:
+		game._toggle_view_mode()
+		await process_frame
 	var scout: RtsUnit
 	for unit in game.units:
 		if unit.owner_id == 0 and unit.kind == "scout":
@@ -58,6 +62,14 @@ func _run() -> void:
 		return
 	scout.position = enemy.position + Vector2(0, -50)
 	game.fog.update_visibility()
+	var figure_reach: float = enemy.radius() + 16.0
+	var figure_top: float = maxf(40.0, enemy.radius() + 18.0)
+	for sample in game.fog.SHOW_SAMPLE_OFFSETS:
+		var bound_point: Vector2 = enemy.position + Vector2(sample.x * figure_reach, sample.y * (figure_top if sample.y < 0.0 else figure_reach))
+		if not game.fog.can_see(0, bound_point):
+			push_error("FOG_UNIT_FLASH_POC_SETUP_FAILED: final position must reveal all figure-bound samples")
+			quit(2)
+			return
 	if not enemy.visible:
 		push_error("FOG_UNIT_FLASH_REGRESSION: enemy stays hidden after its whole figure enters vision")
 		quit(3)

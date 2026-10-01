@@ -90,7 +90,7 @@ func _test_farm_workers() -> void:
 			unit.issue_command("gather", Vector2.INF, farm)
 			units.append(unit)
 		tick(units, 600)
-		var arrived := units.filter(func(u: RtsUnit) -> bool: return is_instance_valid(u.target) and u.position.distance_to(u.target.position) <= 27.5 + u.radius() + 2.5).size()
+		var arrived := units.filter(func(u: RtsUnit) -> bool: return is_instance_valid(u.target) and u.position.distance_to(u.target.position) <= u.target.size().x * 0.5 + u.radius() + 2.5).size()
 		check(arrived == count, "farm_%d_workers_use_assigned_farms" % count, "%d working" % arrived)
 
 func _test_trade_round_trip() -> void:

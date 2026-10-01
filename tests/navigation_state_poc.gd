@@ -143,12 +143,18 @@ func _test_boarding_barrier() -> void:
 	for kind in ["battering_ram", "siege_tower"]:
 		for sealed in [false, true]:
 			reset()
-			# Four legally placeable wall pieces close a 300px mountain pass.
+			# Four non-overlapping placement footprints close the mountain pass.
+			# The barrier width follows current building scale rather than old pixels.
 			if sealed:
+				var footprint: Vector2 = game.build_footprint_size("palisade_wall")
+				var first: Vector2 = game.snap_build_point("palisade_wall", Vector2(760, 620))
+				var left: float = first.x - footprint.x * 0.5
+				var right: float = left + footprint.x * 4.0
 				for x in game.world_map.grid_size.x:
-					if x < 15 or x >= 21: game.world_map.cells[12 * game.world_map.grid_size.x + x] = RtsWorldMap.Terrain.MOUNTAIN
+					var center_x: float = game.world_map.cell_center(Vector2i(x, 12)).x
+					if center_x < left or center_x > right: game.world_map.cells[12 * game.world_map.grid_size.x + x] = RtsWorldMap.Terrain.MOUNTAIN
 				for i in 4:
-					var point := Vector2(787.5 + i * 75, 612.5)
+					var point := first + Vector2(i * footprint.x, 0)
 					check(game.can_place("palisade_wall", point), "boarding_%s_wall%d_placeable" % [kind, i])
 					structure("palisade_wall", point)
 				game.navigation.refresh()

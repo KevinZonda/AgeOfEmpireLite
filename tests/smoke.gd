@@ -4,11 +4,16 @@ func _initialize() -> void:
 	call_deferred("_run")
 
 func _run() -> void:
+	# Match the fixed edge coordinates below to the actual HUD layout.
+	root.size = Vector2i(1280, 720)
 	var scene := load("res://scenes/main.tscn")
 	var game: Variant = scene.instantiate()
 	root.add_child(game)
 	await process_frame
 	game.start_game("English", 12345)
+	# Direct command fixtures below provide ground coordinates.
+	if game.view_mode_25d:
+		game._toggle_view_mode()
 	if DisplayServer.get_name() != "headless": assert(Input.mouse_mode == game._gameplay_mouse_mode())
 	assert(game.map_seed == 12345)
 	var terrain_map: RtsWorldMap = game.world_map
@@ -52,10 +57,11 @@ func _run() -> void:
 	assert(game.cursor.visible)
 	assert(game._edge_pan_direction(Vector2(640, 360), Vector2(1280, 720)) == Vector2.ZERO)
 	assert(game._edge_pan_direction(Vector2(2, 360), Vector2(1280, 720)) == Vector2.LEFT)
-	assert(game._edge_pan_direction(Vector2(1278, 718), Vector2(1280, 720)) == Vector2.ZERO, "hovering the bottom HUD should suppress edge scrolling")
+	assert(game._edge_pan_direction(Vector2(1278, 718), Vector2(1280, 720)) == Vector2.ONE, "the outer window rim should scroll even over HUD")
 	assert(game._edge_pan_direction(Vector2(-2, 360), Vector2(1280, 720)) == Vector2.LEFT)
-	assert(game._edge_pan_direction(Vector2(1280, 720), Vector2(1280, 720)) == Vector2.ZERO, "clamped corner coordinates should respect the HUD")
+	assert(game._edge_pan_direction(Vector2(1280, 720), Vector2(1280, 720)) == Vector2.ONE, "clamped corner coordinates should preserve rim scrolling")
 	assert(game._edge_pan_direction(Vector2(1282, 360), Vector2(1280, 720)) == Vector2.RIGHT)
+	assert(game._edge_pan_direction(Vector2(640, 706), Vector2(1280, 720)) == Vector2.ZERO, "HUD interior should suppress edge scrolling")
 	game.global_queue_panel.show()
 	assert(game._selection_point_over_hud(game.global_queue_panel.get_global_rect().get_center()), "native selection must not start behind the global queue")
 	game.global_queue_panel.hide()

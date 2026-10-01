@@ -23,9 +23,22 @@ func _run() -> void:
 		assert(not game.world_map.path_between(game.spawn_point_for(0), base).is_empty(), "all bases should connect through land")
 		assert(game._player_center(owner_id) != null)
 		if owner_id > 0: game.ai_controllers[owner_id - 1].tick()
-	var gate: RtsBuilding = game.spawn_building(2, "palisade_gate", Vector2(900, 750))
+	var gate_site := Vector2.INF
+	for ring in range(0, 1200, 40):
+		for i in 32:
+			var candidate: Vector2 = game.snap_build_point("palisade_gate", Vector2(900, 750) + Vector2.from_angle(TAU * i / 32.0) * ring)
+			if not game.can_place("palisade_gate", candidate): continue
+			var candidate_cell: Vector2i = game.world_map.cell_at(candidate)
+			if game.units.any(func(u: RtsUnit) -> bool: return game.navigation._grid_for(u).is_point_solid(candidate_cell)): continue
+			gate_site = candidate
+			break
+		if gate_site != Vector2.INF: break
+	assert(gate_site != Vector2.INF and game.can_place("palisade_gate", gate_site), "gate fixture must be legally placeable")
+	var gate_cell: Vector2i = game.world_map.cell_at(gate_site)
+	for unit in game.units:
+		assert(not game.navigation._grid_for(unit).is_point_solid(gate_cell), "terrain and resources must permit passage before adding gate")
+	var gate: RtsBuilding = game.spawn_building(2, "palisade_gate", gate_site)
 	game.navigation.refresh()
-	var gate_cell: Vector2i = game.world_map.cell_at(gate.position)
 	for unit in game.units:
 		assert(game.navigation._grid_for(unit).is_point_solid(gate_cell) == game.is_enemy(unit.owner_id, gate.owner_id), "actual unit grids should respect allied and enemy gates")
 	var squad: Array[RtsUnit] = []
