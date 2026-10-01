@@ -124,17 +124,19 @@ make run GODOT=/你的/Godot/路径
 
 ## Web 构建、导出与预览
 
-Web 使用同一份 `docs/godot` 源码（固定为 Godot 4.7.2），通过 Emscripten 编译独立的 WebAssembly 模板。macOS 主循环补丁不参与 Web 平台编译。
+Web 默认使用官方 Godot 4.7.2 导出模板，不需要安装 Emscripten 或编译引擎。macOS 主循环补丁只用于 macOS 运行时，Web 不依赖这些补丁。
 
-先安装 Emscripten 4.0.0 或更新版本，并确保 `emcc` 在 PATH 中。macOS 可执行 `brew install emscripten`；其他系统可安装并激活 emsdk。Python 3 和 SCons 的准备方式与 macOS 构建相同。
+首次本地导出前，使用普通版 Godot 4.7.2 编辑器打开项目，在「编辑器 → 管理导出模板」中下载并安装对应版本的官方模板。macOS 导出脚本准备的编辑器位于 `.godot/tools/web-export/Godot.app`；模板需与脚本使用的编辑器版本一致。GitHub Actions 自动完成编辑器与模板安装。
 
 ```sh
 make run-web
 ```
 
-`make run-web` 每次先增量构建引擎模板、重新导出当前游戏，再启动预览服务器。然后访问 <http://127.0.0.1:8060>。可以通过 `make run-web WEB_PORT=8080` 更换端口。按 Ctrl+C 停止预览服务器。只需重新启动已有导出产物的服务器时，执行 `make serve-web`；只构建和导出而不启动服务器时，执行 `make export-web`。
+`make run-web` 每次重新导出当前游戏，再启动预览服务器。然后访问 <http://127.0.0.1:8060>。可以通过 `make run-web WEB_PORT=8080` 更换端口。按 Ctrl+C 停止预览服务器。只需重新启动已有导出产物的服务器时，执行 `make serve-web`；只导出而不启动服务器时，执行 `make export-web`。
 
-`make export-web` 先增量编译 Web release 模板，再导入并导出游戏。模板位于 `docs/godot/bin/godot.web.template_release.wasm32.zip`，网页产物位于 `build/web/`。需要单独编译模板时执行 `make build-web`；只重新导出游戏时执行 `tools/export_web.sh`。可用 `BUILD_JOBS=4 make export-web` 调整编译并行数。
+`make export-web` 使用已安装的官方 Web release 模板，导入并导出游戏，网页产物位于 `build/web/`。也可以直接执行 `tools/export_web.sh`。`export_presets.cfg` 的 `custom_template/release` 留空以使用官方模板。
+
+如需精简模板，仍可安装 Emscripten 4.0.0 或更新版本，再执行 `make build-web` 从固定 Godot 源码编译。生成的模板为 `docs/godot/bin/godot.web.template_release.wasm32.zip`，使用前需将 Web 预设的 `custom_template/release` 指向该文件。可用 `BUILD_JOBS=4 make build-web` 调整编译并行数。日常导出和 CI 不执行此流程。
 
 导出必须使用 **普通版 Godot 4.7.2 编辑器**。本机已安装的 Mono 编辑器会拒绝 Web 导出，即使游戏只使用 GDScript。macOS 和 Linux x86_64 的导出脚本会自动下载官方普通版编辑器、验证固定的 SHA-256，并解压到 `.godot/tools/web-export/`。它不会替换 `/Applications/Godot_mono.app`。其他平台需设置 `GODOT_EDITOR=/普通版/Godot/路径`，macOS 和 Linux 也可用此变量指定已有编辑器。
 
@@ -147,16 +149,16 @@ Cross-Origin-Embedder-Policy: require-corp
 
 正式部署时，上传整个 `build/web/` 目录，通过 HTTPS 提供这些响应头，并将 `.wasm` 的 MIME 类型设为 `application/wasm`。预设也启用了 Godot 自带的 PWA 与 `ensure_cross_origin_isolation_headers`：无法配置响应头的静态站点可以由 service worker 补齐隔离响应头，保留后台寻路线程。首次访问可能自动刷新以激活 service worker；浏览器需允许 service worker，建议用 Chrome 或 Firefox。不能通过双击 `index.html` 来运行。该目录包含游戏数据包，不包含开发文档与测试资源。
 
-浏览器决定画布尺寸，游戏的分辨率选项显示「跟随浏览器」；全屏仍通过玩家点击设置按钮触发，刷新网页时不会自动恢复全屏。浏览器对局隐藏系统鼠标并使用游戏光标，不锁定鼠标到画布内。其他显示与操作偏好继续存入 `user://`。此流程生成 Web release 版本，尚未提供 Web debug 模板。
+浏览器决定画布尺寸，游戏的分辨率选项显示「跟随浏览器」；全屏仍通过玩家点击设置按钮触发，刷新网页时不会自动恢复全屏。浏览器对局隐藏系统鼠标并使用游戏光标，不锁定鼠标到画布内。其他显示与操作偏好继续存入 `user://`。此流程生成 Web release 版本。
 
 2026-09-30 已完成源码模板编译与 release 导出，并在 Chrome 验证开始菜单、设置保存及刷新、1v1 对局、资源增长、图标与中文字体、2D／2.5D 切换和 1280×720 画布尺寸变化。浏览器确认 `crossOriginIsolated=true`，引擎报告多线程构建，最终运行日志无错误或警告。本机 `smoke.gd`、`settings_store.gd`、`display_settings.gd` 与 `player_input_actions_regression.gd` 均通过。此记录覆盖基本运行与平台适配，不代表大规模战斗性能基准。
 
 ## GitHub Actions 与 Pages
 
-[Web workflow](.github/workflows/web-pages.yml) 在推送 `main` 或手动运行时执行：
+[Web workflow](.github/workflows/web-pages.yml) 从 Actions 页面手动运行时执行（选择 `main`）：
 
-1. 在 Ubuntu 24.04 上使用 Emscripten 4.0.0、SCons 4.11.1 和固定 Godot 源码编译多线程 Web release 模板。模板按平台、编译器版本和构建脚本哈希缓存；游戏修改通常只需重新导出。
-2. 下载并校验 Linux 普通版 Godot 4.7.2 编辑器，导入项目，再导出完整的 `build/web/`（包括 PWA 文件与 `.nojekyll`）。
+1. 在 Ubuntu 24.04 上通过 [chickensoft-games/setup-godot](https://github.com/chickensoft-games/setup-godot/tree/v2.4.1) 安装普通版 Godot 4.7.2 编辑器和官方导出模板。Action 固定到 v2.4.1 的提交，启用安装缓存，并在安装完成后立即保存缓存；不安装 Emscripten、不编译 ICU 或引擎源码。
+2. 使用 Action 安装的编辑器导入项目，再导出完整的 `build/web/`（包括多线程、PWA 文件与 `.nojekyll`）。首次需下载完整的官方跨平台模板包，缓存命中后无需重复下载；Web 模板体积不再采用之前的精简构建。
 3. 将产物提交到 `pages` 分支根目录；首次创建独立分支，后续保留提交历史。该分支由 workflow 管理，只用于生成的站点文件。
 4. 使用官方 Pages artifact 和 deploy actions 将同一份产物发布到 GitHub Pages。
 
@@ -165,3 +167,5 @@ Cross-Origin-Embedder-Policy: require-corp
 `pages` 分支用于保存编译产物，实际站点通过 Actions 部署。不要把 Source 设为「Deploy from a branch」并仅依赖机器人推送：[GitHub 官方说明](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site)指出，通过 `GITHUB_TOKEN` 推送的提交不会触发分支式 Pages 构建。多线程静态托管使用的是 [Godot 官方 PWA 隔离机制](https://docs.godotengine.org/en/stable/tutorials/export/exporting_for_web.html#exporting-as-a-progressive-web-app-pwa)。
 
 2026-10-01 本地验证：workflow 通过 actionlint；Web release 实际导出成功；临时 Git 远端验证了首次创建 `pages`、增量提交、移除旧产物、保留历史和产物未变化时跳过提交。在不提供 COOP／COEP 响应头的普通 HTTP 服务器子目录下，Chrome 激活导出的 service worker 后达到 `crossOriginIsolated=true`，游戏启动且未捕获到运行错误。尚未在 GitHub 执行首次 Ubuntu 构建或实际 Pages 部署。
+
+2026-10-01 切换官方模板后验证：actionlint 和 shell 语法检查通过，`make export-web` 使用官方包中的多线程 `web_release.zip` 成功导出。普通静态服务器下，Chrome 的 service worker 生效，`crossOriginIsolated=true`，加载界面消失且未捕获到运行错误。官方 WASM 约 37 MiB，之前的精简模板约 26 MiB；游戏数据包约 9.7 MiB。此验证未运行更新后的远端 workflow。

@@ -17,7 +17,7 @@ build-macos:
 build-web:
 	tools/build_godot_web.sh
 
-export-web: build-web
+export-web:
 	tools/export_web.sh
 
 run-web: export-web

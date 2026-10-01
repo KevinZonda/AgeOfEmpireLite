@@ -17,40 +17,21 @@ jobs:
     timeout-minutes: 90
     permissions:
       contents: write
-    env:
-      EMSCRIPTEN_VERSION: '4.0.0'
-      BUILD_JOBS: '4'
     steps:
       - name: Check out game
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
-      - name: Set up Python
-        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+      - name: Install Godot and official export templates
+        uses: chickensoft-games/setup-godot@f166999204a4f2722c6fe042fbaa3b3ea0d9c789 # v2.4.1
         with:
-          python-version: '3.12'
-
-      - name: Restore Web template
-        id: template
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
-        with:
-          path: docs/godot/bin/godot.web.template_release.wasm32.zip
-          key: web-template-${{ runner.os }}-${{ runner.arch }}-emscripten-${{ env.EMSCRIPTEN_VERSION }}-${{ hashFiles('tools/build_godot_web.sh') }}
-
-      - name: Install Emscripten and build Web template
-        if: steps.template.outputs.cache-hit != 'true'
-        run: |
-          python3 -m pip install scons==4.11.1
-          git clone --depth 1 --branch "$EMSCRIPTEN_VERSION" https://github.com/emscripten-core/emsdk.git "$RUNNER_TEMP/emsdk"
-          "$RUNNER_TEMP/emsdk/emsdk" install "$EMSCRIPTEN_VERSION"
-          "$RUNNER_TEMP/emsdk/emsdk" activate "$EMSCRIPTEN_VERSION"
-          source "$RUNNER_TEMP/emsdk/emsdk_env.sh"
-          make build-web
+          version: '4.7.2'
+          use-dotnet: false
+          include-templates: true
+          cache: true
 
       - name: Export game with Godot 4.7.2
         run: |
-          mkdir -p docs/godot
-          touch docs/godot/.gdignore
-          tools/export_web.sh
+          GODOT_EDITOR="$GODOT" tools/export_web.sh
           touch build/web/.nojekyll
           test -s build/web/index.html
           test -s build/web/index.wasm

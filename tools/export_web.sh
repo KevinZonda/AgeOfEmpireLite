@@ -47,10 +47,6 @@ if [[ "$EDITOR_VERSION" != 4.7.2.stable.* || "$EDITOR_VERSION" == *mono* ]]; the
   printf 'Web export requires a non-.NET Godot 4.7.2 editor, got: %s\n' "$EDITOR_VERSION" >&2
   exit 1
 fi
-if [[ ! -f docs/godot/bin/godot.web.template_release.wasm32.zip ]]; then
-  printf 'Web template missing. Run make build-web first.\n' >&2
-  exit 1
-fi
 mkdir -p build/web
 touch build/.gdignore
 "$GODOT_EDITOR" --headless --editor --path "$PWD" --import
