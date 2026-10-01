@@ -2,6 +2,10 @@ extends RefCounted
 
 const HUNT_WINDUP := 0.4
 const HUNT_ACTION_LENGTH := 0.65
+const TRADE_POST_DISTANCE := 46.0
+
+static func trade_home_distance(home_size: Vector2, trader_radius: float) -> float:
+	return home_size.x * 0.5 + trader_radius + 4.0
 
 # Economic and worker behavior. The unit retains order state and exposes the
 # existing methods; these helpers operate on that state without owning it.
@@ -119,7 +123,10 @@ static func process_trade_order(unit, delta: float) -> void:
 		unit._advance_command()
 		return
 	var goal: Vector2 = unit.trade_home.position if unit.trade_returning else unit.trade_post.position
-	if unit._move_toward(goal, delta, 46.0):
+	# The market center is inside its collision footprint. Use a reachable
+	# interaction distance for the return leg, including the trader's radius.
+	var stop_distance: float = trade_home_distance(unit.trade_home.size(), unit.radius()) if unit.trade_returning else TRADE_POST_DISTANCE
+	if unit._move_toward(goal, delta, stop_distance):
 		var cargo := maxi(6, roundi(unit.trade_home.position.distance_to(unit.trade_post.position) / 36.0))
 		cargo = roundi(cargo * RtsLandmarkCatalog.trade_multiplier(unit.game.civilizations[unit.owner_id], unit.game.players[unit.owner_id].get("landmarks", [])))
 		if unit.game.civilizations[unit.owner_id] == "French": cargo = roundi(cargo * 1.15)

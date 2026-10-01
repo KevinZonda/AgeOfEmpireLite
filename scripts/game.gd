@@ -1086,7 +1086,14 @@ func can_place(kind: String, world_point: Vector2, vertical := false) -> bool:
 	for resource in resources:
 		if is_instance_valid(resource) and footprint.grow(resource.radius * 0.5).has_point(resource.position): return false
 	for post in trade_posts:
-		if is_instance_valid(post) and footprint.grow(28).has_point(post.position): return false
+		if not is_instance_valid(post): continue
+		if footprint.grow(28).has_point(post.position): return false
+		if kind == "market":
+			# Keep the two trade arrival zones disjoint, including movement's
+			# half-pixel arrival tolerance. Otherwise a trader can pay both legs
+			# without leaving one legal position between the market and post.
+			var home_distance := RtsUnit.UnitWork.trade_home_distance(GameData.BUILDINGS[kind]["size"], GameData.UNITS["trader"]["radius"])
+			if snapped.distance_to(post.position) <= home_distance + RtsUnit.UnitWork.TRADE_POST_DISTANCE + 2.0: return false
 	for relic in relics:
 		if is_instance_valid(relic) and relic.available() and footprint.grow(18).has_point(relic.position): return false
 	return true

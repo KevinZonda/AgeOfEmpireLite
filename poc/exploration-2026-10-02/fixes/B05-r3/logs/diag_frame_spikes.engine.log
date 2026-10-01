@@ -1,0 +1,979 @@
+Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
+
+SPIKE frame=0 ms=31.4
+SPIKE frame=37 ms=30.2
+SPIKE frame=38 ms=49.2
+SPIKE frame=41 ms=31.7
+SPIKE frame=55 ms=31.4
+SPIKE frame=75 ms=48.8
+SPIKE frame=81 ms=32.1
+SPIKE frame=95 ms=46.7
+SPIKE frame=101 ms=44.7
+SPIKE frame=150 ms=30.4
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=174 ms=34.7
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=175 ms=42.1
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=180 ms=36.9
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=182 ms=95.6
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=190 ms=34.4
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=194 ms=32.0
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=196 ms=34.1
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=197 ms=126.0
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=198 ms=76.1
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=204 ms=34.2
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=215 ms=44.1
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2005.589, 767.7661) dest=(0.0, 0.0)
+SPIKE frame=217 ms=31.6
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2011.839, 767.7032) dest=(0.0, 0.0)
+SPIKE frame=236 ms=33.4
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=237 ms=43.0
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=239 ms=40.1
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=242 ms=33.8
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=250 ms=41.8
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=251 ms=57.7
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=262 ms=40.4
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=267 ms=51.2
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=276 ms=41.3
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=288 ms=38.9
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=292 ms=75.6
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=293 ms=32.7
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=305 ms=35.8
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=307 ms=54.8
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=321 ms=40.0
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=336 ms=72.8
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=347 ms=37.4
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=350 ms=52.9
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=421 ms=36.5
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=427 ms=57.8
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=428 ms=77.4
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=488 ms=42.8
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=491 ms=34.8
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=501 ms=32.8
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=517 ms=47.8
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=518 ms=33.5
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=519 ms=44.0
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=549 ms=31.7
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=552 ms=33.2
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=558 ms=38.4
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=560 ms=32.5
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=567 ms=45.8
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=602 ms=38.8
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=608 ms=48.4
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=609 ms=41.8
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=610 ms=35.5
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=612 ms=41.0
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=643 ms=37.9
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=644 ms=31.7
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=672 ms=34.7
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=696 ms=54.1
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=727 ms=32.1
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=757 ms=30.7
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=760 ms=57.4
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=769 ms=34.9
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=798 ms=34.9
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=803 ms=35.6
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=808 ms=37.9
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=833 ms=36.0
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=883 ms=30.1
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=890 ms=31.3
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=895 ms=33.6
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=900 ms=50.3
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=901 ms=45.0
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=902 ms=82.0
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=903 ms=91.2
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=904 ms=48.0
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=905 ms=30.1
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=946 ms=68.7
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=949 ms=35.5
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=955 ms=31.8
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1005 ms=70.7
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1006 ms=58.8
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1007 ms=54.3
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1025 ms=50.9
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1067 ms=37.6
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1078 ms=31.2
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1090 ms=38.6
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1091 ms=40.4
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1092 ms=49.0
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1118 ms=58.2
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1119 ms=63.1
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1143 ms=32.0
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1158 ms=34.8
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1169 ms=45.6
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1199 ms=39.9
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1217 ms=32.2
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1227 ms=40.0
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1260 ms=30.9
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1290 ms=59.8
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1301 ms=44.0
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1302 ms=33.6
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1303 ms=33.8
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1309 ms=141.1
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1310 ms=69.0
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1312 ms=182.1
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1313 ms=78.5
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1319 ms=49.4
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1321 ms=30.7
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1328 ms=34.4
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1330 ms=67.3
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1333 ms=31.8
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1344 ms=120.6
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2143.107, 1596.747) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1345 ms=171.2
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1346 ms=55.8
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1349 ms=62.6
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1350 ms=87.4
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1378 ms=40.1
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1379 ms=66.7
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1380 ms=55.3
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1381 ms=42.4
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1382 ms=82.5
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=2 kind=villager order=gather failures=1 pos=(194.25, 1869.104) dest=(0.0, 0.0)
+SPIKE frame=1383 ms=192.4
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=1384 ms=39.7
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=1395 ms=56.4
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=1399 ms=41.8
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=1400 ms=44.2
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=1402 ms=42.5
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=1403 ms=80.4
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=1406 ms=66.2
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=1407 ms=111.2
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=1410 ms=49.0
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=1415 ms=45.6
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=1416 ms=43.6
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1417 ms=35.3
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1419 ms=67.7
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1422 ms=30.7
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1424 ms=98.1
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1425 ms=58.9
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1427 ms=30.0
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1434 ms=43.9
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1440 ms=56.5
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1441 ms=46.0
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1445 ms=101.0
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1450 ms=66.7
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1451 ms=77.8
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1452 ms=65.3
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1453 ms=32.7
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1454 ms=69.6
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1455 ms=86.6
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1457 ms=77.2
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1460 ms=33.0
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1461 ms=60.2
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1464 ms=241.1
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1465 ms=37.3
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1487 ms=49.0
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1492 ms=37.5
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1495 ms=45.2
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1496 ms=39.4
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1498 ms=32.5
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1504 ms=46.2
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1505 ms=57.2
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1507 ms=47.4
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1510 ms=175.2
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2013.041, 1589.632) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1511 ms=111.6
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2009.654, 1586.725) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1512 ms=42.2
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2009.654, 1586.725) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1520 ms=38.9
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2016.58, 1591.375) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1523 ms=34.6
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2014.933, 1589.751) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1524 ms=48.2
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2012.694, 1587.852) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1526 ms=33.0
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2013.757, 1588.996) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1542 ms=66.4
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2015.472, 1590.47) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1545 ms=99.7
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=2 pos=(2012.389, 1587.734) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1546 ms=49.5
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=2 pos=(2012.389, 1587.734) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1575 ms=44.0
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=2 pos=(2016.002, 1591.075) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1578 ms=51.2
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=2 pos=(2015.197, 1590.598) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1607 ms=44.4
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=2 pos=(2015.334, 1590.499) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1608 ms=33.0
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=2 pos=(2012.313, 1588.016) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1618 ms=42.5
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=2 pos=(2016.153, 1591.048) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1620 ms=30.2
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=2 pos=(2014.882, 1590.114) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1647 ms=32.4
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=2 pos=(2016.348, 1591.267) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1649 ms=186.3
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=3 pos=(2014.99, 1590.24) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1650 ms=96.4
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=3 pos=(2011.816, 1587.6) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1651 ms=35.6
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=3 pos=(2011.816, 1587.6) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1652 ms=70.0
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=3 pos=(2014.022, 1589.653) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1653 ms=50.5
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=3 pos=(2009.483, 1585.774) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1659 ms=46.2
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=3 pos=(2015.369, 1590.887) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1660 ms=59.8
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=3 pos=(2013.294, 1589.208) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1661 ms=63.8
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=3 pos=(2013.294, 1589.208) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1662 ms=34.6
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=3 pos=(2008.949, 1585.421) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1663 ms=40.0
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=3 pos=(2011.682, 1588.182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1664 ms=39.3
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=3 pos=(2013.798, 1590.109) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1665 ms=34.3
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=3 pos=(2011.076, 1587.823) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1666 ms=59.9
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=3 pos=(2013.658, 1590.208) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1667 ms=45.5
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=3 pos=(2010.405, 1587.485) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1668 ms=50.6
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=3 pos=(2013.409, 1590.298) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1677 ms=35.8
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=3 pos=(2012.197, 1587.697) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1681 ms=44.8
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=3 pos=(2014.802, 1590.109) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1696 ms=37.7
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=3 pos=(2014.291, 1589.702) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1698 ms=69.1
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=3 pos=(2015.093, 1590.461) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1699 ms=67.1
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=3 pos=(2021.093, 1589.882) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1716 ms=92.9
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1717 ms=62.1
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1723 ms=47.4
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1737 ms=47.9
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=1760 ms=92.4
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2132.647, 406.85) dest=(0.0, 0.0)
+SPIKE frame=1761 ms=50.4
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2132.647, 406.85) dest=(0.0, 0.0)
+SPIKE frame=1801 ms=33.7
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2132.647, 406.85) dest=(0.0, 0.0)
+SPIKE frame=1815 ms=30.3
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2132.647, 406.85) dest=(0.0, 0.0)
+SPIKE frame=1824 ms=33.6
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2132.647, 406.85) dest=(0.0, 0.0)
+SPIKE frame=1831 ms=48.6
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2132.647, 406.85) dest=(0.0, 0.0)
+SPIKE frame=1843 ms=77.7
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2132.647, 406.85) dest=(0.0, 0.0)
+SPIKE frame=1855 ms=39.1
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2132.647, 406.85) dest=(0.0, 0.0)
+SPIKE frame=1856 ms=42.1
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2132.647, 406.85) dest=(0.0, 0.0)
+SPIKE frame=1898 ms=33.9
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2132.647, 406.85) dest=(0.0, 0.0)
+SPIKE frame=1909 ms=152.1
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2132.647, 406.85) dest=(0.0, 0.0)
+SPIKE frame=1910 ms=41.5
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2132.647, 406.85) dest=(0.0, 0.0)
+SPIKE frame=1912 ms=87.8
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2132.647, 406.85) dest=(0.0, 0.0)
+SPIKE frame=1916 ms=40.7
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2132.647, 406.85) dest=(0.0, 0.0)
+SPIKE frame=1918 ms=48.5
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2132.647, 406.85) dest=(0.0, 0.0)
+SPIKE frame=1937 ms=45.6
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2132.647, 406.85) dest=(0.0, 0.0)
+SPIKE frame=1976 ms=386.4
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2132.647, 406.85) dest=(0.0, 0.0)
+SPIKE frame=1992 ms=71.5
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2132.647, 406.85) dest=(0.0, 0.0)
+SPIKE frame=2002 ms=49.8
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2132.647, 406.85) dest=(0.0, 0.0)
+SPIKE frame=2028 ms=44.2
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2132.647, 406.85) dest=(0.0, 0.0)
+SPIKE frame=2038 ms=53.5
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2132.647, 406.85) dest=(0.0, 0.0)
+SPIKE frame=2039 ms=218.1
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2132.647, 406.85) dest=(0.0, 0.0)
+SPIKE frame=2040 ms=122.4
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2132.647, 406.85) dest=(0.0, 0.0)
+SPIKE frame=2050 ms=38.3
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2132.647, 406.85) dest=(0.0, 0.0)
+SPIKE frame=2054 ms=34.3
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2132.647, 406.85) dest=(0.0, 0.0)
+SPIKE frame=2069 ms=53.0
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2132.647, 406.85) dest=(0.0, 0.0)
+SPIKE frame=2075 ms=73.4
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2132.647, 406.85) dest=(0.0, 0.0)
+SPIKE frame=2076 ms=64.3
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2132.647, 406.85) dest=(0.0, 0.0)
+SPIKE frame=2077 ms=32.2
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2132.647, 406.85) dest=(0.0, 0.0)
+SPIKE frame=2082 ms=36.2
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2132.647, 406.85) dest=(0.0, 0.0)
+SPIKE frame=2096 ms=216.1
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2132.647, 406.85) dest=(0.0, 0.0)
+SPIKE frame=2097 ms=140.3
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2132.647, 406.85) dest=(0.0, 0.0)
+SPIKE frame=2100 ms=60.3
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2132.647, 406.85) dest=(0.0, 0.0)
+SPIKE frame=2103 ms=38.8
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2132.647, 406.85) dest=(0.0, 0.0)
+SPIKE frame=2107 ms=37.0
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2132.647, 406.85) dest=(0.0, 0.0)
+SPIKE frame=2108 ms=51.6
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=build failures=1 pos=(2132.647, 406.85) dest=(0.0, 0.0)
+SPIKE frame=2114 ms=40.4
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=build failures=1 pos=(2059.352, 1993.279) dest=(0.0, 0.0)
+SPIKE frame=2115 ms=42.2
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=2165 ms=50.4
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=2166 ms=43.1
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=2178 ms=103.9
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=2179 ms=33.9
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=2189 ms=30.1
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=2211 ms=75.2
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=2212 ms=199.4
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=2213 ms=32.7
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=2228 ms=33.1
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=2242 ms=30.5
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=2247 ms=60.9
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=2268 ms=35.6
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=2270 ms=56.0
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=2282 ms=32.3
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=2285 ms=53.2
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=2296 ms=52.3
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=2300 ms=199.9
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=2301 ms=131.7
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=2302 ms=39.2
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=2303 ms=73.2
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=2312 ms=61.8
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=2313 ms=78.2
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=2314 ms=60.3
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=scout order=move failures=1 pos=(1812.075, 1576.755) dest=(1984.561, 1749.64)
+SPIKE frame=2316 ms=93.5
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=scout order=move failures=1 pos=(1815.295, 1573.086) dest=(1984.561, 1749.64)
+SPIKE frame=2317 ms=74.8
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=scout order=move failures=1 pos=(1815.295, 1573.086) dest=(1984.561, 1749.64)
+SPIKE frame=2318 ms=209.9
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=scout order=move failures=1 pos=(1815.295, 1573.086) dest=(1984.561, 1749.64)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(1813.097, 1616.135) dest=(1985.0, 1760.0)
+SPIKE frame=2320 ms=54.9
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=scout order=move failures=1 pos=(1814.988, 1568.582) dest=(1984.561, 1749.64)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(1812.264, 1615.255) dest=(1985.0, 1760.0)
+SPIKE frame=2335 ms=56.5
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=scout order=move failures=1 pos=(1812.735, 1576.081) dest=(1984.561, 1749.64)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(1810.107, 1610.36) dest=(1985.0, 1760.0)
+SPIKE frame=2346 ms=54.1
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=scout order=move failures=1 pos=(1814.012, 1574.498) dest=(1984.561, 1749.64)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(1811.416, 1611.767) dest=(1985.0, 1760.0)
+SPIKE frame=2352 ms=31.3
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=scout order=move failures=1 pos=(1812.964, 1575.535) dest=(1984.561, 1749.64)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(1810.934, 1611.293) dest=(1985.0, 1760.0)
+SPIKE frame=2363 ms=33.0
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=scout order=move failures=2 pos=(1812.407, 1576.119) dest=(1984.561, 1749.64)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(1810.136, 1609.649) dest=(1985.0, 1760.0)
+SPIKE frame=2370 ms=38.4
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=scout order=move failures=2 pos=(1812.345, 1576.103) dest=(1984.561, 1749.64)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(1810.136, 1609.649) dest=(1985.0, 1760.0)
+SPIKE frame=2371 ms=44.9
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=scout order=move failures=2 pos=(1815.35, 1572.689) dest=(1984.561, 1749.64)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(1810.136, 1609.649) dest=(1985.0, 1760.0)
+SPIKE frame=2380 ms=35.6
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=scout order=move failures=2 pos=(1813.144, 1574.866) dest=(1984.561, 1749.64)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(1810.136, 1609.649) dest=(1985.0, 1760.0)
+SPIKE frame=2389 ms=31.1
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=scout order=move failures=2 pos=(1813.198, 1574.638) dest=(1984.561, 1749.64)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(1810.136, 1609.649) dest=(1985.0, 1760.0)
+SPIKE frame=2399 ms=80.0
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=scout order=move failures=2 pos=(1812.665, 1575.84) dest=(1984.561, 1749.64)
+  stuck owner=1 kind=villager order=gather failures=2 pos=(1810.136, 1609.649) dest=(1985.0, 1760.0)
+frames=2400 mean=16.12 p50=9.72 p90=32.97 p99=99.73 max=386.38
+frames with obstacle_revision bump: 23/2400, with grid_refresh: 0/2400
+first wildlife: 38, last wildlife: 38, last units: 30, last buildings: 21
+--- slowest 15 frames ---
+{"astar_ms":0.0,"buildings":21,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":1976,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":386.38,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":32,"rev_delta":0,"units":28,"wildlife":38}
+{"astar_ms":0.0,"buildings":20,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":1464,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":241.14,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":22,"rev_delta":0,"units":25,"wildlife":38}
+{"astar_ms":0.0,"buildings":21,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":2039,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":218.08,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":33,"rev_delta":0,"units":29,"wildlife":38}
+{"astar_ms":0.0,"buildings":21,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":2096,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":216.11,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":33,"rev_delta":0,"units":29,"wildlife":38}
+{"astar_ms":0.0,"buildings":21,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":2318,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":209.86,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":37,"rev_delta":0,"units":29,"wildlife":38}
+{"astar_ms":0.0,"buildings":21,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":2300,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":199.87,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":37,"rev_delta":0,"units":29,"wildlife":38}
+{"astar_ms":0.0,"buildings":21,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":2212,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":199.43,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":37,"rev_delta":0,"units":29,"wildlife":38}
+{"astar_ms":0.0,"buildings":19,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":1383,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":192.41,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":20,"rev_delta":3,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":20,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":1649,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":186.33,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":24,"rev_delta":0,"units":25,"wildlife":38}
+{"astar_ms":0.0,"buildings":11,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":1312,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":182.12,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":13,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":20,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":1510,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":175.22,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":22,"rev_delta":0,"units":25,"wildlife":38}
+{"astar_ms":0.0,"buildings":15,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":1345,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":171.17,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":17,"rev_delta":3,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":21,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":1909,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":152.13,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":31,"rev_delta":0,"units":28,"wildlife":38}
+{"astar_ms":0.0,"buildings":11,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":1309,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":141.05,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":13,"rev_delta":3,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":21,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":2097,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":140.33,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":33,"rev_delta":0,"units":29,"wildlife":38}
+--- sample every 300 frames ---
+{"astar_ms":0.0,"buildings":7,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":0,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":31.38,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":8,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":7,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":300,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":26.02,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":8,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":7,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":600,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":7.15,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":8,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":7,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":900,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":50.32,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":8,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":7,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":1200,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":26.53,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":9,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":20,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":1500,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":6.73,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":22,"rev_delta":0,"units":25,"wildlife":38}
+{"astar_ms":0.0,"buildings":21,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":1800,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":3.33,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":28,"rev_delta":0,"units":26,"wildlife":38}
+{"astar_ms":0.0,"buildings":21,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":2100,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":60.35,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":34,"rev_delta":0,"units":29,"wildlife":38}

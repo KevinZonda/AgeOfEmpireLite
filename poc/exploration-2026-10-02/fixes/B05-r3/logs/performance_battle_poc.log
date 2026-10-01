@@ -1,0 +1,11 @@
+Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
+
+BATTLE_PROGRESS step=60 simulation_ms=15.23 frame_ms=19.09
+BATTLE_PROGRESS step=120 simulation_ms=8.41 frame_ms=10.59
+BATTLE_PROGRESS step=180 simulation_ms=12.99 frame_ms=16.66
+BATTLE_PROGRESS step=240 simulation_ms=18.34 frame_ms=27.51
+BATTLE_PROGRESS step=300 simulation_ms=25.36 frame_ms=38.77
+BATTLE_POC {"flat":true,"frame":{"max_ms":1603.531,"mean_ms":19.40944,"p50_ms":12.148,"p95_ms":29.722},"headless":true,"hp_lost":2082.0,"navigation":{},"other_cpu":{"max_ms":10.62,"mean_ms":0.161686666666667,"p50_ms":0.049,"p95_ms":0.421},"projection_25d":true,"side":40,"siege":false,"simulation":{"max_ms":41.707,"mean_ms":9.55691333333334,"p50_ms":8.137,"p95_ms":20.216},"steps":300,"survivors":63,"viewport":"(1280, 720)"}
+BATTLE_POC_OK
+WARNING: 2 ObjectDB instances were leaked at exit (run with `--verbose` for details).
+   at: cleanup (core/object/object.cpp:2536)

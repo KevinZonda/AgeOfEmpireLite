@@ -1,0 +1,7 @@
+Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
+
+PERFORMANCE_NAVIGATION units=400 steps=180 avg_ms=25.24 p95_ms=50.53 p99_ms=63.13 first_step_ms=24.70 steady_peak_ms=64.27
+ROUTE_BUDGET_PROFILE enabled=false metrics={"discarded":0,"finished":0,"max_pending":0,"max_query_us":0,"max_tick_us":0,"rejected":0,"requested":0,"search_us":0,"updated":0} pending=0
+NAV_PROFILE {}
+NAVIGATION_PROGRESS sample_steps=180 remaining_median=528.0 remaining_max=557.3
+NAVIGATION_COMPLETION total_steps=480 idle=400 remaining_max=5.349
