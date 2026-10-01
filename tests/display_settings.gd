@@ -3,6 +3,22 @@ extends SceneTree
 func _initialize() -> void:
 	call_deferred("_run")
 
+func _wait_window_layout(game: Node2D, expected: Vector2i) -> void:
+	# Native window setters and fullscreen exit finish through OS events. Wait
+	# for the requested window, viewport and controls to agree across rendered
+	# frames instead of assuming the next process_frame has drained them all.
+	var deadline := Time.get_ticks_msec() + 2000
+	var stable_frames := 0
+	while Time.get_ticks_msec() < deadline:
+		await process_frame
+		if DisplayServer.get_name() != "headless": await RenderingServer.frame_post_draw
+		var matches: bool = root.size == expected and game.get_viewport_rect().size.is_equal_approx(Vector2(expected)) and game.ui_root.get_global_rect().size.is_equal_approx(Vector2(expected))
+		if game.menu_ui.setup_menu_active and game.menu_panel.visible:
+			matches = matches and game.menu_panel.get_global_rect().size.is_equal_approx(Vector2(expected))
+		stable_frames = stable_frames + 1 if matches else 0
+		if stable_frames >= 3: return
+	assert(false, "native window/viewport/UI did not settle at the requested size within two seconds")
+
 func _run() -> void:
 	# Exercise a fixed 720p / 100% configuration independently of startup defaults.
 	root.size = Vector2i(1280, 720)
@@ -166,6 +182,7 @@ func _run() -> void:
 	assert(saved_fullscreen == true and saved_window_size == Vector2i(1280, 720))
 	assert(game._window_is_fullscreen())
 	game._apply_window_mode(false, false)
+	await _wait_window_layout(game, Vector2i(1280, 720))
 	assert(not game._window_is_fullscreen())
 	if DisplayServer.get_name() != "headless": assert(game.get_window().mode == Window.MODE_WINDOWED)
 	assert(game.get_window().size == Vector2i(1280, 720))
@@ -214,7 +231,7 @@ func _run() -> void:
 	game._set_paused(false)
 	for resolution in [Vector2i(1600, 900), Vector2i(1920, 1080)]:
 		game._apply_window_resolution(resolution, false)
-		await process_frame
+		await _wait_window_layout(game, resolution)
 		assert(game.get_window().size == resolution)
 		assert(game.hud_bottom.get_global_rect().end.y <= game.get_viewport_rect().size.y)
 		assert(game.minimap.get_global_rect().end.y <= game.get_viewport_rect().size.y)
@@ -258,6 +275,7 @@ func _run() -> void:
 	game._input(escape)
 	assert(game.paused and game.pause_overlay.visible and not game.settings_overlay.visible)
 	game._apply_window_resolution(Vector2i(1280, 720), false)
+	await _wait_window_layout(game, Vector2i(1280, 720))
 	game.text_scale = 1.5
 	game._apply_ui_scales()
 	game._show_menu()
@@ -272,7 +290,7 @@ func _run() -> void:
 	assert(menu_rect.position.is_equal_approx(Vector2.ZERO))
 	assert(menu_rect.size.is_equal_approx(Vector2(1280, 720)), "match setup should fill the game view")
 	root.size = Vector2i(1920, 1080)
-	await process_frame
+	await _wait_window_layout(game, Vector2i(1920, 1080))
 	menu_rect = game.menu_panel.get_global_rect()
 	assert(menu_rect.position.is_equal_approx(Vector2.ZERO))
 	assert(menu_rect.size.is_equal_approx(Vector2(1920, 1080)), "match setup should fill a resized view")
@@ -285,7 +303,7 @@ func _run() -> void:
 	game.ui_scale = 1.0
 	game._apply_ui_scales()
 	root.size = Vector2i(1280, 720)
-	await process_frame
+	await _wait_window_layout(game, Vector2i(1280, 720))
 	game._show_settings()
 	await process_frame
 	var settings_rect: Rect2 = game.settings_overlay.get_child(0).get_global_rect()
