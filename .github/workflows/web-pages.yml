@@ -21,6 +21,9 @@ jobs:
       - name: Check out game
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
+      - name: Check Web startup logic
+        run: node tests/web_bootstrap.js
+
       - name: Install Godot and official export templates
         uses: chickensoft-games/setup-godot@f166999204a4f2722c6fe042fbaa3b3ea0d9c789 # v2.4.1
         with:

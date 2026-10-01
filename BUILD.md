@@ -149,6 +149,8 @@ Cross-Origin-Embedder-Policy: require-corp
 
 正式部署时，上传整个 `build/web/` 目录，通过 HTTPS 提供这些响应头，并将 `.wasm` 的 MIME 类型设为 `application/wasm`。预设也启用了 Godot 自带的 PWA 与 `ensure_cross_origin_isolation_headers`：无法配置响应头的静态站点可以由 service worker 补齐隔离响应头，保留后台寻路线程。首次访问可能自动刷新以激活 service worker；浏览器需允许 service worker，建议用 Chrome 或 Firefox。不能通过双击 `index.html` 来运行。该目录包含游戏数据包，不包含开发文档与测试资源。
 
+启动页使用 `tools/web_shell.html`，等待 service worker 激活后再自动刷新。Godot 默认页面在注册完成时就刷新，可能赶在安装完成前重新加载，随后因已有注册而停止启动，留下黑屏。自定义页面也能恢复已有注册，并在注册失败、超时或刷新后仍缺少隔离环境时显示错误，避免无限刷新。`node tests/web_bootstrap.js` 验证这些启动路径，CI 在导出前运行此项。
+
 浏览器决定画布尺寸，游戏的分辨率选项显示「跟随浏览器」；全屏仍通过玩家点击设置按钮触发，刷新网页时不会自动恢复全屏。浏览器对局隐藏系统鼠标并使用游戏光标，不锁定鼠标到画布内。其他显示与操作偏好继续存入 `user://`。此流程生成 Web release 版本。
 
 Web 触控板连续双指滚动由 `scripts/player/web_gestures.js` 转换为平移手势，捏合的 `ctrlKey` wheel 事件转换为缩放手势，再经 `platform_pointer.gd` 进入原有 GUI／游戏输入路由。普通鼠标的离散滚轮继续缩放。这样不会把双指平移交给 Godot Web 的滚轮缩放路径，也保留暂停、覆盖页面和捏合设置的优先级。[浏览器事件说明](https://developer.mozilla.org/en-US/docs/Web/API/Element/wheel_event)。浏览器不提供统一的滚轮设备类型，离散滚轮判断使用事件单位、常见步进量及 Chromium 的连续滚动增量。
@@ -175,3 +177,5 @@ Web 触控板连续双指滚动由 `scripts/player/web_gestures.js` 转换为平
 2026-10-01 本地验证：workflow 通过 actionlint；Web release 实际导出成功；临时 Git 远端验证了首次创建 `pages`、增量提交、移除旧产物、保留历史和产物未变化时跳过提交。在不提供 COOP／COEP 响应头的普通 HTTP 服务器子目录下，Chrome 激活导出的 service worker 后达到 `crossOriginIsolated=true`，游戏启动且未捕获到运行错误。尚未在 GitHub 执行首次 Ubuntu 构建或实际 Pages 部署。
 
 2026-10-01 切换官方模板后验证：actionlint 和 shell 语法检查通过，`make export-web` 使用官方包中的多线程 `web_release.zip` 成功导出。普通静态服务器下，Chrome 的 service worker 生效，`crossOriginIsolated=true`，加载界面消失且未捕获到运行错误。官方 WASM 约 37 MiB，之前的精简模板约 26 MiB；游戏数据包约 9.7 MiB。此验证未运行更新后的远端 workflow。
+
+2026-10-01 线上启动排查：远端最新 workflow 成功，Chrome 能打开 `https://aoe.kevinzonda.com/` 并进入默认对局。在全新本地端口、不提供 COOP／COEP 头的服务器上，默认启动页首次访问复现 `Service worker already exists` 黑屏。修复后，全新端口首次访问只自动刷新一次，达到 `crossOriginIsolated=true` 并进入主菜单，无运行错误；启动回归测试和官方 Web 导出通过。自定义启动页尚未部署到线上。
