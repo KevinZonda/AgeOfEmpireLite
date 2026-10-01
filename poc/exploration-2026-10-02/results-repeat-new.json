@@ -1,0 +1,84 @@
+[
+	{
+		"evidence": {
+			"detected": false,
+			"patch_position": "(1079.012, 2286.993)",
+			"teams": [
+				0,
+				1,
+				0,
+				1
+			],
+			"terrain_visible": true,
+			"unit_owner": 2,
+			"visible": false
+		},
+		"id": "allied_forest_visibility",
+		"status": "bug"
+	},
+	{
+		"evidence": {
+			"detected": false,
+			"patch_position": "(1079.012, 2286.993)",
+			"teams": [
+				0,
+				1,
+				0,
+				1
+			],
+			"terrain_visible": true,
+			"unit_owner": 1,
+			"visible": false
+		},
+		"id": "allied_scout_detection",
+		"status": "bug"
+	},
+	{
+		"evidence": {
+			"detected": true,
+			"patch_position": "(1079.012, 2286.993)",
+			"teams": [
+				0,
+				1,
+				0,
+				1
+			],
+			"terrain_visible": true,
+			"unit_owner": 1,
+			"visible": true
+		},
+		"id": "own_scout_detection",
+		"status": "pass"
+	},
+	{
+		"evidence": {
+			"hp_after": 60.0,
+			"hp_before": 60.0,
+			"same_team": true,
+			"unit_owner": 2
+		},
+		"id": "monk_heal_teammate",
+		"status": "bug"
+	},
+	{
+		"evidence": {
+			"hp_after": 67.0,
+			"hp_before": 60.0,
+			"same_team": true,
+			"unit_owner": 0
+		},
+		"id": "monk_heal_own",
+		"status": "pass"
+	},
+	{
+		"evidence": {
+			"bonus_active": false,
+			"distance": 197.989898681641,
+			"influence_limit": 180.0,
+			"keep_position": "(2120.0, 1200.0)",
+			"stable_position": "(2260.0, 1060.0)"
+		},
+		"id": "french_keep_influence_snap",
+		"status": "bug"
+	}
+]

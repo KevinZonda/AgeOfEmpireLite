@@ -1,0 +1,23 @@
+[
+  {
+    "script": "res://poc/exploration-2026-10-02/explore.gd",
+    "status": "completed",
+    "exit_code": 0,
+    "seconds": 26.205,
+    "command": [
+      "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+      "--path",
+      "/Users/kevin/Desktop/AgeOfEmpireLite",
+      "--headless",
+      "--script",
+      "res://poc/exploration-2026-10-02/explore.gd",
+      "--",
+      "allied_forest_visibility",
+      "allied_scout_detection",
+      "own_scout_detection",
+      "monk_heal_teammate",
+      "monk_heal_own",
+      "french_keep_influence_snap"
+    ]
+  }
+]

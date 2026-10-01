@@ -39,7 +39,7 @@ def source_link(path, function):
 
 def main():
     records = {}
-    for name in ["explore-initial.log", "explore.log", "repeat.log"]:
+    for name in ["explore-initial.log", "explore.log", "repeat.log", "repeat-new.log"]:
         for entry in log_cases(OUT / "logs" / name):
             records[entry['id']] = entry | {'log': 'logs/' + name}
     expected_block = (OUT / 'explore.gd').read_text().split('var cases := [',1)[1].split('\n]',1)[0]
@@ -56,7 +56,7 @@ def main():
     (OUT/'summary.json').write_text(json.dumps(summary,indent=2,ensure_ascii=False))
     paragraphs = [
         '# 游戏探索与 PoC 报告 · 2026-10-02',
-        f'本轮执行 **{len(records)} 个新探索场景**，重点复验 **{len(repeat)} 个场景**，按根因合并为 **{len(issues)} 类确认问题**。另外运行 **{len(suites)} 个已有测试脚本**：53 个通过、7 个失败退出、9 个超时。超时中存在断言失败后未主动 quit 的脚本，不能将这些结果全部当成游戏 bug。',
+        f'本轮执行 **{len(records)} 个新探索场景**，重点复验与补充批次覆盖 **{len(repeat)} 个场景**（新增队伍/AI 场景另外重复一次），按根因合并为 **{len(issues)} 类确认问题**。另外运行 **{len(suites)} 个已有测试脚本**：53 个通过、7 个失败退出、9 个超时。超时中存在断言失败后未主动 quit 的脚本，不能将这些结果全部当成游戏 bug。',
         '范围覆盖经济、施工、生产队列、资源集结点、农田、指令排队、招降、战斗、驻军、运输、多人队伍、迷雾、胜负、AI 和寻路。工作仅添加/更新本目录的审计产物，没有修改游戏业务脚本。测试使用项目本地补丁引擎 Godot 4.7.2、macOS ARM64，以确定性模拟为主；通过实际窗口渲染复核了三处状态。没有把它描述为人工游玩完整长局。',
         '结果按原始日志合并；一次整批执行达到 240 秒时间上限，随后用独立批次完成重点复验和补充场景。`summary.json` 的 missing 为空，表示脚本中声明的场景均有执行记录，而不是把整批超时算作执行成功。复验触发的资源集结点 SCRIPT ERROR 是要复现的游戏问题，脚本仍继续执行并打印 EXPLORATION_COMPLETE。',
         '## 复现入口',
