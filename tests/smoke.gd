@@ -102,6 +102,13 @@ func _run() -> void:
 	assert(Input.use_accumulated_input == accumulated_before_drag)
 	assert(not game.selection_drag_overlay.visible)
 	game._set_paused(false)
+	# The preceding screen-coordinate clicks can select a starting unit in
+	# the native viewport. The selection cursor below needs an empty selection;
+	# otherwise hovering a friendly unit previews that selected unit's order.
+	game.selected.clear()
+	game._rebuild_actions()
+	game._update_hud()
+	assert(game.selected.is_empty())
 	assert(game._cursor_state_at(game.units[0].position) == "select")
 	game._select_area(game.units[0].position, game.units[0].position, false)
 	assert(game.info_label.text == "村民", "selection details should update immediately")
