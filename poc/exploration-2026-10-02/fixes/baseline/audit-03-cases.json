@@ -1,0 +1,78 @@
+[
+	{
+		"evidence": {
+			"gold_delta": -350
+		},
+		"id": "market_roundtrip",
+		"status": "pass"
+	},
+	{
+		"evidence": {
+			"destination": "(1200.0, 650.0)",
+			"order": "move"
+		},
+		"id": "queued_invalid_target",
+		"status": "pass"
+	},
+	{
+		"evidence": {
+			"defeated": [
+				1
+			],
+			"holder": 1,
+			"site_owner_after_elimination": 1,
+			"teams": [
+				0,
+				1,
+				0,
+				1
+			]
+		},
+		"id": "team_sacred_elimination",
+		"status": "observation"
+	},
+	{
+		"evidence": {
+			"multiplier_after": 1.0,
+			"multiplier_before": 1.25
+		},
+		"id": "gatehouse_destroyed",
+		"status": "pass"
+	},
+	{
+		"evidence": {
+			"armor_after": 5.0,
+			"armor_before": 5.0,
+			"shield_timer_after_stop": 99999.0
+		},
+		"id": "pavise_stop",
+		"status": "pass"
+	},
+	{
+		"evidence": {
+			"converted": true,
+			"position_unchanged": true,
+			"vertical": true
+		},
+		"id": "wall_vertical_gate",
+		"status": "pass"
+	},
+	{
+		"evidence": {
+			"passenger_survived": false
+		},
+		"id": "transport_deep_death",
+		"status": "pass"
+	},
+	{
+		"evidence": {
+			"dt": 4.0,
+			"expected": 160.0,
+			"hp_after": 260.0,
+			"hp_before": 38.6666666666667,
+			"undamaged_before": 138.666666666667
+		},
+		"id": "construction_completion_damage",
+		"status": "bug"
+	}
+]

@@ -1,0 +1,21 @@
+{
+  "revision": "70e3b754d56437a2f22e4efaf897f704984b52ab",
+  "seconds": 881.892,
+  "regression": {
+    "passed": 144,
+    "failed": 18,
+    "timeout": 1,
+    "unresolved_bugs": 0,
+    "skipped": 0
+  },
+  "audit": {
+    "pass": 24,
+    "bug": 27,
+    "observation": 12
+  },
+  "expected_audit_cases": 63,
+  "executed_audit_cases": 63,
+  "changed_sources_during_run": [],
+  "passed": false,
+  "pending_long_recheck": true
+}

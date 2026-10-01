@@ -143,7 +143,8 @@ func enter(unit: RtsUnit, command: Dictionary) -> void:
 		"trade":
 			unit.trade_home = command["trade_home"]
 			unit.trade_post = target
-			unit.trade_returning = false
+			# A new command must not claim the same endpoint's income again.
+			# Only reaching the opposite endpoint advances the trade leg.
 			target = null
 		"unload":
 			unit.destination = command["landing"]["water"]
