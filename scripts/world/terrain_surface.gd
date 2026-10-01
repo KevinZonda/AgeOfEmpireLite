@@ -58,3 +58,10 @@ func color_at(map: RtsWorldMap, point: Vector2) -> Color:
 	var index := cell.y * (map.grid_size.x + 1) + cell.x
 	var width := map.grid_size.x + 1
 	return colors[index].lerp(colors[index + 1], fraction.x).lerp(colors[index + width].lerp(colors[index + width + 1], fraction.x), fraction.y)
+
+func rock_at(map: RtsWorldMap, point: Vector2) -> float:
+	var cell := map.cell_at(point)
+	var fraction := ((point - Vector2(cell) * RtsWorldMap.CELL_SIZE) / RtsWorldMap.CELL_SIZE).clamp(Vector2.ZERO, Vector2.ONE)
+	var index := cell.y * (map.grid_size.x + 1) + cell.x
+	var width := map.grid_size.x + 1
+	return lerpf(lerpf(rocks[index], rocks[index + 1], fraction.x), lerpf(rocks[index + width], rocks[index + width + 1], fraction.x), fraction.y)

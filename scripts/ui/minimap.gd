@@ -1,5 +1,6 @@
 class_name RtsMinimap
 extends Control
+const Contours = preload("res://scripts/world/terrain_contours.gd")
 
 var game: Node2D
 var update_timer := 0.0
@@ -11,7 +12,7 @@ func setup(game_ref: Node2D) -> void:
 	game = game_ref
 	clip_contents = false
 	mouse_filter = Control.MOUSE_FILTER_PASS
-	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	queue_redraw()
 
 func _process(delta: float) -> void:
@@ -135,17 +136,7 @@ func _draw() -> void:
 		draw_rect(Rect2(Vector2.ZERO, size), Color("c8b987"), false, 2)
 
 func _build_terrain_texture(terrain_map: RtsWorldMap) -> void:
-	var image := Image.create(terrain_map.grid_size.x, terrain_map.grid_size.y, false, Image.FORMAT_RGBA8)
-	for y in terrain_map.grid_size.y:
-		for x in terrain_map.grid_size.x:
-			var terrain: int = terrain_map.cells[y * terrain_map.grid_size.x + x]
-			var color := Color("688e5e")
-			match terrain:
-				RtsWorldMap.Terrain.MEADOW: color = Color("7d9b64")
-				RtsWorldMap.Terrain.WATER: color = Color("437e9f")
-				RtsWorldMap.Terrain.MOUNTAIN: color = Color("747d79")
-				RtsWorldMap.Terrain.ROAD: color = Color("879468")
-			image.set_pixel(x, y, color)
+	var image := Contours.overview_image(terrain_map)
 	terrain_texture = ImageTexture.create_from_image(image)
 	cached_seed = terrain_map.map_seed
 	cached_size = terrain_map.grid_size

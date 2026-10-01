@@ -232,11 +232,11 @@ func elevation_at(point: Vector2) -> float:
 	fraction = fraction.clamp(Vector2.ZERO, Vector2.ONE)
 	var nw := _vertex_height(cell.x, cell.y)
 	var se := _vertex_height(cell.x + 1, cell.y + 1)
-	if fraction.x >= fraction.y:
-		var ne := _vertex_height(cell.x + 1, cell.y)
-		return nw * (1.0 - fraction.x) + ne * (fraction.x - fraction.y) + se * fraction.y
+	var ne := _vertex_height(cell.x + 1, cell.y)
 	var sw := _vertex_height(cell.x, cell.y + 1)
-	return nw * (1.0 - fraction.y) + sw * (fraction.y - fraction.x) + se * fraction.x
+	# Bilinear patches remove the fixed diagonal crease of each old tile.
+	# Terrain, actors and fog all sample this same surface.
+	return lerpf(lerpf(nw, ne, fraction.x), lerpf(sw, se, fraction.x), fraction.y)
 
 func elevation_span(area: Rect2) -> float:
 	var low := INF

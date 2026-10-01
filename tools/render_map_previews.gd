@@ -3,7 +3,7 @@ extends SceneTree
 const SEED := 431
 const PIXELS_PER_CELL := 8
 const STYLES := ["balanced", "lakes", "highlands", "islands"]
-const TERRAIN_COLORS := [Color("789b68"), Color("9db477"), Color("467f9f"), Color("777d76"), Color("b7a577")]
+const Contours = preload("res://scripts/world/terrain_contours.gd")
 
 func _initialize() -> void:
 	call_deferred("_run")
@@ -14,11 +14,7 @@ func _run() -> void:
 	var map := RtsWorldMap.new()
 	for style in STYLES:
 		map.generate(SEED, Vector2(2400, 2400), style)
-		var image := Image.create_empty(map.grid_size.x * PIXELS_PER_CELL, map.grid_size.y * PIXELS_PER_CELL, false, Image.FORMAT_RGBA8)
-		for y in map.grid_size.y:
-			for x in map.grid_size.x:
-				var terrain: int = map.cells[y * map.grid_size.x + x]
-				image.fill_rect(Rect2i(x * PIXELS_PER_CELL, y * PIXELS_PER_CELL, PIXELS_PER_CELL, PIXELS_PER_CELL), TERRAIN_COLORS[terrain])
+		var image := Contours.overview_image(map, PIXELS_PER_CELL)
 		for spec in map.resource_specs:
 			var color := Color("315e38") if spec["kind"] == "wood" else Color("cf9d38") if spec["kind"] == "gold" else Color("e1d9bf") if spec["kind"] == "stone" else Color("d88058") if spec["appearance"] in ["deer", "boar"] else Color("9dd0df") if spec["appearance"] == "fish" else Color("a9c97a")
 			_dot(image, map, spec["position"], color, 2)

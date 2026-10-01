@@ -475,7 +475,7 @@ func _show_setup_menu() -> void:
 	map_preview_texture.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	map_preview_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	map_preview_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	map_preview_texture.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	map_preview_texture.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	settings_column.add_child(map_preview_texture)
 	map_preview_caption = _menu_ink_label(settings_column, "", RtsUiTypography.CAPTION)
 	map_preview_caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

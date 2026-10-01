@@ -1,5 +1,6 @@
 class_name RtsBattleReplayMap
 extends Control
+const Contours = preload("res://scripts/world/terrain_contours.gd")
 
 var statistics: RtsMatchStatistics
 var world_map: RtsWorldMap
@@ -10,20 +11,11 @@ var terrain_texture: Texture2D
 func _ready() -> void:
 	custom_minimum_size = Vector2(690, 350)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 
 func prepare(map_ref: RtsWorldMap) -> void:
 	world_map = map_ref
-	var image := Image.create(world_map.grid_size.x, world_map.grid_size.y, false, Image.FORMAT_RGBA8)
-	for y in world_map.grid_size.y:
-		for x in world_map.grid_size.x:
-			var terrain: int = world_map.cells[y * world_map.grid_size.x + x]
-			var color := Color("648856")
-			match terrain:
-				RtsWorldMap.Terrain.MEADOW: color = Color("779b64")
-				RtsWorldMap.Terrain.WATER: color = Color("426d88")
-				RtsWorldMap.Terrain.MOUNTAIN: color = Color("777e79")
-				RtsWorldMap.Terrain.ROAD: color = Color("9a9b70")
-			image.set_pixel(x, y, color)
+	var image := Contours.overview_image(world_map)
 	terrain_texture = ImageTexture.create_from_image(image)
 	queue_redraw()
 

@@ -2,19 +2,12 @@ class_name RtsMapPreview
 extends RefCounted
 
 const PIXELS_PER_CELL := 4
-const TERRAIN_COLORS := [
-	Color("789b68"), Color("9db477"), Color("467f9f"),
-	Color("777d76"), Color("b7a577"),
-]
+const Contours = preload("res://scripts/world/terrain_contours.gd")
 
 static func create_texture(seed_value: int, world_size: Vector2, style: String, player_colors: Array[Color]) -> ImageTexture:
 	var map := RtsWorldMap.new()
 	map.generate_terrain(seed_value, world_size, style, player_colors.size())
-	var image := Image.create_empty(map.grid_size.x * PIXELS_PER_CELL, map.grid_size.y * PIXELS_PER_CELL, false, Image.FORMAT_RGBA8)
-	for y in map.grid_size.y:
-		for x in map.grid_size.x:
-			var terrain: int = map.cells[y * map.grid_size.x + x]
-			image.fill_rect(Rect2i(x * PIXELS_PER_CELL, y * PIXELS_PER_CELL, PIXELS_PER_CELL, PIXELS_PER_CELL), TERRAIN_COLORS[terrain])
+	var image := Contours.overview_image(map, PIXELS_PER_CELL)
 	for post in map.trade_post_positions(): _dot(image, map, post, Color("9b5fbd"), 6)
 	for site in map.sacred_site_positions(): _dot(image, map, site, Color("ffe29a"), 7)
 	var spawns := map.spawn_positions()

@@ -1,8 +1,8 @@
 extends Node2D
 
 # Only impassable mountain faces enter the entity depth order. Walkable ground
-# stays below units, so a unit's own cell cannot cover its feet. Each original
-# triangle is split into four coplanar pieces for more precise depth sorting.
+# stays below units, so a unit's own cell cannot cover its feet. Subdivided
+# surface triangles share the same depth bands as the terrain renderer.
 const FOG_SHADER = preload("res://scripts/world/terrain_occlusion.gdshader")
 var shared_material: ShaderMaterial
 var pieces: Array[MeshInstance2D] = []

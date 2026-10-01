@@ -2,6 +2,7 @@ extends RefCounted
 
 # Static ground draws on the map. Mountain patches also enter entity depth order.
 const Surface = preload("res://scripts/world/terrain_surface.gd")
+const Contours = preload("res://scripts/world/terrain_contours.gd")
 static var white_texture: ImageTexture
 
 
@@ -30,6 +31,16 @@ class MapMeshBuilder:
 	func line(a: Vector2, b: Vector2, color: Color, width: float) -> void:
 		var side := (b - a).normalized().orthogonal() * width * 0.5
 		quad(a - side, b - side, b + side, a + side, color, color, color, color)
+
+	func grid(points: Array[Vector2], shades: Array[Color], width: int) -> void:
+		var first := vertices.size()
+		for point in points: vertices.append(Vector3(point.x, point.y, 0.0))
+		colors.append_array(PackedColorArray(shades))
+		uvs.resize(vertices.size())
+		for y in width - 1:
+			for x in width - 1:
+				var nw := first + y * width + x
+				indices.append_array(PackedInt32Array([nw, nw + 1, nw + width + 1, nw, nw + width + 1, nw + width]))
 
 	func circle(center: Vector2, radius: float, color: Color) -> void:
 		for step in 8:
@@ -62,18 +73,8 @@ static func _ground_mesh(map: RtsWorldMap, surface) -> ArrayMesh:
 	var builder := MapMeshBuilder.new()
 	for y in map.grid_size.y:
 		for x in map.grid_size.x:
-			var cell := Vector2i(x, y)
-			var terrain: int = map.cells[map._index(cell)]
-			var point := Vector2(x * RtsWorldMap.CELL_SIZE, y * RtsWorldMap.CELL_SIZE)
-			var end := point + Vector2.ONE * RtsWorldMap.CELL_SIZE
 			if map.isometric_view and maxf(maxf(visual_vertex_height(map, x, y), visual_vertex_height(map, x + 1, y)), maxf(visual_vertex_height(map, x, y + 1), visual_vertex_height(map, x + 1, y + 1))) >= 0.5: continue
-			if terrain == RtsWorldMap.Terrain.WATER:
-				var color := Color("437e9f")
-				builder.quad(point, Vector2(end.x, point.y), end, Vector2(point.x, end.y), color, color, color, color)
-			else:
-				var points := [point, Vector2(end.x, point.y), end, Vector2(point.x, end.y)]
-				if map.isometric_view: points = [projected_vertex(map, x, y), projected_vertex(map, x + 1, y), projected_vertex(map, x + 1, y + 1), projected_vertex(map, x, y + 1)]
-				_surface_quad(builder, map, surface, x, y, points)
+			_surface_quad(builder, map, surface, x, y)
 	return builder.finish()
 
 
@@ -81,6 +82,7 @@ static func _plants_mesh(map: RtsWorldMap) -> ArrayMesh:
 	var builder := MapMeshBuilder.new()
 	for plant in map.plants:
 		var point: Vector2 = plant["position"]
+		if Contours.water_at(map, point) > 0.12: continue
 		if map.isometric_view: point += tile_lift(map, map.elevation_at(point))
 		var size: float = plant["size"]
 		if plant["flower"]:
@@ -94,18 +96,17 @@ static func _plants_mesh(map: RtsWorldMap) -> ArrayMesh:
 
 static func _accents_mesh(map: RtsWorldMap) -> ArrayMesh:
 	var builder := MapMeshBuilder.new()
+	var random := RandomNumberGenerator.new()
+	random.seed = map.map_seed ^ 0x712b
+	# Sparse irregular ripples avoid revealing every navigation cell in water.
 	for y in map.grid_size.y:
 		for x in map.grid_size.x:
-			var terrain: int = map.cells[map._index(Vector2i(x, y))]
-			var point := Vector2(x * RtsWorldMap.CELL_SIZE, y * RtsWorldMap.CELL_SIZE)
-			if terrain == RtsWorldMap.Terrain.WATER:
-				builder.line(point + Vector2(9, 19), point + Vector2(27, 19), Color("8fc3cf", 0.45), 2.0)
-				builder.line(point + Vector2(24, 35), point + Vector2(43, 35), Color("8fc3cf", 0.34), 2.0)
-				if y > 0 and map.cells[map._index(Vector2i(x, y - 1))] != RtsWorldMap.Terrain.WATER:
-					builder.line(point, point + Vector2(RtsWorldMap.CELL_SIZE, 0), Color("b8c6a0", 0.7), 2.0)
-				if x > 0 and map.cells[map._index(Vector2i(x - 1, y))] != RtsWorldMap.Terrain.WATER:
-					builder.line(point, point + Vector2(0, RtsWorldMap.CELL_SIZE), Color("b8c6a0", 0.7), 2.0)
-
+			if map.cells[map._index(Vector2i(x, y))] != RtsWorldMap.Terrain.WATER: continue
+			if random.randf() > 0.48: continue
+			var point := (Vector2(x, y) + Vector2(random.randf_range(0.2, 0.8), random.randf_range(0.2, 0.8))) * RtsWorldMap.CELL_SIZE
+			var length := random.randf_range(9.0, 23.0)
+			if Contours.water_at(map, point - Vector2(length * 0.5, 0)) < 0.93 or Contours.water_at(map, point + Vector2(length * 0.5, 0)) < 0.93: continue
+			builder.line(surface_point(map, point - Vector2(length * 0.5, 0)), surface_point(map, point + Vector2(length * 0.5, 0)), Color("9ac8d2", 0.28), 1.2)
 	return builder.finish()
 
 
@@ -138,43 +139,44 @@ static func _relief_mesh(map: RtsWorldMap, surface, occluders: Dictionary) -> Ar
 			if outside:
 				builder.quad(nw, ne, se, sw, RtsWorldMap.OUTSIDE_COLOR, RtsWorldMap.OUTSIDE_COLOR, RtsWorldMap.OUTSIDE_COLOR, RtsWorldMap.OUTSIDE_COLOR)
 				continue
-			if terrain == RtsWorldMap.Terrain.WATER:
-				var water := Color("437e9f")
-				builder.quad(nw, ne, se, sw, water, water, water, water)
-			else:
-				_surface_quad(builder, map, surface, x, y, [nw, ne, se, sw], occluders if terrain == RtsWorldMap.Terrain.MOUNTAIN else null)
+			_surface_quad(builder, map, surface, x, y, occluders if terrain == RtsWorldMap.Terrain.MOUNTAIN else null)
 	return builder.finish()
 
 
-static func _surface_quad(builder, map: RtsWorldMap, surface, x: int, y: int, points: Array, occluders = null) -> void:
-	var stride := map.grid_size.x + 1
-	var indices := [y * stride + x, y * stride + x + 1, (y + 1) * stride + x + 1, (y + 1) * stride + x]
-	var heights := [visual_vertex_height(map, x, y), visual_vertex_height(map, x + 1, y), visual_vertex_height(map, x + 1, y + 1), visual_vertex_height(map, x, y + 1)]
-	for triangle in [[0, 1, 2], [0, 2, 3]]:
-		var east: float = (heights[1] - heights[0]) / RtsWorldMap.CELL_SIZE if triangle[1] == 1 else (heights[2] - heights[3]) / RtsWorldMap.CELL_SIZE
-		var south: float = (heights[2] - heights[1]) / RtsWorldMap.CELL_SIZE if triangle[1] == 1 else (heights[3] - heights[0]) / RtsWorldMap.CELL_SIZE
-		var light := clampf(0.59 + Vector3(-east, -south, 1).normalized().dot(Vector3(-0.55, -0.35, 0.76).normalized()) * 0.53, 0.60, 1.13)
-		var shades: Array[Color] = []
-		for corner in triangle:
-			var color: Color = surface.colors[indices[corner]] * lerpf(1.0, light, surface.rocks[indices[corner]] if map.isometric_view else 0.0)
+static func _surface_quad(builder, map: RtsWorldMap, surface, x: int, y: int, occluders = null) -> void:
+	var shore := Contours.near_shore(map, x, y)
+	var raised := maxf(maxf(visual_vertex_height(map, x, y), visual_vertex_height(map, x + 1, y)), maxf(visual_vertex_height(map, x, y + 1), visual_vertex_height(map, x + 1, y + 1))) >= 0.5
+	var steps: int = Contours.SHORE_SUBDIVISIONS if shore else Contours.SUBDIVISIONS if raised else 1
+	var width := steps + 1
+	var points: Array[Vector2] = []
+	var projected: Array[Vector2] = []
+	var colors: Array[Color] = []
+	var water_cell := map.cells[map._index(Vector2i(x, y))] == RtsWorldMap.Terrain.WATER
+	for sy in width:
+		for sx in width:
+			var point := (Vector2(x, y) + Vector2(sx, sy) / steps) * RtsWorldMap.CELL_SIZE
+			points.append(point)
+			projected.append(surface_point(map, point))
+			var color: Color = surface.color_at(map, point)
+			if raised and map.isometric_view:
+				# Interpolated vertex normals smooth the shading across tile edges.
+				var east := (map.elevation_at(point + Vector2(25, 0)) - map.elevation_at(point - Vector2(25, 0))) / 50.0
+				var south := (map.elevation_at(point + Vector2(0, 25)) - map.elevation_at(point - Vector2(0, 25))) / 50.0
+				var light := clampf(0.59 + Vector3(-east, -south, 1).normalized().dot(Vector3(-0.55, -0.35, 0.76).normalized()) * 0.53, 0.60, 1.13)
+				color *= lerpf(1.0, light, surface.rock_at(map, point))
+			color = Contours.shore_color(color, Contours.water_at(map, point)) if shore else Color("437e9f") if water_cell else color
 			color.a = 1.0
-			shades.append(color)
-		builder.triangle(points[triangle[0]], points[triangle[1]], points[triangle[2]], shades[0], shades[1], shades[2])
-		if occluders != null:
-			var corners := [Vector2(x, y), Vector2(x + 1, y), Vector2(x + 1, y + 1), Vector2(x, y + 1)]
-			var a: Vector2 = corners[triangle[0]] * RtsWorldMap.CELL_SIZE
-			var b: Vector2 = corners[triangle[1]] * RtsWorldMap.CELL_SIZE
-			var c: Vector2 = corners[triangle[2]] * RtsWorldMap.CELL_SIZE
-			var ab := (a + b) * 0.5
-			var bc := (b + c) * 0.5
-			var ca := (c + a) * 0.5
-			var color_ab := shades[0].lerp(shades[1], 0.5)
-			var color_bc := shades[1].lerp(shades[2], 0.5)
-			var color_ca := shades[2].lerp(shades[0], 0.5)
-			_occlusion_triangle(occluders, map, a, ab, ca, shades[0], color_ab, color_ca)
-			_occlusion_triangle(occluders, map, ab, b, bc, color_ab, shades[1], color_bc)
-			_occlusion_triangle(occluders, map, ca, bc, c, color_ca, color_bc, shades[2])
-			_occlusion_triangle(occluders, map, ab, bc, ca, color_ab, color_bc, color_ca)
+			colors.append(color)
+	builder.grid(projected, colors, width)
+	if occluders == null: return
+	for sy in steps:
+		for sx in steps:
+			var nw := sy * width + sx
+			var ne := nw + 1
+			var sw := nw + width
+			var se := sw + 1
+			_occlusion_triangle(occluders, map, points[nw], points[ne], points[se], colors[nw], colors[ne], colors[se])
+			_occlusion_triangle(occluders, map, points[nw], points[se], points[sw], colors[nw], colors[se], colors[sw])
 
 
 static func _occlusion_triangle(groups: Dictionary, map: RtsWorldMap, a: Vector2, b: Vector2, c: Vector2, ca: Color, cb: Color, cc: Color) -> void:
@@ -232,6 +234,7 @@ static func _details_mesh(map: RtsWorldMap, surface, occluders: Dictionary) -> A
 			var count := 3 if terrain == RtsWorldMap.Terrain.MOUNTAIN else 1
 			for sample in count:
 				var point := (Vector2(x, y) + Vector2(random.randf_range(0.16, 0.84), random.randf_range(0.16, 0.84))) * RtsWorldMap.CELL_SIZE
+				if Contours.water_at(map, point) > 0.12: continue
 				var base: Color = surface.color_at(map, point)
 				var rock := terrain == RtsWorldMap.Terrain.MOUNTAIN or (map.elevation_at(point) > 35.0 and random.randf() < 0.40)
 				if rock:
@@ -274,8 +277,6 @@ static func draw_map(map: RtsWorldMap) -> void:
 		map.draw_mesh(map.apron_mesh, _white_texture())
 	map.ground_mesh = _ground_mesh(map, surface)
 	map.draw_mesh(map.ground_mesh, _white_texture())
-	map.accents_mesh = _accents_mesh(map)
-	map.draw_mesh(map.accents_mesh, _white_texture())
 	if map.isometric_view:
 		map.relief_mesh = _relief_mesh(map, surface, occluders)
 		map.draw_mesh(map.relief_mesh, _white_texture())
@@ -286,6 +287,8 @@ static func draw_map(map: RtsWorldMap) -> void:
 		for y in map.grid_size.y:
 			map.draw_line(projected_vertex(map, 0, y), projected_vertex(map, 0, y + 1), border, 2.0)
 			map.draw_line(projected_vertex(map, map.grid_size.x, y), projected_vertex(map, map.grid_size.x, y + 1), border, 2.0)
+	map.accents_mesh = _accents_mesh(map)
+	map.draw_mesh(map.accents_mesh, _white_texture())
 	map.details_mesh = _details_mesh(map, surface, occluders)
 	map.draw_mesh(map.details_mesh, _white_texture())
 	for patch in map.stealth_patches:

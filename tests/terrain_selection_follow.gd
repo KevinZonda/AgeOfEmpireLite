@@ -22,6 +22,10 @@ func _run() -> void:
 			var second: Vector2 = game.world_map.cell_center(Vector2i(x + 1, y))
 			if not game.world_map.is_walkable(first) or not game.world_map.is_walkable(second): continue
 			if absf(game.world_map.elevation_at(first) - game.world_map.elevation_at(second)) < 7.0: continue
+			# A walkable slope may sit behind a mountain in this projection. Choose
+			# an exposed destination, since clicking an occluded one hits the face.
+			var visible_second := second + RtsIsoProjection.ground_lift(game, second)
+			if RtsIsoProjection.ground_point(game, visible_second).distance_to(second) > 1.0: continue
 			if not game.navigation.can_occupy(first, 14.0, null) or not game.navigation.can_occupy(second, 14.0, null): continue
 			if game.navigation.path_between(first, second).is_empty(): continue
 			from = first

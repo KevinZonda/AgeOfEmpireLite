@@ -527,14 +527,17 @@ func update_projection() -> void:
 	var uvs := PackedVector2Array()
 	var indices := PackedInt32Array()
 	# Fog stops at the playable boundary; the black exterior never shares vision.
-	var width := grid_size.x + 1
-	for y in grid_size.y + 1:
-		for x in grid_size.x + 1:
-			var point := Vector2(x, y) * RtsWorldMap.CELL_SIZE + lift * terrain_map._visual_vertex_height(x, y)
+	var subdivisions: int = preload("res://scripts/world/terrain_contours.gd").SUBDIVISIONS
+	var fine_size := grid_size * subdivisions
+	var width := fine_size.x + 1
+	for y in fine_size.y + 1:
+		for x in fine_size.x + 1:
+			var ground := Vector2(x, y) * RtsWorldMap.CELL_SIZE / subdivisions
+			var point := ground + lift * terrain_map.elevation_at(ground)
 			vertices.append(Vector3(point.x, point.y, 0.0))
-			uvs.append(Vector2(float(x) / grid_size.x, float(y) / grid_size.y))
-	for y in grid_size.y:
-		for x in grid_size.x:
+			uvs.append(Vector2(float(x) / fine_size.x, float(y) / fine_size.y))
+	for y in fine_size.y:
+		for x in fine_size.x:
 			var nw := y * width + x
 			var ne := nw + 1
 			var sw := nw + width

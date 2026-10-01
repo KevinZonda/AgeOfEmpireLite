@@ -67,6 +67,7 @@ Web 版本执行 `make run-web`，自动构建、导出并启动 <http://127.0.0
 - 野外资源点耗尽时，村民会自动转向附近的同类资源点继续采集。
 - 每局会生成新地图，并检查双方起始资源数量与距离。山地不可通行，陆军会绕开水域，船只则在水域航行；鹿会躲避军队，野猪需要击杀后才能采集，鱼群可由渔船采集。高地可扩大视野，潜伏森林能遮蔽其中的单位，近距离侦察可发现他们。
 - 地图类型改变路线和争夺重点：平衡图保留开阔中路，山湖和圣地随种子移动；大湖图由三处渡口连接两岸，鱼群分布在河湖水域；高地图由三处山口连接两侧，金矿、石矿和鹿群靠近争夺路线；群岛图需要运输船登上有资源和三处圣地的中央岛。出生点、贸易站及中立资源随地图布局生成。电脑会按文明和地图选择地标、生产顺序与防御位置，在群岛使用本岛贸易站并运送修士登陆。
+- 湖泊、河岸和岛屿使用连续圆滑岸线，草地、沙岸、浅水到深水渐变；波纹按种子不规则分布。2.5D 山体使用细分的双线性坡面及连续光照，单位贴地、坡面点击和迷雾共用高度采样。小地图、选图预览及战局回看共用岸线；寻路格子和资源布局保持原样。[岸线前后对比](docs/terrain-smoothing/shore-comparison.png)（左为原版、右为新版）。运行 `tools/smooth_terrain_preview.gd` 可截取四种地图在 2D／2.5D 下的实际画面。
 - 种子 431 的地形与资源预览：[平衡](docs/map-previews/balanced-seed-431.png) · [大湖](docs/map-previews/lakes-seed-431.png) · [高地](docs/map-previews/highlands-seed-431.png) · [群岛](docs/map-previews/islands-seed-431.png)。蓝／红方块是出生点，浅金方块是圣地，紫色方块是贸易站；运行 `tools/render_map_previews.gd` 可重新生成。
 - 单位和建筑提供视野；未探索区域全黑，探索后失去视野的区域变暗，山地会挡住视线。敌军与鹿群只有在当前视野内才会显示。
 - 底部命令网格显示各按钮快捷键；开局选中城镇中心，信息栏用单位或建筑肖像显示当前对象，并列出生命、护甲、攻击档案、射程与攻击间隔。资源剩余量在鼠标悬停时显示。点击可见的敌方单位可查看其数值，离开视野或隐蔽后面板会清除该单位，小地图也不会泄露隐蔽敌军。顶部显示人口已用／上限（及空余），「空闲村民」按钮或句号键可循环选中空闲村民；右下角小地图可点击定位。
@@ -104,6 +105,9 @@ make run RUN_ARGS='--headless --script res://tests/tech_tree_page.gd'
 make run RUN_ARGS='--headless --script res://tests/chinese.gd'
 make run RUN_ARGS='--headless --script res://tests/extended_systems.gd'
 make run RUN_ARGS='--headless --script res://tests/map_generator.gd'
+make run RUN_ARGS='--headless --script res://tests/terrain_contours.gd'
+make run RUN_ARGS='--headless --script res://tests/terrain_surface.gd'
+make run RUN_ARGS='--headless --script res://tests/terrain_selection_follow.gd'
 make run RUN_ARGS='--headless --script res://tests/fog_of_war.gd'
 make run RUN_ARGS='--headless --script res://tests/fog_unit_flash_poc.gd'
 make run RUN_ARGS='--headless --script res://tests/navigation.gd'
