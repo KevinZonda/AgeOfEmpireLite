@@ -23,6 +23,11 @@ const MIN_UI_VIEWPORT_SIZE := Vector2(1280, 720)
 const SETTINGS_PATH = SETTINGS_STORE.SETTINGS_PATH
 const LEGACY_DISPLAY_SETTINGS_PATH = SETTINGS_STORE.LEGACY_DISPLAY_SETTINGS_PATH
 const CAMERA_PAN_SPEED := 570.0
+# User-facing 1x is the previous maximum magnification. Keep world units intact.
+const CAMERA_ZOOM_BASE := 1.65
+const DEFAULT_CAMERA_ZOOM := 1.0
+const MIN_CAMERA_ZOOM := 0.7 / CAMERA_ZOOM_BASE
+const MAX_CAMERA_ZOOM := 1.0
 const GESTURE_PAN_PIXELS := 32.0
 const EDGE_SCROLL_MARGIN := 28.0
 const SELECTION_DRAG_THRESHOLD := 12.0
@@ -461,6 +466,7 @@ func _ready() -> void:
 	navigation.background_recovery_enabled = OS.get_environment("RTS_ASYNC_NAV") != "0"
 	navigation.route_budget_enabled = OS.get_environment("RTS_ROUTE_BUDGET") == "1"
 	camera = Camera2D.new()
+	camera.zoom = Vector2.ONE * CAMERA_ZOOM_BASE * DEFAULT_CAMERA_ZOOM
 	camera.position = START_CAMERA_POINT
 	# We clamp the rotated viewport ourselves. Camera2D's axis-aligned limits
 	# would otherwise pin the projected view against the map edge.
@@ -686,7 +692,9 @@ func start_game(civ: String, requested_seed := -1, opponent_civ := "") -> void:
 	build_page = 0
 	order_mode = ""
 	ai_think_timers.clear()
-	camera.position = spawn_point_for(0) + _scaled_point(START_CAMERA_POINT - Vector2(330, 720))
+	var initial_zoom := CAMERA_ZOOM_BASE * DEFAULT_CAMERA_ZOOM
+	camera.zoom = Vector2(initial_zoom, initial_zoom * 0.5 if view_mode_25d else initial_zoom)
+	camera.position = _starting_camera_position()
 	menu_panel.hide()
 	menu_backdrop.hide()
 	hud_top.show()
@@ -1298,8 +1306,12 @@ func _move_camera_screen_delta(screen_delta: Vector2) -> void:
 func _clamp_camera_position() -> void:
 	player_input._clamp_camera_position()
 
+func _starting_camera_position() -> Vector2:
+	# Preserve the opening screen offset when the default magnification changes.
+	return spawn_point_for(0) + _scaled_point(START_CAMERA_POINT - Vector2(330, 720)) / (CAMERA_ZOOM_BASE * DEFAULT_CAMERA_ZOOM)
+
 func _toggle_view_mode(save_setting := false) -> void:
-	var at_starting_camera := started and match_statistics.elapsed < 2.0 and camera.position.distance_to(spawn_point_for(0) + _scaled_point(START_CAMERA_POINT - Vector2(330, 720))) < 2.0
+	var at_starting_camera := started and match_statistics.elapsed < 2.0 and camera.position.distance_to(_starting_camera_position()) < 2.0
 	view_mode_25d = not view_mode_25d
 	world_map.isometric_view = view_mode_25d
 	world_map.queue_redraw()
@@ -1355,6 +1367,9 @@ func _update_iso_depths() -> void:
 
 func _adjust_zoom(factor: float, screen_anchor := Vector2.INF) -> void:
 	player_input._adjust_zoom(factor, screen_anchor)
+
+func camera_zoom_ratio() -> float:
+	return camera.zoom.x / CAMERA_ZOOM_BASE
 
 func _edge_pan_direction(screen_point: Vector2, viewport_size: Vector2) -> Vector2:
 	return player_input._edge_pan_direction(screen_point, viewport_size)

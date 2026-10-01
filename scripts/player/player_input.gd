@@ -71,7 +71,8 @@ func _clamp_camera_position() -> void:
 	game.camera.position = game.camera.position.clamp(margin, game.world_size - margin)
 
 func _adjust_zoom(factor: float, screen_anchor := Vector2.INF) -> void:
-	var base_zoom := clampf(game.camera.zoom.x * factor, 0.7, 1.65)
+	var ratio: float = clampf(game.camera_zoom_ratio() * factor, game.MIN_CAMERA_ZOOM, game.MAX_CAMERA_ZOOM)
+	var base_zoom: float = ratio * game.CAMERA_ZOOM_BASE
 	if is_equal_approx(base_zoom, game.camera.zoom.x): return
 	if screen_anchor == Vector2.INF: screen_anchor = game.get_viewport_rect().size * 0.5
 	game.camera.force_update_scroll()
@@ -445,4 +446,3 @@ func _confirm_wall_line(from: Vector2, to: Vector2, append_order := false) -> vo
 		game.build_mode = ""
 		game._rebuild_actions()
 	game.queue_redraw()
-

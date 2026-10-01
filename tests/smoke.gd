@@ -155,6 +155,8 @@ func _run() -> void:
 	map_click.position = game.minimap.size * 0.5
 	game.minimap._gui_input(map_click)
 	assert(game.camera.position.distance_to(game.world_size * 0.5) < 1.0)
+	# Exercise the explicit unscaled pan case independently of the opening zoom.
+	game.camera.zoom = Vector2.ONE
 	var pan := InputEventPanGesture.new()
 	pan.delta = Vector2(1.5, -2.0)
 	var before_pan: Vector2 = game.camera.position

@@ -190,14 +190,15 @@ func _run() -> void:
 	game._apply_ui_scales()
 	assert(game.view_mode_25d, "saved view preference should apply to a new match")
 	var magnify := InputEventMagnifyGesture.new()
-	magnify.factor = 1.2
+	# The new default is already the maximum; exercise a real zoom-out gesture.
+	magnify.factor = 1.0 / 1.2
 	magnify.position = Vector2(640, 360)
 	var zoom_before: float = game.camera.zoom.x
 	game._unhandled_input(magnify)
 	assert(is_equal_approx(game.camera.zoom.x, zoom_before), "disabled magnify gesture should not zoom")
 	game.zoom_gesture_enabled = true
 	game._unhandled_input(magnify)
-	assert(game.camera.zoom.x > zoom_before, "enabled magnify gesture should zoom")
+	assert(game.camera.zoom.x < zoom_before, "enabled magnify gesture should zoom")
 	assert(not game.minimap.clip_contents)
 	assert(game.minimap.size.is_equal_approx(game.minimap.get_parent().size), "the 2.5D map should fit its configured slot")
 	assert(game.hud_bottom.get_global_rect().end.y <= game.get_viewport_rect().size.y)
