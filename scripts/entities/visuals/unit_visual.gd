@@ -24,14 +24,17 @@ func draw(item: CanvasItem, snapshot: VisualState) -> void:
 func _draw_figure() -> void:
 	var canvas := canvas_item.get_viewport().get_canvas_transform()
 	var ground_lift := RtsIsoProjection.world_delta(canvas, Vector2(0, -state.ground_height * state.zoom)) if state.view_mode_25d else Vector2.ZERO
-	canvas_item.draw_set_transform_matrix(Transform2D(0.0, Vector2(1, 0.4), 0.0, ground_lift))
+	canvas_item.draw_set_transform_matrix(Transform2D(0.0, Vector2(1, 0.4) * state.visual_scale, 0.0, ground_lift))
 	Figure.draw_shadow(canvas_item, state)
 	var figure := RtsIsoProjection.upright(canvas, ground_lift, state.zoom) if state.view_mode_25d else Transform2D.IDENTITY
-	canvas_item.draw_set_transform_matrix(figure)
+	# Scale the basis only: feet remain anchored at the same elevated ground point.
+	canvas_item.draw_set_transform_matrix(figure.scaled_local(Vector2.ONE * state.visual_scale))
 	figure_renderer.draw(canvas_item, state)
 	if state.hit_flash_timer > 0.0:
 		canvas_item.draw_arc(Vector2(0, -24 if state.tags.has("cavalry") else -19), 24.0 if state.tags.has("cavalry") else 18.0, 0.0, TAU, 24, Color("ffe5ac", state.hit_flash_timer / 0.18), 2.0)
-	if state.show_health_bar: _health_bar(Figure.health_bar_y(state), 28.0 if state.tags.has("cavalry") else 24.0, 3.0)
+	# Keep the bar readable while moving it with the scaled figure.
+	canvas_item.draw_set_transform_matrix(figure)
+	if state.show_health_bar: _health_bar(Figure.health_bar_y(state) * state.visual_scale, 28.0 if state.tags.has("cavalry") else 24.0, 3.0)
 	canvas_item.draw_set_transform_matrix(Transform2D.IDENTITY)
 
 func _draw_naval() -> void:
@@ -40,35 +43,43 @@ func _draw_naval() -> void:
 		return
 	var canvas := canvas_item.get_viewport().get_canvas_transform()
 	var water_lift := RtsIsoProjection.world_delta(canvas, Vector2(0, -state.ground_height * state.zoom)) if state.view_mode_25d else Vector2.ZERO
-	canvas_item.draw_set_transform_matrix(RtsIsoProjection.upright(canvas, water_lift, state.zoom) if state.view_mode_25d else Transform2D.IDENTITY)
+	var figure := RtsIsoProjection.upright(canvas, water_lift, state.zoom) if state.view_mode_25d else Transform2D.IDENTITY
+	canvas_item.draw_set_transform_matrix(figure.scaled_local(Vector2.ONE * state.visual_scale))
 	naval_renderer.draw_shadow(canvas_item, state)
 	naval_renderer.draw(canvas_item, state)
 	if state.hit_flash_timer > 0.0:
 		canvas_item.draw_arc(Vector2(0, -16), state.radius + 7.0, 0.0, TAU, 24, Color("ffe5ac", state.hit_flash_timer / 0.18), 2.0)
 	if state.show_health_bar:
-		_health_bar(naval_renderer.overlay_y(state), maxf(18.0, state.radius * 2.0), 4.0)
+		canvas_item.draw_set_transform_matrix(figure)
+		_health_bar(naval_renderer.overlay_y(state) * state.visual_scale, maxf(18.0, state.radius * 2.0), 4.0)
 	canvas_item.draw_set_transform_matrix(Transform2D.IDENTITY)
 
 func _draw_siege() -> void:
 	var canvas := canvas_item.get_viewport().get_canvas_transform()
 	var ground_lift := RtsIsoProjection.world_delta(canvas, Vector2(0, -state.ground_height * state.zoom)) if state.view_mode_25d else Vector2.ZERO
-	canvas_item.draw_set_transform_matrix(RtsIsoProjection.upright(canvas, ground_lift, state.zoom) if state.view_mode_25d else Transform2D.IDENTITY)
+	var figure := RtsIsoProjection.upright(canvas, ground_lift, state.zoom) if state.view_mode_25d else Transform2D.IDENTITY
+	canvas_item.draw_set_transform_matrix(figure.scaled_local(Vector2.ONE * state.visual_scale))
 	siege_renderer.draw_shadow(canvas_item, state)
 	siege_renderer.draw(canvas_item, state)
 	if state.hit_flash_timer > 0.0:
 		canvas_item.draw_arc(Vector2(0, -12), state.radius + 6.0, 0.0, TAU, 24, Color("ffe5ac", state.hit_flash_timer / 0.18), 2.0)
-	if state.show_health_bar: _health_bar(siege_renderer.overlay_y(state), maxf(24.0, state.radius * 2.0), 3.0)
+	if state.show_health_bar:
+		canvas_item.draw_set_transform_matrix(figure)
+		_health_bar(siege_renderer.overlay_y(state) * state.visual_scale, maxf(24.0, state.radius * 2.0), 3.0)
 	canvas_item.draw_set_transform_matrix(Transform2D.IDENTITY)
 
 func _draw_fishing_boat() -> void:
 	var canvas := canvas_item.get_viewport().get_canvas_transform()
 	var water_lift := RtsIsoProjection.world_delta(canvas, Vector2(0, -state.ground_height * state.zoom)) if state.view_mode_25d else Vector2.ZERO
-	canvas_item.draw_set_transform_matrix(RtsIsoProjection.upright(canvas, water_lift, state.zoom) if state.view_mode_25d else Transform2D.IDENTITY)
+	var figure := RtsIsoProjection.upright(canvas, water_lift, state.zoom) if state.view_mode_25d else Transform2D.IDENTITY
+	canvas_item.draw_set_transform_matrix(figure.scaled_local(Vector2.ONE * state.visual_scale))
 	fishing_renderer.draw_shadow(canvas_item, state)
 	fishing_renderer.draw(canvas_item, state)
 	if state.hit_flash_timer > 0.0:
 		canvas_item.draw_arc(Vector2(0, -10), state.radius + 6.0, 0.0, TAU, 24, Color("ffe5ac", state.hit_flash_timer / 0.18), 2.0)
-	if state.show_health_bar: _health_bar(fishing_renderer.overlay_y(state), maxf(24.0, state.radius * 2.0), 3.0)
+	if state.show_health_bar:
+		canvas_item.draw_set_transform_matrix(figure)
+		_health_bar(fishing_renderer.overlay_y(state) * state.visual_scale, maxf(24.0, state.radius * 2.0), 3.0)
 	canvas_item.draw_set_transform_matrix(Transform2D.IDENTITY)
 
 func _health_bar(y: float, width: float, height: float) -> void:

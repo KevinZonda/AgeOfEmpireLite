@@ -18,7 +18,7 @@ static func handles(kind: String) -> bool:
 	return kind in ["house", "blacksmith", "market", "barracks", "archery_range", "stable", "scout_camp", "town_center", "mill", "lumber_camp", "mining_camp", "siege_workshop"]
 
 func _init(kind: String, size: Vector2, civ: String, player: Color, variation: int, colors: Dictionary) -> void:
-	dimensions = size
+	set_world_dimensions(size)
 	civilization = civ
 	accent = player
 	variant = variation

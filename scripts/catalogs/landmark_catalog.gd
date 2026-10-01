@@ -26,7 +26,7 @@ const LANDMARKS := {
 	"zh_spirit_way": {"label": "皇陵", "civilization": "Chinese", "age": 4, "description": "王朝兵升级费用与时间减半；阵亡鼓舞友军", "producer": "spirit_way", "research_discount": 0.5, "effects": {}},
 }
 const LANDMARK_HP := 1350.0
-const LANDMARK_SIZE := Vector2(92, 92)
+const LANDMARK_SIZE := Vector2(92, 92) * GameData.BUILDING_SCALE
 const DYNASTY_NAMES := {"Tang": "唐", "Song": "宋", "Yuan": "元", "Ming": "明"}
 
 

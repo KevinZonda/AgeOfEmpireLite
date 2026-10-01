@@ -23,7 +23,8 @@ func _run() -> void:
 	for kind in Siege.KINDS:
 		if kind == "siege_tower": continue
 		var unit: RtsUnit = game.spawn_unit(0, kind, target.position + Vector2(220, 0))
-		unit.position = target.position + Vector2(50 if kind == "battering_ram" else 220, 0)
+		var attack_distance: float = target.size().x * 0.5 + unit.radius() + 3.0 if kind == "battering_ram" else 220.0
+		unit.position = target.position + Vector2(attack_distance, 0)
 		unit.order_attack(target)
 		unit.attack_timer = 0.15
 		target.hp = target.max_hp

@@ -98,7 +98,8 @@ static func entity_at(game: Node2D, point: Vector2) -> Node2D:
 		if unit.owner_id != 0 and game.fog.active and not game.fog.can_show_unit(0, unit): continue
 		if game.view_mode_25d:
 			var screen_delta := canvas.basis_xform(point - unit.position - RtsIsoProjection.ground_lift(game, unit.position))
-			if absf(screen_delta.x) <= (unit.radius() + 5.0) * game.camera.zoom.x and screen_delta.y >= -34.0 * game.camera.zoom.x and screen_delta.y <= 6.0 * game.camera.zoom.x: return unit
+			var visual_scale: float = unit.display_scale()
+			if absf(screen_delta.x) <= (unit.radius() * visual_scale + 5.0) * game.camera.zoom.x and screen_delta.y >= -34.0 * visual_scale * game.camera.zoom.x and screen_delta.y <= 6.0 * game.camera.zoom.x: return unit
 		if is_instance_valid(unit) and unit.position.distance_to(point) <= unit.radius() + 5: return unit
 	for building in game.navigation.nearby_buildings(point, 260.0 if game.view_mode_25d else 100.0):
 		if not is_instance_valid(building) or building.is_queued_for_deletion(): continue

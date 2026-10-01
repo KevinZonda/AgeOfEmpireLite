@@ -7,7 +7,7 @@ static func handles(kind: String) -> bool:
 	return Academic.handles(kind)
 
 func _init(kind: String, size: Vector2, civilization: String, player: Color, colors: Dictionary) -> void:
-	dimensions = size
+	set_world_dimensions(size)
 	palette = colors.duplicate()
 	base_z = 2.0
 	Academic.populate(self, kind, civilization, player)

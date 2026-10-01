@@ -4,6 +4,12 @@ extends RefCounted
 # Fallback templates and building definitions. Sourced unit ranks, costs and
 # attack profiles are generated in data/aoe4_balance.json and resolved by
 # RtsStatResolver before simulation and UI consume them.
+const BUILDING_SCALE := 1.6
+const BUILD_GRID_SIZE := 25.0 * BUILDING_SCALE
+const FIGURE_VISUAL_SCALE := 0.8
+# Optional per-kind multipliers; collision radii and gameplay stats are separate.
+const UNIT_VISUAL_SCALES := {}
+
 const RESOURCE_NAMES := ["food", "wood", "gold", "stone"]
 const RESOURCE_LABELS := {"food": "食物", "wood": "木材", "gold": "黄金", "stone": "石料"}
 
@@ -50,32 +56,37 @@ const UNITS := {
 }
 
 const BUILDINGS := {
-	# Placement tiles are separate from the visual/collision size. One build tile is 25 world units.
-	"town_center": {"label": "城镇中心", "hp": 1050.0, "size": Vector2(90, 90), "footprint_tiles": Vector2i(4, 4), "cost": {}, "time": 0.0, "pop": 10, "tags": ["building", "structure"], "armor": {"melee": 2.0, "ranged": 4.0}, "garrison_capacity": 10, "defense": {"damage": 7.0, "range": 160.0, "cooldown": 1.5, "projectile_speed": 430.0, "garrison_bonus": 1.5}},
-	"house": {"label": "房屋", "hp": 260.0, "size": Vector2(48, 46), "footprint_tiles": Vector2i(2, 2), "cost": {"wood": 80}, "time": 6.0, "pop": 10, "tags": ["building", "structure"], "armor": {"melee": 0.0, "ranged": 2.0}},
-	"farm": {"label": "农田", "hp": 170.0, "size": Vector2(48, 48), "footprint_tiles": Vector2i(2, 2), "cost": {"wood": 60}, "time": 5.0, "pop": 0, "tags": ["building", "structure"], "armor": {"melee": 0.0, "ranged": 0.0}},
-	"mill": {"label": "磨坊", "hp": 330.0, "size": Vector2(48, 45), "footprint_tiles": Vector2i(2, 2), "cost": {"wood": 80}, "time": 7.0, "pop": 0, "tags": ["building", "structure", "dropoff"], "armor": {"melee": 0.0, "ranged": 2.0}},
-	"lumber_camp": {"label": "伐木场", "hp": 330.0, "size": Vector2(48, 45), "footprint_tiles": Vector2i(2, 2), "cost": {"wood": 80}, "time": 7.0, "pop": 0, "tags": ["building", "structure", "dropoff"], "armor": {"melee": 0.0, "ranged": 2.0}},
-	"mining_camp": {"label": "采矿场", "hp": 330.0, "size": Vector2(48, 45), "footprint_tiles": Vector2i(2, 2), "cost": {"wood": 80}, "time": 7.0, "pop": 0, "tags": ["building", "structure", "dropoff"], "armor": {"melee": 0.0, "ranged": 2.0}},
-	"barracks": {"label": "兵营", "hp": 490.0, "size": Vector2(70, 65), "footprint_tiles": Vector2i(3, 3), "cost": {"wood": 160}, "time": 10.0, "pop": 0, "tags": ["building", "structure"], "armor": {"melee": 1.0, "ranged": 3.0}},
-	"archery_range": {"label": "靶场", "hp": 430.0, "size": Vector2(70, 65), "footprint_tiles": Vector2i(3, 3), "cost": {"wood": 160}, "time": 10.0, "pop": 0, "tags": ["building", "structure"], "armor": {"melee": 1.0, "ranged": 3.0}},
-	"stable": {"label": "马厩", "hp": 460.0, "size": Vector2(70, 65), "footprint_tiles": Vector2i(3, 3), "cost": {"wood": 180}, "time": 11.0, "pop": 0, "tags": ["building", "structure"], "armor": {"melee": 1.0, "ranged": 3.0}},
-	"blacksmith": {"label": "铁匠铺", "hp": 650.0, "size": Vector2(65, 65), "footprint_tiles": Vector2i(4, 4), "cost": {"wood": 150}, "time": 14.0, "pop": 0, "tags": ["building", "structure"], "armor": {"melee": 1.0, "ranged": 3.0}},
-	"university": {"label": "大学", "hp": 650.0, "size": Vector2(70, 68), "footprint_tiles": Vector2i(4, 4), "cost": {"wood": 350}, "time": 25.0, "pop": 0, "tags": ["building", "structure"], "armor": {"melee": 1.0, "ranged": 3.0}},
-	"scout_camp": {"label": "预备营地", "hp": 180.0, "size": Vector2(34, 34), "cost": {"wood": 25}, "time": 0.0, "pop": 0, "tags": ["building", "structure"], "armor": {"melee": 0.0, "ranged": 0.0}},
-	"outpost": {"label": "哨塔", "hp": 500.0, "size": Vector2(42, 42), "footprint_tiles": Vector2i(2, 2), "cost": {"wood": 120}, "time": 13.0, "pop": 0, "tags": ["building", "structure", "fortification"], "armor": {"melee": 2.0, "ranged": 6.0}, "garrison_capacity": 5, "defense": {"damage": 8.0, "range": 175.0, "cooldown": 1.7, "projectile_speed": 460.0, "garrison_bonus": 2.0}},
-	"palisade_wall": {"label": "木墙", "hp": 320.0, "size": Vector2(75, 25), "cost": {"wood": 45}, "time": 7.0, "pop": 0, "tags": ["building", "structure", "fortification", "wall"], "armor": {"melee": 2.0, "ranged": 8.0}},
-	"stone_wall": {"label": "石墙", "hp": 850.0, "size": Vector2(75, 25), "cost": {"stone": 95}, "time": 12.0, "pop": 0, "tags": ["building", "structure", "fortification", "wall"], "armor": {"melee": 5.0, "ranged": 12.0}},
-	"palisade_gate": {"label": "木门", "hp": 420.0, "size": Vector2(75, 25), "cost": {"wood": 65}, "time": 9.0, "pop": 0, "tags": ["building", "structure", "fortification", "wall", "gate"], "armor": {"melee": 2.0, "ranged": 8.0}},
-	"stone_gate": {"label": "石门", "hp": 960.0, "size": Vector2(75, 25), "cost": {"stone": 130}, "time": 15.0, "pop": 0, "tags": ["building", "structure", "fortification", "wall", "gate"], "armor": {"melee": 5.0, "ranged": 12.0}},
-	"dock": {"label": "码头", "hp": 530.0, "size": Vector2(75, 65), "footprint_tiles": Vector2i(4, 4), "cost": {"wood": 180}, "time": 14.0, "pop": 0, "tags": ["building", "structure"], "armor": {"melee": 1.0, "ranged": 2.0}},
-	"market": {"label": "市场", "hp": 420.0, "size": Vector2(70, 65), "footprint_tiles": Vector2i(4, 4), "cost": {"wood": 160}, "time": 12.0, "pop": 0, "tags": ["building", "structure"], "armor": {"melee": 1.0, "ranged": 2.0}},
-	"monastery": {"label": "修道院", "hp": 460.0, "size": Vector2(70, 70), "footprint_tiles": Vector2i(4, 4), "cost": {"wood": 190, "gold": 80}, "time": 16.0, "pop": 0, "tags": ["building", "structure"], "armor": {"melee": 1.0, "ranged": 3.0}},
-	"keep": {"label": "城堡", "hp": 1500.0, "size": Vector2(82, 82), "footprint_tiles": Vector2i(4, 4), "cost": {"stone": 400, "wood": 100}, "time": 28.0, "pop": 0, "tags": ["building", "structure", "fortification"], "armor": {"melee": 6.0, "ranged": 9.0}, "garrison_capacity": 10, "defense": {"damage": 17.0, "range": 225.0, "cooldown": 1.8, "projectile_speed": 480.0, "garrison_bonus": 2.0}},
-	"siege_workshop": {"label": "攻城器械厂", "hp": 540.0, "size": Vector2(75, 70), "footprint_tiles": Vector2i(3, 3), "cost": {"wood": 240, "gold": 80}, "time": 18.0, "pop": 0, "tags": ["building", "structure"], "armor": {"melee": 2.0, "ranged": 4.0}},
-	"wonder": {"label": "奇观", "hp": 2100.0, "size": Vector2(118, 118), "footprint_tiles": Vector2i(6, 6), "cost": {"food": 600, "wood": 600, "gold": 600, "stone": 600}, "time": 80.0, "pop": 0, "tags": ["building", "structure", "wonder"], "armor": {"melee": 5.0, "ranged": 7.0}},
-	"landmark": {"label": "地标", "hp": 1350.0, "size": Vector2(92, 92), "footprint_tiles": Vector2i(4, 4), "cost": {}, "time": 25.0, "pop": 0, "tags": ["building", "structure", "landmark"], "armor": {"melee": 4.0, "ranged": 6.0}},
+	# Placement tiles are separate from the visual/collision size. One build tile is BUILD_GRID_SIZE world units.
+	"town_center": {"label": "城镇中心", "hp": 1050.0, "size": Vector2(90, 90) * BUILDING_SCALE, "footprint_tiles": Vector2i(4, 4), "cost": {}, "time": 0.0, "pop": 10, "tags": ["building", "structure"], "armor": {"melee": 2.0, "ranged": 4.0}, "garrison_capacity": 10, "defense": {"damage": 7.0, "range": 160.0, "cooldown": 1.5, "projectile_speed": 430.0, "garrison_bonus": 1.5}},
+	"house": {"label": "房屋", "hp": 260.0, "size": Vector2(48, 46) * BUILDING_SCALE, "footprint_tiles": Vector2i(2, 2), "cost": {"wood": 80}, "time": 6.0, "pop": 10, "tags": ["building", "structure"], "armor": {"melee": 0.0, "ranged": 2.0}},
+	"farm": {"label": "农田", "hp": 170.0, "size": Vector2(48, 48) * BUILDING_SCALE, "footprint_tiles": Vector2i(2, 2), "cost": {"wood": 60}, "time": 5.0, "pop": 0, "tags": ["building", "structure"], "armor": {"melee": 0.0, "ranged": 0.0}},
+	"mill": {"label": "磨坊", "hp": 330.0, "size": Vector2(48, 45) * BUILDING_SCALE, "footprint_tiles": Vector2i(2, 2), "cost": {"wood": 80}, "time": 7.0, "pop": 0, "tags": ["building", "structure", "dropoff"], "armor": {"melee": 0.0, "ranged": 2.0}},
+	"lumber_camp": {"label": "伐木场", "hp": 330.0, "size": Vector2(48, 45) * BUILDING_SCALE, "footprint_tiles": Vector2i(2, 2), "cost": {"wood": 80}, "time": 7.0, "pop": 0, "tags": ["building", "structure", "dropoff"], "armor": {"melee": 0.0, "ranged": 2.0}},
+	"mining_camp": {"label": "采矿场", "hp": 330.0, "size": Vector2(48, 45) * BUILDING_SCALE, "footprint_tiles": Vector2i(2, 2), "cost": {"wood": 80}, "time": 7.0, "pop": 0, "tags": ["building", "structure", "dropoff"], "armor": {"melee": 0.0, "ranged": 2.0}},
+	"barracks": {"label": "兵营", "hp": 490.0, "size": Vector2(70, 65) * BUILDING_SCALE, "footprint_tiles": Vector2i(3, 3), "cost": {"wood": 160}, "time": 10.0, "pop": 0, "tags": ["building", "structure"], "armor": {"melee": 1.0, "ranged": 3.0}},
+	"archery_range": {"label": "靶场", "hp": 430.0, "size": Vector2(70, 65) * BUILDING_SCALE, "footprint_tiles": Vector2i(3, 3), "cost": {"wood": 160}, "time": 10.0, "pop": 0, "tags": ["building", "structure"], "armor": {"melee": 1.0, "ranged": 3.0}},
+	"stable": {"label": "马厩", "hp": 460.0, "size": Vector2(70, 65) * BUILDING_SCALE, "footprint_tiles": Vector2i(3, 3), "cost": {"wood": 180}, "time": 11.0, "pop": 0, "tags": ["building", "structure"], "armor": {"melee": 1.0, "ranged": 3.0}},
+	"blacksmith": {"label": "铁匠铺", "hp": 650.0, "size": Vector2(65, 65) * BUILDING_SCALE, "footprint_tiles": Vector2i(4, 4), "cost": {"wood": 150}, "time": 14.0, "pop": 0, "tags": ["building", "structure"], "armor": {"melee": 1.0, "ranged": 3.0}},
+	"university": {"label": "大学", "hp": 650.0, "size": Vector2(70, 68) * BUILDING_SCALE, "footprint_tiles": Vector2i(4, 4), "cost": {"wood": 350}, "time": 25.0, "pop": 0, "tags": ["building", "structure"], "armor": {"melee": 1.0, "ranged": 3.0}},
+	"scout_camp": {"label": "预备营地", "hp": 180.0, "size": Vector2(34, 34) * BUILDING_SCALE, "cost": {"wood": 25}, "time": 0.0, "pop": 0, "tags": ["building", "structure"], "armor": {"melee": 0.0, "ranged": 0.0}},
+	"outpost": {"label": "哨塔", "hp": 500.0, "size": Vector2(42, 42) * BUILDING_SCALE, "footprint_tiles": Vector2i(2, 2), "cost": {"wood": 120}, "time": 13.0, "pop": 0, "tags": ["building", "structure", "fortification"], "armor": {"melee": 2.0, "ranged": 6.0}, "garrison_capacity": 5, "defense": {"damage": 8.0, "range": 175.0, "cooldown": 1.7, "projectile_speed": 460.0, "garrison_bonus": 2.0}},
+	"palisade_wall": {"label": "木墙", "hp": 320.0, "size": Vector2(75, 25) * BUILDING_SCALE, "cost": {"wood": 45}, "time": 7.0, "pop": 0, "tags": ["building", "structure", "fortification", "wall"], "armor": {"melee": 2.0, "ranged": 8.0}},
+	"stone_wall": {"label": "石墙", "hp": 850.0, "size": Vector2(75, 25) * BUILDING_SCALE, "cost": {"stone": 95}, "time": 12.0, "pop": 0, "tags": ["building", "structure", "fortification", "wall"], "armor": {"melee": 5.0, "ranged": 12.0}},
+	"palisade_gate": {"label": "木门", "hp": 420.0, "size": Vector2(75, 25) * BUILDING_SCALE, "cost": {"wood": 65}, "time": 9.0, "pop": 0, "tags": ["building", "structure", "fortification", "wall", "gate"], "armor": {"melee": 2.0, "ranged": 8.0}},
+	"stone_gate": {"label": "石门", "hp": 960.0, "size": Vector2(75, 25) * BUILDING_SCALE, "cost": {"stone": 130}, "time": 15.0, "pop": 0, "tags": ["building", "structure", "fortification", "wall", "gate"], "armor": {"melee": 5.0, "ranged": 12.0}},
+	"dock": {"label": "码头", "hp": 530.0, "size": Vector2(75, 65) * BUILDING_SCALE, "footprint_tiles": Vector2i(4, 4), "cost": {"wood": 180}, "time": 14.0, "pop": 0, "tags": ["building", "structure"], "armor": {"melee": 1.0, "ranged": 2.0}},
+	"market": {"label": "市场", "hp": 420.0, "size": Vector2(70, 65) * BUILDING_SCALE, "footprint_tiles": Vector2i(4, 4), "cost": {"wood": 160}, "time": 12.0, "pop": 0, "tags": ["building", "structure"], "armor": {"melee": 1.0, "ranged": 2.0}},
+	"monastery": {"label": "修道院", "hp": 460.0, "size": Vector2(70, 70) * BUILDING_SCALE, "footprint_tiles": Vector2i(4, 4), "cost": {"wood": 190, "gold": 80}, "time": 16.0, "pop": 0, "tags": ["building", "structure"], "armor": {"melee": 1.0, "ranged": 3.0}},
+	"keep": {"label": "城堡", "hp": 1500.0, "size": Vector2(82, 82) * BUILDING_SCALE, "footprint_tiles": Vector2i(4, 4), "cost": {"stone": 400, "wood": 100}, "time": 28.0, "pop": 0, "tags": ["building", "structure", "fortification"], "armor": {"melee": 6.0, "ranged": 9.0}, "garrison_capacity": 10, "defense": {"damage": 17.0, "range": 225.0, "cooldown": 1.8, "projectile_speed": 480.0, "garrison_bonus": 2.0}},
+	"siege_workshop": {"label": "攻城器械厂", "hp": 540.0, "size": Vector2(75, 70) * BUILDING_SCALE, "footprint_tiles": Vector2i(3, 3), "cost": {"wood": 240, "gold": 80}, "time": 18.0, "pop": 0, "tags": ["building", "structure"], "armor": {"melee": 2.0, "ranged": 4.0}},
+	"wonder": {"label": "奇观", "hp": 2100.0, "size": Vector2(118, 118) * BUILDING_SCALE, "footprint_tiles": Vector2i(6, 6), "cost": {"food": 600, "wood": 600, "gold": 600, "stone": 600}, "time": 80.0, "pop": 0, "tags": ["building", "structure", "wonder"], "armor": {"melee": 5.0, "ranged": 7.0}},
+	"landmark": {"label": "地标", "hp": 1350.0, "size": Vector2(92, 92) * BUILDING_SCALE, "footprint_tiles": Vector2i(4, 4), "cost": {}, "time": 25.0, "pop": 0, "tags": ["building", "structure", "landmark"], "armor": {"melee": 4.0, "ranged": 6.0}},
 }
+
+static func unit_visual_scale(unit_kind: String) -> float:
+	var tags: Array = UNITS.get(unit_kind, {}).get("tags", [])
+	var base := 1.0 if tags.has("siege") or tags.has("naval") else FIGURE_VISUAL_SCALE
+	return base * float(UNIT_VISUAL_SCALES.get(unit_kind, 1.0))
 
 static func gathered_amount(civ: String, resource_kind: String, from_farm: bool) -> int:
 	var amount := 9 if resource_kind == "food" else 7

@@ -24,6 +24,11 @@ var game: Node2D
 var owner_id := 0
 var kind: String
 var stats: Dictionary = {}
+# Multiplies the kind's visual scale without altering simulation dimensions.
+var visual_scale := 1.0:
+	set(value):
+		visual_scale = maxf(0.05, value)
+		if is_inside_tree(): queue_redraw()
 var hp := 1.0:
 	set(value):
 		if health_bar_initialized and not is_equal_approx(hp, value):
@@ -250,6 +255,9 @@ func attack_cooldown() -> float:
 
 func radius() -> float:
 	return float(stats["radius"])
+
+func display_scale() -> float:
+	return GameData.unit_visual_scale(kind) * visual_scale
 
 func effective_speed() -> float:
 	return float(stats["speed"]) * (1.4 if helm_timer > 0.0 else 1.0)

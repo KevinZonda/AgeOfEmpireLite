@@ -959,7 +959,7 @@ func _landmark_geometry():
 	var key := str([state.kind, state.landmark_id, state.dimensions, state.civilization, state.player_color])
 	if landmark_geometry == null or landmark_geometry_key != key:
 		landmark_geometry = LandmarkVisual.new()
-		landmark_geometry.dimensions = state.dimensions
+		landmark_geometry.set_world_dimensions(state.dimensions)
 		landmark_geometry.palette = _architecture_palette()
 		landmark_geometry.populate(state.kind, state.landmark_id, state.player_color, state.civilization)
 		landmark_geometry.prepare()
@@ -1114,7 +1114,7 @@ func defense_portrait_bounds(snapshot: VisualState) -> Rect2:
 		hull = KeepMonasteryVisual.selection_hull(canonical, projection)
 	else:
 		var footprint := Rect2(-snapshot.dimensions * 0.5, snapshot.dimensions)
-		var up := Geometry.up(projection, 1.0, snapshot.isometric_height() + snapshot.visual_feature_height())
+		var up := Geometry.up(projection, 1.0, snapshot.isometric_height() + snapshot.visual_feature_height(), 1.0)
 		hull = PackedVector2Array([footprint.position, Vector2(footprint.end.x, footprint.position.y), footprint.end, Vector2(footprint.position.x, footprint.end.y)])
 		for i in 4: hull.append(hull[i] + up)
 	var bounds := Rect2(projection * hull[0], Vector2.ZERO)
@@ -1137,7 +1137,7 @@ func draw_defense_portrait(item: CanvasItem, snapshot: VisualState, frame: Rect2
 	var ne := Vector2(footprint.end.x, footprint.position.y)
 	var se := footprint.end
 	var sw := Vector2(footprint.position.x, footprint.end.y)
-	var lift := Geometry.up(projection, 1.0, snapshot.isometric_height())
+	var lift := Geometry.up(projection, 1.0, snapshot.isometric_height(), 1.0)
 	var palette := _architecture_palette()
 	if snapshot.kind in ["keep", "outpost"]:
 		KeepMonasteryVisual.draw_iso(item, snapshot.kind, nw, ne, se, sw, lift, palette, snapshot.player_color, snapshot.civilization, projection, 1.0)

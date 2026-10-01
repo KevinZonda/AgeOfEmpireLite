@@ -229,13 +229,22 @@ func _run() -> void:
 	assert(game.players[0]["wood"] == wood_before - 160, "building cost is paid once")
 	game.build_mode = "house"
 	assert(game._cursor_state_at(Vector2(570, 800)) == "build_invalid")
-	assert(game._cursor_state_at(Vector2(700, 800)) == "build_valid")
+	var valid_house_site := Vector2.INF
+	for y in range(500, 1100, int(game.BUILD_GRID_SIZE)):
+		for x in range(450, 1100, int(game.BUILD_GRID_SIZE)):
+			var point := Vector2(x, y)
+			if game.can_place("house", point):
+				valid_house_site = point
+				break
+		if valid_house_site != Vector2.INF: break
+	assert(valid_house_site != Vector2.INF and game._cursor_state_at(valid_house_site) == "build_valid")
 	game.build_mode = ""
 	var barracks: RtsBuilding = game.buildings.back()
 	assert(worker.order == "build" and helper.order == "build")
 	assert(game.count_builders(barracks) == 2)
-	worker.position = barracks.position + Vector2(50, 0)
-	helper.position = barracks.position + Vector2(-50, 0)
+	var builder_offset: float = barracks.size().x * 0.5 + worker.radius() + 3.0
+	worker.position = barracks.position + Vector2(builder_offset, 0)
+	helper.position = barracks.position + Vector2(-builder_offset, 0)
 	worker._process(1.0)
 	helper._process(1.0)
 	assert(is_equal_approx(barracks.build_remaining, barracks.build_total - 2.0), "two builders should double construction progress")
@@ -336,7 +345,7 @@ func _run() -> void:
 	game.entity_destroyed(enemy_probe)
 	var enemy_wall: RtsBuilding = game.spawn_building(1, "stone_wall", game._scaled_point(Vector2(1050, 680)))
 	var ram: RtsUnit = game.spawn_unit(0, "battering_ram", game._scaled_point(Vector2(975, 680)))
-	ram.position = enemy_wall.position - Vector2(75, 0)
+	ram.position = enemy_wall.position - Vector2(enemy_wall.size().x * 0.5 + ram.radius() + 3.0, 0)
 	ram.order_attack(enemy_wall)
 	var wall_hp: float = enemy_wall.hp
 	ram._process(0.0)

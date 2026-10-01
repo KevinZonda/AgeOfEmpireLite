@@ -13,14 +13,15 @@ static func geometry(size: Vector2, colors: Dictionary, accent: Color, vertical:
 	return cache[key]
 
 func _init(size: Vector2, colors: Dictionary, accent: Color, vertical: bool) -> void:
-	dimensions = Vector2(size.y, size.x) if vertical else size
+	set_world_dimensions(Vector2(size.y, size.x) if vertical else size)
 	palette = colors.duplicate()
 	_populate_gate(accent)
 	if vertical:
 		for polygon in faces:
 			var points: PackedVector3Array = polygon["points"]
 			for i in points.size(): points[i] = Vector3(points[i].y, points[i].x, points[i].z)
-	dimensions = size
+			polygon["points"] = points
+	dimensions = size / GameData.BUILDING_SCALE
 	prepare()
 	var surfaces := faces.duplicate()
 	surfaces.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return _height(a) < _height(b))

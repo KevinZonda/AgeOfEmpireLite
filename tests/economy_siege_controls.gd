@@ -79,7 +79,7 @@ func _run() -> void:
 	infantry.position = game.navigation.nearest_walkable_point(tower.position + Vector2(25, 0), infantry.radius(), infantry)
 	assert(game.navigation.can_occupy(infantry.position, infantry.radius(), infantry, false, false))
 	assert(tower.garrison_unit(infantry))
-	tower.position = enemy_wall.position + Vector2(60, 0)
+	tower.position = enemy_wall.position + Vector2(enemy_wall.size().x * 0.5 + tower.radius() + 3.0, 0)
 	tower.issue_command("assault_wall", Vector2.INF, enemy_wall)
 	tower._process(0.1)
 	assert(tower.order == "siege_tower_docked" and infantry.wall_host == enemy_wall)

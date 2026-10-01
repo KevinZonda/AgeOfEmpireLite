@@ -9,7 +9,7 @@ var civilization := "English"
 var accent := Color.WHITE
 
 func _init(size: Vector2, colors: Dictionary, civ: String, player: Color) -> void:
-	dimensions = size
+	set_world_dimensions(size)
 	palette = colors.duplicate()
 	civilization = civ
 	accent = player

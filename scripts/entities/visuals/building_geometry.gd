@@ -14,9 +14,9 @@ static func rect(bounds: Rect2, u: float, v: float, width: float, height: float)
 	return Rect2(point_rect(bounds, u, v), bounds.size * Vector2(width, height))
 
 
-static func up(canvas: Transform2D, zoom: float, pixels: float) -> Vector2:
-	return RtsIsoProjection.world_delta(canvas, Vector2(0.0, -pixels * zoom))
+static func up(canvas: Transform2D, zoom: float, pixels: float, model_scale := GameData.BUILDING_SCALE) -> Vector2:
+	return RtsIsoProjection.world_delta(canvas, Vector2(0.0, -pixels * zoom * model_scale))
 
 
 static func screen_delta(canvas: Transform2D, zoom: float, x: float, y: float) -> Vector2:
-	return RtsIsoProjection.world_delta(canvas, Vector2(x, y) * zoom)
+	return RtsIsoProjection.world_delta(canvas, Vector2(x, y) * zoom * GameData.BUILDING_SCALE)

@@ -37,14 +37,15 @@ func visible_at(point: Vector2, surfaces: Array, use_depth: bool) -> Color:
 			color = triangle[7]
 	return color
 
-func verify(mesh, label: String) -> void:
+func verify(mesh, label: String, sample_scale := 1.0) -> void:
 	var source := triangles(mesh.faces)
 	var painted := triangles(mesh.ordered_faces)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 20260929
 	var errors := 0
 	for i in 700:
-		var point := Vector2(rng.randf_range(-110, 110), rng.randf_range(-150, 70))
+		# Preserve coverage of the entire model after its dimensions change.
+		var point := Vector2(rng.randf_range(-110, 110), rng.randf_range(-150, 70)) * sample_scale
 		var expected := visible_at(point, source, true)
 		var actual := visible_at(point, painted, false)
 		if expected.a == 0.0 and actual.a == 0.0: continue
@@ -85,21 +86,21 @@ func _initialize() -> void:
 	verify_battlement_ring("clock")
 	for id in RtsLandmarkCatalog.LANDMARKS:
 		var mesh = Visual.new()
-		mesh.dimensions = RtsLandmarkCatalog.LANDMARK_SIZE
+		mesh.set_world_dimensions(RtsLandmarkCatalog.LANDMARK_SIZE)
 		mesh.palette = PALETTE
 		mesh.populate("landmark", id, Color.BLUE)
 		var preparation_start := Time.get_ticks_usec()
 		mesh.prepare()
 		preparation_us += Time.get_ticks_usec() - preparation_start
-		verify(mesh, id)
+		verify(mesh, id, GameData.BUILDING_SCALE)
 	var wonder = Visual.new()
-	wonder.dimensions = GameData.BUILDINGS["wonder"]["size"]
+	wonder.set_world_dimensions(GameData.BUILDINGS["wonder"]["size"])
 	wonder.palette = PALETTE
 	wonder.populate("wonder", "", Color.BLUE)
 	var preparation_start := Time.get_ticks_usec()
 	wonder.prepare()
 	preparation_us += Time.get_ticks_usec() - preparation_start
-	verify(wonder, "wonder")
+	verify(wonder, "wonder", GameData.BUILDING_SCALE)
 	# An intersection where sorting whole objects by their center cannot work.
 	var crossed = Visual.new()
 	crossed.box(Vector2.ZERO, Vector2(90, 20), 0, 40, Color.RED)

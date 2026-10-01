@@ -10,7 +10,7 @@ func _initialize() -> void:
 	var canvas := Transform2D(Vector2(0.70710678, 0.35355339) * 1.65, Vector2(-0.70710678, 0.35355339) * 1.65, Vector2.ZERO)
 	for id in RtsLandmarkCatalog.LANDMARKS:
 		var mesh = Visual.new()
-		mesh.dimensions = RtsLandmarkCatalog.LANDMARK_SIZE
+		mesh.set_world_dimensions(RtsLandmarkCatalog.LANDMARK_SIZE)
 		mesh.palette = palette.duplicate()
 		mesh.populate("landmark", id, Color.BLUE)
 		mesh.prepare()

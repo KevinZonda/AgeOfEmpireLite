@@ -4,6 +4,7 @@ extends RefCounted
 var kind := ""
 var tags: Array = []
 var radius := 12.0
+var visual_scale := 1.0
 var player_color := Color.WHITE
 var view_mode_25d := false
 var zoom := 1.0
@@ -46,6 +47,7 @@ static func capture(unit, existing_state = null):
 	# Snapshots are read-only; share the tags array instead of allocating a copy.
 	result.tags = unit.stats.get("tags", [])
 	result.radius = unit.radius()
+	result.visual_scale = unit.display_scale()
 	result.player_color = unit.game.player_color(unit.owner_id)
 	result.update_view(unit.game)
 	result.ground_height = 0.0
@@ -97,6 +99,7 @@ static func preview(unit_kind: String, definition: Dictionary, color: Color):
 	result.kind = unit_kind
 	result.tags = definition.get("tags", []).duplicate()
 	result.radius = float(definition.get("radius", 12.0))
+	result.visual_scale = GameData.unit_visual_scale(unit_kind)
 	result.player_color = color
 	result.max_hp = float(definition.get("hp", 1.0))
 	result.hp = result.max_hp

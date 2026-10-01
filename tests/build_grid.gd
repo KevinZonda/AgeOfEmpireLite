@@ -44,13 +44,14 @@ func _run() -> void:
 	var house: RtsBuilding = game.buildings.back()
 	assert(house.position == snapped, "placed building must use the preview anchor")
 	assert(not game.can_place("house", point + Vector2(2, -2)), "occupied grid cells must reject another building")
-	var wall_points: Array[Vector2] = game._wall_positions(Vector2(600, 650), Vector2(750, 650))
+	var wall_span: float = game.build_footprint_size("palisade_wall").x * 2.0
+	var wall_points: Array[Vector2] = game._wall_positions(Vector2(600, 650), Vector2(600 + wall_span, 650))
 	assert(wall_points.size() == 3)
 	for i in range(1, wall_points.size()):
 		var previous: Rect2 = game.build_footprint_rect("palisade_wall", wall_points[i - 1])
 		var current: Rect2 = game.build_footprint_rect("palisade_wall", wall_points[i])
 		assert(previous.end.x == current.position.x and previous.position.y == current.position.y, "wall sections must meet without a gap")
-	var vertical_points: Array[Vector2] = game._wall_positions(Vector2(600, 650), Vector2(600, 800))
+	var vertical_points: Array[Vector2] = game._wall_positions(Vector2(600, 650), Vector2(600, 650 + wall_span))
 	assert(vertical_points.size() == 3)
 	for i in range(1, vertical_points.size()):
 		var previous: Rect2 = game.build_footprint_rect("palisade_wall", vertical_points[i - 1], true)

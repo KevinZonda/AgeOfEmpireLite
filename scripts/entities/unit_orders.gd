@@ -257,7 +257,8 @@ func _tick_assault_wall(unit: RtsUnit, delta: float) -> void:
 	if not is_instance_valid(unit.target) or unit.target.is_queued_for_deletion():
 		unit._advance_command()
 		return
-	if unit._move_toward(unit.target.position, delta, 65.0):
+	var docking_distance: float = maxf(unit.target.size().x, unit.target.size().y) * 0.5 + unit.radius() + 4.0
+	if unit._move_toward(unit.target.position, delta, docking_distance):
 		var dock_target := target
 		exit(unit)
 		order = "siege_tower_docked"

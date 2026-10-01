@@ -185,6 +185,14 @@ func translate_faces(offset: Vector3) -> void:
 		for i in points.size(): points[i] += offset
 		polygon["points"] = points
 
+var _model_scale := 1.0
+var _projected_area_epsilon := 0.001
+
+# Author at the original dimensions, then scale every axis together once.
+func set_world_dimensions(size: Vector2) -> void:
+	dimensions = size / GameData.BUILDING_SCALE
+	_model_scale = GameData.BUILDING_SCALE
+
 func prepare() -> void:
 	projected_cache.clear()
 	projected_cache_up = Vector2.INF
@@ -198,6 +206,24 @@ func prepare() -> void:
 	ordered_faces.clear()
 	# Matches the game's fixed 2:1 projection: x/y move down equally, z up.
 	_traverse(tree, Vector3(1, 1, sqrt(0.5)))
+	if _model_scale != 1.0:
+		# Keep BSP tolerances and fragment counts at their authored scale.
+		# Copy packed arrays because source and ordered faces can share points.
+		faces = _scaled_faces(faces, _model_scale)
+		ordered_faces = _scaled_faces(ordered_faces, _model_scale)
+		dimensions *= _model_scale
+		base_z *= _model_scale
+		height_above_origin *= _model_scale
+		_projected_area_epsilon *= _model_scale * _model_scale
+		_model_scale = 1.0
+
+func _scaled_faces(source: Array[Dictionary], factor: float) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for polygon in source:
+		var points: PackedVector3Array = polygon["points"].duplicate()
+		for i in points.size(): points[i] *= factor
+		result.append({"points": points, "color": polygon["color"]})
+	return result
 
 func projected_faces(canvas: Transform2D, zoom: float, lift: Vector2) -> Array[Dictionary]:
 	var up := RtsIsoProjection.world_delta(canvas, Vector2(0, -zoom))
@@ -211,7 +237,7 @@ func projected_faces(canvas: Transform2D, zoom: float, lift: Vector2) -> Array[D
 		var twice_area := 0.0
 		for i in range(1, points.size() - 1):
 			twice_area += (points[i] - points[0]).cross(points[i + 1] - points[0])
-		if absf(twice_area) < 0.001: continue
+		if absf(twice_area) < _projected_area_epsilon: continue
 		result.append({"points": points, "color": polygon["color"]})
 	projected_cache = result
 	projected_cache_up = up

@@ -16,7 +16,7 @@ static func geometry(size: Vector2, civilization: String, fraction: float, stage
 	return geometry_cache[key]
 
 func _init(size: Vector2, civilization: String, fraction: float, stage: String, variation: int) -> void:
-	dimensions = size
+	set_world_dimensions(size)
 	var rice := civilization == "Chinese"
 	var amount := clampf(fraction, 0.0, 1.0)
 	var soil := Color("756044") if rice else Color("785538")
