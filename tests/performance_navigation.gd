@@ -39,16 +39,22 @@ func _run() -> void:
 	for unit in game.units: distances.append(unit.position.distance_to(unit.destination))
 	distances.sort()
 	print("NAVIGATION_PROGRESS sample_steps=180 remaining_median=%.1f remaining_max=%.1f" % [distances[distances.size() / 2], distances[-1]])
-	if game.navigation.route_budget_enabled:
-		# Keep the measured window identical. Deferred admission changes each
-		# unit's start time; independently verify eventual arrival after the sample.
-		for step in range(180, 480):
-			game.navigation.invalidate_spatial_index()
-			game.navigation.tick_jobs(true, step)
-			for unit in game.units: unit._move_toward(unit.destination, 1.0 / 30.0, 6.0)
-		for unit in game.units:
-			assert(unit.position.distance_to(unit.destination) <= 6.5, "all budgeted routes should eventually arrive")
-	else:
-		for unit in game.units:
-			assert(unit.position.distance_to(unit.destination) < 530.0, "all units should make sustained forward progress")
+	# Keep the initial 180-tick performance sample above unchanged. Both
+	# admission modes now stagger expensive first routes: the explicit queue
+	# and the inline CPU cost cap. Verify bounded real completion separately.
+	for step in range(180, 480):
+		game.navigation.invalidate_spatial_index()
+		game.navigation.tick_jobs(true, step)
+		for unit in game.units: unit.orders.tick(unit, 1.0 / 30.0)
+	var max_remaining := 0.0
+	var idle_units := 0
+	for unit in game.units:
+		max_remaining = maxf(max_remaining, unit.position.distance_to(unit.destination))
+		if unit.order == "idle" and unit.command_queue.is_empty(): idle_units += 1
+	print("NAVIGATION_COMPLETION total_steps=480 idle=%d remaining_max=%.3f" % [idle_units, max_remaining])
+	for unit in game.units:
+		assert(unit.position.distance_to(unit.destination) <= 6.5, "all 400 routes must arrive within 480 ticks in either admission mode")
+		assert(unit.order == "idle" and unit.command_queue.is_empty(), "arrival must finish the actual move order and queue")
+	game.navigation.background_jobs.shutdown()
+	game.free()
 	quit()
