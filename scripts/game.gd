@@ -474,7 +474,7 @@ func _ready() -> void:
 	feedback_audio = FEEDBACK_AUDIO.new()
 	add_child(feedback_audio)
 	weather = RtsWeather.new()
-	weather.z_index = -6
+	weather.z_index = RtsWeather.RAIN_Z_INDEX
 	add_child(weather)
 	weather.hide()
 	fog = RtsFogOfWar.new()

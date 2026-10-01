@@ -1,0 +1,83 @@
+{
+	"engine": "4.7.2-stable (custom_build)",
+	"results": [
+		{
+			"drops": 520,
+			"median_us": 70.0,
+			"p95_us": 83.0,
+			"resolution": "1280x720",
+			"samples": 180,
+			"version": "before",
+			"view": "2d"
+		},
+		{
+			"drops": 142,
+			"median_us": 115.0,
+			"p95_us": 129.0,
+			"redraws_per_180_ticks_at_120hz": 90,
+			"resolution": "1280x720",
+			"samples": 180,
+			"version": "after",
+			"view": "2d"
+		},
+		{
+			"drops": 520,
+			"median_us": 69.0,
+			"p95_us": 77.0,
+			"resolution": "1280x720",
+			"samples": 180,
+			"version": "before",
+			"view": "25d"
+		},
+		{
+			"drops": 142,
+			"median_us": 118.0,
+			"p95_us": 131.0,
+			"redraws_per_180_ticks_at_120hz": 90,
+			"resolution": "1280x720",
+			"samples": 180,
+			"version": "after",
+			"view": "25d"
+		},
+		{
+			"drops": 520,
+			"median_us": 69.0,
+			"p95_us": 90.0,
+			"resolution": "1920x1080",
+			"samples": 180,
+			"version": "before",
+			"view": "2d"
+		},
+		{
+			"drops": 319,
+			"median_us": 241.0,
+			"p95_us": 294.0,
+			"redraws_per_180_ticks_at_120hz": 90,
+			"resolution": "1920x1080",
+			"samples": 180,
+			"version": "after",
+			"view": "2d"
+		},
+		{
+			"drops": 520,
+			"median_us": 69.0,
+			"p95_us": 78.0,
+			"resolution": "1920x1080",
+			"samples": 180,
+			"version": "before",
+			"view": "25d"
+		},
+		{
+			"drops": 319,
+			"median_us": 239.0,
+			"p95_us": 269.0,
+			"redraws_per_180_ticks_at_120hz": 90,
+			"resolution": "1920x1080",
+			"samples": 180,
+			"version": "after",
+			"view": "25d"
+		}
+	],
+	"scope": "CPU time of rain draw callback, not total frame time or GPU time",
+	"seed": 12345
+}
