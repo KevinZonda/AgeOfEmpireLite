@@ -39,6 +39,7 @@ var plants_mesh: ArrayMesh
 var apron_mesh: ArrayMesh
 var relief_mesh: ArrayMesh
 var details_mesh: ArrayMesh
+var render_geometry_key := 0
 var relief_noise := FastNoiseLite.new()
 var occlusion_layer: Node2D
 var occlusion_fog: Texture2D

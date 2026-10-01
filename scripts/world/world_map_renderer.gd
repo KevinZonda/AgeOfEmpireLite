@@ -266,19 +266,32 @@ static func _details_mesh(map: RtsWorldMap, surface, occluders: Dictionary) -> A
 
 
 static func draw_map(map: RtsWorldMap) -> void:
-	var surface := Surface.new()
-	surface.build(map)
-	var occluders := {}
-	map.draw_rect(Rect2(-map.world_size * 2.0, map.world_size * 5.0), RtsWorldMap.OUTSIDE_COLOR)
+	var lift := Vector2.ZERO
 	if map.isometric_view:
 		var camera := map.get_viewport().get_camera_2d()
-		map.lift_per_height = RtsIsoProjection.world_delta(map.get_viewport().get_canvas_transform(), Vector2(0, -camera.zoom.x)) if camera != null else Vector2.ZERO
-		map.apron_mesh = _apron_mesh(map)
+		lift = RtsIsoProjection.world_delta(map.get_viewport().get_canvas_transform(), Vector2(0, -camera.zoom.x)) if camera != null else Vector2.ZERO
+	# Viewport resizing can invoke _draw even when the terrain is unchanged.
+	# Hash only on redraw; include mutable data so terrain edits still invalidate.
+	var geometry_key := hash([map.map_seed, map.world_size, map.grid_size, map.isometric_view, map.cells, map.elevation_vertices, map.plants])
+	if map.ground_mesh == null or map.render_geometry_key != geometry_key or not map.lift_per_height.is_equal_approx(lift):
+		map.lift_per_height = lift
+		var surface := Surface.new()
+		surface.build(map)
+		var occluders := {}
+		if map.isometric_view:
+			map.apron_mesh = _apron_mesh(map)
+			map.relief_mesh = _relief_mesh(map, surface, occluders)
+		map.ground_mesh = _ground_mesh(map, surface)
+		map.accents_mesh = _accents_mesh(map)
+		map.details_mesh = _details_mesh(map, surface, occluders)
+		map.plants_mesh = _plants_mesh(map)
+		map.update_terrain_occlusion(occluders, _white_texture())
+		map.render_geometry_key = geometry_key
+	map.draw_rect(Rect2(-map.world_size * 2.0, map.world_size * 5.0), RtsWorldMap.OUTSIDE_COLOR)
+	if map.isometric_view:
 		map.draw_mesh(map.apron_mesh, _white_texture())
-	map.ground_mesh = _ground_mesh(map, surface)
 	map.draw_mesh(map.ground_mesh, _white_texture())
 	if map.isometric_view:
-		map.relief_mesh = _relief_mesh(map, surface, occluders)
 		map.draw_mesh(map.relief_mesh, _white_texture())
 		var border := Color("d1bc86", 0.74)
 		for x in map.grid_size.x:
@@ -287,9 +300,7 @@ static func draw_map(map: RtsWorldMap) -> void:
 		for y in map.grid_size.y:
 			map.draw_line(projected_vertex(map, 0, y), projected_vertex(map, 0, y + 1), border, 2.0)
 			map.draw_line(projected_vertex(map, map.grid_size.x, y), projected_vertex(map, map.grid_size.x, y + 1), border, 2.0)
-	map.accents_mesh = _accents_mesh(map)
 	map.draw_mesh(map.accents_mesh, _white_texture())
-	map.details_mesh = _details_mesh(map, surface, occluders)
 	map.draw_mesh(map.details_mesh, _white_texture())
 	for patch in map.stealth_patches:
 		var center: Vector2 = patch["position"]
@@ -297,6 +308,4 @@ static func draw_map(map: RtsWorldMap) -> void:
 		var radius: float = patch["radius"]
 		map.draw_circle(center, radius, Color("254f37", 0.28))
 		map.draw_arc(center, radius, 0.0, TAU, 48, Color("a1bc80", 0.5), 2.0)
-	map.plants_mesh = _plants_mesh(map)
 	map.draw_mesh(map.plants_mesh, _white_texture())
-	map.update_terrain_occlusion(occluders, _white_texture())

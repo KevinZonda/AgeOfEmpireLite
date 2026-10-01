@@ -23,11 +23,14 @@ const MIN_UI_VIEWPORT_SIZE := Vector2(1280, 720)
 const SETTINGS_PATH = SETTINGS_STORE.SETTINGS_PATH
 const LEGACY_DISPLAY_SETTINGS_PATH = SETTINGS_STORE.LEGACY_DISPLAY_SETTINGS_PATH
 const CAMERA_PAN_SPEED := 570.0
-# User-facing 1x is the previous maximum magnification. Keep world units intact.
+# At 720p, virtual 1x uses the previous maximum magnification.
 const CAMERA_ZOOM_BASE := 1.65
-const DEFAULT_CAMERA_ZOOM := 1.0
-const MIN_CAMERA_ZOOM := 0.7 / CAMERA_ZOOM_BASE
-const MAX_CAMERA_ZOOM := 1.0
+const CAMERA_REFERENCE_HEIGHT := 720.0
+# Partial resolution compensation: 720p = 1x, 900p = 1.1x, 1080p = 1.2x.
+const CAMERA_RESOLUTION_COMPENSATION := 0.4
+const DEFAULT_CAMERA_VIRTUAL_SCALE := 1.0
+const MIN_CAMERA_VIRTUAL_SCALE := 0.5
+const MAX_CAMERA_VIRTUAL_SCALE := 1.5
 const GESTURE_PAN_PIXELS := 32.0
 const EDGE_SCROLL_MARGIN := 28.0
 const SELECTION_DRAG_THRESHOLD := 12.0
@@ -118,6 +121,8 @@ var last_group_press_time: float:
 	get: return player_selection.last_group_press_time
 	set(value): player_selection.last_group_press_time = value
 var camera: Camera2D
+var camera_physical_scale := 1.0
+var camera_virtual_scale := DEFAULT_CAMERA_VIRTUAL_SCALE
 var world_map: RtsWorldMap
 var navigation: RtsNavigation
 var weather: RtsWeather
@@ -466,7 +471,6 @@ func _ready() -> void:
 	navigation.background_recovery_enabled = OS.get_environment("RTS_ASYNC_NAV") != "0"
 	navigation.route_budget_enabled = OS.get_environment("RTS_ROUTE_BUDGET") == "1"
 	camera = Camera2D.new()
-	camera.zoom = Vector2.ONE * CAMERA_ZOOM_BASE * DEFAULT_CAMERA_ZOOM
 	camera.position = START_CAMERA_POINT
 	# We clamp the rotated viewport ourselves. Camera2D's axis-aligned limits
 	# would otherwise pin the projected view against the map edge.
@@ -477,6 +481,8 @@ func _ready() -> void:
 	camera.ignore_rotation = false
 	add_child(camera)
 	camera.make_current()
+	_update_camera_physical_scale()
+	_apply_camera_zoom()
 	feedback_audio = FEEDBACK_AUDIO.new()
 	add_child(feedback_audio)
 	weather = RtsWeather.new()
@@ -503,6 +509,7 @@ func _ready() -> void:
 	match_production.unit_spawn_requested.connect(func(owner_id: int, kind: String, producer: Object) -> void: spawn_unit(owner_id, kind, find_spawn_position(producer)))
 	_create_hud()
 	get_viewport().size_changed.connect(_apply_ui_scales)
+	get_viewport().size_changed.connect(_update_camera_physical_scale)
 	get_tree().node_added.connect(_on_ui_node_added)
 	_apply_ui_scales()
 	_create_cursor()
@@ -692,8 +699,9 @@ func start_game(civ: String, requested_seed := -1, opponent_civ := "") -> void:
 	build_page = 0
 	order_mode = ""
 	ai_think_timers.clear()
-	var initial_zoom := CAMERA_ZOOM_BASE * DEFAULT_CAMERA_ZOOM
-	camera.zoom = Vector2(initial_zoom, initial_zoom * 0.5 if view_mode_25d else initial_zoom)
+	camera_virtual_scale = DEFAULT_CAMERA_VIRTUAL_SCALE
+	_update_camera_physical_scale()
+	_apply_camera_zoom()
 	camera.position = _starting_camera_position()
 	menu_panel.hide()
 	menu_backdrop.hide()
@@ -729,6 +737,10 @@ func start_game(civ: String, requested_seed := -1, opponent_civ := "") -> void:
 	_stagger_ai_think_phases()
 	ai = ai_controllers[0]
 	if view_mode_25d != selected_view_mode_25d: _toggle_view_mode()
+	# A new projected match must center home even if the previous match used 2.5D.
+	if view_mode_25d: camera.position = spawn_point_for(0)
+	_clamp_camera_position()
+	camera.force_update_scroll()
 	_update_hud()
 	_rebuild_actions()
 	queue_redraw()
@@ -1308,7 +1320,7 @@ func _clamp_camera_position() -> void:
 
 func _starting_camera_position() -> Vector2:
 	# Preserve the opening screen offset when the default magnification changes.
-	return spawn_point_for(0) + _scaled_point(START_CAMERA_POINT - Vector2(330, 720)) / (CAMERA_ZOOM_BASE * DEFAULT_CAMERA_ZOOM)
+	return spawn_point_for(0) + _scaled_point(START_CAMERA_POINT - Vector2(330, 720)) / (CAMERA_ZOOM_BASE * camera_physical_scale * DEFAULT_CAMERA_VIRTUAL_SCALE)
 
 func _toggle_view_mode(save_setting := false) -> void:
 	var at_starting_camera := started and match_statistics.elapsed < 2.0 and camera.position.distance_to(_starting_camera_position()) < 2.0
@@ -1369,7 +1381,24 @@ func _adjust_zoom(factor: float, screen_anchor := Vector2.INF) -> void:
 	player_input._adjust_zoom(factor, screen_anchor)
 
 func camera_zoom_ratio() -> float:
-	return camera.zoom.x / CAMERA_ZOOM_BASE
+	return camera_virtual_scale
+
+func _apply_camera_zoom() -> void:
+	var zoom := CAMERA_ZOOM_BASE * camera_physical_scale * camera_virtual_scale
+	camera.zoom = Vector2(zoom, zoom * 0.5 if view_mode_25d else zoom)
+
+func _update_camera_physical_scale() -> void:
+	# Use viewport height, not monitor DPI or width: wider windows reveal more map.
+	var height_ratio := maxf(get_viewport_rect().size.y, 1.0) / CAMERA_REFERENCE_HEIGHT
+	var physical_scale := lerpf(1.0, height_ratio, CAMERA_RESOLUTION_COMPENSATION)
+	if is_equal_approx(physical_scale, camera_physical_scale): return
+	camera_physical_scale = physical_scale
+	_apply_camera_zoom()
+	# Keep the world point at the screen center, except when constrained by map edges.
+	if started: _clamp_camera_position()
+	camera.force_update_scroll()
+	# A uniform zoom preserves projection geometry; reuse terrain and fog meshes.
+	queue_redraw()
 
 func _edge_pan_direction(screen_point: Vector2, viewport_size: Vector2) -> Vector2:
 	return player_input._edge_pan_direction(screen_point, viewport_size)

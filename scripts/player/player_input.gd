@@ -71,13 +71,13 @@ func _clamp_camera_position() -> void:
 	game.camera.position = game.camera.position.clamp(margin, game.world_size - margin)
 
 func _adjust_zoom(factor: float, screen_anchor := Vector2.INF) -> void:
-	var ratio: float = clampf(game.camera_zoom_ratio() * factor, game.MIN_CAMERA_ZOOM, game.MAX_CAMERA_ZOOM)
-	var base_zoom: float = ratio * game.CAMERA_ZOOM_BASE
-	if is_equal_approx(base_zoom, game.camera.zoom.x): return
+	var ratio: float = clampf(game.camera_zoom_ratio() * factor, game.MIN_CAMERA_VIRTUAL_SCALE, game.MAX_CAMERA_VIRTUAL_SCALE)
+	if is_equal_approx(ratio, game.camera_virtual_scale): return
 	if screen_anchor == Vector2.INF: screen_anchor = game.get_viewport_rect().size * 0.5
 	game.camera.force_update_scroll()
 	var anchor_world := game.get_viewport().get_canvas_transform().affine_inverse() * screen_anchor
-	game.camera.zoom = Vector2(base_zoom, base_zoom * 0.5 if game.view_mode_25d else base_zoom)
+	game.camera_virtual_scale = ratio
+	game._apply_camera_zoom()
 	game.camera.force_update_scroll()
 	var shifted_world := game.get_viewport().get_canvas_transform().affine_inverse() * screen_anchor
 	game.camera.position += anchor_world - shifted_world
