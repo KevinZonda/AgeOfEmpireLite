@@ -61,7 +61,8 @@ func _run() -> void:
 	assert(palace_guard.stats["hp"] >= GameData.UNITS["palace_guard"]["hp"] + 15.0)
 	var worker: RtsUnit = game.units[0]
 	var house: RtsBuilding = game.spawn_building(0, "house", Vector2(700, 900), true)
-	worker.position = house.position + Vector2(40, 0)
+	worker.position = house.position + Vector2(house.size().x * 0.5 + worker.radius() + 3.0, 0)
+	assert(game.navigation.can_occupy(worker.position, worker.radius(), worker, false), "construction speed fixture must start outside the foundation")
 	worker.order_build(house)
 	var remaining := house.build_remaining
 	worker._process(1.0)

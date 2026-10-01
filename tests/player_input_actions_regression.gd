@@ -156,7 +156,7 @@ func _run() -> void:
 	for button in game.command_buttons:
 		if not button.visible: continue
 		assert(not button.shortcut_label.is_empty())
-		assert(button.get_node("ShortcutBadge").get_child(0).text == button.shortcut_label, "visible badges must match tooltip shortcuts")
+		assert(button.get_node("ShortcutBadge").text == button.shortcut_label, "visible badges must match tooltip shortcuts")
 	for button in game.hud_ui.command_side_buttons:
 		assert(button.has_node("ShortcutBadge"))
 	print("PLAYER_INPUT_ACTIONS_REGRESSION_OK")

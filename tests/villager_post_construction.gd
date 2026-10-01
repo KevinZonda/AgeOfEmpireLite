@@ -80,7 +80,9 @@ func start_case(kind: String) -> void:
 	worker = game.spawn_unit(Vector2(600, 600))
 	worker.kind = "villager"
 	worker.refresh_stats(false)
-	completed = building(kind, worker.position - Vector2(38, 0))
+	var half_width: float = GameData.BUILDINGS[kind]["size"].x * 0.5
+	completed = building(kind, worker.position - Vector2(half_width + worker.radius() + 3.0, 0))
+	check(game.navigation.can_occupy(worker.position, worker.radius(), worker, false), "completion_fixture_starts_outside_" + kind)
 	worker.issue_command("build", Vector2.INF, completed)
 
 func finish() -> void:
@@ -90,7 +92,7 @@ func finish() -> void:
 
 func _run() -> void:
 	start_case("farm")
-	var free_farm := building("farm", worker.position - Vector2(0, 37), false)
+	var free_farm := building("farm", worker.position - Vector2(0, 110), false)
 	finish()
 	check(worker.order == "gather" and worker.target == completed, "farmer_uses_own_completed_farm_before_closer_free_farm")
 	var helper := game.spawn_unit(worker.position + Vector2(0, 25))
@@ -135,7 +137,7 @@ func _run() -> void:
 		finish()
 		check(worker.order == "build" and worker.target == next_site, "no_usable_resource_resumes_owned_unfinished_building_" + kind)
 		# Finishing the follow-up runs the same rule, then stops when no work remains.
-		worker.position = next_site.position + Vector2(38, 0)
+		worker.position = next_site.position + Vector2(next_site.size().x * 0.5 + worker.radius() + 3.0, 0)
 		worker.orders.tick(worker, 0.2)
 		check(worker.order == "idle", "construction_chain_ends_idle_" + kind)
 

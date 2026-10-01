@@ -32,7 +32,11 @@ func step(delta: float) -> void:
 	_suspend_overrides(game)
 	for id in override_modes.keys():
 		if override_modes[id].node.get_ref() == null: override_modes.erase(id)
+	var epoch := Engine.get_process_frames()
 	await tree.process_frame
+	# During SceneTree startup the next process_frame signal can precede
+	# the first frame-counter increment. Complete an actual epoch change.
+	if Engine.get_process_frames() == epoch: await tree.process_frame
 	_suspend_overrides(game)
 
 func _tick_subtree(node: Node, delta: float, inherited_mode: int) -> void:

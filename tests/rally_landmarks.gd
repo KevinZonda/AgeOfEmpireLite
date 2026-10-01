@@ -14,6 +14,11 @@ func _run() -> void:
 	root.add_child(game)
 	await process_frame
 	game.start_game("English", 4242)
+	# This command-routing fixture supplies ground coordinates directly.
+	# Projection-specific screen picking is covered by the input regressions.
+	if game.view_mode_25d:
+		game._toggle_view_mode()
+		await process_frame
 	game.players[0]["age"] = 3
 	var white_tower: RtsBuilding = game.spawn_building(0, "landmark", game._scaled_point(Vector2(700, 950)), false, "eng_white_tower")
 	var blacksmith: RtsBuilding = game.spawn_building(0, "blacksmith", game._scaled_point(Vector2(1000, 950)))

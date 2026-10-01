@@ -181,6 +181,8 @@ func _run() -> void:
 	var wall := make_building(game, "stone_wall", Vector2(1500, 900))
 	wall.owner_id = 1
 	var tower := make_unit(game, "siege_tower", Vector2(1435, 900))
+	tower.position = wall.position - Vector2(wall.size().x * 0.5 + tower.radius() + 3.0, 0)
+	check(game.navigation.can_occupy(tower.position, tower.radius(), tower, false), "siege_docking_fixture_starts_outside_wall")
 	tower.issue_command("assault_wall", Vector2.INF, wall)
 	generation = request_route(tower)
 	tower._process(0.01)

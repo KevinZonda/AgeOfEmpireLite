@@ -5,9 +5,9 @@ extends "res://tools/battle_deer_poc.gd"
 # sleep or artificial load is added. Headless results are NOT display latency.
 class TimedJobs extends "res://scripts/world/navigation_jobs.gd":
 	var frame_us := 0
-	func tick(nav) -> void:
+	func tick(nav, allow_dispatch := true) -> void:
 		var started := Time.get_ticks_usec()
-		super.tick(nav)
+		super.tick(nav, allow_dispatch)
 		frame_us = Time.get_ticks_usec() - started
 
 class TimedNavigation extends RtsNavigation:
