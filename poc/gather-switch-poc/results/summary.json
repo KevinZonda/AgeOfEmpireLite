@@ -1,0 +1,26 @@
+[
+  {
+    "run": 1,
+    "passed": true,
+    "exit_code": 0,
+    "seconds": 67.983,
+    "timeout": false,
+    "script_error": false,
+    "checks": 326,
+    "cases": 58,
+    "log": "run-1.log",
+    "report": "run-1.json"
+  },
+  {
+    "run": 2,
+    "passed": true,
+    "exit_code": 0,
+    "seconds": 41.782,
+    "timeout": false,
+    "script_error": false,
+    "checks": 326,
+    "cases": 58,
+    "log": "run-2.log",
+    "report": "run-2.json"
+  }
+]

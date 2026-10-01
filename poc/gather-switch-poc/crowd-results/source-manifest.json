@@ -1,0 +1,17 @@
+{
+  "git_head": "35e12b8f3b48b31823cfa9fb2b5a582dacffe586",
+  "suite": "crowd",
+  "sha256": {
+    "poc/gather-switch-poc/gather_crowd_poc.gd": "526dd369ba41c7f29a653d0af3d5c3b51ef8df98af2ca07957fd842bb7588853",
+    "poc/gather-switch-poc/gather_switch_poc.gd": "4436cc54fa7b1874e5bcd5003b21f3d92a40e0f6c0bc3c276e86a59737e5568f",
+    "poc/gather-switch-poc/run.py": "edcb2caacda6638beac8097d5668c29a6ab5ad9a11e417a28084938eb4b7f2e5",
+    "scripts/entities/unit.gd": "3ce0a97615cef915e262094e411cd745219d1b9ce24d0d9cce151b2acf87bd02",
+    "scripts/entities/unit_work.gd": "255dc71d2c03b2652d8afe406ee01959ca27c434507d53e74dfc0acab2179c61",
+    "scripts/entities/unit_orders.gd": "fd783ab295ff26e03e8c5ee120b3f933e25e9352c85bac5eec3912bb888c694b",
+    "scripts/entities/unit_movement.gd": "4c0e505bd02450214191960f419627d42cf6eff09d85ed439af14c2310a880c3",
+    "scripts/game.gd": "b61eca3fb75183a59acc0c2aaae78c962325dd106a627c68e3f81bf1483ffdc4",
+    "scripts/world/navigation.gd": "4d24f709e7f582be6e43e7605ad903c56adcf2a97c842b16861c11bec85e0420",
+    "scripts/match/match_simulation.gd": "230d0557b788a22ff91474703817b7090f691ad006d68e4f1681be919de33574",
+    "docs/godot/bin/godot.macos.template_debug.arm64": "7867f981bcede8bcdd5355e4a24b900435beea728fd57abf36133becbfd500e9"
+  }
+}

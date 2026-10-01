@@ -1,0 +1,2375 @@
+{
+	"cases": [
+		{
+			"case": "English/live/gold",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "gather",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": 9804,
+				"target_id": 110830291480,
+				"target_kind": "wood"
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 196
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 9993,
+					"t": 0.05,
+					"target_id": 110830291480,
+					"target_kind": "wood"
+				}
+			]
+		},
+		{
+			"case": "English/live/stone",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "gather",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": 9804,
+				"target_id": 111971142161,
+				"target_kind": "wood"
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 196
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 9993,
+					"t": 0.05,
+					"target_id": 111971142161,
+					"target_kind": "wood"
+				}
+			]
+		},
+		{
+			"case": "English/neighbor/gold",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "gather",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": 9832,
+				"target_id": 113262988055,
+				"target_kind": "wood"
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 193
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 18,
+					"t": 0.05,
+					"target_id": 113095215645,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 10000,
+					"t": 3.35,
+					"target_id": 113262988055,
+					"target_kind": "wood"
+				}
+			]
+		},
+		{
+			"case": "English/neighbor/stone",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "gather",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": 9832,
+				"target_id": 114487724536,
+				"target_kind": "wood"
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 193
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 18,
+					"t": 0.05,
+					"target_id": 114319952397,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 10000,
+					"t": 3.35,
+					"target_id": 114487724536,
+					"target_kind": "wood"
+				}
+			]
+		},
+		{
+			"case": "English/no_tree/gold",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "idle",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": -1,
+				"target_id": 0,
+				"target_kind": ""
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 25
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 18,
+					"t": 0.05,
+					"target_id": 115527911963,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "wood",
+					"order": "idle",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": -1,
+					"t": 3.35,
+					"target_id": 0,
+					"target_kind": ""
+				}
+			]
+		},
+		{
+			"case": "English/no_tree/stone",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "idle",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": -1,
+				"target_id": 0,
+				"target_kind": ""
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 25
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 18,
+					"t": 0.05,
+					"target_id": 116635208216,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "wood",
+					"order": "idle",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": -1,
+					"t": 3.35,
+					"target_id": 0,
+					"target_kind": ""
+				}
+			]
+		},
+		{
+			"case": "English/outside_radius/gold",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "idle",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": -1,
+				"target_id": 0,
+				"target_kind": ""
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 25
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 18,
+					"t": 0.05,
+					"target_id": 117759281675,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "wood",
+					"order": "idle",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": -1,
+					"t": 3.35,
+					"target_id": 0,
+					"target_kind": ""
+				}
+			]
+		},
+		{
+			"case": "English/outside_radius/stone",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "idle",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": -1,
+				"target_id": 0,
+				"target_kind": ""
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 25
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 18,
+					"t": 0.05,
+					"target_id": 118967241243,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "wood",
+					"order": "idle",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": -1,
+					"t": 3.35,
+					"target_id": 0,
+					"target_kind": ""
+				}
+			]
+		},
+		{
+			"case": "English/deleted/gold",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "gather",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": 9811,
+				"target_id": 120342973199,
+				"target_kind": "wood"
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 189
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 10000,
+					"t": 0.05,
+					"target_id": 120342973199,
+					"target_kind": "wood"
+				}
+			]
+		},
+		{
+			"case": "English/deleted/stone",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "gather",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": 9811,
+				"target_id": 121550932750,
+				"target_kind": "wood"
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 189
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 10000,
+					"t": 0.05,
+					"target_id": 121550932750,
+					"target_kind": "wood"
+				}
+			]
+		},
+		{
+			"case": "English/freed/gold",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "gather",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": 9811,
+				"target_id": 122758892023,
+				"target_kind": "wood"
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 189
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 10000,
+					"t": 0.05,
+					"target_id": 122758892023,
+					"target_kind": "wood"
+				}
+			]
+		},
+		{
+			"case": "English/freed/stone",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "gather",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": 9811,
+				"target_id": 123966851589,
+				"target_kind": "wood"
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 189
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 10000,
+					"t": 0.05,
+					"target_id": 123966851589,
+					"target_kind": "wood"
+				}
+			]
+		},
+		{
+			"case": "English/fog/gold",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "idle",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": -1,
+				"target_id": 0,
+				"target_kind": ""
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 25
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 18,
+					"t": 0.05,
+					"target_id": 125007038968,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "wood",
+					"order": "idle",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": -1,
+					"t": 3.35,
+					"target_id": 0,
+					"target_kind": ""
+				}
+			]
+		},
+		{
+			"case": "English/fog/stone",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "idle",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": -1,
+				"target_id": 0,
+				"target_kind": ""
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 25
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 18,
+					"t": 0.05,
+					"target_id": 126265330445,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "wood",
+					"order": "idle",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": -1,
+					"t": 3.35,
+					"target_id": 0,
+					"target_kind": ""
+				}
+			]
+		},
+		{
+			"case": "English/blocked/gold",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "idle",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": -1,
+				"target_id": 0,
+				"target_kind": ""
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 25
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 18,
+					"t": 0.05,
+					"target_id": 127523621369,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "wood",
+					"order": "idle",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": -1,
+					"t": 3.35,
+					"target_id": 0,
+					"target_kind": ""
+				}
+			]
+		},
+		{
+			"case": "English/blocked/stone",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "idle",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": -1,
+				"target_id": 0,
+				"target_kind": ""
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 25
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 18,
+					"t": 0.05,
+					"target_id": 128748358416,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "wood",
+					"order": "idle",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": -1,
+					"t": 3.35,
+					"target_id": 0,
+					"target_kind": ""
+				}
+			]
+		},
+		{
+			"case": "French/live/gold",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "gather",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": 9804,
+				"target_id": 145525573541,
+				"target_kind": "wood"
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 196
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 9993,
+					"t": 0.05,
+					"target_id": 145525573541,
+					"target_kind": "wood"
+				}
+			]
+		},
+		{
+			"case": "French/live/stone",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "gather",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": 9804,
+				"target_id": 146649647015,
+				"target_kind": "wood"
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 196
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 9993,
+					"t": 0.05,
+					"target_id": 146649647015,
+					"target_kind": "wood"
+				}
+			]
+		},
+		{
+			"case": "French/neighbor/gold",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "gather",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": 9832,
+				"target_id": 147941492664,
+				"target_kind": "wood"
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 193
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 18,
+					"t": 0.05,
+					"target_id": 147773720480,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 10000,
+					"t": 3.35,
+					"target_id": 147941492664,
+					"target_kind": "wood"
+				}
+			]
+		},
+		{
+			"case": "French/neighbor/stone",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "gather",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": 9832,
+				"target_id": 149149452223,
+				"target_kind": "wood"
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 193
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 18,
+					"t": 0.05,
+					"target_id": 148981680042,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 10000,
+					"t": 3.35,
+					"target_id": 149149452223,
+					"target_kind": "wood"
+				}
+			]
+		},
+		{
+			"case": "French/no_tree/gold",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "idle",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": -1,
+				"target_id": 0,
+				"target_kind": ""
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 25
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 18,
+					"t": 0.05,
+					"target_id": 150189639585,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "wood",
+					"order": "idle",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": -1,
+					"t": 3.35,
+					"target_id": 0,
+					"target_kind": ""
+				}
+			]
+		},
+		{
+			"case": "French/no_tree/stone",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "idle",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": -1,
+				"target_id": 0,
+				"target_kind": ""
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 25
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 18,
+					"t": 0.05,
+					"target_id": 151296935838,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "wood",
+					"order": "idle",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": -1,
+					"t": 3.35,
+					"target_id": 0,
+					"target_kind": ""
+				}
+			]
+		},
+		{
+			"case": "French/outside_radius/gold",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "idle",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": -1,
+				"target_id": 0,
+				"target_kind": ""
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 25
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 18,
+					"t": 0.05,
+					"target_id": 152421009323,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "wood",
+					"order": "idle",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": -1,
+					"t": 3.35,
+					"target_id": 0,
+					"target_kind": ""
+				}
+			]
+		},
+		{
+			"case": "French/outside_radius/stone",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "idle",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": -1,
+				"target_id": 0,
+				"target_kind": ""
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 25
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 18,
+					"t": 0.05,
+					"target_id": 153628968865,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "wood",
+					"order": "idle",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": -1,
+					"t": 3.35,
+					"target_id": 0,
+					"target_kind": ""
+				}
+			]
+		},
+		{
+			"case": "French/deleted/gold",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "gather",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": 9811,
+				"target_id": 155004700579,
+				"target_kind": "wood"
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 189
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 10000,
+					"t": 0.05,
+					"target_id": 155004700579,
+					"target_kind": "wood"
+				}
+			]
+		},
+		{
+			"case": "French/deleted/stone",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "gather",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": 9811,
+				"target_id": 156212660124,
+				"target_kind": "wood"
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 189
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 10000,
+					"t": 0.05,
+					"target_id": 156212660124,
+					"target_kind": "wood"
+				}
+			]
+		},
+		{
+			"case": "French/freed/gold",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "gather",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": 9811,
+				"target_id": 157420619635,
+				"target_kind": "wood"
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 189
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 10000,
+					"t": 0.05,
+					"target_id": 157420619635,
+					"target_kind": "wood"
+				}
+			]
+		},
+		{
+			"case": "French/freed/stone",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "gather",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": 9811,
+				"target_id": 158628579257,
+				"target_kind": "wood"
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 189
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 10000,
+					"t": 0.05,
+					"target_id": 158628579257,
+					"target_kind": "wood"
+				}
+			]
+		},
+		{
+			"case": "French/fog/gold",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "idle",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": -1,
+				"target_id": 0,
+				"target_kind": ""
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 25
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 18,
+					"t": 0.05,
+					"target_id": 159668766655,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "wood",
+					"order": "idle",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": -1,
+					"t": 3.35,
+					"target_id": 0,
+					"target_kind": ""
+				}
+			]
+		},
+		{
+			"case": "French/fog/stone",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "idle",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": -1,
+				"target_id": 0,
+				"target_kind": ""
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 25
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 18,
+					"t": 0.05,
+					"target_id": 160910280619,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "wood",
+					"order": "idle",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": -1,
+					"t": 3.35,
+					"target_id": 0,
+					"target_kind": ""
+				}
+			]
+		},
+		{
+			"case": "French/blocked/gold",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "idle",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": -1,
+				"target_id": 0,
+				"target_kind": ""
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 25
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 18,
+					"t": 0.05,
+					"target_id": 162168571810,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "wood",
+					"order": "idle",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": -1,
+					"t": 3.35,
+					"target_id": 0,
+					"target_kind": ""
+				}
+			]
+		},
+		{
+			"case": "French/blocked/stone",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "idle",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": -1,
+				"target_id": 0,
+				"target_kind": ""
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 25
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 18,
+					"t": 0.05,
+					"target_id": 163393309530,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "wood",
+					"order": "idle",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": -1,
+					"t": 3.35,
+					"target_id": 0,
+					"target_kind": ""
+				}
+			]
+		},
+		{
+			"case": "Chinese/live/gold",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "gather",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": 9804,
+				"target_id": 180438960886,
+				"target_kind": "wood"
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 196
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 9993,
+					"t": 0.05,
+					"target_id": 180438960886,
+					"target_kind": "wood"
+				}
+			]
+		},
+		{
+			"case": "Chinese/live/stone",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "gather",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": 9804,
+				"target_id": 181563034356,
+				"target_kind": "wood"
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 196
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 9993,
+					"t": 0.05,
+					"target_id": 181563034356,
+					"target_kind": "wood"
+				}
+			]
+		},
+		{
+			"case": "Chinese/neighbor/gold",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "gather",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": 9832,
+				"target_id": 182854880249,
+				"target_kind": "wood"
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 193
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 18,
+					"t": 0.05,
+					"target_id": 182687107841,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 10000,
+					"t": 3.35,
+					"target_id": 182854880249,
+					"target_kind": "wood"
+				}
+			]
+		},
+		{
+			"case": "Chinese/neighbor/stone",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "gather",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": 9832,
+				"target_id": 184062839523,
+				"target_kind": "wood"
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 193
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 18,
+					"t": 0.05,
+					"target_id": 183895067385,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 10000,
+					"t": 3.35,
+					"target_id": 184062839523,
+					"target_kind": "wood"
+				}
+			]
+		},
+		{
+			"case": "Chinese/no_tree/gold",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "idle",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": -1,
+				"target_id": 0,
+				"target_kind": ""
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 25
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 18,
+					"t": 0.05,
+					"target_id": 185103026944,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "wood",
+					"order": "idle",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": -1,
+					"t": 3.35,
+					"target_id": 0,
+					"target_kind": ""
+				}
+			]
+		},
+		{
+			"case": "Chinese/no_tree/stone",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "idle",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": -1,
+				"target_id": 0,
+				"target_kind": ""
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 25
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 18,
+					"t": 0.05,
+					"target_id": 186227100407,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "wood",
+					"order": "idle",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": -1,
+					"t": 3.35,
+					"target_id": 0,
+					"target_kind": ""
+				}
+			]
+		},
+		{
+			"case": "Chinese/outside_radius/gold",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "idle",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": -1,
+				"target_id": 0,
+				"target_kind": ""
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 25
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 18,
+					"t": 0.05,
+					"target_id": 187351173874,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "wood",
+					"order": "idle",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": -1,
+					"t": 3.35,
+					"target_id": 0,
+					"target_kind": ""
+				}
+			]
+		},
+		{
+			"case": "Chinese/outside_radius/stone",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "idle",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": -1,
+				"target_id": 0,
+				"target_kind": ""
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 25
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 18,
+					"t": 0.05,
+					"target_id": 188559133430,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "wood",
+					"order": "idle",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": -1,
+					"t": 3.35,
+					"target_id": 0,
+					"target_kind": ""
+				}
+			]
+		},
+		{
+			"case": "Chinese/deleted/gold",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "gather",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": 9811,
+				"target_id": 189918088178,
+				"target_kind": "wood"
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 189
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 10000,
+					"t": 0.05,
+					"target_id": 189918088178,
+					"target_kind": "wood"
+				}
+			]
+		},
+		{
+			"case": "Chinese/deleted/stone",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "gather",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": 9811,
+				"target_id": 191126047476,
+				"target_kind": "wood"
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 189
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 10000,
+					"t": 0.05,
+					"target_id": 191126047476,
+					"target_kind": "wood"
+				}
+			]
+		},
+		{
+			"case": "Chinese/freed/gold",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "gather",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": 9811,
+				"target_id": 192334007290,
+				"target_kind": "wood"
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 189
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 10000,
+					"t": 0.05,
+					"target_id": 192334007290,
+					"target_kind": "wood"
+				}
+			]
+		},
+		{
+			"case": "Chinese/freed/stone",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "gather",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": 9811,
+				"target_id": 193541966347,
+				"target_kind": "wood"
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 189
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 10000,
+					"t": 0.05,
+					"target_id": 193541966347,
+					"target_kind": "wood"
+				}
+			]
+		},
+		{
+			"case": "Chinese/fog/gold",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "idle",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": -1,
+				"target_id": 0,
+				"target_kind": ""
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 25
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 18,
+					"t": 0.05,
+					"target_id": 194582153955,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "wood",
+					"order": "idle",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": -1,
+					"t": 3.35,
+					"target_id": 0,
+					"target_kind": ""
+				}
+			]
+		},
+		{
+			"case": "Chinese/fog/stone",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "idle",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": -1,
+				"target_id": 0,
+				"target_kind": ""
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 25
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 18,
+					"t": 0.05,
+					"target_id": 195840445152,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "wood",
+					"order": "idle",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": -1,
+					"t": 3.35,
+					"target_id": 0,
+					"target_kind": ""
+				}
+			]
+		},
+		{
+			"case": "Chinese/blocked/gold",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "idle",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": -1,
+				"target_id": 0,
+				"target_kind": ""
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 25
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 18,
+					"t": 0.05,
+					"target_id": 197098736377,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "wood",
+					"order": "idle",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": -1,
+					"t": 3.35,
+					"target_id": 0,
+					"target_kind": ""
+				}
+			]
+		},
+		{
+			"case": "Chinese/blocked/stone",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "idle",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": -1,
+				"target_id": 0,
+				"target_kind": ""
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 25
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 18,
+					"t": 0.05,
+					"target_id": 198323473130,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "wood",
+					"order": "idle",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": -1,
+					"t": 3.35,
+					"target_id": 0,
+					"target_kind": ""
+				}
+			]
+		},
+		{
+			"case": "control/queued_gold",
+			"expected_mining": true,
+			"final": {
+				"gather_kind": "gold",
+				"order": "gather",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": 9802,
+				"target_id": 199715982076,
+				"target_kind": "gold"
+			},
+			"gains": {
+				"gold": 198,
+				"stone": 0,
+				"wood": 100
+			},
+			"mining_ticks": 492,
+			"queue_nonempty_ticks": 308,
+			"seconds": 40.0,
+			"steps": 800,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 1,
+					"remaining": 93,
+					"t": 0.05,
+					"target_id": 199548209901,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "gold",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 10000,
+					"t": 15.45,
+					"target_id": 199715982076,
+					"target_kind": "gold"
+				}
+			]
+		},
+		{
+			"case": "control/queued_stone",
+			"expected_mining": true,
+			"final": {
+				"gather_kind": "stone",
+				"order": "gather",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": 9846,
+				"target_id": 201108491252,
+				"target_kind": "stone"
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 154,
+				"wood": 100
+			},
+			"mining_ticks": 492,
+			"queue_nonempty_ticks": 308,
+			"seconds": 40.0,
+			"steps": 800,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 1,
+					"remaining": 93,
+					"t": 0.05,
+					"target_id": 200940718819,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "stone",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 10000,
+					"t": 15.45,
+					"target_id": 201108491252,
+					"target_kind": "stone"
+				}
+			]
+		},
+		{
+			"case": "control/reissued_wood_clears_queue",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "idle",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": -1,
+				"target_id": 0,
+				"target_kind": ""
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 25
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 18,
+					"t": 0.05,
+					"target_id": 202299673364,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "wood",
+					"order": "idle",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": -1,
+					"t": 3.35,
+					"target_id": 0,
+					"target_kind": ""
+				}
+			]
+		},
+		{
+			"case": "control/low_level_preserves_old_queue",
+			"expected_mining": true,
+			"final": {
+				"gather_kind": "gold",
+				"order": "gather",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": 9784,
+				"target_id": 203474078435,
+				"target_kind": "gold"
+			},
+			"gains": {
+				"gold": 216,
+				"stone": 0,
+				"wood": 25
+			},
+			"mining_ticks": 534,
+			"queue_nonempty_ticks": 66,
+			"seconds": 30.0,
+			"steps": 600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 1,
+					"remaining": 18,
+					"t": 0.05,
+					"target_id": 203390192361,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "gold",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 10000,
+					"t": 3.35,
+					"target_id": 203474078435,
+					"target_kind": "gold"
+				}
+			]
+		},
+		{
+			"case": "control/player_dispatcher_wood_clears_gold_queue",
+			"expected_mining": false,
+			"final": {
+				"gather_kind": "wood",
+				"order": "idle",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": -1,
+				"target_id": 0,
+				"target_kind": ""
+			},
+			"gains": {
+				"gold": 0,
+				"stone": 0,
+				"wood": 100
+			},
+			"mining_ticks": 0,
+			"queue_nonempty_ticks": 0,
+			"seconds": 40.0,
+			"steps": 800,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 93,
+					"t": 0.05,
+					"target_id": 204497488642,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "wood",
+					"order": "idle",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": -1,
+					"t": 15.45,
+					"target_id": 0,
+					"target_kind": ""
+				}
+			]
+		},
+		{
+			"case": "control/player_dispatcher_queued_gold",
+			"expected_mining": true,
+			"final": {
+				"gather_kind": "gold",
+				"order": "gather",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": 9802,
+				"target_id": 205906774810,
+				"target_kind": "gold"
+			},
+			"gains": {
+				"gold": 198,
+				"stone": 0,
+				"wood": 100
+			},
+			"mining_ticks": 492,
+			"queue_nonempty_ticks": 308,
+			"seconds": 40.0,
+			"steps": 800,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 1,
+					"remaining": 93,
+					"t": 0.05,
+					"target_id": 205822888483,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "gold",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 10000,
+					"t": 15.45,
+					"target_id": 205906774810,
+					"target_kind": "gold"
+				}
+			]
+		},
+		{
+			"case": "control/queued_mining_camp_then_auto_gold",
+			"expected_mining": true,
+			"final": {
+				"gather_kind": "gold",
+				"order": "gather",
+				"owner": 0,
+				"queue_size": 0,
+				"remaining": 9360,
+				"target_id": 211023825653,
+				"target_kind": "gold"
+			},
+			"gains": {
+				"gold": 640,
+				"stone": 0,
+				"wood": 25
+			},
+			"mining_ticks": 1408,
+			"queue_nonempty_ticks": 66,
+			"seconds": 80.0,
+			"steps": 1600,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 1,
+					"remaining": 18,
+					"t": 0.05,
+					"target_id": 210856053127,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "wood",
+					"order": "build",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": -1,
+					"t": 3.35,
+					"target_id": 211107711722,
+					"target_kind": "mining_camp"
+				},
+				{
+					"gather_kind": "gold",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 10000,
+					"t": 9.65,
+					"target_id": 211023825653,
+					"target_kind": "gold"
+				}
+			]
+		},
+		{
+			"case": "control/opponent_ai_depleted_wood_to_gold",
+			"expected_mining": true,
+			"final": {
+				"gather_kind": "gold",
+				"order": "gather",
+				"owner": 1,
+				"queue_size": 0,
+				"remaining": 9783,
+				"target_id": 213137754503,
+				"target_kind": "gold"
+			},
+			"gains": {
+				"gold": 217,
+				"stone": 0,
+				"wood": 25
+			},
+			"mining_ticks": 678,
+			"queue_nonempty_ticks": 0,
+			"seconds": 40.0,
+			"steps": 800,
+			"timeline": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 1,
+					"queue_size": 0,
+					"remaining": 18,
+					"t": 0.05,
+					"target_id": 213053868802,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "wood",
+					"order": "idle",
+					"owner": 1,
+					"queue_size": 0,
+					"remaining": -1,
+					"t": 3.35,
+					"target_id": 0,
+					"target_kind": ""
+				},
+				{
+					"gather_kind": "gold",
+					"order": "gather",
+					"owner": 1,
+					"queue_size": 0,
+					"remaining": 10000,
+					"t": 6.15,
+					"target_id": 213137754503,
+					"target_kind": "gold"
+				}
+			]
+		},
+		{
+			"case": "natural_match/seed_4242",
+			"final": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 73,
+					"target_id": 214614149029,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 73,
+					"target_id": 214614149029,
+					"target_kind": "wood"
+				}
+			],
+			"mining_ticks": 0,
+			"rejected_steps": 0,
+			"seconds": 120,
+			"wood_gain": 1427
+		},
+		{
+			"case": "natural_match/seed_44127",
+			"final": [
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 52,
+					"target_id": 262747982390,
+					"target_kind": "wood"
+				},
+				{
+					"gather_kind": "wood",
+					"order": "gather",
+					"owner": 0,
+					"queue_size": 0,
+					"remaining": 52,
+					"target_id": 262747982390,
+					"target_kind": "wood"
+				}
+			],
+			"mining_ticks": 0,
+			"rejected_steps": 0,
+			"seconds": 120,
+			"wood_gain": 1448
+		}
+	],
+	"checks": 326,
+	"engine": {
+		"build": "custom_build",
+		"hash": "ed1daf0bf001b61586d9930840f2f1394092c079",
+		"hex": 263938,
+		"major": 4,
+		"minor": 7,
+		"patch": 2,
+		"status": "stable",
+		"string": "4.7.2-stable (custom_build)",
+		"timestamp": 1786929518
+	},
+	"failures": 0
+}

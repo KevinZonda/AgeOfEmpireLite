@@ -1,0 +1,28 @@
+[
+  {
+    "run": 1,
+    "suite": "crowd",
+    "passed": true,
+    "exit_code": 0,
+    "seconds": 298.153,
+    "timeout": false,
+    "script_error": false,
+    "checks": 96,
+    "cases": 14,
+    "log": "run-1.log",
+    "report": "run-1.json"
+  },
+  {
+    "run": 2,
+    "suite": "crowd",
+    "passed": true,
+    "exit_code": 0,
+    "seconds": 265.067,
+    "timeout": false,
+    "script_error": false,
+    "checks": 96,
+    "cases": 14,
+    "log": "run-2.log",
+    "report": "run-2.json"
+  }
+]

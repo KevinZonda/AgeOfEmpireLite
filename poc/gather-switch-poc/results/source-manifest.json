@@ -1,0 +1,16 @@
+{
+  "git_head": "35e12b8f3b48b31823cfa9fb2b5a582dacffe586",
+  "sha256": {
+    "poc/gather-switch-poc/gather_switch_poc.gd": "4436cc54fa7b1874e5bcd5003b21f3d92a40e0f6c0bc3c276e86a59737e5568f",
+    "poc/gather-switch-poc/run.py": "3fc8bda81701957ec5eee985d1d24348ff9550c2f60350386cf1c4bacfedf7b2",
+    "scripts/entities/unit.gd": "3ce0a97615cef915e262094e411cd745219d1b9ce24d0d9cce151b2acf87bd02",
+    "scripts/entities/unit_work.gd": "255dc71d2c03b2652d8afe406ee01959ca27c434507d53e74dfc0acab2179c61",
+    "scripts/entities/unit_orders.gd": "fd783ab295ff26e03e8c5ee120b3f933e25e9352c85bac5eec3912bb888c694b",
+    "scripts/game.gd": "b61eca3fb75183a59acc0c2aaae78c962325dd106a627c68e3f81bf1483ffdc4",
+    "scripts/player/player_orders.gd": "8e9820db0b5aaea0756e1fbe0054ce6162c255771d9529db37d6c6b0fed57982",
+    "scripts/ai/ai_controller.gd": "5d98dd334625729515d2553dcf8c602cf4d9db2a93f61f2c0a81b4547222134b",
+    "scripts/ai/ai_economy.gd": "2f7bbee4650564dec0dd41e5f0580eea715fd6aab4df9a9a1888d75c72ef960f",
+    "scripts/match/match_simulation.gd": "230d0557b788a22ff91474703817b7090f691ad006d68e4f1681be919de33574",
+    "docs/godot/bin/godot.macos.template_debug.arm64": "7867f981bcede8bcdd5355e4a24b900435beea728fd57abf36133becbfd500e9"
+  }
+}
