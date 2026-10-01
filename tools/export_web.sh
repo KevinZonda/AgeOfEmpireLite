@@ -1,21 +1,32 @@
 #!/bin/bash
-# Use an ordinary editor, keeping the existing installed Mono editor intact.
+# Use a pinned ordinary editor on macOS or Linux, or an explicit GODOT_EDITOR.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 if [[ -z "${GODOT_EDITOR:-}" ]]; then
-  if [[ "$(uname -s)" != Darwin ]]; then
-    printf 'Set GODOT_EDITOR to the Godot 4.7.2 non-.NET editor executable.\n' >&2
-    exit 1
-  fi
   CACHE_DIR="$PWD/.godot/tools/web-export"
-  GODOT_EDITOR="$CACHE_DIR/Godot.app/Contents/MacOS/Godot"
+  case "$(uname -s)/$(uname -m)" in
+    Darwin/*)
+      ARCHIVE_NAME=Godot_v4.7.2-stable_macos.universal.zip
+      EDITOR_SHA256=c58a24e31d720be9d62f60cb5627c4e695fb72f21b0cfe1bc9ccaa9a3b3ba63e
+      GODOT_EDITOR="$CACHE_DIR/Godot.app/Contents/MacOS/Godot"
+      ;;
+    Linux/x86_64)
+      ARCHIVE_NAME=Godot_v4.7.2-stable_linux.x86_64.zip
+      EDITOR_SHA256=cadd3204e728a35d3f13adb7fd0d7902636b79f6b95c40c265eb73b6c35329e4
+      GODOT_EDITOR="$CACHE_DIR/Godot_v4.7.2-stable_linux.x86_64"
+      ;;
+    *)
+      printf 'Set GODOT_EDITOR to the Godot 4.7.2 non-.NET editor executable on this platform.\n' >&2
+      exit 1
+      ;;
+  esac
   if [[ ! -x "$GODOT_EDITOR" ]]; then
     mkdir -p "$CACHE_DIR"
-    ARCHIVE="$CACHE_DIR/Godot_v4.7.2-stable_macos.universal.zip"
+    ARCHIVE="$CACHE_DIR/$ARCHIVE_NAME"
     curl -fL --retry 2 \
-      https://github.com/godotengine/godot-builds/releases/download/4.7.2-stable/Godot_v4.7.2-stable_macos.universal.zip \
+      "https://github.com/godotengine/godot-builds/releases/download/4.7.2-stable/$ARCHIVE_NAME" \
       -o "$ARCHIVE"
-    python3 - "$ARCHIVE" "$CACHE_DIR" <<'PY'
+    python3 - "$ARCHIVE" "$CACHE_DIR" "$EDITOR_SHA256" <<'PY'
 import sys
 import hashlib
 import zipfile
@@ -23,7 +34,7 @@ with open(sys.argv[1], "rb") as downloaded:
     digest = hashlib.sha256()
     for chunk in iter(lambda: downloaded.read(1024 * 1024), b""):
         digest.update(chunk)
-if digest.hexdigest() != "c58a24e31d720be9d62f60cb5627c4e695fb72f21b0cfe1bc9ccaa9a3b3ba63e":
+if digest.hexdigest() != sys.argv[3]:
     raise SystemExit("Godot editor download failed SHA-256 verification")
 with zipfile.ZipFile(sys.argv[1]) as archive:
     archive.extractall(sys.argv[2])
