@@ -1,0 +1,10 @@
+Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
+
+PERFORMANCE_NAVIGATION units=400 steps=180 avg_ms=13.70 p95_ms=18.44 p99_ms=21.38 first_step_ms=15.25 steady_peak_ms=24.84
+ROUTE_BUDGET_PROFILE enabled=false metrics={"discarded":0,"finished":0,"max_pending":0,"max_query_us":0,"max_tick_us":0,"rejected":0,"requested":0,"search_us":0,"updated":0} pending=0
+NAV_PROFILE {}
+NAVIGATION_PROGRESS sample_steps=180 remaining_median=528.0 remaining_max=538.7
+SCRIPT ERROR: Assertion failed: all units should make sustained forward progress
+          at: _run (res://tests/performance_navigation.gd:53)
+          GDScript backtrace (most recent call first):
+              [0] _run (res://tests/performance_navigation.gd:53)

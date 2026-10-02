@@ -1,0 +1,9 @@
+Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
+
+POC_FAIL English_barracks_0 wrong_pixels=1 faces=126 fragments=360
+POC_PASS English_archery_range_0 wrong_pixels=0 faces=159 fragments=399
+SCRIPT ERROR: Assertion failed: target rings must remain visible in front of their supports
+   at: verify_target_faces (res://tests/military_building_occlusion.gd:19)
+   GDScript backtrace (most recent call first):
+       [0] verify_target_faces (res://tests/military_building_occlusion.gd:19)
+       [1] _initialize (res://tests/military_building_occlusion.gd:32)

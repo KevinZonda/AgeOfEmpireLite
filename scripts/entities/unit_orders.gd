@@ -386,7 +386,7 @@ func _tick_official(unit: RtsUnit, delta: float) -> void:
 	if not is_instance_valid(unit.target) or unit.target.is_queued_for_deletion() or not unit.target is RtsBuilding or not unit.target.is_complete():
 		unit._advance_command()
 		return
-	if not unit._move_toward(unit.target.position, delta, unit.target.size().x * 0.5 + unit.radius() + 4.0): return
+	if not unit._move_toward(unit.target.position, delta, unit.target.supervise_distance(unit)): return
 	if unit.order == "collect_tax":
 		if unit.target.tax_stockpile > 0:
 			unit.game.credit_resource(unit.owner_id, "gold", unit.target.tax_stockpile)

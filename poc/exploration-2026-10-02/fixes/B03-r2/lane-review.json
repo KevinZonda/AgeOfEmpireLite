@@ -1,0 +1,34 @@
+{
+  "id": "B03",
+  "complete": true,
+  "no_new_failures": true,
+  "source_unchanged": true,
+  "required_regressions": [
+    "tests/exploration_b01_trade_reissue.gd",
+    "tests/exploration_b02_stale_rally.gd",
+    "tests/exploration_b03_objective_defeat.gd"
+  ],
+  "fixed_cases": [
+    "rally_dead_farm",
+    "rally_dead_fish",
+    "rally_dead_tree",
+    "sacred_eliminated_wins",
+    "trade_reissue"
+  ],
+  "regression": {
+    "passed": 160,
+    "failed": 6,
+    "timeout": 0,
+    "unresolved_bugs": 0,
+    "skipped": 0,
+    "cancelled": 0
+  },
+  "audit": {
+    "pass": 29,
+    "bug": 22,
+    "observation": 12
+  },
+  "seconds": 1284.422,
+  "expected_regression_scripts": 166,
+  "expected_audit_cases": 63
+}

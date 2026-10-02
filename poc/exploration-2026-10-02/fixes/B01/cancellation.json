@@ -1,0 +1,17 @@
+{
+  "cancelled_at": "2026-10-02T02:22:26.180611+08:00",
+  "reason": "Root requested restarting B01 with explicitly regression-only profile and adequate per-script timeout",
+  "old_runner_pid": 81986,
+  "old_runner_command": "/Users/kevin/.pyenv/versions/3.12.2/bin/python3 tools/run_full_tests.py --output poc/exploration-2026-10-02/fixes/B01 --jobs 4 --timeout 600 --compare poc/exploration-2026-10-02/fixes/baseline",
+  "terminated_children": [
+    {
+      "pid": 83436,
+      "pgid": 83436,
+      "command": "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64 --path /var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-ligs_qb6 --headless --log-file /Users/kevin/Desktop/AgeOfEmpireLite/poc/exploration-2026-10-02/fixes/B01/logs/balance_multiseed.engine.log --script res://tests/balance_multiseed.gd"
+    }
+  ],
+  "preserved_evidence": "/Users/kevin/Desktop/AgeOfEmpireLite/poc/exploration-2026-10-02/fixes/B01",
+  "baseline_balance_untouched": true,
+  "complete": false,
+  "cancelled": true
+}

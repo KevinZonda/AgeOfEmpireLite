@@ -1,0 +1,53 @@
+{
+  "revision": "125c28e137d8533c11bf5579024753e58e31ca79",
+  "seconds": 956.51,
+  "profile": "regression",
+  "deferred_benchmarks": [
+    "tests/balance_multiseed.gd"
+  ],
+  "regression": {
+    "passed": 155,
+    "failed": 8,
+    "timeout": 0,
+    "unresolved_bugs": 0,
+    "skipped": 0,
+    "cancelled": 0
+  },
+  "audit": {
+    "pass": 25,
+    "bug": 26,
+    "observation": 12
+  },
+  "expected_audit_cases": 63,
+  "executed_audit_cases": 63,
+  "changed_sources_during_run": [],
+  "cancelled": false,
+  "expected_regression_scripts": 163,
+  "executed_regression_scripts": 163,
+  "complete": true,
+  "complete_all": false,
+  "passed": false,
+  "comparison": {
+    "previous": "/Users/kevin/Desktop/AgeOfEmpireLite/poc/exploration-2026-10-02/fixes/baseline/results.json",
+    "new_regression_failures": [],
+    "regressed_audit_cases": [],
+    "fixed_audit_cases": [
+      "trade_reissue"
+    ],
+    "missing_scripts": [],
+    "missing_cases": [],
+    "profile": "regression",
+    "deferred_benchmarks": [
+      "tests/balance_multiseed.gd"
+    ],
+    "exploration_execution_failures": [],
+    "incomplete_scripts": [],
+    "no_new_failures": false,
+    "new_failure_diagnostics": {
+      "tests/smoke.gd": [
+        "SCRIPT ERROR: Assertion failed."
+      ]
+    },
+    "manual_review": "Additional diagnostic comparison detected native selection fixture failure at smoke.gd:105; automatic publication was stopped before commit/push."
+  }
+}

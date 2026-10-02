@@ -1,0 +1,23 @@
+{
+  "previous": "/Users/kevin/Desktop/AgeOfEmpireLite/poc/exploration-2026-10-02/fixes/baseline/results.json",
+  "new_regression_failures": [],
+  "regressed_audit_cases": [],
+  "fixed_audit_cases": [
+    "trade_reissue"
+  ],
+  "missing_scripts": [],
+  "missing_cases": [],
+  "profile": "regression",
+  "deferred_benchmarks": [
+    "tests/balance_multiseed.gd"
+  ],
+  "exploration_execution_failures": [],
+  "incomplete_scripts": [],
+  "no_new_failures": false,
+  "new_failure_diagnostics": {
+    "tests/smoke.gd": [
+      "SCRIPT ERROR: Assertion failed."
+    ]
+  },
+  "manual_review": "Additional diagnostic comparison detected native selection fixture failure at smoke.gd:105; automatic publication was stopped before commit/push."
+}

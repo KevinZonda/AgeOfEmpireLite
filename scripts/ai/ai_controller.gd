@@ -245,7 +245,7 @@ func _assign_official(official: RtsUnit) -> void:
 	for building in game.buildings:
 		if not is_instance_valid(building) or building.owner_id != owner_id or not building.is_complete() or building.production_queue.is_empty(): continue
 		if building.producer_kind() not in ["town_center", "archery_range", "stable", "barracks", "siege_workshop"]: continue
-		if game.navigation.path_to_range(official.position, building.position, 70.0, official).is_empty(): continue
+		if game.navigation.path_to_range(official.position, building.position, building.supervise_distance(official), official).is_empty(): continue
 		official.issue_command("supervise", Vector2.INF, building)
 		return
 

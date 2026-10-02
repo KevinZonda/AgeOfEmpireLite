@@ -96,6 +96,9 @@ func can_set_rally(player_id: int) -> bool:
 func garrison_capacity() -> int:
 	return int(stats.get("garrison_capacity", 0))
 
+func supervise_distance(unit: RtsUnit) -> float:
+	return size().x * 0.5 + unit.radius() + 4.0
+
 func display_label() -> String:
 	return definition()["label"]
 
@@ -378,7 +381,7 @@ func _process(delta: float) -> void:
 		supervise_scan_timer = 0.25
 		supervise_work_rate = 1.0
 		for unit in game.units:
-			if is_instance_valid(unit) and unit.owner_id == owner_id and unit.kind == "imperial_official" and unit.order == "supervise" and unit.target == self and unit.position.distance_to(position) <= 70.0:
+			if is_instance_valid(unit) and not unit.is_queued_for_deletion() and unit.hp > 0.0 and unit.garrisoned_in == null and unit.owner_id == owner_id and unit.kind == "imperial_official" and unit.order == "supervise" and unit.target == self and unit.position.distance_to(position) <= supervise_distance(unit) + 0.5:
 				supervise_work_rate = 1.5
 				break
 	production_remaining = maxf(0.0, production_remaining - delta * supervise_work_rate)

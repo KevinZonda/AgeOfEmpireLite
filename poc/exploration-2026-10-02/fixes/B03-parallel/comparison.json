@@ -1,0 +1,29 @@
+{
+  "previous": "/Users/kevin/Desktop/AgeOfEmpireLite/poc/exploration-2026-10-02/fixes/baseline/results.json",
+  "new_regression_failures": [],
+  "new_failure_diagnostics": {
+    "tests/navigation_tasks_poc.gd": [
+      "POC_FAIL dense_96_workers_finish_queues"
+    ],
+    "tests/rally_landmarks.gd": [
+      "SCRIPT ERROR: Assertion failed: White Tower recruits should follow the rally point"
+    ]
+  },
+  "regressed_audit_cases": [],
+  "fixed_audit_cases": [
+    "trade_reissue",
+    "rally_dead_fish",
+    "rally_dead_tree",
+    "rally_dead_farm",
+    "sacred_eliminated_wins"
+  ],
+  "missing_scripts": [],
+  "missing_cases": [],
+  "profile": "regression",
+  "deferred_benchmarks": [
+    "tests/balance_multiseed.gd"
+  ],
+  "exploration_execution_failures": [],
+  "incomplete_scripts": [],
+  "no_new_failures": false
+}
