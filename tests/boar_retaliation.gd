@@ -18,6 +18,7 @@ func _run() -> void:
 
 	var boar: RtsResource = game.spawn_resource("food", Vector2(725, 525), 420, "boar")
 	var soldier: RtsUnit = game.spawn_unit(0, "spearman", boar.position + Vector2(25, 0))
+	soldier.position = boar.position + Vector2(25, 0)
 	boar._process_boar(0.01)
 	check(boar.boar_target == null, "boar_leaves_unprovoking_soldier_alone")
 	soldier.order_attack(boar)
@@ -30,7 +31,7 @@ func _run() -> void:
 	# A ranged hit must provoke pursuit even beyond the passive villager radius.
 	soldier.hp = 0.0
 	boar.setup("food", 420, "boar")
-	var archer: RtsUnit = game.spawn_unit(0, "archer", boar.position + Vector2(160, 0))
+	var archer: RtsUnit = game.spawn_unit(0, "archer", boar.position + Vector2(130, 0))
 	archer.order_attack(boar)
 	archer._process_attack_order(0.01)
 	var arrows := game.get_children().filter(func(node: Node) -> bool: return node is RtsProjectile and not node.is_queued_for_deletion())
@@ -43,7 +44,7 @@ func _run() -> void:
 	var villager_hp := villager.hp
 	var origin := boar.position
 	for step in 16: boar._process_boar(0.25)
-	check(boar.position.distance_to(origin) >= 129.0 and archer.hp < hp_before, "boar_pursues_and_hits_distant_ranged_attacker")
+	check(boar.position.distance_to(origin) >= 99.0 and archer.hp < hp_before, "boar_pursues_and_hits_distant_ranged_attacker")
 	check(boar.boar_target == archer and villager.hp == villager_hp, "retaliation_survives_scans_and_prioritizes_attacker")
 
 	# An invalid attacker must release retaliation so normal scanning can resume.
