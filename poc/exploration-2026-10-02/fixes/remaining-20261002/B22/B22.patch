@@ -1,0 +1,237 @@
+--- a/scripts/player/player_actions.gd
++++ b/scripts/player/player_actions.gd
+@@ -236,7 +236,7 @@
+ 	var worker_count := 0
+ 	var military_count := 0
+ 	for unit in game.selected:
+-		if not is_instance_valid(unit) or not unit is RtsUnit: continue
++		if not is_instance_valid(unit) or not unit is RtsUnit or unit.owner_id != 0: continue
+ 		if unit.kind == "villager": worker_count += 1
+ 		if unit.stats.get("tags", []).has("military"): military_count += 1
+ 		if unit.kind == "monk": any_special = true
+@@ -262,7 +262,7 @@
+ 				_add_landmark_action(choice)
+ 	if (any_military or any_special) and not any_worker:
+ 		if any_military:
+-			if game.players[0]["age"] >= 3 and game.selected.any(func(chosen: Node2D) -> bool: return chosen is RtsUnit and chosen.stats.get("tags", []).has("infantry") and not chosen.stats.get("tags", []).has("siege")):
++			if game.players[0]["age"] >= 3 and game.selected.any(func(chosen: Node2D) -> bool: return chosen is RtsUnit and chosen.owner_id == 0 and chosen.stats.get("tags", []).has("infantry") and not chosen.stats.get("tags", []).has("siege")):
+ 				for field_kind in ["field_ram", "field_tower"]:
+ 					var mode_id: String = field_kind
+ 					var label_text := "野外建造攻城槌" if field_kind == "field_ram" else "野外建造攻城塔"
+@@ -270,7 +270,7 @@
+ 						game.order_mode = mode_id
+ 						game.notify_player("点击地面指定建造位置")
+ 					)
+-			if game.selected.any(func(chosen: Node2D) -> bool: return chosen is RtsUnit and chosen.kind in ["mangonel", "nest_of_bees", "trebuchet", "bombard", "cannon"]):
++			if game.selected.any(func(chosen: Node2D) -> bool: return chosen is RtsUnit and chosen.owner_id == 0 and chosen.kind in ["mangonel", "nest_of_bees", "trebuchet", "bombard", "cannon"]):
+ 				_add_action("attack_ground", "攻击地面", {}, "order", func() -> void:
+ 					game.order_mode = "attack_ground"
+ 					game.notify_player("点击地面指定炮击位置")
+@@ -286,7 +286,7 @@
+ 			)
+ 			_add_action("hold", "坚守", {}, "order", func() -> void:
+ 				for unit in game.selected:
+-					if is_instance_valid(unit) and unit is RtsUnit: unit.issue_command("hold")
++					if is_instance_valid(unit) and unit is RtsUnit and unit.owner_id == 0: unit.issue_command("hold")
+ 			)
+ 			_add_action("focus", "集火", {}, "order", func() -> void:
+ 				game.order_mode = "focus"
+@@ -314,7 +314,7 @@
+ 				var behavior_label: String = {"aggressive": "主动", "defensive": "防御", "passive": "被动"}[behavior]
+ 				_add_action("stance", "%s交战%s" % [behavior_label, " ✓" if item.engagement == behavior_id else ""], {}, "order", func() -> void:
+ 					for chosen in game.selected:
+-						if is_instance_valid(chosen) and chosen is RtsUnit and chosen.stats.get("tags", []).has("military"): chosen.engagement = behavior_id
++						if is_instance_valid(chosen) and chosen is RtsUnit and chosen.owner_id == 0 and chosen.stats.get("tags", []).has("military"): chosen.engagement = behavior_id
+ 					game.notify_player("已设为%s交战" % behavior_label)
+ 					rebuild()
+ 					view_refresh_requested.emit()
+@@ -331,7 +331,7 @@
+ 	if item.kind in ["battering_ram", "siege_tower"]:
+ 		_add_action("unload", "放出乘员", {}, "order", func() -> void:
+ 			for chosen in game.selected:
+-				if is_instance_valid(chosen) and chosen is RtsUnit and chosen.kind in ["battering_ram", "siege_tower"]: chosen.ungarrison_all()
++				if is_instance_valid(chosen) and chosen is RtsUnit and chosen.owner_id == 0 and chosen.kind in ["battering_ram", "siege_tower"]: chosen.ungarrison_all()
+ 		)
+ 	if item.kind == "trader" and game.civilizations[0] == "French":
+ 		for resource_kind in ["food", "wood", "gold"]:
+@@ -339,14 +339,14 @@
+ 	if item.kind == "trader":
+ 		_add_action("trade", "恢复贸易", {}, "order", func() -> void:
+ 			for chosen in game.selected:
+-				if is_instance_valid(chosen) and chosen is RtsUnit and chosen.kind == "trader" and is_instance_valid(chosen.trade_post): chosen.issue_command("trade", Vector2.INF, chosen.trade_post)
++				if is_instance_valid(chosen) and chosen is RtsUnit and chosen.owner_id == 0 and chosen.kind == "trader" and is_instance_valid(chosen.trade_post): chosen.issue_command("trade", Vector2.INF, chosen.trade_post)
+ 		)
+ 	if not any_worker: _add_action("stop", "停止", {}, "order", func() -> void: game._stop_selected_units())
+ 
+ func _selected_has_ability(ability: Dictionary) -> bool:
+ 	if ability.has("civilization") and game.civilizations[0] != ability["civilization"]: return false
+ 	for unit in game.selected:
+-		if not is_instance_valid(unit) or not unit is RtsUnit or unit.kind not in ability["kinds"]: continue
++		if not is_instance_valid(unit) or not unit is RtsUnit or unit.owner_id != 0 or unit.kind not in ability["kinds"]: continue
+ 		if ability.has("producer_landmark") and unit.producer_landmark_id != ability["producer_landmark"]: continue
+ 		return true
+ 	return false
+--- a/scripts/player/player_orders.gd
++++ b/scripts/player/player_orders.gd
+@@ -57,7 +57,7 @@
+ 	elif mode == "patrol":
+ 		var patrol_issued := false
+ 		for subject in game.selected:
+-			if is_instance_valid(subject) and subject is RtsUnit and subject.stats.get("tags", []).has("military"):
++			if is_instance_valid(subject) and subject is RtsUnit and subject.owner_id == 0 and subject.stats.get("tags", []).has("military"):
+ 				subject.issue_command("patrol", point, null, append_order)
+ 				patrol_issued = true
+ 		if patrol_issued: game._show_order_feedback(point, "move", append_order)
+@@ -65,7 +65,7 @@
+ 		var enemy: Node2D = game._entity_at(point)
+ 		if enemy != null and game.is_enemy(0, enemy.owner_id):
+ 			for subject in game.selected:
+-				if is_instance_valid(subject) and subject is RtsUnit and subject.attack_damage() > 0.0:
++				if is_instance_valid(subject) and subject is RtsUnit and subject.owner_id == 0 and subject.attack_damage() > 0.0:
+ 					subject.issue_command("attack", Vector2.INF, enemy, append_order)
+ 			game._show_order_feedback(point, "attack", append_order)
+ 		else:
+@@ -73,14 +73,14 @@
+ 			game._show_order_feedback(point, "invalid")
+ 	elif mode == "attack_ground":
+ 		for subject in game.selected:
+-			if is_instance_valid(subject) and subject is RtsUnit: subject.issue_command("attack_ground", point, null, append_order)
++			if is_instance_valid(subject) and subject is RtsUnit and subject.owner_id == 0: subject.issue_command("attack_ground", point, null, append_order)
+ 		game._show_order_feedback(point, "attack", append_order)
+ 	elif mode in ["field_ram", "field_tower"]:
+ 		game.place_field_siege("battering_ram" if mode == "field_ram" else "siege_tower", point, append_order)
+ 	elif mode == "unload":
+ 		if game.world_map.is_walkable(point):
+ 			for subject in game.selected:
+-				if is_instance_valid(subject) and subject is RtsUnit and subject.kind == "transport_ship": subject.issue_command("unload", point, null, append_order)
++				if is_instance_valid(subject) and subject is RtsUnit and subject.owner_id == 0 and subject.kind == "transport_ship": subject.issue_command("unload", point, null, append_order)
+ 			game._show_order_feedback(point, "move", append_order)
+ 		else:
+ 			game.notify_player("请点击陆地作为登陆目标")
+@@ -91,7 +91,7 @@
+ 	if not append_order: game.order_mode = ""
+ 	var movers: Array[RtsUnit] = []
+ 	for subject in game.selected:
+-		if not is_instance_valid(subject) or not subject is RtsUnit or not subject.stats.get("tags", []).has("military"): continue
++		if not is_instance_valid(subject) or not subject is RtsUnit or subject.owner_id != 0 or not subject.stats.get("tags", []).has("military"): continue
+ 		movers.append(subject)
+ 	game.issue_group_order(movers, point, true, append_order)
+ 	if not movers.is_empty(): game._show_order_feedback(point, "attack", append_order)
+@@ -135,12 +135,12 @@
+ static func stop_selected_units(game: Node2D) -> void:
+ 	game.order_mode = ""
+ 	for subject in game.selected:
+-		if is_instance_valid(subject) and subject is RtsUnit: subject.order_stop()
++		if is_instance_valid(subject) and subject is RtsUnit and subject.owner_id == 0: subject.order_stop()
+ 	game.notify_player("单位已停止")
+ 
+ static func retreat_selected(game: Node2D) -> void:
+ 	for subject in game.selected:
+-		if not is_instance_valid(subject) or not subject is RtsUnit: continue
++		if not is_instance_valid(subject) or not subject is RtsUnit or subject.owner_id != 0: continue
+ 		var center: RtsBuilding = game.find_nearest_owned_building(0, "town_center", subject.position)
+ 		if center != null: subject.issue_command("move", center.position)
+ 	game.notify_player("部队撤往城镇中心")
+--- a/scripts/game.gd
++++ b/scripts/game.gd
+@@ -1613,7 +1613,7 @@
+ 
+ func _activate_selected_ability(ability_id: String) -> void:
+ 	for selection in selected:
+-		if is_instance_valid(selection) and selection is RtsUnit: selection.activate_ability(ability_id)
++		if is_instance_valid(selection) and selection is RtsUnit and selection.owner_id == 0: selection.activate_ability(ability_id)
+ 	_refresh_action_buttons()
+ 
+ func ring_town_bell(center: RtsBuilding) -> void:
+@@ -1629,7 +1629,7 @@
+ func _set_selected_trade_resource(resource_kind: String) -> void:
+ 	if resource_kind not in ["food", "wood", "gold"]: return
+ 	for selection in selected:
+-		if is_instance_valid(selection) and selection is RtsUnit and selection.kind == "trader": selection.trade_resource_kind = resource_kind
++		if is_instance_valid(selection) and selection is RtsUnit and selection.owner_id == 0 and selection.kind == "trader": selection.trade_resource_kind = resource_kind
+ 	notify_player("商人将运回%s" % GameData.RESOURCE_LABELS[resource_kind])
+ 	_update_hud()
+ 
+--- /dev/null
++++ b/tests/exploration_b22_owned_actions.gd
+@@ -0,0 +1,80 @@
++extends "res://poc/exploration-2026-10-02/explore.gd"
++var checks := 0
++var failures := 0
++func check(ok: bool, label: String) -> void:
++ checks += 1
++ if not ok:
++  failures += 1
++  print("FAIL ", label)
++func execute_kind(kind: String, label_contains := "") -> bool:
++ for desc in game.player_actions.descriptors:
++  if desc.get("kind", "") == kind and (label_contains.is_empty() or desc.get("label", "").contains(label_contains)):
++   return game.player_actions.execute(desc.id)
++ return false
++func _run() -> void:
++ setup_case()
++ var own := soldier("spearman", 0, Vector2(1000, 600))
++ var lost := soldier("spearman", 0, Vector2(1500, 600))
++ var monk := soldier("monk", 1, Vector2(1530, 600))
++ carry(monk)
++ game.selected.assign([own, lost])
++ game._rebuild_actions()
++ monk._finish_conversion()
++ check(lost.owner_id == 1 and own.owner_id == 0 and game.selected.has(lost), "fixture_real_conversion_keeps_mixed_selection")
++ check(execute_kind("hold"), "owned_hold_action_still_accepted_before_refresh")
++ check(own.order == "hold", "owned_hold_changes_own_unit")
++ check(lost.order == "idle", "pre_refresh_hold_does_not_control_converted_enemy")
++ lost.order_stop()
++ game._rebuild_actions()
++ check(execute_kind("hold"), "owned_hold_action_still_accepted_after_refresh")
++ check(lost.order == "idle", "post_refresh_hold_does_not_control_converted_enemy")
++ game.player_actions.command_page = 1
++ game._rebuild_actions()
++ lost.engagement = "aggressive"
++ check(execute_kind("stance", "防御"), "owned_stance_action_accepted")
++ check(own.engagement == "defensive", "owned_stance_changes_own_unit")
++ check(lost.engagement == "aggressive", "stance_does_not_control_converted_enemy")
++ lost.order_move(Vector2(1750, 700))
++ own.order_move(Vector2(1100, 700))
++ game._stop_selected_units()
++ check(own.order == "idle", "stop_still_stops_owned_unit")
++ check(lost.order == "move", "stop_does_not_cancel_enemy_order")
++ lost.order_stop()
++ game._retreat_selected()
++ check(own.order == "move", "retreat_still_moves_owned_unit")
++ check(lost.order == "idle", "retreat_does_not_move_enemy")
++ for mode in ["patrol", "attack_move"]:
++  own.order_stop()
++  lost.order_stop()
++  game.order_mode = mode
++  game._issue_mode_order(Vector2(1100, 700))
++  check(own.order == mode, mode + "_still_controls_owned_unit")
++  check(lost.order == "idle", mode + "_cannot_control_converted_enemy")
++ var bow := soldier("longbow", 0, Vector2(1000, 660))
++ var lost_bow := soldier("longbow", 0, Vector2(1500, 660))
++ var trader := soldier("trader", 0, Vector2(1000, 690))
++ var lost_trader := soldier("trader", 0, Vector2(1500, 690))
++ monk._finish_conversion()
++ check(lost_bow.owner_id == 1 and lost_trader.owner_id == 1, "fixture_additional_units_really_converted")
++ game.selected.assign([bow, lost_bow])
++ game._activate_selected_ability("volley")
++ check(bow.volley_timer > 0.0, "ability_still_activates_owned_unit")
++ check(lost_bow.volley_timer == 0.0, "ability_cannot_activate_converted_enemy")
++ game.selected.assign([trader, lost_trader])
++ game._set_selected_trade_resource("food")
++ check(trader.trade_resource_kind == "food", "resource_choice_still_sets_owned_trader")
++ check(lost_trader.trade_resource_kind == "gold", "resource_choice_cannot_set_converted_enemy")
++ # Team mates are friendly but belong to a different human/controller.
++ game.teams[1] = game.teams[0]
++ lost.order_stop()
++ game.selected.assign([own, lost])
++ game.player_actions.command_page = 0
++ game._rebuild_actions()
++ check(execute_kind("hold") and own.order == "hold", "hold_still_works_with_allied_selection")
++ check(lost.order == "idle", "friendly_team_units_are_not_locally_owned")
++ for actor in game.units: actor.order_stop()
++ game.navigation.shutdown_jobs()
++ game.free()
++ await process_frame
++ print("B22_TEST_COMPLETE checks=", checks, " failures=", failures)
++ quit(1 if failures else 0)

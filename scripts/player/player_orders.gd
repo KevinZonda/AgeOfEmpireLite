@@ -57,7 +57,7 @@ static func issue_mode_order(game: Node2D, point: Vector2, append_order := false
 	elif mode == "patrol":
 		var patrol_issued := false
 		for subject in game.selected:
-			if is_instance_valid(subject) and subject is RtsUnit and subject.stats.get("tags", []).has("military"):
+			if is_instance_valid(subject) and subject is RtsUnit and subject.owner_id == 0 and subject.stats.get("tags", []).has("military"):
 				subject.issue_command("patrol", point, null, append_order)
 				patrol_issued = true
 		if patrol_issued: game._show_order_feedback(point, "move", append_order)
@@ -65,7 +65,7 @@ static func issue_mode_order(game: Node2D, point: Vector2, append_order := false
 		var enemy: Node2D = game._entity_at(point)
 		if enemy != null and game.is_enemy(0, enemy.owner_id):
 			for subject in game.selected:
-				if is_instance_valid(subject) and subject is RtsUnit and subject.attack_damage() > 0.0:
+				if is_instance_valid(subject) and subject is RtsUnit and subject.owner_id == 0 and subject.attack_damage() > 0.0:
 					subject.issue_command("attack", Vector2.INF, enemy, append_order)
 			game._show_order_feedback(point, "attack", append_order)
 		else:
@@ -73,14 +73,14 @@ static func issue_mode_order(game: Node2D, point: Vector2, append_order := false
 			game._show_order_feedback(point, "invalid")
 	elif mode == "attack_ground":
 		for subject in game.selected:
-			if is_instance_valid(subject) and subject is RtsUnit: subject.issue_command("attack_ground", point, null, append_order)
+			if is_instance_valid(subject) and subject is RtsUnit and subject.owner_id == 0: subject.issue_command("attack_ground", point, null, append_order)
 		game._show_order_feedback(point, "attack", append_order)
 	elif mode in ["field_ram", "field_tower"]:
 		game.place_field_siege("battering_ram" if mode == "field_ram" else "siege_tower", point, append_order)
 	elif mode == "unload":
 		if game.world_map.is_walkable(point):
 			for subject in game.selected:
-				if is_instance_valid(subject) and subject is RtsUnit and subject.kind == "transport_ship": subject.issue_command("unload", point, null, append_order)
+				if is_instance_valid(subject) and subject is RtsUnit and subject.owner_id == 0 and subject.kind == "transport_ship": subject.issue_command("unload", point, null, append_order)
 			game._show_order_feedback(point, "move", append_order)
 		else:
 			game.notify_player("请点击陆地作为登陆目标")
@@ -91,7 +91,7 @@ static func issue_attack_move(game: Node2D, point: Vector2, append_order := fals
 	if not append_order: game.order_mode = ""
 	var movers: Array[RtsUnit] = []
 	for subject in game.selected:
-		if not is_instance_valid(subject) or not subject is RtsUnit or not subject.stats.get("tags", []).has("military"): continue
+		if not is_instance_valid(subject) or not subject is RtsUnit or subject.owner_id != 0 or not subject.stats.get("tags", []).has("military"): continue
 		movers.append(subject)
 	game.issue_group_order(movers, point, true, append_order)
 	if not movers.is_empty(): game._show_order_feedback(point, "attack", append_order)
@@ -135,12 +135,12 @@ static func issue_group_order(game: Node2D, movers: Array[RtsUnit], point: Vecto
 static func stop_selected_units(game: Node2D) -> void:
 	game.order_mode = ""
 	for subject in game.selected:
-		if is_instance_valid(subject) and subject is RtsUnit: subject.order_stop()
+		if is_instance_valid(subject) and subject is RtsUnit and subject.owner_id == 0: subject.order_stop()
 	game.notify_player("单位已停止")
 
 static func retreat_selected(game: Node2D) -> void:
 	for subject in game.selected:
-		if not is_instance_valid(subject) or not subject is RtsUnit: continue
+		if not is_instance_valid(subject) or not subject is RtsUnit or subject.owner_id != 0: continue
 		var center: RtsBuilding = game.find_nearest_owned_building(0, "town_center", subject.position)
 		if center != null: subject.issue_command("move", center.position)
 	game.notify_player("部队撤往城镇中心")

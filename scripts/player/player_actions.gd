@@ -236,7 +236,7 @@ func _build_unit_actions(item: RtsUnit) -> void:
 	var worker_count := 0
 	var military_count := 0
 	for unit in game.selected:
-		if not is_instance_valid(unit) or not unit is RtsUnit: continue
+		if not is_instance_valid(unit) or not unit is RtsUnit or unit.owner_id != 0: continue
 		if unit.kind == "villager": worker_count += 1
 		if unit.stats.get("tags", []).has("military"): military_count += 1
 		if unit.kind == "monk": any_special = true
@@ -262,7 +262,7 @@ func _build_unit_actions(item: RtsUnit) -> void:
 				_add_landmark_action(choice)
 	if (any_military or any_special) and not any_worker:
 		if any_military:
-			if game.players[0]["age"] >= 3 and game.selected.any(func(chosen: Node2D) -> bool: return chosen is RtsUnit and chosen.stats.get("tags", []).has("infantry") and not chosen.stats.get("tags", []).has("siege")):
+			if game.players[0]["age"] >= 3 and game.selected.any(func(chosen: Node2D) -> bool: return chosen is RtsUnit and chosen.owner_id == 0 and chosen.stats.get("tags", []).has("infantry") and not chosen.stats.get("tags", []).has("siege")):
 				for field_kind in ["field_ram", "field_tower"]:
 					var mode_id: String = field_kind
 					var label_text := "野外建造攻城槌" if field_kind == "field_ram" else "野外建造攻城塔"
@@ -270,7 +270,7 @@ func _build_unit_actions(item: RtsUnit) -> void:
 						game.order_mode = mode_id
 						game.notify_player("点击地面指定建造位置")
 					)
-			if game.selected.any(func(chosen: Node2D) -> bool: return chosen is RtsUnit and chosen.kind in ["mangonel", "nest_of_bees", "trebuchet", "bombard", "cannon"]):
+			if game.selected.any(func(chosen: Node2D) -> bool: return chosen is RtsUnit and chosen.owner_id == 0 and chosen.kind in ["mangonel", "nest_of_bees", "trebuchet", "bombard", "cannon"]):
 				_add_action("attack_ground", "攻击地面", {}, "order", func() -> void:
 					game.order_mode = "attack_ground"
 					game.notify_player("点击地面指定炮击位置")
@@ -286,7 +286,7 @@ func _build_unit_actions(item: RtsUnit) -> void:
 			)
 			_add_action("hold", "坚守", {}, "order", func() -> void:
 				for unit in game.selected:
-					if is_instance_valid(unit) and unit is RtsUnit: unit.issue_command("hold")
+					if is_instance_valid(unit) and unit is RtsUnit and unit.owner_id == 0: unit.issue_command("hold")
 			)
 			_add_action("focus", "集火", {}, "order", func() -> void:
 				game.order_mode = "focus"
@@ -314,7 +314,7 @@ func _build_unit_actions(item: RtsUnit) -> void:
 				var behavior_label: String = {"aggressive": "主动", "defensive": "防御", "passive": "被动"}[behavior]
 				_add_action("stance", "%s交战%s" % [behavior_label, " ✓" if item.engagement == behavior_id else ""], {}, "order", func() -> void:
 					for chosen in game.selected:
-						if is_instance_valid(chosen) and chosen is RtsUnit and chosen.stats.get("tags", []).has("military"): chosen.engagement = behavior_id
+						if is_instance_valid(chosen) and chosen is RtsUnit and chosen.owner_id == 0 and chosen.stats.get("tags", []).has("military"): chosen.engagement = behavior_id
 					game.notify_player("已设为%s交战" % behavior_label)
 					rebuild()
 					view_refresh_requested.emit()
@@ -331,7 +331,7 @@ func _build_unit_actions(item: RtsUnit) -> void:
 	if item.kind in ["battering_ram", "siege_tower"]:
 		_add_action("unload", "放出乘员", {}, "order", func() -> void:
 			for chosen in game.selected:
-				if is_instance_valid(chosen) and chosen is RtsUnit and chosen.kind in ["battering_ram", "siege_tower"]: chosen.ungarrison_all()
+				if is_instance_valid(chosen) and chosen is RtsUnit and chosen.owner_id == 0 and chosen.kind in ["battering_ram", "siege_tower"]: chosen.ungarrison_all()
 		)
 	if item.kind == "trader" and game.civilizations[0] == "French":
 		for resource_kind in ["food", "wood", "gold"]:
@@ -339,14 +339,14 @@ func _build_unit_actions(item: RtsUnit) -> void:
 	if item.kind == "trader":
 		_add_action("trade", "恢复贸易", {}, "order", func() -> void:
 			for chosen in game.selected:
-				if is_instance_valid(chosen) and chosen is RtsUnit and chosen.kind == "trader" and is_instance_valid(chosen.trade_post): chosen.issue_command("trade", Vector2.INF, chosen.trade_post)
+				if is_instance_valid(chosen) and chosen is RtsUnit and chosen.owner_id == 0 and chosen.kind == "trader" and is_instance_valid(chosen.trade_post): chosen.issue_command("trade", Vector2.INF, chosen.trade_post)
 		)
 	if not any_worker: _add_action("stop", "停止", {}, "order", func() -> void: game._stop_selected_units())
 
 func _selected_has_ability(ability: Dictionary) -> bool:
 	if ability.has("civilization") and game.civilizations[0] != ability["civilization"]: return false
 	for unit in game.selected:
-		if not is_instance_valid(unit) or not unit is RtsUnit or unit.kind not in ability["kinds"]: continue
+		if not is_instance_valid(unit) or not unit is RtsUnit or unit.owner_id != 0 or unit.kind not in ability["kinds"]: continue
 		if ability.has("producer_landmark") and unit.producer_landmark_id != ability["producer_landmark"]: continue
 		return true
 	return false

@@ -1,0 +1,17 @@
+{
+  "applied_at": "2026-10-02T13:26:52.758218+08:00",
+  "branch": "main",
+  "head_before": "974712997d73275b4f72411d3cd2b0bb92f44c7a",
+  "patch_sha256": "5afbc88c0b9934045abbca41195dcdced0cbe0f5c9a80c12e56262d332464f14",
+  "id": "B22",
+  "reason": "Converted or allied but non-owned units in mixed selection were controllable by local action callbacks. Recheck owner_id == 0 at dispatch and when offering actions.",
+  "red_checks": 24,
+  "red_failures": 10,
+  "candidate_green_checks": 24,
+  "candidate_green_failures": 0,
+  "common_fixture_warning": "4 ObjectDB instances leaked at exit in both original and candidate probe; preserved logs.",
+  "git_index_unchanged": true,
+  "agent_committed": false,
+  "agent_pushed": false,
+  "complete_full_test": false
+}

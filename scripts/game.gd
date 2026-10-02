@@ -1613,7 +1613,7 @@ func _rebuild_actions() -> void:
 
 func _activate_selected_ability(ability_id: String) -> void:
 	for selection in selected:
-		if is_instance_valid(selection) and selection is RtsUnit: selection.activate_ability(ability_id)
+		if is_instance_valid(selection) and selection is RtsUnit and selection.owner_id == 0: selection.activate_ability(ability_id)
 	_refresh_action_buttons()
 
 func ring_town_bell(center: RtsBuilding) -> void:
@@ -1629,7 +1629,7 @@ func ring_town_bell(center: RtsBuilding) -> void:
 func _set_selected_trade_resource(resource_kind: String) -> void:
 	if resource_kind not in ["food", "wood", "gold"]: return
 	for selection in selected:
-		if is_instance_valid(selection) and selection is RtsUnit and selection.kind == "trader": selection.trade_resource_kind = resource_kind
+		if is_instance_valid(selection) and selection is RtsUnit and selection.owner_id == 0 and selection.kind == "trader": selection.trade_resource_kind = resource_kind
 	notify_player("商人将运回%s" % GameData.RESOURCE_LABELS[resource_kind])
 	_update_hud()
 
