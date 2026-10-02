@@ -1,0 +1,10 @@
+{
+  "same_error_different_source_line_and_float_evidence_ignored": true,
+  "failed_to_different_failed_detected": [
+    "POC_FAIL hidden_order",
+    "SCRIPT ERROR: Invalid call to function heal in base Node2D."
+  ],
+  "legacy_log_fallback": true,
+  "snapshots_scenes_and_assets": true,
+  "snapshot_file_count": 462
+}

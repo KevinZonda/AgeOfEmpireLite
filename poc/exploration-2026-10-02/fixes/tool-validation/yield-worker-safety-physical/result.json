@@ -1,0 +1,36 @@
+{
+  "name": "yield_worker_safety_physical_controls",
+  "script": "tests/yield_worker_safety_physical_controls.gd",
+  "status": "passed",
+  "failure_signatures": [],
+  "started": true,
+  "rendering": false,
+  "isolated_user_dir": "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-tyx_8h77/AgeOfEmpireLite-full-tests/27b63b13ff7f1ff8/yield_worker_safety_physical_controls",
+  "child_cwd": "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-tyx_8h77",
+  "child_home_removed": true,
+  "user_dir_isolation": "macos_child_without_home",
+  "exit_code": 0,
+  "seconds": 0.73,
+  "timeout_seconds": 60,
+  "terminated_early": false,
+  "first_error": null,
+  "command": [
+    "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+    "--path",
+    "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-tyx_8h77",
+    "--headless",
+    "--log-file",
+    "/Users/kevin/Desktop/AgeOfEmpireLite/poc/exploration-2026-10-02/fixes/tool-validation/yield-worker-safety-physical/logs/yield_worker_safety_physical_controls.engine.log",
+    "--script",
+    "res://tests/yield_worker_safety_physical_controls.gd"
+  ],
+  "log": "logs/yield_worker_safety_physical_controls.log",
+  "cases": [],
+  "scope": "172 direct helper synthetic controls adapted to independent physical-travel timer; not a replacement for real deadlock PoC/full regression",
+  "source_sha256": {
+    "scripts/world/navigation.gd": "ae18ab3983a5346c112c83a09e7123a09d8ca16ed2110b17ba9cb90e3d8b3f70",
+    "scripts/entities/unit_movement.gd": "5ed1d5155e3e279210ea604440a62000f8c69b446d0aa02487c7a78b30f1caf2",
+    "tests/yield_worker_safety_physical_controls.gd": "4a8da0c26a836dda7fad811306c24f3d6b9c003a6b5838b8b95ef6b8bdb54ce6"
+  },
+  "candidate_patch_sha256": "e9f9c32df7eb5629b8d9c6adaf637ecdcc9df753a1130d23bd3eb1f7626c21f6"
+}

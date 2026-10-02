@@ -1,0 +1,12 @@
+Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
+
+2026-10-02 12:02:03.567 godot.macos.template_debug.arm64[39535:22714496] XType: Using static font registry.
+CASE {"evidence":{"admitted":true,"capacity":10,"slots_after_death":1},"id":"dead_garrison_slot","status":"observation"}
+CASE {"evidence":{"admitted":true,"slots_after_death":1},"id":"dead_passenger_slot","status":"observation"}
+CASE {"evidence":{"admitted":true,"kind":"warship","tags":["naval","military","ranged","heavy"]},"id":"naval_garrison","status":"observation"}
+CASE {"evidence":{"admitted":false,"kind":"monk","tags":["religious","light"]},"id":"monk_garrison","status":"observation"}
+CASE {"evidence":{"hp_after":80.0,"hp_before":90.0,"new_owner":0},"id":"conversion_projectile","status":"bug"}
+CASE {"evidence":{"converted_owner":0,"home_owner":1,"original_market":1,"resumed_without_own_market":true},"id":"conversion_trader","status":"bug"}
+CASE {"evidence":{"official_count_after_conversion":5},"id":"conversion_official_limit","status":"observation"}
+CASE {"evidence":{"new_owner":0,"still_on_enemy_wall":true,"wall_owner":1},"id":"conversion_wall","status":"observation"}
+EXPLORATION_COMPLETE cases=8 bugs=2

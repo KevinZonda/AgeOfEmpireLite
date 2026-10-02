@@ -1,0 +1,31 @@
+{
+  "name": "exploration_b21_work_yield",
+  "script": "tests/exploration_b21_work_yield.gd",
+  "status": "passed",
+  "failure_signatures": [],
+  "started": true,
+  "rendering": false,
+  "isolated_user_dir": "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-qt5pj1tm/AgeOfEmpireLite-full-tests/5534f1684f8856a6/exploration_b21_work_yield",
+  "child_cwd": "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-qt5pj1tm",
+  "child_home_removed": true,
+  "user_dir_isolation": "macos_child_without_home",
+  "exit_code": 0,
+  "seconds": 3.641,
+  "timeout_seconds": 1800,
+  "terminated_early": false,
+  "first_error": null,
+  "command": [
+    "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+    "--path",
+    "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-qt5pj1tm",
+    "--headless",
+    "--log-file",
+    "/Users/kevin/Desktop/AgeOfEmpireLite/poc/exploration-2026-10-02/fixes/B21-review/worker-only-angle-poc/logs/exploration_b21_work_yield.engine.log",
+    "--script",
+    "res://tests/exploration_b21_work_yield.gd"
+  ],
+  "log": "logs/exploration_b21_work_yield.log",
+  "cases": [],
+  "changed_sources_during_run": [],
+  "scope": "Worker-only +/-90 candidate 113check PoC evaluation; not final replacement or full regression"
+}

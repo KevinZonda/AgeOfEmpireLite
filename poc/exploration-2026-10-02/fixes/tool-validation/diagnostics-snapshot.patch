@@ -1,0 +1,86 @@
+--- tools/run_full_tests.py	2026-10-02 02:19:08
++++ /tmp/AgeOfEmpireLite-full-test-tool-review/run_full_tests.py	2026-10-02 02:31:34
+@@ -103,12 +103,44 @@
+ 
+ def snapshot():
+     paths = [ROOT / "project.godot", ROOT / "tools/web_shell.html"]
+-    for directory in ("scripts", "tests", "data"):
+-        paths += sorted(p for p in (ROOT / directory).rglob("*") if p.is_file() and p.suffix != ".uid")
++    for directory in ("scripts", "tests", "data", "scenes", "assets"):
++        paths += sorted(p for p in (ROOT / directory).rglob("*") if p.is_file() and p.suffix not in (".uid", ".import"))
+     paths.append(AUDIT)
+     return {str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
+ 
+ 
++def failure_signatures(contents):
++    """Stable diagnostic identities; assertion evidence and traces are omitted."""
++    signatures = set()
++    contents = re.sub(r"\x1b\[[0-9;]*m", "", contents)
++    for raw in contents.splitlines():
++        line = raw.strip()
++        marker = re.match(r"^POC_FAIL\s+([\w:./-]+)", line)
++        if marker:
++            signatures.add("POC_FAIL " + marker.group(1))
++        elif line.startswith(("SCRIPT ERROR:", "ERROR:")):
++            # Source line numbers shift when code is repaired. Keep the error
++            # itself, but never treat trace locations or changing float values
++            # in diagnostic evidence as a new failure.
++            line = re.sub(r"(?<=\.gd):\d+(?::\d+)?", ":<line>", line)
++            line = re.sub(r"(?<![\w.])[-+]?(?:\d+\.\d+(?:[eE][-+]?\d+)?|\d+[eE][-+]?\d+)(?![\w.])", "<float>", line)
++            signatures.add(line)
++    return sorted(signatures)
++
++
++def previous_failure_signatures(record, previous_file):
++    if "failure_signatures" in record:
++        return set(record["failure_signatures"])
++    log = record.get("log")
++    if log:
++        path = Path(log)
++        if not path.is_absolute():
++            path = previous_file.parent / path
++        if path.exists():
++            return set(failure_signatures(path.read_text(errors="replace")))
++    return set()
++
++
+ def stop_process(process):
+     if process.poll() is None:
+         try:
+@@ -223,6 +255,7 @@
+         shutil.copytree(project / "tmp", output / "images" / f"{name}-tmp")
+     temporary.cleanup()
+     record = {"name": name, "script": str(script.relative_to(ROOT)), "status": status,
++              "failure_signatures": failure_signatures(contents),
+               "started": True,
+               "rendering": rendering, "isolated_user_dir": str(user_dir),
+               "exit_code": process.returncode, "seconds": round(time.monotonic() - started, 3),
+@@ -328,6 +361,13 @@
+         old_tests = {r["script"]: r for r in previous["regression"]}
+         old_cases = {c["id"]: c for r in previous["exploration"] for c in r["cases"]}
+         newly_failed = [r["script"] for r in regression if r["status"] != "passed" and (r["script"] not in old_tests or old_tests[r["script"]]["status"] == "passed")]
++        new_failure_diagnostics = {}
++        for current in regression:
++            old = old_tests.get(current["script"])
++            if current["status"] == "failed" and old and old["status"] == "failed":
++                added = set(current["failure_signatures"]) - previous_failure_signatures(old, previous_file)
++                if added:
++                    new_failure_diagnostics[current["script"]] = sorted(added)
+         regressed_cases = [c["id"] for c in flat_cases if c["status"] == "bug" and old_cases.get(c["id"], {}).get("status") == "pass"]
+         fixed_cases = [c["id"] for c in flat_cases if c["status"] == "pass" and old_cases.get(c["id"], {}).get("status") == "bug"]
+         missing_tests = sorted(set(old_tests) - {r["script"] for r in regression} - set(deferred))
+@@ -335,12 +375,13 @@
+         exploration_failures = [r["name"] for r in exploration if r["status"] not in ("passed", "unresolved_bugs")]
+         incomplete_scripts = [r["script"] for r in regression if r["status"] in ("timeout", "cancelled", "skipped")]
+         comparison = {"previous": str(previous_file), "new_regression_failures": newly_failed,
++                      "new_failure_diagnostics": new_failure_diagnostics,
+                       "regressed_audit_cases": regressed_cases, "fixed_audit_cases": fixed_cases,
+                       "missing_scripts": missing_tests, "missing_cases": missing_cases,
+                       "profile": args.profile, "deferred_benchmarks": deferred,
+                       "exploration_execution_failures": exploration_failures,
+                       "incomplete_scripts": incomplete_scripts,
+-                      "no_new_failures": summary["complete"] and not (changed or newly_failed or regressed_cases or missing_tests or missing_cases or exploration_failures or incomplete_scripts)}
++                      "no_new_failures": summary["complete"] and not (changed or newly_failed or new_failure_diagnostics or regressed_cases or missing_tests or missing_cases or exploration_failures or incomplete_scripts)}
+         summary["comparison"] = comparison
+         (output / "comparison.json").write_text(json.dumps(comparison, indent=2, ensure_ascii=False))
+     result = {"summary": summary, "regression": regression, "exploration": exploration, "source_after": after}

@@ -2,8 +2,8 @@
   "revision": "70e3b754d56437a2f22e4efaf897f704984b52ab",
   "seconds": 881.892,
   "regression": {
-    "passed": 144,
-    "failed": 18,
+    "passed": 143,
+    "failed": 19,
     "timeout": 1,
     "unresolved_bugs": 0,
     "skipped": 0
@@ -17,5 +17,25 @@
   "executed_audit_cases": 63,
   "changed_sources_during_run": [],
   "passed": false,
-  "pending_long_recheck": true
+  "pending_long_recheck": false,
+  "initial_suite_seconds": 881.892,
+  "native_supplement_seconds": 15.586,
+  "independent_balance_seconds": 3600.124,
+  "balance_completed_seeds": [
+    17,
+    431,
+    9021
+  ],
+  "balance_expected_seeds": [
+    17,
+    431,
+    9021,
+    4242
+  ],
+  "benchmark_complete": false,
+  "complete": false,
+  "complete_all": false,
+  "profile": "all",
+  "deferred_benchmarks": [],
+  "completion_note": "All 163 scripts were attempted and all 63 PoC cases completed. Four-seed balance experiment timed out after 3600.124 seconds with 3/4 seeds complete; full all-profile validation is incomplete."
 }

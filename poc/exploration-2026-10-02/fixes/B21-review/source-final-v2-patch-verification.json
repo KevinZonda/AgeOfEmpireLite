@@ -1,0 +1,10 @@
+{
+  "base_commit": "1b6d95e6a6a6bbd2545940591e79ef291150760e",
+  "command": "patch -p1 -i b21-final-v2.patch",
+  "status": "passed",
+  "exit_code": 0,
+  "output": "patching file 'scripts/world/navigation.gd'\npatching file 'scripts/entities/unit_movement.gd'\npatching file 'tests/exploration_b21_work_yield.gd'\n",
+  "exact_source_hash_match": true,
+  "verification_root": "/tmp/AgeOfEmpireLite-b21-v2-patch-check",
+  "git_mutation": false
+}

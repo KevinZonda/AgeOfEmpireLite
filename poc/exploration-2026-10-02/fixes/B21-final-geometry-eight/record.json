@@ -1,0 +1,13 @@
+{
+  "command": [
+    "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+    "--path",
+    "/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/aoe-dense-probe-km2xsm1o",
+    "--headless",
+    "--script",
+    "res://tests/diag_b21_geometry_only.gd"
+  ],
+  "script": "tests/diag_b21_geometry_only.gd",
+  "actors": "",
+  "exit": 0
+}

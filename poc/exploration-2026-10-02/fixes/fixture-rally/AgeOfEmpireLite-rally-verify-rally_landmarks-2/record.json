@@ -1,0 +1,24 @@
+{
+  "name": "rally_landmarks",
+  "script": "tests/rally_landmarks.gd",
+  "status": "passed",
+  "rendering": false,
+  "isolated_user_dir": "/Users/kevin/Library/Application Support/AgeOfEmpireLite-full-tests/fa42ab436ff8c28a/rally_landmarks",
+  "exit_code": 0,
+  "seconds": 12.988,
+  "timeout_seconds": 180,
+  "terminated_early": false,
+  "first_error": null,
+  "command": [
+    "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+    "--path",
+    "/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-avb9gihl",
+    "--headless",
+    "--log-file",
+    "/tmp/AgeOfEmpireLite-rally-verify-rally_landmarks-2/logs/rally_landmarks.engine.log",
+    "--script",
+    "res://tests/rally_landmarks.gd"
+  ],
+  "log": "logs/rally_landmarks.log",
+  "cases": []
+}

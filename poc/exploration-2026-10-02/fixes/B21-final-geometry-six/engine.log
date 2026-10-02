@@ -1,0 +1,11 @@
+Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
+
+2026-10-02 12:03:00.384 godot.macos.template_debug.arm64[41131:22720913] XType: Using static font registry.
+POC_PASS b21_narrow_three_actor_fixture_is_legal 
+POC_PASS b21_narrow_caller_really_is_blocked 
+POC_PASS b21_original_six_sidestep_directions_are_blocked 
+POC_FAIL b21_longitudinal_yield_opens_legal_narrow_passage 
+POC_PASS b21_narrow_yield_preserves_jobs_and_queues 
+POC_PASS b21_narrow_yield_respects_original_speed_bound 
+POC_FAIL b21_narrow_yield_collision_safe 
+B21_PAIRED_GEOMETRY checks=7 failures=2

@@ -1,0 +1,22 @@
+Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
+
+POC_PASS occupied_waypoint_has_no_improving_exit 
+POC_PASS occupied_waypoint_has_no_improving_exit 
+POC_PASS occupied_waypoint_has_no_improving_exit 
+POC_PASS occupied_waypoint_has_no_improving_exit 
+POC_PASS occupied_waypoint_has_no_improving_exit 
+POC_PASS occupied_waypoint_has_no_improving_exit 
+POC_PASS occupied_waypoint_has_no_improving_exit 
+POC_PASS occupied_waypoint_has_no_improving_exit 
+POC_PASS occupied_waypoint_has_no_improving_exit 
+POC_PASS occupied_waypoint_has_no_improving_exit 
+GOAL_POC requests=10 elapsed_ms=60.431 flood_cells=0
+POC_PASS no_flood_when_all_candidate_exits_are_useless 
+POC_PASS exit_candidates_match_exhaustive_scan 
+POC_PASS exit_candidates_match_exhaustive_scan 
+POC_PASS exit_candidates_match_exhaustive_scan 
+POC_PASS exit_candidates_match_exhaustive_scan 
+POC_PASS exit_candidates_match_exhaustive_scan 
+POC_PASS exit_candidates_match_exhaustive_scan 
+POC_PASS farther_goal_still_detours_around_blocker 
+NAVIGATION_BATTLE_GOAL_POC checks=18 failures=0

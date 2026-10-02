@@ -1,0 +1,26 @@
+{
+  "name": "navigation_tasks_poc",
+  "script": "tests/navigation_tasks_poc.gd",
+  "status": "passed",
+  "failure_signatures": [],
+  "started": true,
+  "rendering": false,
+  "isolated_user_dir": "/Users/kevin/Library/Application Support/AgeOfEmpireLite-full-tests/16449a98e7f02d2c/navigation_tasks_poc",
+  "exit_code": 0,
+  "seconds": 48.817,
+  "timeout_seconds": 300,
+  "terminated_early": false,
+  "first_error": null,
+  "command": [
+    "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+    "--path",
+    "/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-a4rgb2ra",
+    "--headless",
+    "--log-file",
+    "/Users/kevin/Desktop/AgeOfEmpireLite/poc/exploration-2026-10-02/fixes/B06-dense-sync-B19/logs/navigation_tasks_poc.engine.log",
+    "--script",
+    "res://tests/navigation_tasks_poc.gd"
+  ],
+  "log": "logs/navigation_tasks_poc.log",
+  "cases": []
+}

@@ -1,0 +1,12 @@
+Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
+
+2026-10-02 12:55:46.793 godot.macos.template_debug.arm64[9427:22902576] XType: Using static font registry.
+CASE {"evidence":{"gold_delta":-350},"id":"market_roundtrip","status":"pass"}
+CASE {"evidence":{"destination":"(1200.0, 650.0)","order":"move"},"id":"queued_invalid_target","status":"pass"}
+CASE {"evidence":{"defeated":[1],"holder":1,"site_owner_after_elimination":1,"teams":[0,1,0,1]},"id":"team_sacred_elimination","status":"observation"}
+CASE {"evidence":{"multiplier_after":1.0,"multiplier_before":1.25},"id":"gatehouse_destroyed","status":"pass"}
+CASE {"evidence":{"armor_after":5.0,"armor_before":5.0,"shield_timer_after_stop":99999.0},"id":"pavise_stop","status":"pass"}
+CASE {"evidence":{"converted":true,"position_unchanged":true,"vertical":true},"id":"wall_vertical_gate","status":"pass"}
+CASE {"evidence":{"passenger_survived":false},"id":"transport_deep_death","status":"pass"}
+CASE {"evidence":{"dt":4.0,"expected":160.0,"hp_after":160.0,"hp_before":38.6666666666667,"undamaged_before":138.666666666667},"id":"construction_completion_damage","status":"pass"}
+EXPLORATION_COMPLETE cases=8 bugs=0

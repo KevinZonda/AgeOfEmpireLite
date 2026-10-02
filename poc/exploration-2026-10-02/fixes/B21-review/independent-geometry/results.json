@@ -1,0 +1,44 @@
+{
+  "source_context": "B06 candidate, worker eligibility plus preserving route_stalled_time diagnosis; not final approved source",
+  "finding": "Six lateral/diagonal yield directions omit corridor longitudinal steps. With actual English villager step 4.52 pixels, all six main-builder candidate motions are blocked. Appending plus/minus PI/2 preserves collision checks and admits legal recursive longitudinal yields.",
+  "old_six_directions": {
+    "main_builder_displacement": 0,
+    "yield_result": false,
+    "caller_clear": false
+  },
+  "new_eight_directions": {
+    "main_builder_displacement": 4.51998233795166,
+    "yield_result": true,
+    "caller_clear": true
+  },
+  "third_builder_displacement_both": 4.51998233795166,
+  "caveat": "Initial 2.4-pixel reduction admits old diagonal motions and is not a causal witness; preserved raw logs demonstrate this correction. Actual movement step is used in the causal witness. No full regression or push is claimed here.",
+  "headless_repeat": {
+    "preserved_route_stall_six": {
+      "runs": 3,
+      "passes": 0,
+      "completed_sites": [
+        89,
+        89,
+        89
+      ]
+    },
+    "preserved_route_stall_eight": {
+      "allocation_padding": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "runs": 4,
+      "passes": 4,
+      "checks_per_run": 87,
+      "completed_sites": [
+        96,
+        96,
+        96,
+        96
+      ]
+    }
+  }
+}

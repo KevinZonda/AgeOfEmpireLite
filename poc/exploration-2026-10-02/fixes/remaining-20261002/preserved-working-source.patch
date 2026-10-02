@@ -1,0 +1,123 @@
+diff --git a/scripts/entities/unit_movement.gd b/scripts/entities/unit_movement.gd
+index d91a1d3..2fe8319 100644
+--- a/scripts/entities/unit_movement.gd
++++ b/scripts/entities/unit_movement.gd
+@@ -41,6 +41,11 @@ var route_blocked := false
+ var route_best_distance := INF
+ var route_recovery_distance := INF
+ var route_stalled_time := 0.0
++# Physical travel progress survives route retries and background path results.
++var travel_stalled_time := 0.0
++var travel_progress_position := Vector2.INF
++var travel_progress_goal := Vector2.INF
++var travel_progress_stop_distance := -1.0
+ var route_denials := 0
+ var route_clock := 0.0
+ var group_stuck_time := 0.0
+@@ -70,6 +75,10 @@ func reset_route(unit: RtsUnit) -> void:
+ 	route_best_distance = INF
+ 	route_recovery_distance = INF
+ 	route_stalled_time = 0.0
++	travel_stalled_time = 0.0
++	travel_progress_position = Vector2.INF
++	travel_progress_goal = Vector2.INF
++	travel_progress_stop_distance = -1.0
+ 
+ # This call does not yield. Publish displacements before spatial/visual callbacks.
+ func move_to(unit: RtsUnit, point: Vector2, delta: float, stop_distance: float) -> bool:
+@@ -85,6 +94,16 @@ func move_to(unit: RtsUnit, point: Vector2, delta: float, stop_distance: float)
+ 		# Simulated time passed: refill the inline search budget.
+ 		_sync_route_spent_us = maxi(0, _sync_route_spent_us - int((route_clock - _sync_route_clock) / SYNC_ROUTE_STEP_SECONDS * SYNC_ROUTE_BUDGET_US))
+ 		_sync_route_clock = route_clock
++	# Measure physical progress independently of replanning. Route creation can
++	# clear route_stalled_time while a blocked worker remains at the same point.
++	var arrived := position.distance_to(point) <= stop_distance + 0.5
++	if arrived or travel_progress_goal == Vector2.INF or travel_progress_goal.distance_to(point) > RtsWorldMap.CELL_SIZE * 0.5 or not is_equal_approx(travel_progress_stop_distance, stop_distance) or position.distance_to(travel_progress_position) > 2.0:
++		travel_stalled_time = 0.0
++		travel_progress_position = position
++		travel_progress_goal = point
++		travel_progress_stop_distance = stop_distance
++	else:
++		travel_stalled_time += delta
+ 	yield_request_cooldown = maxf(0.0, yield_request_cooldown - delta)
+ 	if yield_timer > 0.0:
+ 		yield_timer = maxf(0.0, yield_timer - delta)
+diff --git a/scripts/world/navigation.gd b/scripts/world/navigation.gd
+index 6a094ca..db455f6 100644
+--- a/scripts/world/navigation.gd
++++ b/scripts/world/navigation.gd
+@@ -1214,13 +1214,18 @@ func _yield_allies(unit: RtsUnit, destination: Vector2, yielding: Array[int] = [
+ 	var changed := false
+ 	for other in nearby_units(destination, unit.radius() + spatial_index.max_dynamic_radius + 2.0):
+ 		if yielding.has(other.get_instance_id()) or other.stance == "hold" or game.is_enemy(unit.owner_id, other.owner_id): continue
+-		var stalled := other.order in ["move", "attack_move"] and (other.movement.route_stalled_time >= RtsUnit.ROUTE_STALL_SECONDS or other.movement.group_stuck_time >= 0.9)
++		# Travelling workers can block a narrow passage just like moving troops.
++		# Keep actors already within work/interaction range at their job.
++		var travelling_worker := other.order in ["build", "repair", "gather"] and is_instance_valid(other.target) and not other.target.is_queued_for_deletion() and other.movement.route_stop_distance >= 0.0 and other.movement.route_goal.is_finite() and other.position.distance_to(other.movement.route_goal) > other.movement.route_stop_distance + 0.5 and other.position.distance_to(other.target.position) > other.movement.route_stop_distance + 0.5
++		var stalled := (other.order in ["move", "attack_move"] and (other.movement.route_stalled_time >= RtsUnit.ROUTE_STALL_SECONDS or other.movement.group_stuck_time >= 0.9)) or (travelling_worker and other.movement.travel_stalled_time >= RtsUnit.ROUTE_STALL_SECONDS)
+ 		if other.order != "idle" and not (stalled and unit.get_instance_id() < other.get_instance_id()): continue
+ 		if other.position.distance_to(destination) >= unit.radius() + other.radius(): continue
+ 		var lateral := Vector2(-forward.y, forward.x)
+ 		if (other.position - unit.position).dot(lateral) < 0.0: lateral = -lateral
+ 		var distance := minf(other.radius() * 0.6, maxf(2.0, unit.position.distance_to(destination)))
+-		for angle in [0.0, PI / 4.0, -PI / 4.0, PI, 3.0 * PI / 4.0, -3.0 * PI / 4.0]:
++		var angles := [0.0, PI / 4.0, -PI / 4.0, PI, 3.0 * PI / 4.0, -3.0 * PI / 4.0]
++		if travelling_worker: angles.append_array([PI / 2.0, -PI / 2.0])
++		for angle in angles:
+ 			var point := other.position + lateral.rotated(angle) * distance
+ 			if not _motion_clear(other, point):
+ 				if not _yield_allies(other, point, yielding) or not _motion_clear(other, point): continue
+diff --git a/tools/run_full_tests.py b/tools/run_full_tests.py
+index 0012026..34f9b59 100644
+--- a/tools/run_full_tests.py
++++ b/tools/run_full_tests.py
+@@ -98,7 +98,7 @@ def isolated_project(path, output, name):
+     source = source.replace("[application]", '[application]\nconfig/use_custom_user_dir=true\nconfig/custom_user_dir_name=' + json.dumps(user_name), 1)
+     (path / "project.godot").write_text(source)
+     if platform.system() == "Darwin":
+-        return Path.home() / "Library/Application Support" / user_name
++        return path.resolve() / user_name
+     return Path(os.environ.get("XDG_DATA_HOME", str(Path.home() / ".local/share"))) / user_name
+ 
+ 
+@@ -179,7 +179,7 @@ def execute_unlocked(engine, script, name, output, timeout, case_ids=None, rende
+     if CANCELLED.is_set():
+         return publish(cancelled_record(script, name, timeout, rendering), output)
+     temporary = tempfile.TemporaryDirectory(prefix="ageofempirelite-test-")
+-    project = Path(temporary.name)
++    project = Path(temporary.name).resolve()
+     user_dir = isolated_project(project, output, name)
+     if script.suffix == ".js":
+         command = [NODE, str(script)]
+@@ -189,6 +189,13 @@ def execute_unlocked(engine, script, name, output, timeout, case_ids=None, rende
+     if case_ids:
+         command += ["--", *case_ids]
+     env = os.environ.copy()
++    child_cwd = ROOT
++    child_home_removed = script.suffix != ".js" and platform.system() == "Darwin"
++    if child_home_removed:
++        # Godot macOS falls back to the current directory when HOME is absent.
++        # Remove it only from this engine child, keeping the parent untouched.
++        env.pop("HOME", None)
++        child_cwd = project
+     env["RTS_POC_RESULTS"] = str(output / f"{name}-cases.json")
+     artifact = output / "images" / ("farm.png" if script.stem == "farm_rendering" else name)
+     artifact.parent.mkdir(exist_ok=True)
+@@ -208,7 +215,7 @@ def execute_unlocked(engine, script, name, output, timeout, case_ids=None, rende
+         if CANCELLED.is_set():
+             temporary.cleanup()
+             return publish(cancelled_record(script, name, timeout, rendering), output)
+-        process = subprocess.Popen(command, cwd=ROOT, stdout=log, stderr=subprocess.STDOUT, env=env, start_new_session=True)
++        process = subprocess.Popen(command, cwd=child_cwd, stdout=log, stderr=subprocess.STDOUT, env=env, start_new_session=True)
+         consumed = 0
+         tail = ""
+         while process.poll() is None:
+@@ -277,6 +284,8 @@ def execute_unlocked(engine, script, name, output, timeout, case_ids=None, rende
+               "failure_signatures": failure_signatures(contents),
+               "started": True,
+               "rendering": rendering, "isolated_user_dir": str(user_dir),
++              "child_cwd": str(child_cwd), "child_home_removed": child_home_removed,
++              "user_dir_isolation": "macos_child_without_home" if child_home_removed else "custom_user_dir",
+               "exit_code": process.returncode, "seconds": round(time.monotonic() - started, 3),
+               "timeout_seconds": timeout, "terminated_early": halted == "failed", "first_error": error_line,
+               "command": command, "log": str(log_path.relative_to(output)), "cases": cases}

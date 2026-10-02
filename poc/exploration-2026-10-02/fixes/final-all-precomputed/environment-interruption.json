@@ -1,0 +1,286 @@
+{
+  "reason": "Environment/tool-server reset interrupted the original runner; parent reported runner PID12043 no longer exists. Final results.json/summary.json were never written. Evidence is incomplete and cannot be reused as full validation.",
+  "recorded_at": "2026-10-02T11:41:13.220265+08:00",
+  "runner_pid_recorded": 12043,
+  "profile": "all",
+  "reusable_as_complete_validation": false,
+  "complete": false,
+  "complete_all": false,
+  "final_results_file_exists": false,
+  "final_summary_file_exists": false,
+  "source_preservation": "No source or existing environment/progress/log files were modified; this interruption record is additive.",
+  "expected_regression_count": 183,
+  "discovered_regression_count": 183,
+  "published_regression_records": 164,
+  "published_status_counts": {
+    "passed": 163,
+    "failed": 1
+  },
+  "published_failures": [
+    {
+      "script": "tests/navigation_tasks_poc.gd",
+      "status": "failed",
+      "failure_signatures": [
+        "POC_FAIL dense_96_workers_build_all",
+        "POC_FAIL dense_96_workers_finish_queues"
+      ],
+      "log": "logs/navigation_tasks_poc.log"
+    }
+  ],
+  "unrecorded_scripts": [
+    {
+      "script": "tests/balance_multiseed.gd",
+      "rendering": false,
+      "log_exists": true,
+      "record_status": "not_recorded",
+      "raw_log_last_lines": [
+        "BALANCE seed=4242 civs=[\"English\", \"French\"] style=balanced difficulty=normal ages=[[0, 20, 105, 135], [0, 15, 125, 240]] peak_workers=[29, 25] peak_army=[73, 46] production=[4, 3] army_distance=[1507.37616939821, 1445.60480775224] attack_distance=[432.990666283502, 350.099856694539] empty_attack_routes=[7, 7] siege=[2, 2] assets=[{ \"wood\": 37, \"gold\": 58, \"workshops\": 1, \"monasteries\": 1, \"monks\": 0, \"ram_orders\": 2 }, { \"wood\": 974, \"gold\": 214, \"workshops\": 1, \"monasteries\": 1, \"monks\": 1, \"ram_orders\": 2 }] sites=[0, 1, 1] monks=[[], [{ \"order\": \"move\", \"position\": (1170.0, 1023.0), \"destination\": (1016.0, 576.0) }]] army_orders=[{ \"attack_move\": 8, \"idle\": 16, \"move\": 36, \"attack\": 9 }, { \"attack_move\": 7, \"idle\": 13, \"attack\": 12, \"move\": 15 }] tactics=[\"regroup\", \"regroup\"] center_hp=[1.0, 1.0] winner=-1 fairness={ \"fair\": true, \"counts\": [{ \"wood\": 5, \"food\": 5, \"gold\": 3, \"stone\": 3 }, { \"wood\": 5, \"food\": 5, \"gold\": 3, \"stone\": 3 }], \"nearest\": [{ \"wood\": 237.008438110352, \"food\": 159.452194213867, \"gold\": 224.722045898438, \"stone\": 269.258239746094 }, { \"wood\": 272.389434814453, \"food\": 123.49089050293, \"gold\": 276.586334228516, \"stone\": 250.0 }] }",
+        "BALANCE_SUMMARY cases=4 wins=[0, 2] unfinished=2 civilization_wins={ \"English\": 0, \"French\": 2, \"Chinese\": 0 } map_styles={ \"balanced\": { \"finished\": 2, \"unfinished\": 2 } }",
+        "WARNING: 2 ObjectDB instances were leaked at exit (run with `--verbose` for details).",
+        "   at: cleanup (core/object/object.cpp:2536)"
+      ]
+    },
+    {
+      "script": "tests/character_portraits.gd",
+      "rendering": true,
+      "log_exists": false,
+      "record_status": "not_recorded",
+      "raw_log_last_lines": []
+    },
+    {
+      "script": "tests/display_settings.gd",
+      "rendering": true,
+      "log_exists": false,
+      "record_status": "not_recorded",
+      "raw_log_last_lines": []
+    },
+    {
+      "script": "tests/farm_rendering.gd",
+      "rendering": true,
+      "log_exists": false,
+      "record_status": "not_recorded",
+      "raw_log_last_lines": []
+    },
+    {
+      "script": "tests/filled_polygon_rendering.gd",
+      "rendering": true,
+      "log_exists": false,
+      "record_status": "not_recorded",
+      "raw_log_last_lines": []
+    },
+    {
+      "script": "tests/fish_rendering.gd",
+      "rendering": true,
+      "log_exists": false,
+      "record_status": "not_recorded",
+      "raw_log_last_lines": []
+    },
+    {
+      "script": "tests/fishing_boat_rendering.gd",
+      "rendering": true,
+      "log_exists": false,
+      "record_status": "not_recorded",
+      "raw_log_last_lines": []
+    },
+    {
+      "script": "tests/landmark_rendering.gd",
+      "rendering": true,
+      "log_exists": false,
+      "record_status": "not_recorded",
+      "raw_log_last_lines": []
+    },
+    {
+      "script": "tests/naval_rendering.gd",
+      "rendering": true,
+      "log_exists": false,
+      "record_status": "not_recorded",
+      "raw_log_last_lines": []
+    },
+    {
+      "script": "tests/performance_pan.gd",
+      "rendering": true,
+      "log_exists": false,
+      "record_status": "not_recorded",
+      "raw_log_last_lines": []
+    },
+    {
+      "script": "tests/performance_visible.gd",
+      "rendering": true,
+      "log_exists": false,
+      "record_status": "not_recorded",
+      "raw_log_last_lines": []
+    },
+    {
+      "script": "tests/relic_rendering.gd",
+      "rendering": true,
+      "log_exists": false,
+      "record_status": "not_recorded",
+      "raw_log_last_lines": []
+    },
+    {
+      "script": "tests/siege_detail_occlusion.gd",
+      "rendering": true,
+      "log_exists": false,
+      "record_status": "not_recorded",
+      "raw_log_last_lines": []
+    },
+    {
+      "script": "tests/siege_rendering.gd",
+      "rendering": true,
+      "log_exists": false,
+      "record_status": "not_recorded",
+      "raw_log_last_lines": []
+    },
+    {
+      "script": "tests/smoke.gd",
+      "rendering": true,
+      "log_exists": false,
+      "record_status": "not_recorded",
+      "raw_log_last_lines": []
+    },
+    {
+      "script": "tests/terrain_occlusion.gd",
+      "rendering": true,
+      "log_exists": false,
+      "record_status": "not_recorded",
+      "raw_log_last_lines": []
+    },
+    {
+      "script": "tests/unit_snapshot_rendering.gd",
+      "rendering": true,
+      "log_exists": false,
+      "record_status": "not_recorded",
+      "raw_log_last_lines": []
+    },
+    {
+      "script": "tests/unit_visual_scale.gd",
+      "rendering": true,
+      "log_exists": false,
+      "record_status": "not_recorded",
+      "raw_log_last_lines": []
+    },
+    {
+      "script": "tests/water_surface_rendering.gd",
+      "rendering": true,
+      "log_exists": false,
+      "record_status": "not_recorded",
+      "raw_log_last_lines": []
+    }
+  ],
+  "audit": {
+    "expected_count": 63,
+    "actual_recorded_cases": 0,
+    "missing_case_ids": [
+      "allied_forest_visibility",
+      "allied_scout_detection",
+      "ally_gate",
+      "cancel_refund",
+      "construction_completion_damage",
+      "construction_damage",
+      "construction_real_worker",
+      "construction_repair",
+      "construction_zero",
+      "conversion_official_limit",
+      "conversion_projectile",
+      "conversion_selection",
+      "conversion_trader",
+      "conversion_wall",
+      "dead_garrison_slot",
+      "dead_passenger_slot",
+      "death_relic",
+      "depleted_resource_queue",
+      "destroy_monastery",
+      "elimination_relic",
+      "enemy_gate",
+      "farm_builder_followup",
+      "farm_exclusive",
+      "field_siege_unfinished_attack",
+      "field_siege_unfinished_boarding",
+      "french_keep_influence_snap",
+      "garrison_builders",
+      "garrison_double_host",
+      "gatehouse_destroyed",
+      "ground_artillery_ability",
+      "ground_min_range",
+      "hidden_attack_tracking",
+      "market_roundtrip",
+      "mill_builder_followup",
+      "monk_garrison",
+      "monk_heal_own",
+      "monk_heal_teammate",
+      "naval_garrison",
+      "own_scout_detection",
+      "pause_production",
+      "pavise_stop",
+      "population_house_loss",
+      "queued_farm_alternative",
+      "queued_farm_frees_later",
+      "queued_invalid_target",
+      "rally_dead_farm",
+      "rally_dead_fish",
+      "rally_dead_tree",
+      "rally_full_farm",
+      "rally_queued_target",
+      "restart_projectiles",
+      "sacred_eliminated_wins",
+      "selection_after_garrison",
+      "siege_tower_docking",
+      "supervise_barracks",
+      "supervise_town_center",
+      "team_sacred_elimination",
+      "trade_garrison_resume",
+      "trade_overlap",
+      "trade_reissue",
+      "trade_return_market",
+      "transport_deep_death",
+      "wall_vertical_gate"
+    ],
+    "execution_started_in_logs": [],
+    "cases_embedded_in_regression_scripts": {
+      "count": 16,
+      "unique_ids": [
+        "construction_completion_damage",
+        "construction_damage",
+        "construction_real_worker",
+        "construction_repair",
+        "construction_zero",
+        "farm_exclusive",
+        "queued_farm_alternative",
+        "queued_farm_frees_later",
+        "queued_invalid_target",
+        "rally_dead_farm",
+        "rally_dead_fish",
+        "rally_dead_tree",
+        "rally_queued_target",
+        "supervise_barracks",
+        "supervise_town_center",
+        "trade_return_market"
+      ],
+      "note": "These targeted cases are preserved in regression progress records, and do not substitute for the complete audit batch phase."
+    }
+  },
+  "balance": {
+    "expected_seeds": [
+      17,
+      431,
+      9021,
+      4242
+    ],
+    "actual_seed_summary_lines": [
+      17,
+      431,
+      9021,
+      4242
+    ],
+    "raw_summary_lines": [
+      "BALANCE_SUMMARY cases=4 wins=[0, 2] unfinished=2 civilization_wins={ \"English\": 0, \"French\": 2, \"Chinese\": 0 } map_styles={ \"balanced\": { \"finished\": 2, \"unfinished\": 2 } }"
+    ],
+    "all_four_seed_lines_present": true,
+    "published_regression_record_exists": false,
+    "exit_code_recorded": null,
+    "status": "raw_log_has_four_seed_summaries_but_no_published_process_result",
+    "log": "logs/balance_multiseed.log",
+    "log_sha256": "d78b313f51e319b79d887952db51b5b5b75161bb392baa03f65db8b576dd8594"
+  },
+  "scope_note": "Four seed summary lines in a raw log are preserved as observed benchmark evidence; absent process result and missing native/audit execution prevent full-suite acceptance."
+}

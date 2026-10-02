@@ -1,0 +1,52 @@
+--- a/tools/run_full_tests.py
++++ b/tools/run_full_tests.py
+@@ -98,7 +98,7 @@
+     source = source.replace("[application]", '[application]\nconfig/use_custom_user_dir=true\nconfig/custom_user_dir_name=' + json.dumps(user_name), 1)
+     (path / "project.godot").write_text(source)
+     if platform.system() == "Darwin":
+-        return Path.home() / "Library/Application Support" / user_name
++        return path.resolve() / user_name
+     return Path(os.environ.get("XDG_DATA_HOME", str(Path.home() / ".local/share"))) / user_name
+ 
+ 
+@@ -179,7 +179,7 @@
+     if CANCELLED.is_set():
+         return publish(cancelled_record(script, name, timeout, rendering), output)
+     temporary = tempfile.TemporaryDirectory(prefix="ageofempirelite-test-")
+-    project = Path(temporary.name)
++    project = Path(temporary.name).resolve()
+     user_dir = isolated_project(project, output, name)
+     if script.suffix == ".js":
+         command = [NODE, str(script)]
+@@ -189,6 +189,13 @@
+     if case_ids:
+         command += ["--", *case_ids]
+     env = os.environ.copy()
++    child_cwd = ROOT
++    child_home_removed = script.suffix != ".js" and platform.system() == "Darwin"
++    if child_home_removed:
++        # Godot macOS falls back to the current directory when HOME is absent.
++        # Remove it only from this engine child, keeping the parent untouched.
++        env.pop("HOME", None)
++        child_cwd = project
+     env["RTS_POC_RESULTS"] = str(output / f"{name}-cases.json")
+     artifact = output / "images" / ("farm.png" if script.stem == "farm_rendering" else name)
+     artifact.parent.mkdir(exist_ok=True)
+@@ -208,7 +215,7 @@
+         if CANCELLED.is_set():
+             temporary.cleanup()
+             return publish(cancelled_record(script, name, timeout, rendering), output)
+-        process = subprocess.Popen(command, cwd=ROOT, stdout=log, stderr=subprocess.STDOUT, env=env, start_new_session=True)
++        process = subprocess.Popen(command, cwd=child_cwd, stdout=log, stderr=subprocess.STDOUT, env=env, start_new_session=True)
+         consumed = 0
+         tail = ""
+         while process.poll() is None:
+@@ -277,6 +284,8 @@
+               "failure_signatures": failure_signatures(contents),
+               "started": True,
+               "rendering": rendering, "isolated_user_dir": str(user_dir),
++              "child_cwd": str(child_cwd), "child_home_removed": child_home_removed,
++              "user_dir_isolation": "macos_child_without_home" if child_home_removed else "custom_user_dir",
+               "exit_code": process.returncode, "seconds": round(time.monotonic() - started, 3),
+               "timeout_seconds": timeout, "terminated_early": halted == "failed", "first_error": error_line,
+               "command": command, "log": str(log_path.relative_to(output)), "cases": cases}

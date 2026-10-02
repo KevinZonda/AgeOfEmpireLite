@@ -1,0 +1,45 @@
+Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
+
+SPIKE frame=45 ms=43.4
+SPIKE frame=570 ms=31.1
+  stuck owner=0 kind=villager order=gather failures=1 pos=(448.3181, 598.4879) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(1979.25, 1875.104) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=gather failures=1 pos=(2110.972, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=2006 ms=55.3
+  stuck owner=0 kind=villager order=gather failures=1 pos=(448.3181, 598.4879) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(1979.25, 1875.104) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=gather failures=1 pos=(2110.972, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=2122 ms=68.1
+  stuck owner=0 kind=villager order=gather failures=1 pos=(448.3181, 598.4879) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=gather failures=1 pos=(2110.972, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=2229 ms=88.6
+  stuck owner=0 kind=villager order=gather failures=1 pos=(448.3181, 598.4879) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=gather failures=1 pos=(2110.972, 806.4182) dest=(0.0, 0.0)
+frames=2400 mean=8.49 p50=8.28 p90=10.44 p99=16.35 max=88.60
+frames with obstacle_revision bump: 6/2400, with grid_refresh: 0/2400
+first wildlife: 38, last wildlife: 38, last units: 24, last buildings: 19
+--- slowest 15 frames ---
+{"astar_ms":0.0,"buildings":19,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":2229,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":88.6,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":20,"rev_delta":3,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":15,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":2122,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":68.13,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":17,"rev_delta":3,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":11,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":2006,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":55.25,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":13,"rev_delta":3,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":7,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":45,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":43.41,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":8,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":7,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":570,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":31.12,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":8,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":11,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":2027,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":27.07,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":13,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":7,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":31,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":26.84,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":8,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":7,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":405,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":26.54,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":8,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":15,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":2222,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":24.19,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":17,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":7,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":13,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":22.07,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":8,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":7,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":5,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":21.13,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":8,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":7,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":19,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":20.85,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":8,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":15,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":2126,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":20.57,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":17,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":7,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":401,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":20.2,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":8,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":7,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":46,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":18.73,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":8,"rev_delta":0,"units":24,"wildlife":38}
+--- sample every 300 frames ---
+{"astar_ms":0.0,"buildings":7,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":0,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":16.96,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":8,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":7,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":300,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":7.55,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":8,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":7,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":600,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":8.16,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":8,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":7,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":900,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":11.28,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":8,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":7,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":1200,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":8.17,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":8,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":7,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":1500,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":9.1,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":8,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":7,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":1800,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":10.62,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":9,"rev_delta":0,"units":24,"wildlife":38}
+{"astar_ms":0.0,"buildings":11,"can_occupy_ms":0.0,"fine_build_ms":0.0,"fine_cells":0,"frame":2100,"grid_refresh":0,"grid_refresh_ms":0.0,"move_step_ms":0.0,"ms":9.18,"path_between_ms":0.0,"path_to_range_ms":0.0,"ptr_coarse_ms":0.0,"ptr_refine_ms":0.0,"rev":14,"rev_delta":0,"units":24,"wildlife":38}

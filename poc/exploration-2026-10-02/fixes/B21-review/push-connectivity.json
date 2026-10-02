@@ -1,0 +1,13 @@
+{
+  "checked_at": "2026-10-02T11:43:42.661782+08:00",
+  "command": [
+    "git",
+    "ls-remote",
+    "origin",
+    "refs/heads/main"
+  ],
+  "exit_code": 128,
+  "stdout": "",
+  "stderr": "fatal: unable to access 'https://github.com/KevinZonda/AgeOfEmpireLite.git/': Could not resolve host: github.com\n",
+  "pushed": false
+}

@@ -1,0 +1,37 @@
+{
+  "complete": true,
+  "no_new_failures": false,
+  "source_unchanged": true,
+  "all_cumulative_tests_passed": true,
+  "all_cumulative_cases_passed": true,
+  "regression": {
+    "passed": 164,
+    "failed": 5,
+    "timeout": 0,
+    "unresolved_bugs": 0,
+    "skipped": 0,
+    "cancelled": 0
+  },
+  "audit": {
+    "pass": 37,
+    "bug": 14,
+    "observation": 12
+  },
+  "fixed_cases": [
+    "trade_reissue",
+    "rally_dead_fish",
+    "rally_dead_tree",
+    "rally_dead_farm",
+    "sacred_eliminated_wins",
+    "construction_damage",
+    "construction_zero",
+    "construction_repair",
+    "construction_completion_damage",
+    "construction_real_worker",
+    "trade_return_market",
+    "supervise_town_center",
+    "supervise_barracks"
+  ],
+  "new_failure_diagnostics": {},
+  "seconds": 2032.252
+}

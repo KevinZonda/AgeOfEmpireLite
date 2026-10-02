@@ -1,0 +1,12 @@
+Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
+
+2026-10-02 11:53:18.546 godot.macos.template_debug.arm64[22874:22660608] XType: Using static font registry.
+GEOMETRY actual_step=4.52
+GEOMETRY angle=0.0 point=(685.8053, 369.2021) clear=false
+GEOMETRY angle=0.78539816339745 point=(686.774, 365.881) clear=false
+GEOMETRY angle=-0.78539816339745 point=(687.4686, 372.2354) clear=false
+GEOMETRY angle=3.14159265358979 point=(694.7917, 368.2199) clear=false
+GEOMETRY angle=2.35619449019234 point=(693.1285, 365.1866) clear=false
+GEOMETRY angle=-2.35619449019234 point=(693.823, 371.541) clear=false
+GEOMETRY legal_sites=true initial_legal=true blocked_caller=true six_angles_clear=false longitudinal=(690.7896, 373.2043) longitudinal_clear=false
+GEOMETRY yield_result=true builder_displacement=4.51998233795166 caller_clear=true pos=(689.8074, 364.2178) third=(703.9438, 346.5709)

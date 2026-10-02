@@ -1,0 +1,10 @@
+Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
+
+RASTER_POC units=121 requests=10 elapsed_ms=116.809
+POC_PASS dense_raster_matches_continuous_occupancy mismatches=0 cells=37249
+POC_PASS circle_contact_and_escape_predicate offset=(0.0, 0.0) differences=0
+POC_PASS circle_contact_and_escape_predicate offset=(0.0, 1.1) differences=0
+POC_PASS circle_contact_and_escape_predicate offset=(1.1, 0.0) differences=0
+POC_PASS circle_contact_and_escape_predicate offset=(24.0, 0.0) differences=0
+POC_PASS circle_contact_and_escape_predicate offset=(12.25, 7.125) differences=0
+NAVIGATION_BATTLE_RASTER_POC checks=6 failures=0

@@ -1,0 +1,38 @@
+{
+  "name": "balance_multiseed",
+  "script": "tests/balance_multiseed.gd",
+  "status": "timeout",
+  "rendering": false,
+  "isolated_user_dir": "/Users/kevin/Library/Application Support/AgeOfEmpireLite-full-tests/ddb41a1c8098afd1/balance_multiseed",
+  "exit_code": -15,
+  "seconds": 3600.124,
+  "timeout_seconds": 3600,
+  "terminated_early": false,
+  "first_error": null,
+  "command": [
+    "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+    "--path",
+    "/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-226zrzop",
+    "--headless",
+    "--log-file",
+    "/Users/kevin/Desktop/AgeOfEmpireLite/poc/exploration-2026-10-02/fixes/baseline/long-recheck/logs/balance_multiseed.engine.log",
+    "--script",
+    "res://tests/balance_multiseed.gd"
+  ],
+  "log": "logs/balance_multiseed.log",
+  "cases": [],
+  "changed_sources_during_run": [],
+  "baseline_worktree": "/tmp/AgeOfEmpireLite-baseline",
+  "completed_seeds": [
+    17,
+    431,
+    9021
+  ],
+  "expected_seeds": [
+    17,
+    431,
+    9021,
+    4242
+  ],
+  "benchmark_complete": false
+}

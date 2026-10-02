@@ -1,0 +1,21 @@
+{
+  "previous": "/Users/kevin/Desktop/AgeOfEmpireLite/poc/exploration-2026-10-02/fixes/B05-r3/results.json",
+  "profile": "regression",
+  "deferred_benchmarks": [
+    "tests/balance_multiseed.gd"
+  ],
+  "new_regression_failures": [
+    "tests/navigation_tasks_poc.gd"
+  ],
+  "new_failure_diagnostics": {},
+  "regressed_audit_cases": [],
+  "fixed_audit_cases": [
+    "supervise_town_center",
+    "supervise_barracks"
+  ],
+  "missing_scripts": [],
+  "missing_cases": [],
+  "exploration_execution_failures": [],
+  "incomplete_scripts": [],
+  "no_new_failures": false
+}

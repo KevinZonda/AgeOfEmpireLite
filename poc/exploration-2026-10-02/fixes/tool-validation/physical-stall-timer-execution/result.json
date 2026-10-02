@@ -1,0 +1,29 @@
+{
+  "name": "physical_stall_timer_execution_control",
+  "script": "tests/physical_stall_timer_execution_control.gd",
+  "status": "passed",
+  "failure_signatures": [],
+  "started": true,
+  "rendering": false,
+  "isolated_user_dir": "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-tjacuz04/AgeOfEmpireLite-full-tests/39942dd09f74a91f/physical_stall_timer_execution_control",
+  "child_cwd": "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-tjacuz04",
+  "child_home_removed": true,
+  "user_dir_isolation": "macos_child_without_home",
+  "exit_code": 0,
+  "seconds": 2.314,
+  "timeout_seconds": 60,
+  "terminated_early": false,
+  "first_error": null,
+  "command": [
+    "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+    "--path",
+    "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-tjacuz04",
+    "--headless",
+    "--log-file",
+    "/Users/kevin/Desktop/AgeOfEmpireLite/poc/exploration-2026-10-02/fixes/tool-validation/physical-stall-timer-execution/logs/physical_stall_timer_execution_control.engine.log",
+    "--script",
+    "res://tests/physical_stall_timer_execution_control.gd"
+  ],
+  "log": "logs/physical_stall_timer_execution_control.log",
+  "cases": []
+}

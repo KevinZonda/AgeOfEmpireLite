@@ -1,0 +1,80 @@
+[
+	{
+		"evidence": {
+			"admitted": true,
+			"capacity": 10,
+			"slots_after_death": 1
+		},
+		"id": "dead_garrison_slot",
+		"status": "observation"
+	},
+	{
+		"evidence": {
+			"admitted": true,
+			"slots_after_death": 1
+		},
+		"id": "dead_passenger_slot",
+		"status": "observation"
+	},
+	{
+		"evidence": {
+			"admitted": true,
+			"kind": "warship",
+			"tags": [
+				"naval",
+				"military",
+				"ranged",
+				"heavy"
+			]
+		},
+		"id": "naval_garrison",
+		"status": "observation"
+	},
+	{
+		"evidence": {
+			"admitted": false,
+			"kind": "monk",
+			"tags": [
+				"religious",
+				"light"
+			]
+		},
+		"id": "monk_garrison",
+		"status": "observation"
+	},
+	{
+		"evidence": {
+			"hp_after": 80.0,
+			"hp_before": 90.0,
+			"new_owner": 0
+		},
+		"id": "conversion_projectile",
+		"status": "bug"
+	},
+	{
+		"evidence": {
+			"converted_owner": 0,
+			"home_owner": 1,
+			"original_market": 1,
+			"resumed_without_own_market": true
+		},
+		"id": "conversion_trader",
+		"status": "bug"
+	},
+	{
+		"evidence": {
+			"official_count_after_conversion": 5
+		},
+		"id": "conversion_official_limit",
+		"status": "observation"
+	},
+	{
+		"evidence": {
+			"new_owner": 0,
+			"still_on_enemy_wall": true,
+			"wall_owner": 1
+		},
+		"id": "conversion_wall",
+		"status": "observation"
+	}
+]

@@ -1,0 +1,171 @@
+{
+  "timestamp_utc": "2026-10-02T04:47:26.482739+00:00",
+  "scope": "B21 v2 freezes worker-only extra +/-90 degrees; not complete full regression proof",
+  "base_commit": "1b6d95e6a6a6bbd2545940591e79ef291150760e",
+  "base_hashes": {
+    "scripts/world/navigation.gd": "4d24f709e7f582be6e43e7605ad903c56adcf2a97c842b16861c11bec85e0420",
+    "scripts/entities/unit_movement.gd": "4c0e505bd02450214191960f419627d42cf6eff09d85ed439af14c2310a880c3",
+    "tests/exploration_b21_work_yield.gd": null
+  },
+  "source_final_v2_hashes": {
+    "scripts/world/navigation.gd": "351299fa3ca7ad71d91fea72fd5476aa5d845dab42dcb2605fe8febefd00be26",
+    "scripts/entities/unit_movement.gd": "5ed1d5155e3e279210ea604440a62000f8c69b446d0aa02487c7a78b30f1caf2",
+    "tests/exploration_b21_work_yield.gd": "83fb38bc9fd1edac10745817dc8549ddde86f394f79dd87c5e92aa8d311ccb2d",
+    "patch": "eed200f4bac622dfde5e3affe5e6d75d1e15b484e3a3a49d8ca9c1bef6648847"
+  },
+  "previous_source_final_hashes_unchanged": {
+    "scripts/world/navigation.gd": "ae18ab3983a5346c112c83a09e7123a09d8ca16ed2110b17ba9cb90e3d8b3f70",
+    "scripts/entities/unit_movement.gd": "5ed1d5155e3e279210ea604440a62000f8c69b446d0aa02487c7a78b30f1caf2",
+    "tests/exploration_b21_work_yield.gd": "83fb38bc9fd1edac10745817dc8549ddde86f394f79dd87c5e92aa8d311ccb2d"
+  },
+  "business_delta_from_general8": "Only angle list branches on existing travelling_worker eligibility; ordinary idle/move retains original six. No timer/eligibility/order/collision code changed.",
+  "poc": {
+    "evidence": "worker-only-angle-poc/result.json",
+    "status": "passed",
+    "checks": 113,
+    "failures": 0,
+    "seconds": 3.641,
+    "source_sha256": "83fb38bc9fd1edac10745817dc8549ddde86f394f79dd87c5e92aa8d311ccb2d"
+  },
+  "deterministic_idle_benchmark": {
+    "evidence": "angle-dense-idle-benchmark/result.json",
+    "raw_log": "angle-dense-idle-benchmark/logs/yield_angle_dense_idle_benchmark.log",
+    "actors": 169,
+    "repetitions_per_variant": 11,
+    "same_initial_layout": true,
+    "checks": 11190,
+    "failures": 0,
+    "all_queries_returned_false": true,
+    "all_layouts_collision_order_queue_position_unchanged": true,
+    "records": [
+      {
+        "actors": 169,
+        "center_spacing": 20.02,
+        "changed": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "collision_safe": true,
+        "layout_unchanged": true,
+        "max_us": 39541,
+        "median_us": 36250,
+        "microseconds": [
+          36250,
+          36217,
+          36237,
+          35957,
+          36244,
+          36100,
+          36414,
+          36385,
+          39541,
+          38911,
+          38579
+        ],
+        "radius": 10.0,
+        "repetitions": 11,
+        "source_policy": "same physical travel worker eligibility; only angle list differs",
+        "variant": "six"
+      },
+      {
+        "actors": 169,
+        "center_spacing": 20.02,
+        "changed": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "collision_safe": true,
+        "layout_unchanged": true,
+        "max_us": 89662,
+        "median_us": 83865,
+        "microseconds": [
+          84908,
+          83865,
+          83417,
+          80329,
+          81442,
+          81309,
+          85209,
+          89662,
+          87236,
+          82401,
+          85094
+        ],
+        "radius": 10.0,
+        "repetitions": 11,
+        "source_policy": "same physical travel worker eligibility; only angle list differs",
+        "variant": "general8"
+      },
+      {
+        "actors": 169,
+        "center_spacing": 20.02,
+        "changed": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "collision_safe": true,
+        "layout_unchanged": true,
+        "max_us": 56167,
+        "median_us": 40411,
+        "microseconds": [
+          40557,
+          41021,
+          40411,
+          39426,
+          42627,
+          56167,
+          43442,
+          39330,
+          38872,
+          38965,
+          38857
+        ],
+        "radius": 10.0,
+        "repetitions": 11,
+        "source_policy": "same physical travel worker eligibility; only angle list differs",
+        "variant": "worker_only8"
+      }
+    ],
+    "general8_over_six_median_ratio": 2.3135172413793104,
+    "general8_over_worker_only8_median_ratio": 2.075301279354631
+  },
+  "causal_interpretation": "Identical densely enclosed idle layout isolates angle fanout; general extra angles increase failed recursive helper search cost. Worker-only branch retains all 113 work-yield oracles and restores original ordinary-actor angle search scope. Wall-clock microbenchmarks do not establish full AI run duration.",
+  "limitations": [
+    "No 6000-step AI completion from this diagnostic",
+    "No replacement for newly frozen v2 full regression and 63-case audit",
+    "Native rendering and network restrictions remain separately blocked"
+  ],
+  "engine_ownership": {
+    "diagnostic_trace": "cancelled via runner handler; process reaped; partial preserved",
+    "worker_only_poc": "exit 0; process completed",
+    "angle_benchmark": "exit 0; process completed",
+    "root_formal_general8_AI": "never signalled or modified"
+  }
+}

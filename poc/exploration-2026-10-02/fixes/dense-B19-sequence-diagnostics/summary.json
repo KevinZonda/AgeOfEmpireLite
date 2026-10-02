@@ -1,0 +1,67 @@
+{
+  "scope": "Original entire navigation_tasks_poc.gd, default2600ticks and dense1/12/48/96; not full repository regression",
+  "records": [
+    {
+      "name": "navigation_tasks_poc",
+      "script": "tests/navigation_tasks_poc.gd",
+      "status": "failed",
+      "failure_signatures": [
+        "POC_FAIL trader_completes_multiple_round_trips"
+      ],
+      "started": true,
+      "rendering": false,
+      "isolated_user_dir": "/Users/kevin/Library/Application Support/AgeOfEmpireLite-full-tests/4a8036626b5bdc2b/navigation_tasks_poc",
+      "exit_code": 1,
+      "seconds": 26.658,
+      "timeout_seconds": 1800,
+      "terminated_early": false,
+      "first_error": null,
+      "log": "logs/navigation_tasks_poc.log",
+      "label": "B03-control",
+      "iteration": 1,
+      "changed_sources_during_run": [],
+      "load_average_after": [
+        10.05078125,
+        40.53955078125,
+        108.31689453125
+      ],
+      "dense_results": [
+        "POC_PASS dense_96_workers_build_all 96/96 in 17.41s",
+        "POC_PASS dense_96_workers_finish_queues 96/96",
+        "POC_PASS dense_96_workers_no_teleport "
+      ],
+      "stuck_units": []
+    },
+    {
+      "name": "navigation_tasks_poc",
+      "script": "tests/navigation_tasks_poc.gd",
+      "status": "failed",
+      "failure_signatures": [
+        "POC_FAIL trader_completes_multiple_round_trips"
+      ],
+      "started": true,
+      "rendering": false,
+      "isolated_user_dir": "/Users/kevin/Library/Application Support/AgeOfEmpireLite-full-tests/442f195846953328/navigation_tasks_poc",
+      "exit_code": 1,
+      "seconds": 28.869,
+      "timeout_seconds": 1800,
+      "terminated_early": false,
+      "first_error": null,
+      "log": "logs/navigation_tasks_poc.log",
+      "label": "B03-B19",
+      "iteration": 1,
+      "changed_sources_during_run": [],
+      "load_average_after": [
+        8.76171875,
+        37.7822265625,
+        105.359375
+      ],
+      "dense_results": [
+        "POC_PASS dense_96_workers_build_all 96/96 in 13.56s",
+        "POC_PASS dense_96_workers_finish_queues 96/96",
+        "POC_PASS dense_96_workers_no_teleport "
+      ],
+      "stuck_units": []
+    }
+  ]
+}

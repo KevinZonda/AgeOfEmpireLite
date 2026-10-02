@@ -1,0 +1,14 @@
+--- a/scripts/world/navigation.gd
++++ b/scripts/world/navigation.gd
+@@ -1214,7 +1214,10 @@
+ 	var changed := false
+ 	for other in nearby_units(destination, unit.radius() + spatial_index.max_dynamic_radius + 2.0):
+ 		if yielding.has(other.get_instance_id()) or other.stance == "hold" or game.is_enemy(unit.owner_id, other.owner_id): continue
+-		var stalled := other.order in ["move", "attack_move"] and (other.movement.route_stalled_time >= RtsUnit.ROUTE_STALL_SECONDS or other.movement.group_stuck_time >= 0.9)
++		# Travelling workers can block a narrow passage just like moving troops.
++		# Keep actors already within work/interaction range at their job.
++		var travelling_worker := other.order in ["build", "repair", "gather"] and is_instance_valid(other.target) and not other.target.is_queued_for_deletion() and other.movement.route_stop_distance >= 0.0 and other.movement.route_goal.is_finite() and other.position.distance_to(other.movement.route_goal) > other.movement.route_stop_distance + 0.5 and other.position.distance_to(other.target.position) > other.movement.route_stop_distance + 0.5
++		var stalled := (other.order in ["move", "attack_move"] or travelling_worker) and (other.movement.route_stalled_time >= RtsUnit.ROUTE_STALL_SECONDS or other.movement.group_stuck_time >= 0.9)
+ 		if other.order != "idle" and not (stalled and unit.get_instance_id() < other.get_instance_id()): continue
+ 		if other.position.distance_to(destination) >= unit.radius() + other.radius(): continue
+ 		var lateral := Vector2(-forward.y, forward.x)

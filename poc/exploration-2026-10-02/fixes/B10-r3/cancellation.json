@@ -1,0 +1,17 @@
+{
+  "reason": "Parent requested safe cancellation pending real dense-navigation root-cause investigation, not retrying for green",
+  "signal": "SIGINT sent to lane helper, forwarded to active runner",
+  "helper_pid": 27448,
+  "runner_pid": 70042,
+  "active_engine_pids": [
+    70067,
+    91998
+  ],
+  "exit_code": 130,
+  "all_owned_processes_verified_exited": true,
+  "next_B13_not_started": true,
+  "complete": false,
+  "cancelled": true,
+  "changed_sources_during_run": [],
+  "recorded_at": "2026-10-02T04:45:36.958042+08:00"
+}

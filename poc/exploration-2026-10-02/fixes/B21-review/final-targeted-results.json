@@ -1,0 +1,144 @@
+{
+  "source_hashes": {
+    "scripts/world/navigation.gd": "ae18ab3983a5346c112c83a09e7123a09d8ca16ed2110b17ba9cb90e3d8b3f70",
+    "scripts/entities/unit_movement.gd": "5ed1d5155e3e279210ea604440a62000f8c69b446d0aa02487c7a78b30f1caf2",
+    "tests/exploration_b21_work_yield.gd": "83fb38bc9fd1edac10745817dc8549ddde86f394f79dd87c5e92aa8d311ccb2d",
+    "patch": "d530d49e8532bef88dbfd090ede323b7e6b4fac4a08db3341a700804cbee9579"
+  },
+  "source_unchanged": true,
+  "source_unchanged_checks": {
+    "scripts/world/navigation.gd": true,
+    "scripts/entities/unit_movement.gd": true,
+    "tests/exploration_b21_work_yield.gd": true
+  },
+  "runs": [
+    {
+      "artifact": "B21-final-B05-full1",
+      "exit": 0,
+      "checks": 113,
+      "failures": 0,
+      "diagnostics": [],
+      "script": "tests/exploration_b21_work_yield.gd",
+      "command": [
+        "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+        "--path",
+        "/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/aoe-dense-probe-ijn7bb4e",
+        "--headless",
+        "--script",
+        "res://tests/exploration_b21_work_yield.gd"
+      ]
+    },
+    {
+      "artifact": "B21-final-B05-full2",
+      "exit": 0,
+      "checks": 113,
+      "failures": 0,
+      "diagnostics": [],
+      "script": "tests/exploration_b21_work_yield.gd",
+      "command": [
+        "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+        "--path",
+        "/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/aoe-dense-probe-re5x5u0h",
+        "--headless",
+        "--script",
+        "res://tests/exploration_b21_work_yield.gd"
+      ]
+    },
+    {
+      "artifact": "B21-final-B05-legal-new1",
+      "exit": 0,
+      "checks": 6,
+      "failures": 0,
+      "diagnostics": [],
+      "script": "tests/exploration_b21_work_yield.gd",
+      "command": [
+        "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+        "--path",
+        "/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/aoe-dense-probe-y0cv60_p",
+        "--headless",
+        "--script",
+        "res://tests/exploration_b21_work_yield.gd",
+        "--",
+        "--legal-only"
+      ]
+    },
+    {
+      "artifact": "B21-final-B05-legal-old1",
+      "exit": 0,
+      "checks": 6,
+      "failures": 0,
+      "diagnostics": [],
+      "script": "tests/exploration_b21_work_yield.gd",
+      "command": [
+        "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+        "--path",
+        "/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/aoe-dense-probe-235_1t8u",
+        "--headless",
+        "--script",
+        "res://tests/exploration_b21_work_yield.gd",
+        "--",
+        "--legal-only"
+      ]
+    },
+    {
+      "artifact": "B21-final-old-legal1",
+      "exit": 1,
+      "checks": 6,
+      "failures": 2,
+      "diagnostics": [
+        "b21_all_96_sites_complete_at_original_deadline ",
+        "b21_all_seven_finish_queues_at_original_deadline "
+      ],
+      "script": "tests/exploration_b21_work_yield.gd",
+      "command": [
+        "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+        "--path",
+        "/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/aoe-dense-probe-4f5te_gd",
+        "--headless",
+        "--script",
+        "res://tests/exploration_b21_work_yield.gd",
+        "--",
+        "--legal-only"
+      ]
+    },
+    {
+      "artifact": "B21-final-geometry-six",
+      "exit": 1,
+      "checks": 7,
+      "failures": 2,
+      "diagnostics": [
+        "b21_longitudinal_yield_opens_legal_narrow_passage ",
+        "b21_narrow_yield_collision_safe "
+      ],
+      "script": "tests/diag_b21_geometry_only.gd",
+      "command": [
+        "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+        "--path",
+        "/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/aoe-dense-probe-l1u8dsqm",
+        "--headless",
+        "--script",
+        "res://tests/diag_b21_geometry_only.gd"
+      ]
+    },
+    {
+      "artifact": "B21-final-geometry-eight",
+      "exit": 0,
+      "checks": 7,
+      "failures": 0,
+      "diagnostics": [],
+      "script": "tests/diag_b21_geometry_only.gd",
+      "command": [
+        "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+        "--path",
+        "/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/aoe-dense-probe-km2xsm1o",
+        "--headless",
+        "--script",
+        "res://tests/diag_b21_geometry_only.gd"
+      ]
+    }
+  ],
+  "full_suite_complete": false,
+  "native_tests_unverified": 18,
+  "committed": false,
+  "pushed": false
+}

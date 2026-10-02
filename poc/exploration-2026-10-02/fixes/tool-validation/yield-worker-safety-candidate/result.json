@@ -1,0 +1,32 @@
+{
+  "name": "yield_worker_safety_controls",
+  "script": "tests/yield_worker_safety_controls.gd",
+  "status": "passed",
+  "failure_signatures": [],
+  "started": true,
+  "rendering": false,
+  "isolated_user_dir": "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-8o8xbo7x/AgeOfEmpireLite-full-tests/4a2ffa0bc47ccd2a/yield_worker_safety_controls",
+  "child_cwd": "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-8o8xbo7x",
+  "child_home_removed": true,
+  "user_dir_isolation": "macos_child_without_home",
+  "exit_code": 0,
+  "seconds": 0.628,
+  "timeout_seconds": 60,
+  "terminated_early": false,
+  "first_error": null,
+  "command": [
+    "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+    "--path",
+    "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-8o8xbo7x",
+    "--headless",
+    "--log-file",
+    "/Users/kevin/Desktop/AgeOfEmpireLite/poc/exploration-2026-10-02/fixes/tool-validation/yield-worker-safety-candidate/logs/yield_worker_safety_controls.engine.log",
+    "--script",
+    "res://tests/yield_worker_safety_controls.gd"
+  ],
+  "log": "logs/yield_worker_safety_controls.log",
+  "cases": [],
+  "scope": "Direct helper synthetic safety controls; does not replace real 7-actor deadlock PoC or full regression",
+  "navigation_sha256": "fd1e5af8b12f369964de32637718898b854ac12fc3ddf4d36b3c90951d7ffbc9",
+  "candidate_patch_sha256": "e65609fb4b348847fa375aa15ce1811c35231c430d76e339de2fd13dc0fc4569"
+}

@@ -306,7 +306,9 @@
       }
     },
     "verified_at": "2026-10-02T04:28:26.882975+08:00",
-    "pushed": false,
-    "phase": "verified"
+    "pushed": true,
+    "phase": "pushed",
+    "commit": "1b6d95e6a6a6bbd2545940591e79ef291150760e",
+    "remote_commit": "1b6d95e6a6a6bbd2545940591e79ef291150760e"
   }
 ]

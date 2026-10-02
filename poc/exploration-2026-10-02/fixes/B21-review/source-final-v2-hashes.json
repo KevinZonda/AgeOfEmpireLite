@@ -1,0 +1,6 @@
+{
+  "scripts/world/navigation.gd": "351299fa3ca7ad71d91fea72fd5476aa5d845dab42dcb2605fe8febefd00be26",
+  "scripts/entities/unit_movement.gd": "5ed1d5155e3e279210ea604440a62000f8c69b446d0aa02487c7a78b30f1caf2",
+  "tests/exploration_b21_work_yield.gd": "83fb38bc9fd1edac10745817dc8549ddde86f394f79dd87c5e92aa8d311ccb2d",
+  "patch": "eed200f4bac622dfde5e3affe5e6d75d1e15b484e3a3a49d8ca9c1bef6648847"
+}

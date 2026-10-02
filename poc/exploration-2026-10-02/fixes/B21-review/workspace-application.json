@@ -1,0 +1,27 @@
+{
+  "applied_at": "2026-10-02T12:59:14.484604+08:00",
+  "workspace": "/Users/kevin/Desktop/AgeOfEmpireLite",
+  "validated_checkout": "/private/tmp/AgeOfEmpireLite-b21-v2-validation",
+  "baseline": "1b6d95e6a6a6bbd2545940591e79ef291150760e",
+  "source_before": {
+    "scripts/entities/unit_movement.gd": "4c0e505bd02450214191960f419627d42cf6eff09d85ed439af14c2310a880c3",
+    "scripts/world/navigation.gd": "4d24f709e7f582be6e43e7605ad903c56adcf2a97c842b16861c11bec85e0420",
+    "tests/exploration_b21_work_yield.gd": null,
+    "tools/run_full_tests.py": "5853446e0f16781fcd244898ae1c720457c2e6f78d6c729fdbcc016ddd635748"
+  },
+  "source_after": {
+    "scripts/entities/unit_movement.gd": "5ed1d5155e3e279210ea604440a62000f8c69b446d0aa02487c7a78b30f1caf2",
+    "scripts/world/navigation.gd": "351299fa3ca7ad71d91fea72fd5476aa5d845dab42dcb2605fe8febefd00be26",
+    "tests/exploration_b21_work_yield.gd": "83fb38bc9fd1edac10745817dc8549ddde86f394f79dd87c5e92aa8d311ccb2d",
+    "tools/run_full_tests.py": "4aacf04e1bffbc1b5cadae5b6f49ae13323aa340a2d6873dd07721cbaa0d8c7c"
+  },
+  "original_git_index_unchanged": true,
+  "original_git_index_sha256": "bf5c04a5795613d6b7bb9d06e3b83834a61655c4dc40bf00a5684f4faca055be",
+  "existing_b06_staged_changes_preserved": true,
+  "available_proof": "../B21-available-v2/results.json",
+  "entire_current_workspace_verified": false,
+  "scope_note": "Available proof covers isolated B05 + B21 v2; original workspace also has pre-existing staged B06 changes. Native suite remains unavailable. No commit/push performed.",
+  "complete_test": false,
+  "committed": false,
+  "pushed": false
+}

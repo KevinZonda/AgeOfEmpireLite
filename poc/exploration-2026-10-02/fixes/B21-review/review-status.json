@@ -1,0 +1,74 @@
+{
+  "state": "deferred_by_user_after_other_repairs",
+  "base_revision": "1b6d95e6a6a6bbd2545940591e79ef291150760e",
+  "original_git_writable": false,
+  "isolated_checkout": "/private/tmp/AgeOfEmpireLite-b21-v2-validation",
+  "complete_test": false,
+  "committed": false,
+  "pushed": false,
+  "blockers": [
+    {
+      "kind": "remote_dns",
+      "evidence": "push-connectivity-v2.json",
+      "exit_code": 128
+    },
+    {
+      "kind": "native_window_startup",
+      "evidence": "../tool-validation/b21-v2-native-startup/result.json",
+      "status": "timeout",
+      "reason": "LaunchServices / hiservices XPC connection failure before Godot startup"
+    }
+  ],
+  "candidate_patch": "b21-final-v2.patch",
+  "candidate_patch_sha256": "eed200f4bac622dfde5e3affe5e6d75d1e15b484e3a3a49d8ca9c1bef6648847",
+  "production_source_same_as_available_run": true,
+  "available_run": "../B21-available-v2",
+  "available_run_test_revision": "113-check final v2; worker-only extra directions",
+  "independent_controls": {
+    "yield_policy": 172,
+    "physical_timer": 12,
+    "geometry": "independent-geometry/results.json"
+  },
+  "updated_at": "2026-10-02T13:12:38.318759+08:00",
+  "prior_available_run": "../B21-available",
+  "prior_available_run_seconds": 554.217,
+  "prior_available_scripts": {
+    "executed": 151,
+    "passed": 147,
+    "existing_failed": 4,
+    "native_skipped": 18
+  },
+  "final_targeted_results": "final-targeted-results.json",
+  "prior_available_final_run": {
+    "directory": "../B21-available-final",
+    "state": "cancelled_superseded_general_eight_direction_candidate",
+    "ai_seconds": 2501.9,
+    "regression_passed": 146,
+    "existing_failed": 4,
+    "native_skipped": 18,
+    "ai_cancelled": 1,
+    "audit_executed": 0,
+    "source_unchanged": true,
+    "engine_exit_confirmed": true
+  },
+  "scope_causal_evidence": "worker-only-angle-causal-summary.json",
+  "deferred_by_user": true,
+  "deferral_reason": "用户要求先按已修复候选保留，记录问题，其他 bug 修完后返回。",
+  "available_run_finished": true,
+  "available_run_seconds": 453.212,
+  "available_scripts": {
+    "executed": 151,
+    "passed": 147,
+    "existing_failed": 4,
+    "native_skipped": 18
+  },
+  "available_audit": {
+    "executed": 63,
+    "pass": 35,
+    "bug": 16,
+    "observation": 12
+  },
+  "workspace_application": "workspace-application.json",
+  "workspace_targeted": "../B21-workspace-targeted/results.json",
+  "entire_current_workspace_full_verified": false
+}

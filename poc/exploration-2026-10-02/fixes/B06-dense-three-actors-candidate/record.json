@@ -1,0 +1,13 @@
+{
+  "command": [
+    "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+    "--path",
+    "/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/aoe-dense-probe-a366ez4z",
+    "--headless",
+    "--script",
+    "res://tests/diag_dense_snapshot.gd"
+  ],
+  "script": "tests/diag_dense_snapshot.gd",
+  "actors": "0,1,5",
+  "exit": 0
+}

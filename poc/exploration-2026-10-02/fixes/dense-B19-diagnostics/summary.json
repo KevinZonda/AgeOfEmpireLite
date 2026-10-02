@@ -1,0 +1,150 @@
+{
+  "scope": "Original dense96 only, unchanged2600ticks; not full regression",
+  "records": [
+    {
+      "name": "navigation_tasks_poc",
+      "script": "tests/navigation_tasks_poc.gd",
+      "status": "passed",
+      "failure_signatures": [],
+      "started": true,
+      "rendering": false,
+      "isolated_user_dir": "/Users/kevin/Library/Application Support/AgeOfEmpireLite-full-tests/d587572be672b7bb/navigation_tasks_poc",
+      "exit_code": 0,
+      "seconds": 22.487,
+      "timeout_seconds": 1800,
+      "terminated_early": false,
+      "first_error": null,
+      "log": "logs/navigation_tasks_poc.log",
+      "label": "B03-control",
+      "iteration": 1,
+      "changed_sources_during_run": [],
+      "load_average_after": [
+        19.30419921875,
+        72.15234375,
+        138.51904296875
+      ],
+      "dense_results": [
+        "POC_PASS dense_96_workers_build_all 96/96 in 20.23s",
+        "POC_PASS dense_96_workers_finish_queues 96/96",
+        "POC_PASS dense_96_workers_no_teleport "
+      ],
+      "stuck_units": []
+    },
+    {
+      "name": "navigation_tasks_poc",
+      "script": "tests/navigation_tasks_poc.gd",
+      "status": "passed",
+      "failure_signatures": [],
+      "started": true,
+      "rendering": false,
+      "isolated_user_dir": "/Users/kevin/Library/Application Support/AgeOfEmpireLite-full-tests/38ab56da8036b49a/navigation_tasks_poc",
+      "exit_code": 0,
+      "seconds": 34.142,
+      "timeout_seconds": 1800,
+      "terminated_early": false,
+      "first_error": null,
+      "log": "logs/navigation_tasks_poc.log",
+      "label": "B03-B19",
+      "iteration": 1,
+      "changed_sources_during_run": [],
+      "load_average_after": [
+        17.837890625,
+        66.7001953125,
+        134.23974609375
+      ],
+      "dense_results": [
+        "POC_PASS dense_96_workers_build_all 96/96 in 32.10s",
+        "POC_PASS dense_96_workers_finish_queues 96/96",
+        "POC_PASS dense_96_workers_no_teleport "
+      ],
+      "stuck_units": []
+    },
+    {
+      "name": "navigation_tasks_poc",
+      "script": "tests/navigation_tasks_poc.gd",
+      "status": "passed",
+      "failure_signatures": [],
+      "started": true,
+      "rendering": false,
+      "isolated_user_dir": "/Users/kevin/Library/Application Support/AgeOfEmpireLite-full-tests/eb7eceb143c60bc4/navigation_tasks_poc",
+      "exit_code": 0,
+      "seconds": 29.027,
+      "timeout_seconds": 1800,
+      "terminated_early": false,
+      "first_error": null,
+      "log": "logs/navigation_tasks_poc.log",
+      "label": "B03-B19",
+      "iteration": 2,
+      "changed_sources_during_run": [],
+      "load_average_after": [
+        15.04931640625,
+        61.37158203125,
+        129.96826171875
+      ],
+      "dense_results": [
+        "POC_PASS dense_96_workers_build_all 96/96 in 26.56s",
+        "POC_PASS dense_96_workers_finish_queues 96/96",
+        "POC_PASS dense_96_workers_no_teleport "
+      ],
+      "stuck_units": []
+    },
+    {
+      "name": "navigation_tasks_poc",
+      "script": "tests/navigation_tasks_poc.gd",
+      "status": "passed",
+      "failure_signatures": [],
+      "started": true,
+      "rendering": false,
+      "isolated_user_dir": "/Users/kevin/Library/Application Support/AgeOfEmpireLite-full-tests/4893adc4e5507e31/navigation_tasks_poc",
+      "exit_code": 0,
+      "seconds": 27.327,
+      "timeout_seconds": 1800,
+      "terminated_early": false,
+      "first_error": null,
+      "log": "logs/navigation_tasks_poc.log",
+      "label": "B03-B19",
+      "iteration": 3,
+      "changed_sources_during_run": [],
+      "load_average_after": [
+        13.08154296875,
+        56.474609375,
+        125.81591796875
+      ],
+      "dense_results": [
+        "POC_PASS dense_96_workers_build_all 96/96 in 25.33s",
+        "POC_PASS dense_96_workers_finish_queues 96/96",
+        "POC_PASS dense_96_workers_no_teleport "
+      ],
+      "stuck_units": []
+    },
+    {
+      "name": "navigation_tasks_poc",
+      "script": "tests/navigation_tasks_poc.gd",
+      "status": "passed",
+      "failure_signatures": [],
+      "started": true,
+      "rendering": false,
+      "isolated_user_dir": "/Users/kevin/Library/Application Support/AgeOfEmpireLite-full-tests/3e674b29f02e55ef/navigation_tasks_poc",
+      "exit_code": 0,
+      "seconds": 32.886,
+      "timeout_seconds": 1800,
+      "terminated_early": false,
+      "first_error": null,
+      "log": "logs/navigation_tasks_poc.log",
+      "label": "B03-control",
+      "iteration": 2,
+      "changed_sources_during_run": [],
+      "load_average_after": [
+        32.01220703125,
+        57.091796875,
+        123.64453125
+      ],
+      "dense_results": [
+        "POC_PASS dense_96_workers_build_all 96/96 in 30.54s",
+        "POC_PASS dense_96_workers_finish_queues 96/96",
+        "POC_PASS dense_96_workers_no_teleport "
+      ],
+      "stuck_units": []
+    }
+  ]
+}

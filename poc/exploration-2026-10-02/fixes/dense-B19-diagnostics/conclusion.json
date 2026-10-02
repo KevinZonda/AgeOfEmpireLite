@@ -1,0 +1,228 @@
+{
+  "unchanged_test_hash": "6071003bdca7ad3d963f571cd2b03c966542019554256af07a4f479f470d52a5",
+  "control_navigation_hash": "4d24f709e7f582be6e43e7605ad903c56adcf2a97c842b16861c11bec85e0420",
+  "B19_navigation_hash": "02894fae8da1483e1461b9ad999020dd8e7f01436565bd7977e46229d5936a29",
+  "source_differences": {
+    "tests/exploration_b19_dirty_collision_radius.gd": {
+      "control": null,
+      "B19": "18226810ccd82defd5e00b3955aa31a6b91af381b1ff13a876d4825f6cd9e79e"
+    },
+    "scripts/world/navigation.gd": {
+      "control": "4d24f709e7f582be6e43e7605ad903c56adcf2a97c842b16861c11bec85e0420",
+      "B19": "02894fae8da1483e1461b9ad999020dd8e7f01436565bd7977e46229d5936a29"
+    }
+  },
+  "dense_only_runs": [
+    {
+      "name": "navigation_tasks_poc",
+      "script": "tests/navigation_tasks_poc.gd",
+      "status": "passed",
+      "failure_signatures": [],
+      "started": true,
+      "rendering": false,
+      "isolated_user_dir": "/Users/kevin/Library/Application Support/AgeOfEmpireLite-full-tests/d587572be672b7bb/navigation_tasks_poc",
+      "exit_code": 0,
+      "seconds": 22.487,
+      "timeout_seconds": 1800,
+      "terminated_early": false,
+      "first_error": null,
+      "log": "logs/navigation_tasks_poc.log",
+      "label": "B03-control",
+      "iteration": 1,
+      "changed_sources_during_run": [],
+      "load_average_after": [
+        19.30419921875,
+        72.15234375,
+        138.51904296875
+      ],
+      "dense_results": [
+        "POC_PASS dense_96_workers_build_all 96/96 in 20.23s",
+        "POC_PASS dense_96_workers_finish_queues 96/96",
+        "POC_PASS dense_96_workers_no_teleport "
+      ],
+      "stuck_units": []
+    },
+    {
+      "name": "navigation_tasks_poc",
+      "script": "tests/navigation_tasks_poc.gd",
+      "status": "passed",
+      "failure_signatures": [],
+      "started": true,
+      "rendering": false,
+      "isolated_user_dir": "/Users/kevin/Library/Application Support/AgeOfEmpireLite-full-tests/38ab56da8036b49a/navigation_tasks_poc",
+      "exit_code": 0,
+      "seconds": 34.142,
+      "timeout_seconds": 1800,
+      "terminated_early": false,
+      "first_error": null,
+      "log": "logs/navigation_tasks_poc.log",
+      "label": "B03-B19",
+      "iteration": 1,
+      "changed_sources_during_run": [],
+      "load_average_after": [
+        17.837890625,
+        66.7001953125,
+        134.23974609375
+      ],
+      "dense_results": [
+        "POC_PASS dense_96_workers_build_all 96/96 in 32.10s",
+        "POC_PASS dense_96_workers_finish_queues 96/96",
+        "POC_PASS dense_96_workers_no_teleport "
+      ],
+      "stuck_units": []
+    },
+    {
+      "name": "navigation_tasks_poc",
+      "script": "tests/navigation_tasks_poc.gd",
+      "status": "passed",
+      "failure_signatures": [],
+      "started": true,
+      "rendering": false,
+      "isolated_user_dir": "/Users/kevin/Library/Application Support/AgeOfEmpireLite-full-tests/eb7eceb143c60bc4/navigation_tasks_poc",
+      "exit_code": 0,
+      "seconds": 29.027,
+      "timeout_seconds": 1800,
+      "terminated_early": false,
+      "first_error": null,
+      "log": "logs/navigation_tasks_poc.log",
+      "label": "B03-B19",
+      "iteration": 2,
+      "changed_sources_during_run": [],
+      "load_average_after": [
+        15.04931640625,
+        61.37158203125,
+        129.96826171875
+      ],
+      "dense_results": [
+        "POC_PASS dense_96_workers_build_all 96/96 in 26.56s",
+        "POC_PASS dense_96_workers_finish_queues 96/96",
+        "POC_PASS dense_96_workers_no_teleport "
+      ],
+      "stuck_units": []
+    },
+    {
+      "name": "navigation_tasks_poc",
+      "script": "tests/navigation_tasks_poc.gd",
+      "status": "passed",
+      "failure_signatures": [],
+      "started": true,
+      "rendering": false,
+      "isolated_user_dir": "/Users/kevin/Library/Application Support/AgeOfEmpireLite-full-tests/4893adc4e5507e31/navigation_tasks_poc",
+      "exit_code": 0,
+      "seconds": 27.327,
+      "timeout_seconds": 1800,
+      "terminated_early": false,
+      "first_error": null,
+      "log": "logs/navigation_tasks_poc.log",
+      "label": "B03-B19",
+      "iteration": 3,
+      "changed_sources_during_run": [],
+      "load_average_after": [
+        13.08154296875,
+        56.474609375,
+        125.81591796875
+      ],
+      "dense_results": [
+        "POC_PASS dense_96_workers_build_all 96/96 in 25.33s",
+        "POC_PASS dense_96_workers_finish_queues 96/96",
+        "POC_PASS dense_96_workers_no_teleport "
+      ],
+      "stuck_units": []
+    },
+    {
+      "name": "navigation_tasks_poc",
+      "script": "tests/navigation_tasks_poc.gd",
+      "status": "passed",
+      "failure_signatures": [],
+      "started": true,
+      "rendering": false,
+      "isolated_user_dir": "/Users/kevin/Library/Application Support/AgeOfEmpireLite-full-tests/3e674b29f02e55ef/navigation_tasks_poc",
+      "exit_code": 0,
+      "seconds": 32.886,
+      "timeout_seconds": 1800,
+      "terminated_early": false,
+      "first_error": null,
+      "log": "logs/navigation_tasks_poc.log",
+      "label": "B03-control",
+      "iteration": 2,
+      "changed_sources_during_run": [],
+      "load_average_after": [
+        32.01220703125,
+        57.091796875,
+        123.64453125
+      ],
+      "dense_results": [
+        "POC_PASS dense_96_workers_build_all 96/96 in 30.54s",
+        "POC_PASS dense_96_workers_finish_queues 96/96",
+        "POC_PASS dense_96_workers_no_teleport "
+      ],
+      "stuck_units": []
+    }
+  ],
+  "original_script_runs": [
+    {
+      "name": "navigation_tasks_poc",
+      "script": "tests/navigation_tasks_poc.gd",
+      "status": "failed",
+      "failure_signatures": [
+        "POC_FAIL trader_completes_multiple_round_trips"
+      ],
+      "started": true,
+      "rendering": false,
+      "isolated_user_dir": "/Users/kevin/Library/Application Support/AgeOfEmpireLite-full-tests/4a8036626b5bdc2b/navigation_tasks_poc",
+      "exit_code": 1,
+      "seconds": 26.658,
+      "timeout_seconds": 1800,
+      "terminated_early": false,
+      "first_error": null,
+      "log": "logs/navigation_tasks_poc.log",
+      "label": "B03-control",
+      "iteration": 1,
+      "changed_sources_during_run": [],
+      "load_average_after": [
+        10.05078125,
+        40.53955078125,
+        108.31689453125
+      ],
+      "dense_results": [
+        "POC_PASS dense_96_workers_build_all 96/96 in 17.41s",
+        "POC_PASS dense_96_workers_finish_queues 96/96",
+        "POC_PASS dense_96_workers_no_teleport "
+      ],
+      "stuck_units": []
+    },
+    {
+      "name": "navigation_tasks_poc",
+      "script": "tests/navigation_tasks_poc.gd",
+      "status": "failed",
+      "failure_signatures": [
+        "POC_FAIL trader_completes_multiple_round_trips"
+      ],
+      "started": true,
+      "rendering": false,
+      "isolated_user_dir": "/Users/kevin/Library/Application Support/AgeOfEmpireLite-full-tests/442f195846953328/navigation_tasks_poc",
+      "exit_code": 1,
+      "seconds": 28.869,
+      "timeout_seconds": 1800,
+      "terminated_early": false,
+      "first_error": null,
+      "log": "logs/navigation_tasks_poc.log",
+      "label": "B03-B19",
+      "iteration": 1,
+      "changed_sources_during_run": [],
+      "load_average_after": [
+        8.76171875,
+        37.7822265625,
+        105.359375
+      ],
+      "dense_results": [
+        "POC_PASS dense_96_workers_build_all 96/96 in 13.56s",
+        "POC_PASS dense_96_workers_finish_queues 96/96",
+        "POC_PASS dense_96_workers_no_teleport "
+      ],
+      "stuck_units": []
+    }
+  ],
+  "conclusion": "B19 passed all three isolated dense96 repetitions; original B03 passed both isolated controls and its original full-script sequence. This does not establish B19 as the fix for the original 88/96 nondeterministic failure, nor establish CPU dependence. Full-script controls still reproduce only the known trader_completes_multiple_round_trips failure. All test/game sources stayed unchanged during runs; no ticks/count/assertions changed.",
+  "original_B03_control_source_differences": {}
+}

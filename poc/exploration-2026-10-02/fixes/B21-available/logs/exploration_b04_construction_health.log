@@ -1,0 +1,9 @@
+Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
+
+2026-10-02 11:55:37.790 godot.macos.template_debug.arm64[27216:22673580] XType: Using static font registry.
+CASE {"evidence":{"dt":0.1,"expected":41.7,"hp_after":41.7,"hp_before":38.6666666666667,"undamaged_before":138.666666666667},"id":"construction_damage","status":"pass"}
+CASE {"evidence":{"dt":0.0,"expected":38.6666666666667,"hp_after":38.6666666666667,"hp_before":38.6666666666667,"undamaged_before":138.666666666667},"id":"construction_zero","status":"pass"}
+CASE {"evidence":{"dt":0.1,"expected":81.7,"hp_after":81.7,"hp_before":78.6666666666667,"undamaged_before":138.666666666667},"id":"construction_repair","status":"pass"}
+CASE {"evidence":{"dt":4.0,"expected":160.0,"hp_after":160.0,"hp_before":38.6666666666667,"undamaged_before":138.666666666667},"id":"construction_completion_damage","status":"pass"}
+CASE {"evidence":{"construction_progress_seconds":0.999999999999996,"expected":72.8833333333332,"hp_after":72.8833333333333,"hp_before":42.55,"worker_order":"build"},"id":"construction_real_worker","status":"pass"}
+EXPLORATION_B04_OK

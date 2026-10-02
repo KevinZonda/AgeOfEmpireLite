@@ -1,0 +1,26 @@
+{
+  "name": "extended_systems",
+  "script": "tests/extended_systems.gd",
+  "status": "passed",
+  "failure_signatures": [],
+  "started": true,
+  "rendering": false,
+  "isolated_user_dir": "/Users/kevin/Library/Application Support/AgeOfEmpireLite-full-tests/5f615472dcc6b5d8/extended_systems",
+  "exit_code": 0,
+  "seconds": 11.907,
+  "timeout_seconds": 1800,
+  "terminated_early": false,
+  "first_error": null,
+  "command": [
+    "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+    "--path",
+    "/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-m3p0kd3o",
+    "--headless",
+    "--log-file",
+    "/Users/kevin/Desktop/AgeOfEmpireLite/poc/exploration-2026-10-02/fixes/fixture-extended-main/logs/extended_systems.engine.log",
+    "--script",
+    "res://tests/extended_systems.gd"
+  ],
+  "log": "logs/extended_systems.log",
+  "cases": []
+}

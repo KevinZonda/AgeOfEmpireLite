@@ -1,0 +1,13 @@
+--- a/scripts/world/navigation.gd
++++ b/scripts/world/navigation.gd
+@@ -1223,7 +1223,9 @@
+ 		var lateral := Vector2(-forward.y, forward.x)
+ 		if (other.position - unit.position).dot(lateral) < 0.0: lateral = -lateral
+ 		var distance := minf(other.radius() * 0.6, maxf(2.0, unit.position.distance_to(destination)))
+-		for angle in [0.0, PI / 4.0, -PI / 4.0, PI, 3.0 * PI / 4.0, -3.0 * PI / 4.0, PI / 2.0, -PI / 2.0]:
++		var angles := [0.0, PI / 4.0, -PI / 4.0, PI, 3.0 * PI / 4.0, -3.0 * PI / 4.0]
++		if travelling_worker: angles.append_array([PI / 2.0, -PI / 2.0])
++		for angle in angles:
+ 			var point := other.position + lateral.rotated(angle) * distance
+ 			if not _motion_clear(other, point):
+ 				if not _yield_allies(other, point, yielding) or not _motion_clear(other, point): continue

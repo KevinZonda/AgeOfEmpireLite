@@ -1,0 +1,34 @@
+{
+  "patch": "0f021dd",
+  "classification": "test fixture; no gameplay source changed",
+  "original_failure": "random production spawn can be unreachable from arbitrary rally; wildlife moves during process_frame waits",
+  "validation": [
+    {
+      "script": "tests/production_queue_regression.gd",
+      "status": "passed",
+      "seconds": 5.512
+    },
+    {
+      "script": "tests/rally_landmarks.gd",
+      "status": "passed",
+      "seconds": 12.988
+    },
+    {
+      "script": "tests/exploration_b02_stale_rally.gd",
+      "status": "passed",
+      "seconds": 16.289
+    },
+    {
+      "script": "tests/rally_landmarks.gd",
+      "status": "passed",
+      "seconds": 12.198
+    },
+    {
+      "script": "tests/rally_landmarks.gd",
+      "status": "passed",
+      "seconds": 12.216
+    }
+  ],
+  "preserved": "all original assertions; added reachable move distance >100 and destination can_occupy prerequisites",
+  "full_profile_required": "B03/B04 original immutable evidence retained; subsequent full cumulative regression runs must include fixture patch"
+}

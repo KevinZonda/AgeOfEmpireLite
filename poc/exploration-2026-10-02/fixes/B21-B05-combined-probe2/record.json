@@ -1,0 +1,13 @@
+{
+  "command": [
+    "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+    "--path",
+    "/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/aoe-dense-probe-1jcp1ozr",
+    "--headless",
+    "--script",
+    "res://tests/exploration_b21_work_yield.gd"
+  ],
+  "script": "tests/exploration_b21_work_yield.gd",
+  "actors": "",
+  "exit": 0
+}
