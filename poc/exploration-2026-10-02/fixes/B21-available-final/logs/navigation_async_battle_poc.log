@@ -1,6 +1,0 @@
-Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
-
-2026-10-02 12:08:20.187 godot.macos.template_debug.arm64[48594:22741394] XType: Using static font registry.
-LIVE_BATTLE_DEER_READY attackers=80 buildings=6 extra_deer=8 fog=false health_extended=true viewport=(1280, 720)
-ASYNC_BATTLE_PROFILE {"async_enabled":true,"attackers":80,"buildings":6,"damage":1070.0,"headless":true,"jobs":{"accepted":135,"discarded":3,"finished":138,"max_active":2,"max_pending":2,"snapshot_us":26705,"submitted":138,"worker_us":966316},"main_max_ms":212.792,"main_mean_ms":7.89033374844334,"main_p95_ms":13.066,"navigation":{},"samples":803,"simulation_seconds":12.0045454545454,"warm_damage":20.0}
-NAVIGATION_ASYNC_BATTLE_POC_OK

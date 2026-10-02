@@ -1,5 +1,0 @@
-Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
-OpenGL API 4.1 Metal - 88.1 - Compatibility - Using Device: Apple - Apple M2
-
-VISIBLE_PERFORMANCE projection=2d units=400 idle=false fog=true median_ms=277.90 p95_ms=776.02 median_fps=3.6 p95_fps=1.3
-VISIBLE_PERFORMANCE projection=2.5d units=400 idle=false fog=true median_ms=136.01 p95_ms=843.52 median_fps=7.4 p95_fps=1.2

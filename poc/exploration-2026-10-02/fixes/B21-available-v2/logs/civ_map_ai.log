@@ -1,7 +1,0 @@
-Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
-
-2026-10-02 12:49:35.459 godot.macos.template_debug.arm64[3300:22885631] XType: Using static font registry.
-SCRIPT ERROR: Assertion failed: French AI should build within influence range of its stable
-          at: _run (res://tests/civ_map_ai.gd:37)
-          GDScript backtrace (most recent call first):
-              [0] _run (res://tests/civ_map_ai.gd:37)

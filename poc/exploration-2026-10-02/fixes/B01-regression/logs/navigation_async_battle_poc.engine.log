@@ -1,5 +1,0 @@
-Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
-
-LIVE_BATTLE_DEER_READY attackers=80 buildings=6 extra_deer=8 fog=false health_extended=true viewport=(1280, 720)
-ASYNC_BATTLE_PROFILE {"async_enabled":true,"attackers":80,"buildings":6,"damage":970.0,"headless":true,"jobs":{"accepted":115,"discarded":4,"finished":121,"max_active":2,"max_pending":5,"snapshot_us":52737,"submitted":123,"worker_us":981699},"main_max_ms":59.192,"main_mean_ms":19.4536535947713,"main_p95_ms":35.562,"navigation":{},"samples":306,"simulation_seconds":12.0193123333333,"warm_damage":30.0}
-NAVIGATION_ASYNC_BATTLE_POC_OK

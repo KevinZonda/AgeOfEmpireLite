@@ -1,7 +1,0 @@
-Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
-OpenGL API 4.1 Metal - 88.1 - Compatibility - Using Device: Apple - Apple M2
-
-SCRIPT ERROR: Assertion failed.
-          at: _run (res://tests/smoke.gd:105)
-          GDScript backtrace (most recent call first):
-              [0] _run (res://tests/smoke.gd:105)

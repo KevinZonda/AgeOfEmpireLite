@@ -1,5 +1,0 @@
-Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
-
-CASE {"evidence":{"building_size":"(144.0, 144.0)","distance":87.25,"official_order":"supervise","radius":11.0,"work_rate":1.5},"id":"supervise_town_center","status":"pass"}
-CASE {"evidence":{"building_size":"(112.0, 104.0)","distance":71.25,"official_order":"supervise","radius":11.0,"work_rate":1.5},"id":"supervise_barracks","status":"pass"}
-EXPLORATION_B06_OK

@@ -1,3 +1,0 @@
-2026-10-02 12:49:43.177 godot.macos.template_debug.arm64[3451:22886029] Failure on line 686 in function id scheduleApplicationNotification(LSNotificationCode, NSWorkspaceNotificationCenter *): noErr == _LSModifyNotification(notificationID, 1, &code, 0, NULL, NULL, NULL)
-2026-10-02 12:49:43.257 godot.macos.template_debug.arm64[3451:22886031] Connection Invalid error for service com.apple.hiservices-xpcservice.
-2026-10-02 12:49:43.257 godot.macos.template_debug.arm64[3451:22886029] Error received in message reply handler: Connection invalid

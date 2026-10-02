@@ -1,4 +1,0 @@
-Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
-
-PERFORMANCE_400 command_ms=349.2 paths_ms=103.6 destinations_ms=45.4 target_ms=175.7 collision_ms=74.2 simulation_avg_ms=103.4 simulation_peak_ms=167.7 fog_ms=18.9 squads=34 steps=12 p95_ms=167.7
-ROUTE_BUDGET_PROFILE enabled=false moved_units=9/400 metrics={"discarded":0,"finished":0,"max_pending":0,"max_query_us":0,"max_tick_us":0,"rejected":0,"requested":0,"search_us":0,"updated":0} pending=0

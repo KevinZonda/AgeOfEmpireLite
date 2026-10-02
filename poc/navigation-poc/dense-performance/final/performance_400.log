@@ -1,3 +1,0 @@
-Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
-
-PERFORMANCE_400 command_ms=500.6 paths_ms=200.7 destinations_ms=39.0 target_ms=155.0 collision_ms=50.6 simulation_avg_ms=104.9 simulation_peak_ms=849.9 fog_ms=28.7 squads=34 steps=180 p95_ms=160.8

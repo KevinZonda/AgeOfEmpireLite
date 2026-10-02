@@ -1,9 +1,0 @@
-Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
-
-POC_PASS direct_destination_preserved 
-POC_PASS direct_destination_avoids_map_raster occupancy_checks=3
-POC_PASS lazy_grid_observes_new_obstacle 
-POC_PASS sealed_range_exhausts_refinement 
-POC_PASS range_refinement_does_not_repeat_coarse_search maximum_requests_per_destination=1
-POC_PASS opened_range_is_reachable 
-NAVIGATION_SEARCH_WORK checks=6 failures=0

@@ -1,6 +1,0 @@
-Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
-
-POC_PASS dense_96_workers_build_all 96/96 in 20.23s
-POC_PASS dense_96_workers_finish_queues 96/96
-POC_PASS dense_96_workers_no_teleport 
-NAVIGATION_TASKS_POC checks=3 failures=0
