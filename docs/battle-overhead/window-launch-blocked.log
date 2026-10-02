@@ -1,5 +1,0 @@
-2026-09-29 16:24:21.640 godot-before-frame-budget[94077:6567096] Failure on line 686 in function id scheduleApplicationNotification(LSNotificationCode, NSWorkspaceNotificationCenter *): noErr == _LSModifyNotification(notificationID, 1, &code, 0, NULL, NULL, NULL)
-2026-09-29 16:24:21.698 godot-before-frame-budget[94077:6567096] Error received in message reply handler: Connection invalid
-2026-09-29 16:24:21.698 godot-before-frame-budget[94077:6567098] Connection Invalid error for service com.apple.hiservices-xpcservice.
-
-BENCHMARK_TIMEOUT
