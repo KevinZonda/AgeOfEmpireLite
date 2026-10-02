@@ -3,6 +3,7 @@ extends SceneTree
 const Fixture = preload("res://tests/helpers/navigation_fixture.gd")
 
 class FogStub extends RefCounted:
+	var active := false
 	func update_unit_display(_unit: RtsUnit) -> void: pass
 
 class OrderFixture extends Fixture:

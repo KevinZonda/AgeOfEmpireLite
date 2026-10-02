@@ -393,11 +393,11 @@ func _cursor_state_at(world_point: Vector2, over_ui := false) -> String:
 func _confirm_build(point: Vector2, append_order := false) -> void:
 	var builders: Array[RtsUnit] = []
 	for entity in game.selected:
-		if is_instance_valid(entity) and entity is RtsUnit and entity.owner_id == 0 and entity.kind == "villager":
+		if is_instance_valid(entity) and not entity.is_queued_for_deletion() and entity is RtsUnit and entity.hp > 0.0 and entity.garrisoned_in == null and entity.owner_id == 0 and entity.kind == "villager":
 			builders.append(entity)
 	if builders.is_empty():
 		for unit in game.units:
-			if is_instance_valid(unit) and unit.owner_id == 0 and unit.kind == "villager": builders.append(unit)
+			if is_instance_valid(unit) and not unit.is_queued_for_deletion() and unit.hp > 0.0 and unit.garrisoned_in == null and unit.owner_id == 0 and unit.kind == "villager": builders.append(unit)
 		builders.sort_custom(func(a: RtsUnit, b: RtsUnit) -> bool: return a.position.distance_squared_to(point) < b.position.distance_squared_to(point))
 		if builders.size() > 2: builders.resize(2)
 	if builders.is_empty():
@@ -430,7 +430,7 @@ func _confirm_wall_line(from: Vector2, to: Vector2, append_order := false) -> vo
 	var positions: Array[Vector2] = game._wall_positions(from, to, game.build_mode)
 	var builders: Array[RtsUnit] = []
 	for entity in game.selected:
-		if entity is RtsUnit and entity.owner_id == 0 and entity.kind == "villager": builders.append(entity)
+		if is_instance_valid(entity) and not entity.is_queued_for_deletion() and entity is RtsUnit and entity.hp > 0.0 and entity.garrisoned_in == null and entity.owner_id == 0 and entity.kind == "villager": builders.append(entity)
 	if builders.is_empty():
 		game.notify_player("需要村民建墙")
 		return

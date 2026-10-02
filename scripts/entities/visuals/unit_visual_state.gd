@@ -44,8 +44,11 @@ var show_health_bar := false
 static func capture(unit, existing_state = null):
 	var result = existing_state if existing_state != null else new()
 	result.kind = unit.kind
-	# Snapshots are read-only; share the tags array instead of allocating a copy.
-	result.tags = unit.stats.get("tags", [])
+	# Default captures are durable value snapshots. The renderer explicitly
+	# supplies a reusable state, consumes it immediately and treats tags as
+	# read-only, so that hot path can keep sharing the live definition array.
+	var source_tags: Array = unit.stats.get("tags", [])
+	result.tags = source_tags if existing_state != null else source_tags.duplicate()
 	result.radius = unit.radius()
 	result.visual_scale = unit.display_scale()
 	result.player_color = unit.game.player_color(unit.owner_id)

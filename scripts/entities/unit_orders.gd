@@ -11,7 +11,7 @@ var resume_order := ""
 var auto_engaged := false
 var command_queue: Array[Dictionary] = []
 
-func prepare(unit: RtsUnit, command: Dictionary) -> Dictionary:
+func prepare(unit: RtsUnit, command: Dictionary, defer_farm_assignment := false) -> Dictionary:
 	if unit.hp <= 0.0 or unit.is_queued_for_deletion() or unit.garrisoned_in != null: return {}
 	var prepared := command.duplicate()
 	var command_type: String = command.get("type", "")
@@ -41,8 +41,8 @@ func prepare(unit: RtsUnit, command: Dictionary) -> Dictionary:
 			if not candidate is RtsResource and not (candidate is RtsBuilding and candidate.kind == "farm" and candidate.owner_id == unit.owner_id): return {}
 			if unit.kind == "fishing_boat" and (not candidate is RtsResource or candidate.appearance != "fish"): return {}
 			if unit.kind == "villager" and candidate is RtsResource and candidate.appearance == "fish": return {}
-			if candidate is RtsBuilding and unit.game.farm_worker(candidate, unit) != null:
-				candidate = unit.game.find_nearest_free_farm(unit.owner_id, unit.position, 190.0, unit)
+			if candidate is RtsBuilding and not defer_farm_assignment and unit.game.farm_worker(candidate, unit) != null:
+				candidate = unit.game.find_nearest_free_farm(unit.owner_id, candidate.position, 190.0, unit)
 				if not is_instance_valid(candidate): return {}
 			prepared["target"] = candidate
 		"build":
@@ -56,7 +56,7 @@ func prepare(unit: RtsUnit, command: Dictionary) -> Dictionary:
 		"trade":
 			if unit.kind != "trader" or not live_target or not candidate is RtsTradePost: return {}
 			var home := unit.trade_home
-			if not is_instance_valid(home) or home.is_queued_for_deletion(): home = unit.game.find_nearest_owned_building(unit.owner_id, "market", unit.position)
+			if not is_instance_valid(home) or home.is_queued_for_deletion() or home.owner_id != unit.owner_id: home = unit.game.find_nearest_owned_building(unit.owner_id, "market", unit.position)
 			if not is_instance_valid(home): return {}
 			prepared["trade_home"] = home
 		"supervise", "collect_tax":
@@ -81,7 +81,10 @@ func prepare(unit: RtsUnit, command: Dictionary) -> Dictionary:
 	return prepared
 
 func issue(unit: RtsUnit, command: Dictionary, append: bool) -> bool:
-	var prepared := prepare(unit, command)
+	# Occupancy can change before a queued job runs; validate its type/owner
+	# now, and assign a farm only when activation reaches start().
+	var queued := append and (order != "idle" or not command_queue.is_empty())
+	var prepared := prepare(unit, command, queued)
 	if prepared.is_empty(): return false
 	if not append:
 		command_queue.clear()
@@ -188,6 +191,9 @@ func enter_garrison(unit: RtsUnit, host: Node2D) -> void:
 	unit.garrisoned_in = host
 	unit.position = host.position
 	unit.hide()
+	if unit.game.selected.has(unit):
+		unit.game.selected.erase(unit)
+		unit.game.session.changes.mark(0, &"selection")
 
 func tick(unit: RtsUnit, delta: float) -> void:
 	# Orders without a shared live target perform their own completion checks.

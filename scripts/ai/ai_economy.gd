@@ -181,15 +181,21 @@ func _construct(kind: String, _worker: RtsUnit) -> void:
 func _construct_french_keep() -> void:
 	var stable: RtsBuilding = game.find_nearest_owned_building(owner_id, "stable", game.spawn_point_for(owner_id))
 	if stable == null or not stable.is_complete(): return
-	for radius in [125.0, 155.0, 175.0]:
-		for step in 16:
-			var point: Vector2 = stable.position + Vector2.from_angle(TAU * float(step) / 16.0) * radius
-			if not game.can_place("keep", point): continue
-			var worker := _construction_worker(point)
-			if worker == null: continue
-			var builders: Array[RtsUnit] = [worker]
-			_place_building(owner_id, "keep", point, builders)
-			return
+	# Search actual grid centers: radial samples can both snap outside the
+	# influence radius and miss legal neighboring cells inside it.
+	var origin: Vector2 = game.snap_build_point("keep", stable.position)
+	var reach := ceili(180.0 / GameData.BUILD_GRID_SIZE) + 1
+	var candidates: Array[Vector2] = []
+	for x in range(-reach, reach + 1):
+		for y in range(-reach, reach + 1):
+			var point := origin + Vector2(x, y) * GameData.BUILD_GRID_SIZE
+			if point.distance_to(stable.position) <= 180.0 and game.can_place("keep", point): candidates.append(point)
+	candidates.sort_custom(func(a: Vector2, b: Vector2) -> bool: return a.distance_squared_to(stable.position) < b.distance_squared_to(stable.position))
+	for point in candidates:
+		var worker := _construction_worker(point)
+		if worker == null: continue
+		var builders: Array[RtsUnit] = [worker]
+		if _place_building(owner_id, "keep", point, builders): return
 
 func _construct_dock(_worker: RtsUnit) -> void:
 	var base: Vector2 = game.spawn_point_for(owner_id)

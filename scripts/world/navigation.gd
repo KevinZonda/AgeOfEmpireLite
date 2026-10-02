@@ -1106,9 +1106,11 @@ func _segment_clear(from: Vector2, to: Vector2, radius: float, self_unit: RtsUni
 	# Both halves are pure predicates; checking unit blockers first skips the
 	# static sweep whenever a crowded step is already denied, and iterating the
 	# buckets inline avoids materializing the neighborhood array per query.
+	# The broad phase must use the rebuilt maximum body radius. A dirty
+	# index can still hold zero or a smaller radius from the previous frame.
+	_ensure_spatial_index()
 	var center := (from + to) * 0.5
 	var reach := from.distance_to(to) * 0.5 + radius + spatial_index.max_dynamic_radius
-	_ensure_spatial_index()
 	var reach_squared := reach * reach
 	var first := _spatial_cell(center - Vector2.ONE * reach)
 	var last := _spatial_cell(center + Vector2.ONE * reach)

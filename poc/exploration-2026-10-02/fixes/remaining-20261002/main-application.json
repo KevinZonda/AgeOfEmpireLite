@@ -1,0 +1,168 @@
+{
+  "applied_at": "2026-10-02T13:20:07.059237+08:00",
+  "branch": "main",
+  "head_at_application": "10e605a54170af64f564c4ca50d4d9beeb9f2613",
+  "scope": "B07–B20 patches applied to main working tree, retaining existing B01–B06 and B21 v2 source",
+  "bugs_applied": [
+    "B07",
+    "B08",
+    "B09",
+    "B10",
+    "B11",
+    "B12",
+    "B13",
+    "B14",
+    "B15",
+    "B16",
+    "B17",
+    "B18",
+    "B19",
+    "B20"
+  ],
+  "paths": [
+    {
+      "path": "scripts/ai/ai_economy.gd",
+      "before_sha256": "2f7bbee4650564dec0dd41e5f0580eea715fd6aab4df9a9a1888d75c72ef960f",
+      "after_sha256": "9c3a141e0315450b984fa8d00f0a39e90255f3032efc31cdfa841c2945e0504d"
+    },
+    {
+      "path": "scripts/entities/projectile.gd",
+      "before_sha256": "7c4a5e7297e5f41a9b466e200bad505c2610ed76a9277ed0ff9ff4c4c854109a",
+      "after_sha256": "396ae95a7d21f23b874489e7e8af8ab25e60dc947509322689083a526b8feb80"
+    },
+    {
+      "path": "scripts/entities/unit_combat.gd",
+      "before_sha256": "0effb25d256e6f75874a9fedffa88eec0fdf7a58bcccf97af31421ef23c3b158",
+      "after_sha256": "97bf9914b7ca2a50f4f09a19ceee21a9fc27974ff1f6bf642425dab170b97f18"
+    },
+    {
+      "path": "scripts/entities/unit_orders.gd",
+      "before_sha256": "1a3b97e5b69fc86cad71bfdd20a3c9116c64d1c506282d5c2729d95eb0e6e966",
+      "after_sha256": "cff57b731ec7ce1e78153c91085b036031db78e5258a90545871ff1c261b714e"
+    },
+    {
+      "path": "scripts/entities/unit_work.gd",
+      "before_sha256": "75af804856d353fd3d50fcced601885aa202d7fa4291173407d3edcaa7c1fe31",
+      "after_sha256": "5ae07ef7aea41b816848469381596a9cc070996e0b78d628aff2bfd76ad1b3ac"
+    },
+    {
+      "path": "scripts/entities/visuals/unit_visual_state.gd",
+      "before_sha256": "3b17dd27c88a06eb48517d9b8e318d0f4b3f7716e284399f810ba7c6e7687cd4",
+      "after_sha256": "42999865b589688068ee1d25c1ab39694fe48061ad79ee66cb6f4bc4d09089f2"
+    },
+    {
+      "path": "scripts/game.gd",
+      "before_sha256": "82e19f67a9c101fe5ce12bd8f3c8a751e273f737c0d517aac6c8690b4aeb3ef7",
+      "after_sha256": "29751e8e921e07d112257d1377155106ec2a2a1ad3b52720a71e2130348ff9b2"
+    },
+    {
+      "path": "scripts/match/entity_registry.gd",
+      "before_sha256": "bd917f254d97bb7243f83095dfdce5284262a7e634e3309807f8ce7d1ed31b27",
+      "after_sha256": "ae4d27b1e097eb3c5c89495d0072d60936277b911ece616314b0f708a58d6f08"
+    },
+    {
+      "path": "scripts/player/player_input.gd",
+      "before_sha256": "9bacc506b3a09e3292dcab8989efa16ccb59c4e43a154c016f2af97a4aa6a793",
+      "after_sha256": "e5ad2cde1fdef88be49f90024ca0c722b44c13798d3f60a74e26f12d4150089a"
+    },
+    {
+      "path": "scripts/world/fog_of_war.gd",
+      "before_sha256": "acf7e7ce6ea2e4dcb98631a269a36a1fe8a8fd02d7407a45306e739e636bd824",
+      "after_sha256": "f47ec6e2c470dec0c28fe05228da3d09fdd261e0d8e8dd916921c5f15b2119e3"
+    },
+    {
+      "path": "scripts/world/navigation.gd",
+      "before_sha256": "351299fa3ca7ad71d91fea72fd5476aa5d845dab42dcb2605fe8febefd00be26",
+      "after_sha256": "8d28e367491b3a1072cd114669a60ef9d2cfa4bdc64a57e693029078a787e019"
+    },
+    {
+      "path": "tests/exploration_b07_fog_attack.gd",
+      "before_sha256": null,
+      "after_sha256": "026264e52b3d80caaf6f6efdcb90818047c1881e14c92da8d9749155873d2c5b"
+    },
+    {
+      "path": "tests/exploration_b08_garrison_build.gd",
+      "before_sha256": null,
+      "after_sha256": "830821da33a7275a391685f4cc26505718f3264d1eb96304bf16199ac5570a1e"
+    },
+    {
+      "path": "tests/exploration_b09_queued_farms.gd",
+      "before_sha256": null,
+      "after_sha256": "bfe9123b49bc8c36ac1f3ed070593c06df2d3ff7020c2ae39f7402f3f51e5790"
+    },
+    {
+      "path": "tests/exploration_b10_busy_farm_rally.gd",
+      "before_sha256": null,
+      "after_sha256": "a3e8ae720b1e65a80e387a6984b9e9450cabdfb9786dfeb3c38d63889276580b"
+    },
+    {
+      "path": "tests/exploration_b11_projectile_diplomacy.gd",
+      "before_sha256": null,
+      "after_sha256": "12d0bbf563e0eb0d96b7b02fc0c4fa8be06db3acf2a0d5689b6815c772785b98"
+    },
+    {
+      "path": "tests/exploration_b12_converted_trader.gd",
+      "before_sha256": null,
+      "after_sha256": "bbc9358de46a7fd1cd12c0fc4b121f9e4418f825cc1477cb0dee7d88234c6e1c"
+    },
+    {
+      "path": "tests/exploration_b13_ground_min_range.gd",
+      "before_sha256": null,
+      "after_sha256": "5fdc212cc94b6eaae2f7d894f959dc3148901626c8f11f1111f4a3e67a9683d7"
+    },
+    {
+      "path": "tests/exploration_b14_ground_artillery.gd",
+      "before_sha256": null,
+      "after_sha256": "03d9a41e79b908784c6c8815c59499c61ead2c597f448c8f0bc790918ada8be4"
+    },
+    {
+      "path": "tests/exploration_b15_conversion_hud.gd",
+      "before_sha256": null,
+      "after_sha256": "b7b9487ac1aec2e02d7c87a8cf72012d7cc261384f7ae21786f74f64442f61eb"
+    },
+    {
+      "path": "tests/exploration_b16_team_detection.gd",
+      "before_sha256": null,
+      "after_sha256": "ec386cd4d4b36105fd7e47ba97fead6871d2a63b2f6a25ee50d7b46c3dd3b69e"
+    },
+    {
+      "path": "tests/exploration_b17_team_healing.gd",
+      "before_sha256": null,
+      "after_sha256": "2bdd659d4ace72629c4686b759c1b5e7b0b4478db5e1c673a1a9cf647e43afb3"
+    },
+    {
+      "path": "tests/exploration_b18_french_keep_grid.gd",
+      "before_sha256": null,
+      "after_sha256": "adee40c519fd56542f21ba3e49bd143eeb39b97ca9abc438605ee2ec473cb311"
+    },
+    {
+      "path": "tests/exploration_b19_dirty_collision_radius.gd",
+      "before_sha256": null,
+      "after_sha256": "18226810ccd82defd5e00b3955aa31a6b91af381b1ff13a876d4825f6cd9e79e"
+    },
+    {
+      "path": "tests/unit_components_regression.gd",
+      "before_sha256": "aac2248aa3d28c8fd92d41f0bee6c0e0c11b87bb97300a9a118eecac636996a3",
+      "after_sha256": "65f1245e9d7a91fdd022dfab89f1dbe0d3baf5a775f4cd94b430283cf617d05b"
+    },
+    {
+      "path": "tests/unit_orders_regression.gd",
+      "before_sha256": "a8cbaebd02120ae6815bdeeb7fdd7aba2930995c14b1f77b1c2c3448ff1e8282",
+      "after_sha256": "315ed36c8461f8fd091db3eca0e692e36df37090d518e731e233c5b224c247fd"
+    },
+    {
+      "path": "tests/visual_state.gd",
+      "before_sha256": "aa77ec7149f2ae81ba644897d04d5755227072495be59284e5b57709e4f8538a",
+      "after_sha256": "7ccb4202cc02335233b9d4ac60394a7ac31fdf6e27eaa53a22e3e9420f7ae66d"
+    }
+  ],
+  "git_index_unchanged": true,
+  "git_index_sha256": "f177c8cdd28df7d30b76e61b8b99ff3b5b581abb0e604f8ae7ec92d2e34e9d66",
+  "created_commit_by_agent": false,
+  "pushed_by_agent": false,
+  "full_native_inclusive_validation_complete": false,
+  "targeted_evidence": "targeted-summary.json",
+  "combined_available_evidence": "combined-available",
+  "user_instruction": "先把所有的patch合并到main",
+  "note": "Original .git is read-only in this execution environment; applied source files only. External existing commits are preserved."
+}

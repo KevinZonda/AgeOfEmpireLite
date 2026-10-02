@@ -1,0 +1,5 @@
+Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
+
+2026-10-02 13:16:57.648 godot.macos.template_debug.arm64[36436:22976210] XType: Using static font registry.
+CASE {"evidence":{"distance_to_market":178.430023193359,"income_on_return":104,"market_half_width":56.0,"order":"trade","returning":false,"trader_radius":11.0},"id":"trade_return_market","status":"pass"}
+EXPLORATION_B05_OK

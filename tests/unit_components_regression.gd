@@ -3,10 +3,17 @@ extends SceneTree
 const Fixture = preload("res://tests/helpers/navigation_fixture.gd")
 
 class FogStub extends RefCounted:
+	var active := false
 	var updates := 0
 	func update_visibility() -> void: updates += 1
 
+class SessionStub extends RefCounted:
+	var entities: Node2D
+	var changes = preload("res://scripts/match/match_changes.gd").new()
+
 class ComponentFixture extends Fixture:
+	var session := SessionStub.new()
+	func _init() -> void: session.entities = self
 	const HEALTH_BAR_CHANGE_DURATION := 1.5
 	var civilizations := ["English", "French"]
 	var fog := FogStub.new()

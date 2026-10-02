@@ -121,18 +121,19 @@ func can_see(owner_id: int, point: Vector2) -> bool:
 func can_detect_unit(owner_id: int, enemy: RtsUnit) -> bool:
 	if not active: return true
 	if not can_see(owner_id, enemy.position): return false
-	if enemy.owner_id == owner_id or enemy.revealed_timer > 0.0: return true
+	# Detection follows the same shared-team policy as terrain vision.
+	if (enemy.owner_id >= 0 and enemy.owner_id < game.players.size() and not game.is_enemy(owner_id, enemy.owner_id)) or enemy.revealed_timer > 0.0: return true
 	var patch_index: int = game.world_map.forest_patch_at(enemy.position)
 	if patch_index < 0: return true
 	for observer in game.navigation.nearby_units(enemy.position, 210.0):
-		if not is_instance_valid(observer) or observer.owner_id != owner_id or observer.garrisoned_in != null: continue
+		if not is_instance_valid(observer) or observer.is_queued_for_deletion() or observer.hp <= 0.0 or observer.owner_id < 0 or observer.owner_id >= game.players.size() or game.is_enemy(owner_id, observer.owner_id) or observer.garrisoned_in != null: continue
 		if observer.position.distance_to(enemy.position) <= (145.0 if observer.kind == "scout" else 85.0): return true
 		if game.world_map.forest_patch_at(observer.position) == patch_index: return true
 	return false
 
 func can_show_unit(owner_id: int, unit: RtsUnit) -> bool:
 	if not can_detect_unit(owner_id, unit): return false
-	if not active or unit.owner_id == owner_id: return true
+	if not active or (unit.owner_id >= 0 and unit.owner_id < game.players.size() and not game.is_enemy(owner_id, unit.owner_id)): return true
 	# Units render above the fog plane. Hide the figure until its drawn bounds,
 	# rather than only its ground anchor, are inside current vision.
 	var unit_radius := unit.radius()

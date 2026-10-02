@@ -27,6 +27,7 @@ class BoltVisual extends Node2D:
 var game: Node2D
 var owner_id := 0
 var target: Node2D
+var source_unit: RtsUnit
 var impact_damage := 0.0
 var speed := 350.0
 var remaining_life := 4.0
@@ -93,7 +94,14 @@ func _process(delta: float) -> void:
 	var travel := speed * delta
 	if global_position.distance_to(destination) <= travel + 3.0:
 		var impact_point := destination
-		if is_instance_valid(target) and not target.is_queued_for_deletion(): target.take_damage(impact_damage)
+		if is_instance_valid(target) and not target.is_queued_for_deletion():
+			# Ownership can change while the projectile is in flight. Wildlife
+			# remains huntable; unit/building impacts follow current diplomacy.
+			if not (target is RtsUnit or target is RtsBuilding) or game.is_enemy(owner_id, target.owner_id):
+				if target is RtsResource:
+					target.take_damage(impact_damage, source_unit if is_instance_valid(source_unit) else null)
+				else:
+					target.take_damage(impact_damage)
 		if float(attack_profile.get("pierce_length", 0.0)) > 0.0 and game.has_method("nearest_enemy"):
 			var direction := (destination - launch_position).normalized()
 			var end := destination + direction * float(attack_profile["pierce_length"])

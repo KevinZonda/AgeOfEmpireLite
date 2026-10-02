@@ -77,7 +77,8 @@ func spawn_unit(owner_id: int, kind: String, world_point: Vector2, rally := Vect
 		elif kind == "fishing_boat" and rally_target is RtsResource and rally_target.appearance == "fish":
 			unit.issue_command("gather", Vector2.INF, rally_target)
 		elif kind == "villager" and is_instance_valid(rally_target) and not rally_target.is_queued_for_deletion() and (rally_target is RtsResource or rally_target is RtsBuilding and rally_target.kind == "farm" and rally_target.is_complete()):
-			unit.issue_command("gather", Vector2.INF, rally_target)
+			if not unit._try_order_gather(rally_target):
+				unit.issue_command("move", game.navigation.nearest_walkable_point(rally, unit.radius(), unit))
 		elif kind == "villager" and rally_resource_kind != "":
 			var replacement: RtsResource = game.find_nearest_resource(rally, rally_resource_kind, 220.0, owner_id)
 			if replacement != null: unit.issue_command("gather", Vector2.INF, replacement)

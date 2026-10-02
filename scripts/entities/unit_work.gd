@@ -119,7 +119,7 @@ static func process_repair_order(unit, delta: float) -> void:
 	unit._start_visual_action("build", 0.4)
 
 static func process_trade_order(unit, delta: float) -> void:
-	if not is_instance_valid(unit.trade_post) or not is_instance_valid(unit.trade_home) or unit.trade_home.is_queued_for_deletion():
+	if not is_instance_valid(unit.trade_post) or unit.trade_post.is_queued_for_deletion() or not is_instance_valid(unit.trade_home) or unit.trade_home.is_queued_for_deletion() or unit.trade_home.owner_id != unit.owner_id:
 		unit._advance_command()
 		return
 	var goal: Vector2 = unit.trade_home.position if unit.trade_returning else unit.trade_post.position
@@ -204,6 +204,7 @@ static func process_hunt_order(unit, delta: float, profile: Dictionary = {}) -> 
 	if unit.hunt_windup > 0.0: return
 	var arrow := RtsProjectile.new()
 	arrow.setup(unit.game, unit.owner_id, unit.global_position, unit.target, float(profile.get("damage", 3.0)), float(unit.stats.get("projectile_speed", 350.0)), 0.0, unit.stats, profile)
+	arrow.source_unit = unit
 	arrow.attack_profile["hunting"] = true
 	unit.game.add_child(arrow)
 	unit._mark_visual_impact()

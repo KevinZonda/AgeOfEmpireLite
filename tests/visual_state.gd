@@ -36,6 +36,8 @@ func _run() -> void:
 	unit.visual_action_timer = 0.2
 	var unit_state = UnitState.capture(unit)
 	assert(unit_state.action_progress == 0.5 and not unit_state.action_released)
+	assert(not is_same(unit_state.tags, unit.stats["tags"]), "durable captures own their tag values")
+	assert(is_same(working_unit_state.tags, unit.stats["tags"]), "explicit renderer reuse keeps the allocation-free tag view")
 	var remembered_heading: Vector2 = unit_state.facing_direction
 	unit._mark_visual_impact()
 	unit._face_direction(Vector2.RIGHT * 20.0)

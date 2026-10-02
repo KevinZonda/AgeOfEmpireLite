@@ -51,6 +51,7 @@ var animal_gait := 0.0
 var animal_graze := 0.0
 var animal_speed := 0.0
 var boar_target: RtsUnit
+var boar_attacker: RtsUnit
 var boar_attack_pose := 0.0
 var fish_time := 0.0
 var fish_redraw_timer := 0.0
@@ -87,6 +88,7 @@ func setup(resource_kind: String, quantity: int, visual_kind := "") -> void:
 	animal_graze = 0.0
 	animal_speed = 0.0
 	boar_target = null
+	boar_attacker = null
 	boar_attack_pose = 0.0
 	wildlife_attack = 0.0
 	claim_timer = 0.0
@@ -221,19 +223,24 @@ func _process_boar(delta: float) -> void:
 	wildlife_scan -= delta
 	wildlife_attack = maxf(0.0, wildlife_attack - delta)
 	boar_attack_pose = maxf(0.0, boar_attack_pose - delta)
+	# Damage sources take priority over passive villager scans, including
+	# ranged attackers outside the passive warning radius.
+	if not _valid_boar_target(boar_attacker): boar_attacker = null
+	if boar_attacker != null:
+		boar_target = boar_attacker
 	# Scan infrequently, but continue pursuing the retained target every frame.
-	if wildlife_scan <= 0.0:
+	elif wildlife_scan <= 0.0:
 		wildlife_scan = 0.25
 		boar_target = null
 		var best := 110.0 * 110.0
 		for unit in game.navigation.nearby_units(position, 110.0):
-			if unit.kind != "villager" or unit.garrisoned_in != null or unit.hp <= 0.0: continue
+			if unit.kind != "villager" or not _valid_boar_target(unit): continue
 			var distance := position.distance_squared_to(unit.position)
 			if distance < best:
 				best = distance
 				boar_target = unit
-	if not is_instance_valid(boar_target) or boar_target.is_queued_for_deletion(): boar_target = null
-	if boar_target != null and (boar_target.hp <= 0.0 or boar_target.garrisoned_in != null or position.distance_squared_to(boar_target.position) >= 110.0 * 110.0): boar_target = null
+	if not _valid_boar_target(boar_target): boar_target = null
+	if boar_target != null and boar_attacker == null and position.distance_squared_to(boar_target.position) >= 110.0 * 110.0: boar_target = null
 	var previous := position
 	if boar_target != null:
 		var offset := boar_target.position - position
@@ -250,6 +257,9 @@ func _process_boar(delta: float) -> void:
 	else:
 		animal_speed = 0.0
 	_update_animal_pose(delta, position - previous, boar_target == null)
+
+func _valid_boar_target(unit: RtsUnit) -> bool:
+	return is_instance_valid(unit) and not unit.is_queued_for_deletion() and unit.hp > 0.0 and unit.garrisoned_in == null and not is_instance_valid(unit.wall_host) and not unit.stats.get("tags", []).has("naval")
 
 func _update_animal_pose(delta: float, movement: Vector2, grazing: bool) -> void:
 	var moving := movement.length_squared() > 0.000001
@@ -272,16 +282,20 @@ func _throttle_animal_redraw(delta: float, animated: bool) -> void:
 func has_wildlife_health() -> bool:
 	return appearance in ["deer", "boar", "sheep"]
 
-func take_damage(damage: float) -> void:
+func take_damage(damage: float, attacker: RtsUnit = null) -> void:
 	if not has_wildlife_health() or wildlife_hp <= 0.0: return
 	var previous_hp := wildlife_hp
 	wildlife_hp = maxf(0.0, wildlife_hp - damage)
 	if wildlife_hp <= 0.0:
 		shepherd = null
 		boar_target = null
+		boar_attacker = null
 		boar_attack_pose = 0.0
 		animal_gait = 0.0
 		animal_speed = 0.0
+	elif appearance == "boar" and wildlife_hp < previous_hp and _valid_boar_target(attacker):
+		boar_attacker = attacker
+		boar_target = attacker
 	if not is_equal_approx(wildlife_hp, previous_hp): health_bar_timer = HEALTH_BAR_CHANGE_DURATION
 	queue_redraw()
 

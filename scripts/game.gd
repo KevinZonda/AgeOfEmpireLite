@@ -990,7 +990,7 @@ func place_landmark(owner_id: int, landmark_id: String, world_point: Vector2, wo
 		return false
 	var builders: Array[RtsUnit] = []
 	for worker in workers:
-		if is_instance_valid(worker) and worker.owner_id == owner_id and worker.kind == "villager": builders.append(worker)
+		if is_instance_valid(worker) and not worker.is_queued_for_deletion() and worker.hp > 0.0 and worker.garrisoned_in == null and worker.owner_id == owner_id and worker.kind == "villager": builders.append(worker)
 	if builders.is_empty(): return false
 	var choice := RtsLandmarkCatalog.landmark(landmark_id)
 	if not spend(owner_id, status["cost"]): return false
@@ -1106,7 +1106,7 @@ func place_building(owner_id: int, kind: String, world_point: Vector2, workers: 
 		return false
 	var builders: Array[RtsUnit] = []
 	for worker in workers:
-		if is_instance_valid(worker) and worker.owner_id == owner_id and worker.kind == "villager":
+		if is_instance_valid(worker) and not worker.is_queued_for_deletion() and worker.hp > 0.0 and worker.garrisoned_in == null and worker.owner_id == owner_id and worker.kind == "villager":
 			builders.append(worker)
 	if builders.is_empty(): return false
 	if not spend(owner_id, status["cost"]): return false
@@ -1591,7 +1591,7 @@ func find_nearest_free_farm(owner_id: int, point: Vector2, max_distance: float, 
 		if not is_instance_valid(farm) or farm.owner_id != owner_id or farm.kind != "farm" or not farm.is_complete() or farm_worker(farm, excluded) != null: continue
 		var distance := point.distance_squared_to(farm.position)
 		if distance < best:
-			if excluded != null and navigation.path_to_range(point, farm.position, farm.size().x * 0.5 + excluded.radius() + 2.0, excluded).is_empty(): continue
+			if excluded != null and navigation.path_to_range(excluded.position, farm.position, farm.size().x * 0.5 + excluded.radius() + 2.0, excluded).is_empty(): continue
 			best = distance
 			result = farm
 	return result
