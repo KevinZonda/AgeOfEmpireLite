@@ -1,0 +1,35 @@
+{
+  "patch_sha256": "5afbc88c0b9934045abbca41195dcdced0cbe0f5c9a80c12e56262d332464f14",
+  "red": {
+    "log": "red-expanded.log",
+    "exit_code": 1,
+    "checks": 24,
+    "failures": 10
+  },
+  "green": {
+    "log": "green-final.log",
+    "exit_code": 0,
+    "checks": 24,
+    "failures": 0
+  },
+  "player_command_catalog": 0,
+  "player_input_actions_regression": 0,
+  "right_click_selection": 0,
+  "full_suite_run": false,
+  "cause": "Conversion changes owner_id but retains instance IDs and selected references; several player unit action callbacks do not recheck local ownership, including after catalog refresh with mixed selection.",
+  "fix_scope": "Filter selected unit action admission, dispatch, and capability aggregation by owner_id == 0 in player_actions, player_orders, and two game methods; preserve inspection selection and AI/generic group-order semantics.",
+  "shared_fixture_warning": "Original and candidate expanded runs both report 4 ObjectDB instances leaked at exit. Final fixture stops all units, shuts down navigation jobs, frees game, and yields one process frame; warning remains recorded and is not treated as a gameplay-fix success condition.",
+  "files": [
+    "scripts/player/player_actions.gd",
+    "scripts/player/player_orders.gd",
+    "scripts/game.gd",
+    "tests/exploration_b22_owned_actions.gd"
+  ],
+  "not_performed": [
+    "main modification",
+    "frozen remaining modification",
+    "full suite",
+    "commit",
+    "push"
+  ]
+}

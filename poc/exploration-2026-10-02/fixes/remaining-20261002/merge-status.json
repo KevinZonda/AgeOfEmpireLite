@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-02T13:25:13.821333+08:00",
+  "updated_at": "2026-10-02T13:28:16.289831+08:00",
   "state": "all_prepared_patches_applied_to_main",
   "available_regression": {
     "passed": 165,
@@ -28,5 +28,13 @@
     "per-bug complete validation and publication",
     "final four-seed balance experiment",
     "B21 follow-up after other fixes"
-  ]
+  ],
+  "all_prepared_patches_applied_to_main": true,
+  "new_b22_applied": true,
+  "new_b22_targeted_passed": true,
+  "new_b22_checks": 24,
+  "new_b22_existing_regressions_passed": 3,
+  "new_b22_complete_full_test": false,
+  "observed_head": "a72d0951b9709bcdeaf5a12b3c7f8c15e6fa81dc",
+  "b22_uncommitted_at_observation": true
 }
