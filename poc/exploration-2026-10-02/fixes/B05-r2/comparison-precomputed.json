@@ -1,0 +1,32 @@
+{
+  "previous": "/Users/kevin/Desktop/AgeOfEmpireLite/poc/exploration-2026-10-02/fixes/baseline/results.json",
+  "new_regression_failures": [],
+  "new_failure_diagnostics": {
+    "tests/extended_systems.gd": [
+      "SCRIPT ERROR: Assertion failed."
+    ]
+  },
+  "regressed_audit_cases": [],
+  "fixed_audit_cases": [
+    "construction_damage",
+    "construction_zero",
+    "construction_repair",
+    "trade_reissue",
+    "rally_dead_fish",
+    "construction_completion_damage",
+    "trade_return_market",
+    "rally_dead_tree",
+    "rally_dead_farm",
+    "sacred_eliminated_wins",
+    "construction_real_worker"
+  ],
+  "missing_scripts": [],
+  "missing_cases": [],
+  "profile": "regression",
+  "deferred_benchmarks": [
+    "tests/balance_multiseed.gd"
+  ],
+  "exploration_execution_failures": [],
+  "incomplete_scripts": [],
+  "no_new_failures": false
+}

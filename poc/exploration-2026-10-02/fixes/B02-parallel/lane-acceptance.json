@@ -1,0 +1,65 @@
+{
+  "stage": "B02",
+  "problems": [],
+  "checked_fixed_cases": [
+    "trade_reissue",
+    "rally_dead_fish",
+    "rally_dead_tree",
+    "rally_dead_farm"
+  ],
+  "checked_fix_tests": [
+    "tests/exploration_b01_trade_reissue.gd",
+    "tests/exploration_b02_stale_rally.gd"
+  ],
+  "source_count": 464,
+  "summary": {
+    "revision": "06f998536c6ff4784ab4f3b3fa660bbb0ee8250e",
+    "seconds": 1558.435,
+    "profile": "regression",
+    "deferred_benchmarks": [
+      "tests/balance_multiseed.gd"
+    ],
+    "regression": {
+      "passed": 159,
+      "failed": 6,
+      "timeout": 0,
+      "unresolved_bugs": 0,
+      "skipped": 0,
+      "cancelled": 0
+    },
+    "audit": {
+      "pass": 28,
+      "bug": 23,
+      "observation": 12
+    },
+    "expected_audit_cases": 63,
+    "executed_audit_cases": 63,
+    "changed_sources_during_run": [],
+    "cancelled": false,
+    "expected_regression_scripts": 165,
+    "executed_regression_scripts": 165,
+    "complete": true,
+    "complete_all": false,
+    "passed": false,
+    "comparison": {
+      "previous": "/Users/kevin/Desktop/AgeOfEmpireLite/poc/exploration-2026-10-02/fixes/B01-r2/results.json",
+      "profile": "regression",
+      "deferred_benchmarks": [
+        "tests/balance_multiseed.gd"
+      ],
+      "new_regression_failures": [],
+      "new_failure_diagnostics": {},
+      "regressed_audit_cases": [],
+      "fixed_audit_cases": [
+        "rally_dead_fish",
+        "rally_dead_tree",
+        "rally_dead_farm"
+      ],
+      "missing_scripts": [],
+      "missing_cases": [],
+      "exploration_execution_failures": [],
+      "incomplete_scripts": [],
+      "no_new_failures": true
+    }
+  }
+}

@@ -1,0 +1,79 @@
+[
+	{
+		"evidence": {
+			"enemy_detected": false,
+			"enemy_position": "(2000.0, 1900.0)",
+			"live_route_goal": "(2000.0, 1900.0)",
+			"order": "attack",
+			"still_tracks_enemy": true
+		},
+		"id": "hidden_attack_tracking",
+		"status": "bug"
+	},
+	{
+		"evidence": {
+			"enemy_damage": 0.0,
+			"remaining_construction": 10.0
+		},
+		"id": "field_siege_unfinished_attack",
+		"status": "pass"
+	},
+	{
+		"evidence": {
+			"boarded": false,
+			"remaining_construction": 10.0
+		},
+		"id": "field_siege_unfinished_boarding",
+		"status": "pass"
+	},
+	{
+		"evidence": {
+			"defeated": [
+				1
+			],
+			"game_over": false,
+			"remaining": 90.0,
+			"sacred_holder": -1
+		},
+		"id": "sacred_eliminated_wins",
+		"status": "pass"
+	},
+	{
+		"evidence": {
+			"can_cross": true,
+			"enemy": false,
+			"position": "(1060.0, 780.0)"
+		},
+		"id": "ally_gate",
+		"status": "pass"
+	},
+	{
+		"evidence": {
+			"can_cross": false,
+			"enemy": true,
+			"position": "(1060.0, 780.0)"
+		},
+		"id": "enemy_gate",
+		"status": "pass"
+	},
+	{
+		"evidence": {
+			"distance": 83.25,
+			"order": "siege_tower_docked",
+			"tower_radius": 19.0,
+			"wall_width": 120.0
+		},
+		"id": "siege_tower_docking",
+		"status": "pass"
+	},
+	{
+		"evidence": {
+			"complete": true,
+			"gathering_berries": false,
+			"gathering_farm": true,
+			"worker_order": "gather"
+		},
+		"id": "farm_builder_followup",
+		"status": "pass"
+	}
+]

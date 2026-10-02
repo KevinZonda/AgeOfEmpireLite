@@ -1,0 +1,26 @@
+{
+  "bug": "B04",
+  "complete": true,
+  "no_new_failures": false,
+  "source_unchanged": true,
+  "new_tests": {
+    "tests/exploration_b01_trade_reissue.gd": "passed",
+    "tests/exploration_b02_stale_rally.gd": "passed",
+    "tests/exploration_b03_objective_defeat.gd": "passed",
+    "tests/exploration_b04_construction_health.gd": "passed"
+  },
+  "fixed_cases": {
+    "trade_reissue": "pass",
+    "rally_dead_fish": "pass",
+    "rally_dead_tree": "pass",
+    "rally_dead_farm": "pass",
+    "sacred_eliminated_wins": "pass",
+    "construction_damage": "pass",
+    "construction_zero": "pass",
+    "construction_repair": "pass",
+    "construction_completion_damage": "pass",
+    "construction_real_worker": "pass"
+  },
+  "lane_paused": true,
+  "pause_reason": "New navigation_state_poc busy_farm_preserves_followup_move diagnostic; wait for unified fixture maintenance and complete B04-r2."
+}
