@@ -1,0 +1,32 @@
+{
+  "created_at": "2026-10-02T13:16:05.742033+08:00",
+  "instruction": "暂缓 B21 与相同环境阻塞，其他修复完成后返回。",
+  "deferred": [
+    {
+      "id": "B21",
+      "state": "candidate_preserved_deferred_by_user",
+      "evidence": "../B21-review/README.md",
+      "resume_after": "B07–B20 implementation and validation"
+    },
+    {
+      "id": "ENV-native",
+      "reason": "LaunchServices / hiservices XPC startup failure before Godot banner",
+      "missing_native_tests": 18,
+      "evidence": "../tool-validation/b21-v2-native-startup/result.json",
+      "retry_policy": "环境改变后一次正常完整回归，不重复相同启动探测"
+    },
+    {
+      "id": "ENV-push",
+      "reason": "Could not resolve host: github.com",
+      "evidence": "../B21-review/push-connectivity-v2.json",
+      "retry_policy": "网络恢复后核对远端再正常推送"
+    },
+    {
+      "id": "ENV-git-metadata",
+      "reason": "本执行环境仅允许读取原工作区 .git；不能修改索引或创建提交。外部提交由其他执行者产生，不能作为本轮验证提交。",
+      "current_external_head": "fd4d9eccda03b7ab13ba640be0307550601ecdd8"
+    }
+  ],
+  "scope": "Remaining tests preserve B06 and B21 v2 candidate in the combined source. Deferred means no further B21 investigation; it does not mean that B21 source has been removed.",
+  "per_bug_publication_status": "Full native-inclusive regression, commit and push remain pending for each new repair; available or targeted results are not a substitute."
+}
