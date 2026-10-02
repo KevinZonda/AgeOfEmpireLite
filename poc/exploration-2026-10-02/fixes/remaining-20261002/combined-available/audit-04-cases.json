@@ -1,0 +1,83 @@
+[
+	{
+		"evidence": {
+			"distance_to_market": 178.430023193359,
+			"income_on_return": 104,
+			"market_half_width": 56.0,
+			"order": "trade",
+			"returning": false,
+			"trader_radius": 11.0
+		},
+		"id": "trade_return_market",
+		"status": "pass"
+	},
+	{
+		"evidence": {
+			"building_size": "(144.0, 144.0)",
+			"distance": 87.25,
+			"official_order": "supervise",
+			"radius": 11.0,
+			"work_rate": 1.5
+		},
+		"id": "supervise_town_center",
+		"status": "pass"
+	},
+	{
+		"evidence": {
+			"building_size": "(112.0, 104.0)",
+			"distance": 71.25,
+			"official_order": "supervise",
+			"radius": 11.0,
+			"work_rate": 1.5
+		},
+		"id": "supervise_barracks",
+		"status": "pass"
+	},
+	{
+		"evidence": {
+			"queue_after": 0,
+			"units_after": 13,
+			"units_before": 12
+		},
+		"id": "rally_dead_tree",
+		"status": "pass"
+	},
+	{
+		"evidence": {
+			"queue_after": 0,
+			"units_after": 13,
+			"units_before": 12
+		},
+		"id": "rally_dead_farm",
+		"status": "pass"
+	},
+	{
+		"evidence": {
+			"queue_after": 0,
+			"units_after": 13,
+			"units_before": 12
+		},
+		"id": "rally_queued_target",
+		"status": "pass"
+	},
+	{
+		"evidence": {
+			"enabled_build_buttons": 0,
+			"garrisoned": true,
+			"selected": false,
+			"wood_spent": 80,
+			"worker_order": "idle"
+		},
+		"id": "selection_after_garrison",
+		"status": "pass"
+	},
+	{
+		"evidence": {
+			"admitted_to_second": true,
+			"first_slots": 1,
+			"second_slots": 1
+		},
+		"id": "garrison_double_host",
+		"status": "observation"
+	}
+]

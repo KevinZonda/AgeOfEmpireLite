@@ -1,0 +1,11 @@
+Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
+
+2026-10-02 13:23:37.079 godot.macos.template_debug.arm64[46317:23004599] XType: Using static font registry.
+CASE {"evidence":{"construction_progress_seconds":0.999999999999996,"expected":72.8833333333332,"hp_after":72.8833333333333,"hp_before":42.55,"worker_order":"build"},"id":"construction_real_worker","status":"pass"}
+CASE {"evidence":{"detected":true,"patch_position":"(1079.012, 2286.993)","teams":[0,1,0,1],"terrain_visible":true,"unit_owner":2,"visible":true},"id":"allied_forest_visibility","status":"pass"}
+CASE {"evidence":{"detected":true,"patch_position":"(1079.012, 2286.993)","teams":[0,1,0,1],"terrain_visible":true,"unit_owner":1,"visible":true},"id":"allied_scout_detection","status":"pass"}
+CASE {"evidence":{"detected":true,"patch_position":"(1079.012, 2286.993)","teams":[0,1,0,1],"terrain_visible":true,"unit_owner":1,"visible":true},"id":"own_scout_detection","status":"pass"}
+CASE {"evidence":{"hp_after":67.0,"hp_before":60.0,"same_team":true,"unit_owner":2},"id":"monk_heal_teammate","status":"pass"}
+CASE {"evidence":{"hp_after":67.0,"hp_before":60.0,"same_team":true,"unit_owner":0},"id":"monk_heal_own","status":"pass"}
+CASE {"evidence":{"bonus_active":true,"distance":141.421356201172,"influence_limit":180.0,"keep_position":"(2240.0, 920.0)","stable_position":"(2260.0, 1060.0)"},"id":"french_keep_influence_snap","status":"pass"}
+EXPLORATION_COMPLETE cases=7 bugs=0

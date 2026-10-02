@@ -1,0 +1,33 @@
+{
+  "observed_at": "2026-10-02T13:23:58.914116+08:00",
+  "branch": "main",
+  "head": "da21543c0011b801c05ec0726d9dd85eff482391",
+  "patches_applied_to_main_worktree": [
+    "B07",
+    "B08",
+    "B09",
+    "B10",
+    "B11",
+    "B12",
+    "B13",
+    "B14",
+    "B15",
+    "B16",
+    "B17",
+    "B18",
+    "B19",
+    "B20"
+  ],
+  "external_commit_observed": true,
+  "created_commit_by_this_agent": false,
+  "remote_push_verified": false,
+  "full_native_inclusive_validation_complete": false,
+  "additional_external_changes_preserved": [
+    "scripts/entities/resource_node.gd",
+    "scripts/entities/projectile.gd",
+    "scripts/entities/unit_combat.gd",
+    "scripts/entities/unit_work.gd",
+    "tests/boar_retaliation.gd"
+  ],
+  "note": "Observed main contains all prepared B07–B20 source and tests plus external boar-retaliation changes. Frozen combined run predates the additional boar code; use separate main-targeted evidence for the current source."
+}

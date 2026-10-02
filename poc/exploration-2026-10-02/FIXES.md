@@ -21,3 +21,5 @@ python3 tools/run_full_tests.py --output /tmp/ageofempirelite-full-recheck --pro
 保留 AI 长局原有的 6000 步上限，以及四种子各 480 秒模拟上限（自然胜负可提前结束）；渲染/原生窗口测试单独串行，user:// 使用每项测试独立目录。初始报告、原始失败证据与复现步骤见 [探索报告](README.md)。
 
 B21 密集施工互堵候选已写回主工作区；113 项定向检查和可用回归已完成，证据见 [审查记录](fixes/B21-review/README.md)。按用户最新指令暂缓，待其他 bug 修复后回头处理。原生窗口启动、GitHub DNS 及原仓库 Git 元数据写入限制统一记录为环境待办，不再反复重试；本候选完整验证、commit、push **尚未完成**，18 项未执行不计作通过。
+
+用户随后要求先将全部补丁合并到 main：B07–B20 已合入，B21 代码保留。合并、当前 main 提交观察和独立测试状态见 [合并记录](fixes/remaining-20261002/README.md)；未将合并提交计作通过完整测试后的逐项验证提交。

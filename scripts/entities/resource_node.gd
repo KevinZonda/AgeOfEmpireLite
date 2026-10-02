@@ -258,7 +258,7 @@ func _process_boar(delta: float) -> void:
 		animal_speed = 0.0
 	_update_animal_pose(delta, position - previous, boar_target == null)
 
-func _valid_boar_target(unit: RtsUnit) -> bool:
+func _valid_boar_target(unit) -> bool:
 	return is_instance_valid(unit) and not unit.is_queued_for_deletion() and unit.hp > 0.0 and unit.garrisoned_in == null and not is_instance_valid(unit.wall_host) and not unit.stats.get("tags", []).has("naval")
 
 func _update_animal_pose(delta: float, movement: Vector2, grazing: bool) -> void:

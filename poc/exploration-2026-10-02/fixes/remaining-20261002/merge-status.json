@@ -1,0 +1,32 @@
+{
+  "updated_at": "2026-10-02T13:25:13.821333+08:00",
+  "state": "all_prepared_patches_applied_to_main",
+  "available_regression": {
+    "passed": 165,
+    "failed": 0,
+    "timeout": 0,
+    "unresolved_bugs": 0,
+    "skipped": 18,
+    "cancelled": 0
+  },
+  "audit": {
+    "pass": 52,
+    "bug": 0,
+    "observation": 11
+  },
+  "combined_seconds": 548.078,
+  "combined_source_unchanged": true,
+  "complete_full_test": false,
+  "verified_push": false,
+  "main_targeted_executed": 16,
+  "main_targeted_all_records_passed": true,
+  "main_targeted_changed_sources": [
+    "scripts/entities/resource_node.gd"
+  ],
+  "remaining": [
+    "18 native rendering tests",
+    "per-bug complete validation and publication",
+    "final four-seed balance experiment",
+    "B21 follow-up after other fixes"
+  ]
+}
