@@ -1,0 +1,704 @@
+[
+  {
+    "id": "B07",
+    "title": "Stop tracking hidden mobile attack targets",
+    "patches": [
+      {
+        "revision": "af903bb",
+        "sha256": "f896eb86e8bf178b84aa338a356f4f4c8501e856c2c4b99eb32fb26cb7d30577"
+      }
+    ],
+    "tests": [
+      {
+        "name": "exploration_b07_fog_attack",
+        "script": "tests/exploration_b07_fog_attack.gd",
+        "status": "passed",
+        "failure_signatures": [],
+        "started": true,
+        "rendering": false,
+        "isolated_user_dir": "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-u3yo3u79/AgeOfEmpireLite-full-tests/3ae15c4852aaef1c/exploration_b07_fog_attack",
+        "child_cwd": "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-u3yo3u79",
+        "child_home_removed": true,
+        "user_dir_isolation": "macos_child_without_home",
+        "exit_code": 0,
+        "seconds": 1.762,
+        "timeout_seconds": 300,
+        "terminated_early": false,
+        "first_error": null,
+        "command": [
+          "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+          "--path",
+          "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-u3yo3u79",
+          "--headless",
+          "--log-file",
+          "/Users/kevin/Desktop/AgeOfEmpireLite/poc/exploration-2026-10-02/fixes/remaining-20261002/B07/logs/exploration_b07_fog_attack.engine.log",
+          "--script",
+          "res://tests/exploration_b07_fog_attack.gd"
+        ],
+        "log": "logs/exploration_b07_fog_attack.log",
+        "cases": []
+      }
+    ],
+    "changed_sources_during_run": [],
+    "targeted_passed": true,
+    "complete_full_test": false,
+    "committed": false,
+    "pushed": false
+  },
+  {
+    "id": "B08",
+    "title": "Exclude garrisoned villagers from selection and construction",
+    "patches": [
+      {
+        "revision": "c3f31ce",
+        "sha256": "80cc4c0c86e5bc1fb6b3dcfae49bda56730207c791b53bf4b7f4cdae3c2c4baa"
+      },
+      {
+        "revision": "5a72701",
+        "sha256": "a2f9e35359220500f16e35839d0e5b4f911b1ca6a63bb3dde56222ae7c9f1142"
+      }
+    ],
+    "tests": [
+      {
+        "name": "exploration_b08_garrison_build",
+        "script": "tests/exploration_b08_garrison_build.gd",
+        "status": "passed",
+        "failure_signatures": [],
+        "started": true,
+        "rendering": false,
+        "isolated_user_dir": "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-dgm8g2gz/AgeOfEmpireLite-full-tests/a7a56562af11cf5d/exploration_b08_garrison_build",
+        "child_cwd": "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-dgm8g2gz",
+        "child_home_removed": true,
+        "user_dir_isolation": "macos_child_without_home",
+        "exit_code": 0,
+        "seconds": 2.633,
+        "timeout_seconds": 300,
+        "terminated_early": false,
+        "first_error": null,
+        "command": [
+          "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+          "--path",
+          "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-dgm8g2gz",
+          "--headless",
+          "--log-file",
+          "/Users/kevin/Desktop/AgeOfEmpireLite/poc/exploration-2026-10-02/fixes/remaining-20261002/B08/logs/exploration_b08_garrison_build.engine.log",
+          "--script",
+          "res://tests/exploration_b08_garrison_build.gd"
+        ],
+        "log": "logs/exploration_b08_garrison_build.log",
+        "cases": []
+      }
+    ],
+    "changed_sources_during_run": [],
+    "targeted_passed": true,
+    "complete_full_test": false,
+    "committed": false,
+    "pushed": false
+  },
+  {
+    "id": "B09",
+    "title": "Assign queued farms at activation",
+    "patches": [
+      {
+        "revision": "56fea01",
+        "sha256": "90b2886b3b33f6344a607c74d751d26128bc7a5f2c72860222d2f2c6fd6beaf5"
+      }
+    ],
+    "tests": [
+      {
+        "name": "exploration_b09_queued_farms",
+        "script": "tests/exploration_b09_queued_farms.gd",
+        "status": "passed",
+        "failure_signatures": [],
+        "started": true,
+        "rendering": false,
+        "isolated_user_dir": "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-qc27a4lf/AgeOfEmpireLite-full-tests/304ebc8a4be8806b/exploration_b09_queued_farms",
+        "child_cwd": "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-qc27a4lf",
+        "child_home_removed": true,
+        "user_dir_isolation": "macos_child_without_home",
+        "exit_code": 0,
+        "seconds": 8.386,
+        "timeout_seconds": 300,
+        "terminated_early": false,
+        "first_error": null,
+        "command": [
+          "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+          "--path",
+          "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-qc27a4lf",
+          "--headless",
+          "--log-file",
+          "/Users/kevin/Desktop/AgeOfEmpireLite/poc/exploration-2026-10-02/fixes/remaining-20261002/B09/logs/exploration_b09_queued_farms.engine.log",
+          "--script",
+          "res://tests/exploration_b09_queued_farms.gd"
+        ],
+        "log": "logs/exploration_b09_queued_farms.log",
+        "cases": [
+          {
+            "evidence": {
+              "alternative_distance": -1.0,
+              "alternative_exists": false,
+              "order_after_activation": "gather",
+              "queued_gather_commands": 1
+            },
+            "id": "queued_farm_frees_later",
+            "status": "pass"
+          },
+          {
+            "evidence": {
+              "alternative_distance": 144.222045898438,
+              "alternative_exists": true,
+              "order_after_activation": "gather",
+              "queued_gather_commands": 1
+            },
+            "id": "queued_farm_alternative",
+            "status": "pass"
+          },
+          {
+            "evidence": {
+              "first": "gather",
+              "second": "idle"
+            },
+            "id": "farm_exclusive",
+            "status": "pass"
+          },
+          {
+            "evidence": {
+              "destination": "(1200.0, 650.0)",
+              "order": "move"
+            },
+            "id": "queued_invalid_target",
+            "status": "pass"
+          }
+        ]
+      }
+    ],
+    "changed_sources_during_run": [],
+    "targeted_passed": true,
+    "complete_full_test": false,
+    "committed": false,
+    "pushed": false
+  },
+  {
+    "id": "B10",
+    "title": "Move recruits when farm gathering cannot be assigned",
+    "patches": [
+      {
+        "revision": "09d3901",
+        "sha256": "e4dea7153dcdf181304deb6ddf86a9ff735d5e070d5cf007d14e7fb506354962"
+      }
+    ],
+    "tests": [
+      {
+        "name": "exploration_b10_busy_farm_rally",
+        "script": "tests/exploration_b10_busy_farm_rally.gd",
+        "status": "passed",
+        "failure_signatures": [],
+        "started": true,
+        "rendering": false,
+        "isolated_user_dir": "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-2aog2toj/AgeOfEmpireLite-full-tests/26b05f5675205082/exploration_b10_busy_farm_rally",
+        "child_cwd": "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-2aog2toj",
+        "child_home_removed": true,
+        "user_dir_isolation": "macos_child_without_home",
+        "exit_code": 0,
+        "seconds": 2.495,
+        "timeout_seconds": 300,
+        "terminated_early": false,
+        "first_error": null,
+        "command": [
+          "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+          "--path",
+          "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-2aog2toj",
+          "--headless",
+          "--log-file",
+          "/Users/kevin/Desktop/AgeOfEmpireLite/poc/exploration-2026-10-02/fixes/remaining-20261002/B10/logs/exploration_b10_busy_farm_rally.engine.log",
+          "--script",
+          "res://tests/exploration_b10_busy_farm_rally.gd"
+        ],
+        "log": "logs/exploration_b10_busy_farm_rally.log",
+        "cases": []
+      }
+    ],
+    "changed_sources_during_run": [],
+    "targeted_passed": true,
+    "complete_full_test": false,
+    "committed": false,
+    "pushed": false
+  },
+  {
+    "id": "B11",
+    "title": "Recheck projectile impact diplomacy",
+    "patches": [
+      {
+        "revision": "e7d9597",
+        "sha256": "5f444b8686979ad2bc481afdbe53545991fed29e5237efa0156bbfef01387b67"
+      }
+    ],
+    "tests": [
+      {
+        "name": "exploration_b11_projectile_diplomacy",
+        "script": "tests/exploration_b11_projectile_diplomacy.gd",
+        "status": "passed",
+        "failure_signatures": [],
+        "started": true,
+        "rendering": false,
+        "isolated_user_dir": "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-takp1nwr/AgeOfEmpireLite-full-tests/7c67e0c93dba088a/exploration_b11_projectile_diplomacy",
+        "child_cwd": "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-takp1nwr",
+        "child_home_removed": true,
+        "user_dir_isolation": "macos_child_without_home",
+        "exit_code": 0,
+        "seconds": 1.557,
+        "timeout_seconds": 300,
+        "terminated_early": false,
+        "first_error": null,
+        "command": [
+          "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+          "--path",
+          "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-takp1nwr",
+          "--headless",
+          "--log-file",
+          "/Users/kevin/Desktop/AgeOfEmpireLite/poc/exploration-2026-10-02/fixes/remaining-20261002/B11/logs/exploration_b11_projectile_diplomacy.engine.log",
+          "--script",
+          "res://tests/exploration_b11_projectile_diplomacy.gd"
+        ],
+        "log": "logs/exploration_b11_projectile_diplomacy.log",
+        "cases": []
+      }
+    ],
+    "changed_sources_during_run": [],
+    "targeted_passed": true,
+    "complete_full_test": false,
+    "committed": false,
+    "pushed": false
+  },
+  {
+    "id": "B12",
+    "title": "Use owned markets after trader conversion",
+    "patches": [
+      {
+        "revision": "be18281",
+        "sha256": "4bd40196eccab47f5ea659985cc23a1c15fbc897f91e836f2885f07395366de6"
+      }
+    ],
+    "tests": [
+      {
+        "name": "exploration_b12_converted_trader",
+        "script": "tests/exploration_b12_converted_trader.gd",
+        "status": "passed",
+        "failure_signatures": [],
+        "started": true,
+        "rendering": false,
+        "isolated_user_dir": "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-mo61h3yi/AgeOfEmpireLite-full-tests/4fefaddf0c1ad543/exploration_b12_converted_trader",
+        "child_cwd": "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-mo61h3yi",
+        "child_home_removed": true,
+        "user_dir_isolation": "macos_child_without_home",
+        "exit_code": 0,
+        "seconds": 2.679,
+        "timeout_seconds": 300,
+        "terminated_early": false,
+        "first_error": null,
+        "command": [
+          "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+          "--path",
+          "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-mo61h3yi",
+          "--headless",
+          "--log-file",
+          "/Users/kevin/Desktop/AgeOfEmpireLite/poc/exploration-2026-10-02/fixes/remaining-20261002/B12/logs/exploration_b12_converted_trader.engine.log",
+          "--script",
+          "res://tests/exploration_b12_converted_trader.gd"
+        ],
+        "log": "logs/exploration_b12_converted_trader.log",
+        "cases": []
+      }
+    ],
+    "changed_sources_during_run": [],
+    "targeted_passed": true,
+    "complete_full_test": false,
+    "committed": false,
+    "pushed": false
+  },
+  {
+    "id": "B13",
+    "title": "Respect minimum range in ground attacks",
+    "patches": [
+      {
+        "revision": "067bd72",
+        "sha256": "7a616e27ea334ff2c9f42d10f6daa48544f75e9161f1dd71ab3f9d2a0ad45ef5"
+      }
+    ],
+    "tests": [
+      {
+        "name": "exploration_b13_ground_min_range",
+        "script": "tests/exploration_b13_ground_min_range.gd",
+        "status": "passed",
+        "failure_signatures": [],
+        "started": true,
+        "rendering": false,
+        "isolated_user_dir": "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-a4amuphv/AgeOfEmpireLite-full-tests/4cae3b3e22e84dca/exploration_b13_ground_min_range",
+        "child_cwd": "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-a4amuphv",
+        "child_home_removed": true,
+        "user_dir_isolation": "macos_child_without_home",
+        "exit_code": 0,
+        "seconds": 1.667,
+        "timeout_seconds": 300,
+        "terminated_early": false,
+        "first_error": null,
+        "command": [
+          "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+          "--path",
+          "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-a4amuphv",
+          "--headless",
+          "--log-file",
+          "/Users/kevin/Desktop/AgeOfEmpireLite/poc/exploration-2026-10-02/fixes/remaining-20261002/B13/logs/exploration_b13_ground_min_range.engine.log",
+          "--script",
+          "res://tests/exploration_b13_ground_min_range.gd"
+        ],
+        "log": "logs/exploration_b13_ground_min_range.log",
+        "cases": []
+      }
+    ],
+    "changed_sources_during_run": [],
+    "targeted_passed": true,
+    "complete_full_test": false,
+    "committed": false,
+    "pushed": false
+  },
+  {
+    "id": "B14",
+    "title": "Consume artillery abilities when firing at ground",
+    "patches": [
+      {
+        "revision": "9709f9d",
+        "sha256": "abeba59ad5ac68ba2954b144cc102ecf6f63f4dc0f99ef403117555e7e25d45b"
+      }
+    ],
+    "tests": [
+      {
+        "name": "exploration_b14_ground_artillery",
+        "script": "tests/exploration_b14_ground_artillery.gd",
+        "status": "passed",
+        "failure_signatures": [],
+        "started": true,
+        "rendering": false,
+        "isolated_user_dir": "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-io7tlncx/AgeOfEmpireLite-full-tests/ae322baefb440ee5/exploration_b14_ground_artillery",
+        "child_cwd": "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-io7tlncx",
+        "child_home_removed": true,
+        "user_dir_isolation": "macos_child_without_home",
+        "exit_code": 0,
+        "seconds": 1.551,
+        "timeout_seconds": 300,
+        "terminated_early": false,
+        "first_error": null,
+        "command": [
+          "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+          "--path",
+          "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-io7tlncx",
+          "--headless",
+          "--log-file",
+          "/Users/kevin/Desktop/AgeOfEmpireLite/poc/exploration-2026-10-02/fixes/remaining-20261002/B14/logs/exploration_b14_ground_artillery.engine.log",
+          "--script",
+          "res://tests/exploration_b14_ground_artillery.gd"
+        ],
+        "log": "logs/exploration_b14_ground_artillery.log",
+        "cases": []
+      }
+    ],
+    "changed_sources_during_run": [],
+    "targeted_passed": true,
+    "complete_full_test": false,
+    "committed": false,
+    "pushed": false
+  },
+  {
+    "id": "B15",
+    "title": "Refresh entities and selection after conversion",
+    "patches": [
+      {
+        "revision": "a264390",
+        "sha256": "f8c45ee8c36acc2f3c187fb7c667caf3de401035101959804d7cdf04f8013cb5"
+      }
+    ],
+    "tests": [
+      {
+        "name": "exploration_b15_conversion_hud",
+        "script": "tests/exploration_b15_conversion_hud.gd",
+        "status": "passed",
+        "failure_signatures": [],
+        "started": true,
+        "rendering": false,
+        "isolated_user_dir": "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-dxlu2jzk/AgeOfEmpireLite-full-tests/366a852da10e8dbb/exploration_b15_conversion_hud",
+        "child_cwd": "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-dxlu2jzk",
+        "child_home_removed": true,
+        "user_dir_isolation": "macos_child_without_home",
+        "exit_code": 0,
+        "seconds": 1.67,
+        "timeout_seconds": 300,
+        "terminated_early": false,
+        "first_error": null,
+        "command": [
+          "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+          "--path",
+          "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-dxlu2jzk",
+          "--headless",
+          "--log-file",
+          "/Users/kevin/Desktop/AgeOfEmpireLite/poc/exploration-2026-10-02/fixes/remaining-20261002/B15/logs/exploration_b15_conversion_hud.engine.log",
+          "--script",
+          "res://tests/exploration_b15_conversion_hud.gd"
+        ],
+        "log": "logs/exploration_b15_conversion_hud.log",
+        "cases": []
+      }
+    ],
+    "changed_sources_during_run": [],
+    "targeted_passed": true,
+    "complete_full_test": false,
+    "committed": false,
+    "pushed": false
+  },
+  {
+    "id": "B16",
+    "title": "Share forest detection between teammates",
+    "patches": [
+      {
+        "revision": "ff9a3cc4",
+        "sha256": "f043d152814b8ed88be051d5750f9921ed375006ea87f512d2b8e4622aa05058"
+      }
+    ],
+    "tests": [
+      {
+        "name": "exploration_b16_team_detection",
+        "script": "tests/exploration_b16_team_detection.gd",
+        "status": "passed",
+        "failure_signatures": [],
+        "started": true,
+        "rendering": false,
+        "isolated_user_dir": "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-yxmg_lap/AgeOfEmpireLite-full-tests/00ca84a1c76aaf6b/exploration_b16_team_detection",
+        "child_cwd": "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-yxmg_lap",
+        "child_home_removed": true,
+        "user_dir_isolation": "macos_child_without_home",
+        "exit_code": 0,
+        "seconds": 1.443,
+        "timeout_seconds": 300,
+        "terminated_early": false,
+        "first_error": null,
+        "command": [
+          "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+          "--path",
+          "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-yxmg_lap",
+          "--headless",
+          "--log-file",
+          "/Users/kevin/Desktop/AgeOfEmpireLite/poc/exploration-2026-10-02/fixes/remaining-20261002/B16/logs/exploration_b16_team_detection.engine.log",
+          "--script",
+          "res://tests/exploration_b16_team_detection.gd"
+        ],
+        "log": "logs/exploration_b16_team_detection.log",
+        "cases": []
+      }
+    ],
+    "changed_sources_during_run": [],
+    "targeted_passed": true,
+    "complete_full_test": false,
+    "committed": false,
+    "pushed": false
+  },
+  {
+    "id": "B17",
+    "title": "Heal injured teammates",
+    "patches": [
+      {
+        "revision": "25cc1afb",
+        "sha256": "9a5799c7a3d66dde3c407d0e9f92033e6334f6aaaa41101992b19f6306fe09a5"
+      }
+    ],
+    "tests": [
+      {
+        "name": "exploration_b17_team_healing",
+        "script": "tests/exploration_b17_team_healing.gd",
+        "status": "passed",
+        "failure_signatures": [],
+        "started": true,
+        "rendering": false,
+        "isolated_user_dir": "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-eymg8zaa/AgeOfEmpireLite-full-tests/92a7c0aa283d8a78/exploration_b17_team_healing",
+        "child_cwd": "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-eymg8zaa",
+        "child_home_removed": true,
+        "user_dir_isolation": "macos_child_without_home",
+        "exit_code": 0,
+        "seconds": 1.575,
+        "timeout_seconds": 300,
+        "terminated_early": false,
+        "first_error": null,
+        "command": [
+          "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+          "--path",
+          "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-eymg8zaa",
+          "--headless",
+          "--log-file",
+          "/Users/kevin/Desktop/AgeOfEmpireLite/poc/exploration-2026-10-02/fixes/remaining-20261002/B17/logs/exploration_b17_team_healing.engine.log",
+          "--script",
+          "res://tests/exploration_b17_team_healing.gd"
+        ],
+        "log": "logs/exploration_b17_team_healing.log",
+        "cases": []
+      }
+    ],
+    "changed_sources_during_run": [],
+    "targeted_passed": true,
+    "complete_full_test": false,
+    "committed": false,
+    "pushed": false
+  },
+  {
+    "id": "B18",
+    "title": "Place French keeps within actual snapped influence",
+    "patches": [
+      {
+        "revision": "48a1d628",
+        "sha256": "5bb83247f3ae29e310b00b98c5ee2c626697805f443467795eaf9115b39028cf"
+      }
+    ],
+    "tests": [
+      {
+        "name": "exploration_b18_french_keep_grid",
+        "script": "tests/exploration_b18_french_keep_grid.gd",
+        "status": "passed",
+        "failure_signatures": [],
+        "started": true,
+        "rendering": false,
+        "isolated_user_dir": "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-0uzskdwd/AgeOfEmpireLite-full-tests/054c5ad2446fd6e5/exploration_b18_french_keep_grid",
+        "child_cwd": "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-0uzskdwd",
+        "child_home_removed": true,
+        "user_dir_isolation": "macos_child_without_home",
+        "exit_code": 0,
+        "seconds": 2.476,
+        "timeout_seconds": 300,
+        "terminated_early": false,
+        "first_error": null,
+        "command": [
+          "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+          "--path",
+          "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-0uzskdwd",
+          "--headless",
+          "--log-file",
+          "/Users/kevin/Desktop/AgeOfEmpireLite/poc/exploration-2026-10-02/fixes/remaining-20261002/B18/logs/exploration_b18_french_keep_grid.engine.log",
+          "--script",
+          "res://tests/exploration_b18_french_keep_grid.gd"
+        ],
+        "log": "logs/exploration_b18_french_keep_grid.log",
+        "cases": []
+      }
+    ],
+    "changed_sources_during_run": [],
+    "targeted_passed": true,
+    "complete_full_test": false,
+    "committed": false,
+    "pushed": false
+  },
+  {
+    "id": "B19",
+    "title": "Refresh collision radii before calculating spatial queries",
+    "patches": [
+      {
+        "revision": "0e24246",
+        "sha256": "d3e7e66e9d46a79861c176c78941484b821ed7100ee03d53c6b1c777452b0c20"
+      }
+    ],
+    "tests": [
+      {
+        "name": "exploration_b19_dirty_collision_radius",
+        "script": "tests/exploration_b19_dirty_collision_radius.gd",
+        "status": "passed",
+        "failure_signatures": [],
+        "started": true,
+        "rendering": false,
+        "isolated_user_dir": "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-gvt2asy3/AgeOfEmpireLite-full-tests/9d9a752920afc7d8/exploration_b19_dirty_collision_radius",
+        "child_cwd": "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-gvt2asy3",
+        "child_home_removed": true,
+        "user_dir_isolation": "macos_child_without_home",
+        "exit_code": 0,
+        "seconds": 0.731,
+        "timeout_seconds": 300,
+        "terminated_early": false,
+        "first_error": null,
+        "command": [
+          "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+          "--path",
+          "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-gvt2asy3",
+          "--headless",
+          "--log-file",
+          "/Users/kevin/Desktop/AgeOfEmpireLite/poc/exploration-2026-10-02/fixes/remaining-20261002/B19/logs/exploration_b19_dirty_collision_radius.engine.log",
+          "--script",
+          "res://tests/exploration_b19_dirty_collision_radius.gd"
+        ],
+        "log": "logs/exploration_b19_dirty_collision_radius.log",
+        "cases": []
+      }
+    ],
+    "changed_sources_during_run": [],
+    "targeted_passed": true,
+    "complete_full_test": false,
+    "committed": false,
+    "pushed": false
+  },
+  {
+    "id": "B20",
+    "title": "Keep persistent unit snapshots independent from mutable tags",
+    "patches": [
+      {
+        "revision": "83d468be",
+        "sha256": "698ca41cac297ab92d574a4a5eb2ab9be1082a228685288d4555495b68486447"
+      }
+    ],
+    "tests": [
+      {
+        "name": "visual_state",
+        "script": "tests/visual_state.gd",
+        "status": "passed",
+        "failure_signatures": [],
+        "started": true,
+        "rendering": false,
+        "isolated_user_dir": "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-w6lled3z/AgeOfEmpireLite-full-tests/0e232259a91c9114/visual_state",
+        "child_cwd": "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-w6lled3z",
+        "child_home_removed": true,
+        "user_dir_isolation": "macos_child_without_home",
+        "exit_code": 0,
+        "seconds": 1.458,
+        "timeout_seconds": 300,
+        "terminated_early": false,
+        "first_error": null,
+        "command": [
+          "/Users/kevin/Desktop/AgeOfEmpireLite/docs/godot/bin/godot.macos.template_debug.arm64",
+          "--path",
+          "/private/var/folders/gl/fdb2hp6d7g39741y8_4rfm3m0000gn/T/ageofempirelite-test-w6lled3z",
+          "--headless",
+          "--log-file",
+          "/Users/kevin/Desktop/AgeOfEmpireLite/poc/exploration-2026-10-02/fixes/remaining-20261002/B20/logs/visual_state.engine.log",
+          "--script",
+          "res://tests/visual_state.gd"
+        ],
+        "log": "logs/visual_state.log",
+        "cases": []
+      },
+      {
+        "name": "unit_snapshot_rendering",
+        "script": "tests/unit_snapshot_rendering.gd",
+        "status": "skipped",
+        "rendering": true,
+        "exit_code": null,
+        "seconds": 0,
+        "timeout_seconds": 300,
+        "terminated_early": false,
+        "first_error": null,
+        "command": [],
+        "log": null,
+        "cases": [],
+        "started": false,
+        "reason": "native_window_startup_unavailable",
+        "environment_blocker_evidence": "/Users/kevin/Desktop/AgeOfEmpireLite/poc/exploration-2026-10-02/fixes/tool-validation/b21-v2-native-startup/result.json"
+      }
+    ],
+    "changed_sources_during_run": [],
+    "targeted_passed": false,
+    "complete_full_test": false,
+    "committed": false,
+    "pushed": false
+  }
+]

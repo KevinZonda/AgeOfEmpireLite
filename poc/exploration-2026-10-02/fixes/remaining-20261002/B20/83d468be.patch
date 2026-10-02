@@ -1,0 +1,31 @@
+diff --git a/scripts/entities/visuals/unit_visual_state.gd b/scripts/entities/visuals/unit_visual_state.gd
+index 0b6bf21..1bf289d 100644
+--- a/scripts/entities/visuals/unit_visual_state.gd
++++ b/scripts/entities/visuals/unit_visual_state.gd
+@@ -44,8 +44,11 @@ var show_health_bar := false
+ static func capture(unit, existing_state = null):
+ 	var result = existing_state if existing_state != null else new()
+ 	result.kind = unit.kind
+-	# Snapshots are read-only; share the tags array instead of allocating a copy.
+-	result.tags = unit.stats.get("tags", [])
++	# Default captures are durable value snapshots. The renderer explicitly
++	# supplies a reusable state, consumes it immediately and treats tags as
++	# read-only, so that hot path can keep sharing the live definition array.
++	var source_tags: Array = unit.stats.get("tags", [])
++	result.tags = source_tags if existing_state != null else source_tags.duplicate()
+ 	result.radius = unit.radius()
+ 	result.visual_scale = unit.display_scale()
+ 	result.player_color = unit.game.player_color(unit.owner_id)
+diff --git a/tests/visual_state.gd b/tests/visual_state.gd
+index cb5d066..13596a0 100644
+--- a/tests/visual_state.gd
++++ b/tests/visual_state.gd
+@@ -36,6 +36,8 @@ func _run() -> void:
+ 	unit.visual_action_timer = 0.2
+ 	var unit_state = UnitState.capture(unit)
+ 	assert(unit_state.action_progress == 0.5 and not unit_state.action_released)
++	assert(not is_same(unit_state.tags, unit.stats["tags"]), "durable captures own their tag values")
++	assert(is_same(working_unit_state.tags, unit.stats["tags"]), "explicit renderer reuse keeps the allocation-free tag view")
+ 	var remembered_heading: Vector2 = unit_state.facing_direction
+ 	unit._mark_visual_impact()
+ 	unit._face_direction(Vector2.RIGHT * 20.0)

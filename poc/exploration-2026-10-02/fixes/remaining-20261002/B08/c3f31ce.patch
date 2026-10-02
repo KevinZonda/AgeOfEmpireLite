@@ -1,0 +1,104 @@
+diff --git a/scripts/entities/unit_orders.gd b/scripts/entities/unit_orders.gd
+index e840975..88fd37c 100644
+--- a/scripts/entities/unit_orders.gd
++++ b/scripts/entities/unit_orders.gd
+@@ -188,6 +188,9 @@ func enter_garrison(unit: RtsUnit, host: Node2D) -> void:
+ 	unit.garrisoned_in = host
+ 	unit.position = host.position
+ 	unit.hide()
++	if unit.game.selected.has(unit):
++		unit.game.selected.erase(unit)
++		unit.game.session.changes.mark(0, &"selection")
+ 
+ func tick(unit: RtsUnit, delta: float) -> void:
+ 	# Orders without a shared live target perform their own completion checks.
+diff --git a/scripts/game.gd b/scripts/game.gd
+index acfd450..0d16fbb 100644
+--- a/scripts/game.gd
++++ b/scripts/game.gd
+@@ -990,7 +990,7 @@ func place_landmark(owner_id: int, landmark_id: String, world_point: Vector2, wo
+ 		return false
+ 	var builders: Array[RtsUnit] = []
+ 	for worker in workers:
+-		if is_instance_valid(worker) and worker.owner_id == owner_id and worker.kind == "villager": builders.append(worker)
++		if is_instance_valid(worker) and not worker.is_queued_for_deletion() and worker.hp > 0.0 and worker.garrisoned_in == null and worker.owner_id == owner_id and worker.kind == "villager": builders.append(worker)
+ 	if builders.is_empty(): return false
+ 	var choice := RtsLandmarkCatalog.landmark(landmark_id)
+ 	if not spend(owner_id, status["cost"]): return false
+@@ -1099,7 +1099,7 @@ func place_building(owner_id: int, kind: String, world_point: Vector2, workers:
+ 		return false
+ 	var builders: Array[RtsUnit] = []
+ 	for worker in workers:
+-		if is_instance_valid(worker) and worker.owner_id == owner_id and worker.kind == "villager":
++		if is_instance_valid(worker) and not worker.is_queued_for_deletion() and worker.hp > 0.0 and worker.garrisoned_in == null and worker.owner_id == owner_id and worker.kind == "villager":
+ 			builders.append(worker)
+ 	if builders.is_empty(): return false
+ 	if not spend(owner_id, status["cost"]): return false
+diff --git a/scripts/player/player_input.gd b/scripts/player/player_input.gd
+index 2cf4d84..6fa8448 100644
+--- a/scripts/player/player_input.gd
++++ b/scripts/player/player_input.gd
+@@ -393,11 +393,11 @@ func _cursor_state_at(world_point: Vector2, over_ui := false) -> String:
+ func _confirm_build(point: Vector2, append_order := false) -> void:
+ 	var builders: Array[RtsUnit] = []
+ 	for entity in game.selected:
+-		if is_instance_valid(entity) and entity is RtsUnit and entity.owner_id == 0 and entity.kind == "villager":
++		if is_instance_valid(entity) and not entity.is_queued_for_deletion() and entity is RtsUnit and entity.hp > 0.0 and entity.garrisoned_in == null and entity.owner_id == 0 and entity.kind == "villager":
+ 			builders.append(entity)
+ 	if builders.is_empty():
+ 		for unit in game.units:
+-			if is_instance_valid(unit) and unit.owner_id == 0 and unit.kind == "villager": builders.append(unit)
++			if is_instance_valid(unit) and not unit.is_queued_for_deletion() and unit.hp > 0.0 and unit.garrisoned_in == null and unit.owner_id == 0 and unit.kind == "villager": builders.append(unit)
+ 		builders.sort_custom(func(a: RtsUnit, b: RtsUnit) -> bool: return a.position.distance_squared_to(point) < b.position.distance_squared_to(point))
+ 		if builders.size() > 2: builders.resize(2)
+ 	if builders.is_empty():
+@@ -430,7 +430,7 @@ func _confirm_wall_line(from: Vector2, to: Vector2, append_order := false) -> vo
+ 	var positions: Array[Vector2] = game._wall_positions(from, to, game.build_mode)
+ 	var builders: Array[RtsUnit] = []
+ 	for entity in game.selected:
+-		if entity is RtsUnit and entity.owner_id == 0 and entity.kind == "villager": builders.append(entity)
++		if is_instance_valid(entity) and not entity.is_queued_for_deletion() and entity is RtsUnit and entity.hp > 0.0 and entity.garrisoned_in == null and entity.owner_id == 0 and entity.kind == "villager": builders.append(entity)
+ 	if builders.is_empty():
+ 		game.notify_player("需要村民建墙")
+ 		return
+diff --git a/tests/exploration_b08_garrison_build.gd b/tests/exploration_b08_garrison_build.gd
+new file mode 100644
+index 0000000..cc84902
+--- /dev/null
++++ b/tests/exploration_b08_garrison_build.gd
+@@ -0,0 +1,35 @@
++extends "res://poc/exploration-2026-10-02/explore.gd"
++
++func _run() -> void:
++	setup_case()
++	var center: RtsBuilding = game._player_center(0)
++	var worker := soldier("villager", 0, center.position + Vector2(0, 95))
++	game.selected.assign([worker])
++	game._rebuild_actions()
++	assert(not game.command_buttons.is_empty())
++	worker.issue_command("garrison", Vector2.INF, center)
++	tick_units([worker], 50)
++	assert(worker.garrisoned_in == center and not game.selected.has(worker))
++	game._update_hud()
++	assert(game.command_buttons.is_empty())
++	var site := free_site("house")
++	var workers: Array[RtsUnit] = [worker]
++	var before: int = game.players[0]["wood"]
++	var buildings_before: int = game.buildings.size()
++	assert(not game.place_building(0, "house", site, workers))
++	assert(game.players[0]["wood"] == before and game.buildings.size() == buildings_before)
++	# A stale build mode with every villager inside must not select hidden builders.
++	for unit in game.units:
++		if unit.kind == "villager" and unit.owner_id == 0 and unit.garrisoned_in == null: center.garrison_unit(unit)
++	game.build_mode = "house"
++	game._confirm_build(site)
++	assert(game.players[0]["wood"] == before and game.buildings.size() == buildings_before)
++	center.ungarrison_all()
++	assert(worker.garrisoned_in == null)
++	assert(game.place_building(0, "house", site, workers))
++	assert(game.count_builders(game.buildings.back()) == 1)
++	game.navigation.shutdown_jobs()
++	game.queue_free()
++	await process_frame
++	print("EXPLORATION_B08_OK")
++	quit()

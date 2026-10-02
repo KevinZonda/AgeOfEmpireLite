@@ -1,0 +1,124 @@
+diff --git a/scripts/entities/unit_combat.gd b/scripts/entities/unit_combat.gd
+index 9c9c645..db266e5 100644
+--- a/scripts/entities/unit_combat.gd
++++ b/scripts/entities/unit_combat.gd
+@@ -7,6 +7,10 @@ static func process_attack_ground(unit, delta: float) -> void:
+ 		unit._advance_command()
+ 		return
+ 	var reach := float(profile.get("range", unit.attack_range()))
++	var min_range := float(profile.get("min_range", unit.stats.get("min_range", 0.0)))
++	if min_range > 0.0 and unit.position.distance_to(unit.destination) < min_range:
++		retreat_from_minimum_range(unit, unit.destination, min_range, reach, delta)
++		return
+ 	if not unit._move_toward(unit.destination, delta, reach): return
+ 	if unit.attack_timer > 0.0:
+ 		if unit.attack_timer <= 0.16 and unit.visual_action != "attack": unit._start_visual_action("attack", 0.34)
+@@ -19,6 +23,26 @@ static func process_attack_ground(unit, delta: float) -> void:
+ 	unit._start_visual_action("attack", 0.28)
+ 	unit._mark_visual_impact()
+ 
++static func retreat_from_minimum_range(unit, point: Vector2, min_reach: float, reach: float, delta: float) -> void:
++	if is_instance_valid(unit.wall_host):
++		unit._advance_command()
++		return
++	var away: Vector2 = (unit.position - point).normalized()
++	if away.is_zero_approx(): away = Vector2.RIGHT
++	# Reuse an escape while it remains outside minimum range. If the
++	# straight retreat is obstructed, search the other firing positions.
++	var retreat: Vector2 = unit.route_goal
++	if retreat == Vector2.INF or retreat.distance_to(point) <= min_reach + 6.0 or retreat.distance_to(point) > reach or not unit.game.navigation.can_occupy(retreat, unit.radius(), unit, false, false):
++		retreat = Vector2.INF
++		for angle in [0.0, PI / 4.0, -PI / 4.0, PI / 2.0, -PI / 2.0, PI * 0.75, -PI * 0.75, PI]:
++			var candidate: Vector2 = point + away.rotated(angle) * (min_reach + 10.0)
++			if not unit.game.navigation.can_occupy(candidate, unit.radius(), unit, false, false): continue
++			if unit.game.navigation.path_between(unit.position, candidate, unit).is_empty(): continue
++			retreat = candidate
++			break
++	if retreat != Vector2.INF: unit._move_toward(retreat, delta, 6.0)
++	return
++
+ static func valid_attack_target(unit, candidate) -> bool:
+ 	if not is_instance_valid(candidate) or not candidate is Node2D or candidate.is_queued_for_deletion(): return false
+ 	if candidate is RtsResource: return candidate.appearance == "boar" and candidate.wildlife_hp > 0.0
+@@ -64,23 +88,7 @@ static func process_attack_order(unit, delta: float) -> void:
+ 	var min_range: float = float(profile.get("min_range", unit.stats.get("min_range", 0.0)))
+ 	var min_reach: float = min_range + target_radius if min_range > 0.0 else 0.0
+ 	if min_reach > 0.0 and unit.position.distance_to(unit.target.position) < min_reach:
+-		if is_instance_valid(unit.wall_host):
+-			unit._advance_command()
+-			return
+-		var away: Vector2 = (unit.position - unit.target.position).normalized()
+-		if away.is_zero_approx(): away = Vector2.RIGHT
+-		# Reuse an escape while it remains outside minimum range. If the
+-		# straight retreat is obstructed, search the other firing positions.
+-		var retreat: Vector2 = unit.route_goal
+-		if retreat == Vector2.INF or retreat.distance_to(unit.target.position) <= min_reach + 6.0 or retreat.distance_to(unit.target.position) > reach or not unit.game.navigation.can_occupy(retreat, unit.radius(), unit, false, false):
+-			retreat = Vector2.INF
+-			for angle in [0.0, PI / 4.0, -PI / 4.0, PI / 2.0, -PI / 2.0, PI * 0.75, -PI * 0.75, PI]:
+-				var candidate: Vector2 = unit.target.position + away.rotated(angle) * (min_reach + 10.0)
+-				if not unit.game.navigation.can_occupy(candidate, unit.radius(), unit, false, false): continue
+-				if unit.game.navigation.path_between(unit.position, candidate, unit).is_empty(): continue
+-				retreat = candidate
+-				break
+-		if retreat != Vector2.INF: unit._move_toward(retreat, delta, 6.0)
++		retreat_from_minimum_range(unit, unit.target.position, min_reach, reach, delta)
+ 		return
+ 	if is_instance_valid(unit.wall_host):
+ 		if unit.position.distance_to(unit.target.position) > reach:
+diff --git a/tests/exploration_b13_ground_min_range.gd b/tests/exploration_b13_ground_min_range.gd
+new file mode 100644
+index 0000000..66ee7d2
+--- /dev/null
++++ b/tests/exploration_b13_ground_min_range.gd
+@@ -0,0 +1,51 @@
++extends "res://poc/exploration-2026-10-02/explore.gd"
++var checks := 0
++var failures := 0
++func check(ok: bool, label: String) -> void:
++ checks += 1
++ if not ok:
++  failures += 1
++  print("FAIL ", label)
++func clear_shots() -> void:
++ for p in projectiles(): p.free()
++func _run() -> void:
++ setup_case()
++ var u := soldier("trebuchet")
++ var profile := RtsStatResolver.primary_attack(u.stats)
++ var minimum: float = profile.get("min_range", u.stats.get("min_range", 0.0))
++ var point := u.position + Vector2(20, 0)
++ u.issue_command("attack_ground", point)
++ u._process_attack_ground(0.05)
++ check(projectiles().is_empty(), "cannot_fire_inside_minimum_range")
++ for i in 300:
++  tick_units([u], 1)
++  if not projectiles().is_empty(): break
++ check(not projectiles().is_empty(), "retreat_then_fire_without_new_command")
++ check(u.position.distance_to(point) >= minimum, "shot_origin_outside_minimum_range")
++ clear_shots()
++ u.order_stop()
++ u.attack_timer = 0.0
++ u.position = Vector2(1000, 600)
++ point = u.position + Vector2(minimum, 0)
++ u.issue_command("attack_ground", point)
++ u._process_attack_ground(0.05)
++ check(projectiles().size() == 1, "fires_at_minimum_range_boundary")
++ clear_shots()
++ u.order_stop()
++ u.attack_timer = 0.0
++ u.issue_command("attack_ground", u.position + Vector2(minimum + 100, 0))
++ u._process_attack_ground(0.05)
++ check(projectiles().size() == 1, "normal_ground_attack_still_fires")
++ clear_shots()
++ u.order_stop()
++ u.attack_timer = 0.0
++ var wall: RtsBuilding = game.spawn_building(0, "stone_wall", free_site("stone_wall"))
++ u.wall_host = wall
++ u.position = wall.position
++ u.issue_command("attack_ground", u.position + Vector2(20, 0))
++ u._process_attack_ground(0.05)
++ check(projectiles().is_empty(), "wall_occupant_cannot_bypass_minimum_range")
++ game.navigation.shutdown_jobs()
++ game.free()
++ print("B13_TEST_COMPLETE checks=", checks, " failures=", failures)
++ quit(1 if failures else 0)

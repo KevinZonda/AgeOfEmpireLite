@@ -1,0 +1,22 @@
+Godot Engine v4.7.2.stable.custom_build.ed1daf0bf (2026-08-17 01:18:38 UTC) - https://godotengine.org
+
+2026-10-02 13:15:44.908 godot.macos.template_debug.arm64[34616:22970889] XType: Using static font registry.
+SPIKE frame=263 ms=69.3
+  stuck owner=0 kind=villager order=gather failures=1 pos=(179.0283, 653.3738) dest=(0.0, 0.0)
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=gather failures=1 pos=(2110.972, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=368 ms=66.4
+  stuck owner=0 kind=villager order=gather failures=1 pos=(179.0283, 653.3738) dest=(0.0, 0.0)
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2205.75, 1869.104) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=gather failures=1 pos=(2110.972, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=787 ms=78.1
+  stuck owner=0 kind=villager order=gather failures=1 pos=(179.0283, 653.3738) dest=(0.0, 0.0)
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2205.75, 1869.104) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=gather failures=1 pos=(2110.972, 806.4182) dest=(0.0, 0.0)
+SPIKE frame=789 ms=35.9
+  stuck owner=0 kind=villager order=gather failures=1 pos=(179.0283, 653.3738) dest=(0.0, 0.0)
+  stuck owner=0 kind=villager order=gather failures=1 pos=(289.0283, 806.4182) dest=(0.0, 0.0)
+  stuck owner=1 kind=villager order=gather failures=1 pos=(2205.75, 1869.104) dest=(0.0, 0.0)
+  stuck owner=3 kind=villager order=gather failures=1 pos=(2110.972, 806.4182) dest=(0.0, 0.0)

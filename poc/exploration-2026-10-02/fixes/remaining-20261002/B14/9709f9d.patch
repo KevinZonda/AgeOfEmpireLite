@@ -1,0 +1,98 @@
+diff --git a/scripts/entities/unit_combat.gd b/scripts/entities/unit_combat.gd
+index db266e5..23ff1ff 100644
+--- a/scripts/entities/unit_combat.gd
++++ b/scripts/entities/unit_combat.gd
+@@ -15,6 +15,7 @@ static func process_attack_ground(unit, delta: float) -> void:
+ 	if unit.attack_timer > 0.0:
+ 		if unit.attack_timer <= 0.16 and unit.visual_action != "attack": unit._start_visual_action("attack", 0.34)
+ 		return
++	profile = prepare_artillery_shot(unit, profile)
+ 	var projectile := RtsProjectile.new()
+ 	projectile.setup_point(unit.game, unit.owner_id, unit.global_position, unit.destination, float(profile["damage"]), float(unit.stats.get("projectile_speed", 350.0)), maxf(55.0, float(profile.get("splash_radius", 0.0))), unit.stats, profile)
+ 	unit.game.add_child(projectile)
+@@ -23,6 +24,15 @@ static func process_attack_ground(unit, delta: float) -> void:
+ 	unit._start_visual_action("attack", 0.28)
+ 	unit._mark_visual_impact()
+ 
++static func prepare_artillery_shot(unit, profile: Dictionary) -> Dictionary:
++	if not unit.artillery_shot_ready: return profile
++	var enhanced := profile.duplicate(true)
++	enhanced["bonuses"] = []
++	enhanced["splash_radius"] = maxf(65.0, float(enhanced.get("splash_radius", 0.0)))
++	unit.artillery_shot_ready = false
++	unit.artillery_shot_cooldown = 35.0
++	return enhanced
++
+ static func retreat_from_minimum_range(unit, point: Vector2, min_reach: float, reach: float, delta: float) -> void:
+ 	if is_instance_valid(unit.wall_host):
+ 		unit._advance_command()
+@@ -107,12 +117,7 @@ static func process_attack_order(unit, delta: float) -> void:
+ 		unit.charging = false
+ 		unit.charge_cooldown = 10.0
+ 		return
+-	if unit.artillery_shot_ready:
+-		profile = profile.duplicate(true)
+-		profile["bonuses"] = []
+-		profile["splash_radius"] = maxf(65.0, float(profile.get("splash_radius", 0.0)))
+-		unit.artillery_shot_ready = false
+-		unit.artillery_shot_cooldown = 35.0
++	profile = prepare_artillery_shot(unit, profile)
+ 	var modifiers := {"extra_damage": 3.0 if unit.kind == "royal_knight" and unit.momentum_timer > 0.0 else 0.0, "multiplier": RtsCivilizationRules.wall_ranged_multiplier(unit.game, unit) if profile.get("damage_kind", "") == "ranged" else 1.0}
+ 	var damage: float = RtsCombatRules.volley_damage(unit.stats, defender_stats, profile, modifiers)
+ 	if unit.kind == "battering_ram": damage *= 1.0 + minf(0.4, unit.passengers.size() * 0.05)
+diff --git a/tests/exploration_b14_ground_artillery.gd b/tests/exploration_b14_ground_artillery.gd
+new file mode 100644
+index 0000000..fbacb64
+--- /dev/null
++++ b/tests/exploration_b14_ground_artillery.gd
+@@ -0,0 +1,50 @@
++extends "res://poc/exploration-2026-10-02/explore.gd"
++var checks := 0
++var failures := 0
++func check(ok: bool, label: String) -> void:
++ checks += 1
++ if not ok:
++  failures += 1
++  print("FAIL ", label)
++func clear_shots() -> void:
++ for p in projectiles(): p.free()
++func _run() -> void:
++ setup_case()
++ game.civilizations[0] = "French"
++ var u := soldier("cannon")
++ u.producer_landmark_id = "fr_college_of_artillery"
++ var original := RtsStatResolver.primary_attack(u.stats).duplicate(true)
++ check(u.activate_ability("artillery_shot"), "artillery_activated")
++ u.attack_timer = 1.0
++ u.issue_command("attack_ground", u.position + Vector2(160, 0))
++ u._process_attack_ground(0.05)
++ check(projectiles().is_empty() and u.artillery_shot_ready and u.artillery_shot_cooldown == 0.0, "reload_wait_preserves_ability")
++ u.attack_timer = 0.0
++ u.issue_command("attack_ground", u.position + Vector2(1000, 0))
++ u._process_attack_ground(0.05)
++ check(projectiles().is_empty() and u.artillery_shot_ready, "out_of_range_preserves_ability")
++ u.issue_command("attack_ground", u.position + Vector2(160, 0))
++ u._process_attack_ground(0.05)
++ check(projectiles().size() == 1, "ground_shot_fired")
++ check(not u.artillery_shot_ready and u.artillery_shot_cooldown == 35.0, "ground_shot_consumes_artillery_once")
++ if not projectiles().is_empty():
++  var bolt: RtsProjectile = projectiles()[0]
++  check(bolt.splash_radius >= 65.0 and bolt.attack_profile.get("bonuses", [1]).is_empty(), "ground_projectile_has_enhanced_profile")
++ check(RtsStatResolver.primary_attack(u.stats) == original, "base_profile_not_mutated")
++ clear_shots()
++ u.attack_timer = 0.0
++ u.issue_command("attack_ground", u.position + Vector2(160, 0))
++ u._process_attack_ground(0.05)
++ check(projectiles().size() == 1 and projectiles()[0].attack_profile == original, "following_shot_is_normal")
++ clear_shots()
++ u.attack_timer = 0.0
++ u.artillery_shot_cooldown = 0.0
++ check(u.activate_ability("artillery_shot"), "ability_reactivated_after_cooldown")
++ var enemy := soldier("spearman", 1, u.position + Vector2(180, 0))
++ u.order_attack(enemy)
++ u._process_attack_order(0.05)
++ check(projectiles().size() == 1 and not u.artillery_shot_ready and u.artillery_shot_cooldown == 35.0 and projectiles()[0].splash_radius >= 65.0, "target_attack_still_uses_enhanced_shot")
++ game.navigation.shutdown_jobs()
++ game.free()
++ print("B14_TEST_COMPLETE checks=", checks, " failures=", failures)
++ quit(1 if failures else 0)

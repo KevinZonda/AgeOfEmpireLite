@@ -1,0 +1,76 @@
+diff --git a/scripts/entities/projectile.gd b/scripts/entities/projectile.gd
+index 6ee1219..5198562 100644
+--- a/scripts/entities/projectile.gd
++++ b/scripts/entities/projectile.gd
+@@ -93,7 +93,11 @@ func _process(delta: float) -> void:
+ 	var travel := speed * delta
+ 	if global_position.distance_to(destination) <= travel + 3.0:
+ 		var impact_point := destination
+-		if is_instance_valid(target) and not target.is_queued_for_deletion(): target.take_damage(impact_damage)
++		if is_instance_valid(target) and not target.is_queued_for_deletion():
++			# Ownership can change while the projectile is in flight. Wildlife
++			# remains huntable; unit/building impacts follow current diplomacy.
++			if not (target is RtsUnit or target is RtsBuilding) or game.is_enemy(owner_id, target.owner_id):
++				target.take_damage(impact_damage)
+ 		if float(attack_profile.get("pierce_length", 0.0)) > 0.0 and game.has_method("nearest_enemy"):
+ 			var direction := (destination - launch_position).normalized()
+ 			var end := destination + direction * float(attack_profile["pierce_length"])
+diff --git a/tests/exploration_b11_projectile_diplomacy.gd b/tests/exploration_b11_projectile_diplomacy.gd
+new file mode 100644
+index 0000000..d372016
+--- /dev/null
++++ b/tests/exploration_b11_projectile_diplomacy.gd
+@@ -0,0 +1,53 @@
++extends "res://poc/exploration-2026-10-02/explore.gd"
++var checks := 0
++var failures := 0
++func check(ok: bool, label: String) -> void:
++ checks += 1
++ if not ok:
++  failures += 1
++  print("FAIL ", label)
++func shot(target: Node2D, area := 0.0, profile: Dictionary = {}) -> void:
++ var bolt := RtsProjectile.new()
++ bolt.setup(game, 0, target.position - Vector2(30, 0), target, 10.0, 350.0, area, {"damage":10.0}, profile)
++ game.add_child(bolt)
++ bolt._process(0.2)
++func _run() -> void:
++ setup_case()
++ var monk := soldier("monk")
++ carry(monk)
++ var target := soldier("spearman", 1, monk.position + Vector2(40, 0))
++ var bolt := RtsProjectile.new()
++ bolt.setup(game, 0, monk.position, target, 10.0)
++ game.add_child(bolt)
++ monk._finish_conversion()
++ var hp := target.hp
++ bolt._process(0.2)
++ check(target.owner_id == 0 and target.hp == hp, "converted_target_takes_no_direct_damage")
++ var enemy := soldier("spearman", 1, Vector2(1300, 600))
++ hp = enemy.hp
++ shot(enemy)
++ check(enemy.hp == hp - 10.0, "enemy_still_takes_direct_damage")
++ game.teams[1] = game.teams[0]
++ hp = enemy.hp
++ shot(enemy)
++ check(enemy.hp == hp, "different_owner_teammate_takes_no_damage")
++ game.teams[1] = 1
++ var boar := RtsResource.new()
++ boar.game = game
++ boar.position = Vector2(1400, 600)
++ boar.setup("food", 100, "boar")
++ game.add_child(boar)
++ var wildlife_before := boar.wildlife_hp
++ shot(boar)
++ check(boar.wildlife_hp == wildlife_before - 10.0, "wildlife_still_takes_hunting_damage")
++ var friendly := soldier("spearman", 0, Vector2(1600, 600))
++ var splash_enemy := soldier("spearman", 1, friendly.position + Vector2(30, 0))
++ hp = friendly.hp
++ var enemy_before := splash_enemy.hp
++ shot(friendly, 65.0, {"damage":10.0,"damage_kind":"ranged","bonuses":[],"pierce_length":70.0,"pierce_width":10.0})
++ check(friendly.hp == hp, "splash_and_pierce_skip_converted_primary_target")
++ check(splash_enemy.hp < enemy_before, "splash_and_pierce_can_hit_other_enemies")
++ game.navigation.shutdown_jobs()
++ game.free()
++ print("B11_TEST_COMPLETE checks=", checks, " failures=", failures)
++ quit(1 if failures else 0)

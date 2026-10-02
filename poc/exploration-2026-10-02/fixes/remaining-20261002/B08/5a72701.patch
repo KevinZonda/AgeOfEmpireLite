@@ -1,0 +1,18 @@
+diff --git a/tests/exploration_b08_garrison_build.gd b/tests/exploration_b08_garrison_build.gd
+index cc84902..560b131 100644
+--- a/tests/exploration_b08_garrison_build.gd
++++ b/tests/exploration_b08_garrison_build.gd
+@@ -28,6 +28,13 @@ func _run() -> void:
+ 	assert(worker.garrisoned_in == null)
+ 	assert(game.place_building(0, "house", site, workers))
+ 	assert(game.count_builders(game.buildings.back()) == 1)
++	var second := soldier("villager", 0, center.position + Vector2(170, 0))
++	game.selected.assign([worker, second])
++	assert(center.garrison_unit(worker))
++	assert(game.selected.size() == 1 and game.selected[0] == second)
++	workers.assign([worker, second])
++	assert(game.place_building(0, "house", free_site("house"), workers))
++	assert(game.count_builders(game.buildings.back()) == 1 and second.order == "build")
+ 	game.navigation.shutdown_jobs()
+ 	game.queue_free()
+ 	await process_frame

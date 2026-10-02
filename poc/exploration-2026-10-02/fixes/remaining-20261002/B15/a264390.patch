@@ -1,0 +1,101 @@
+diff --git a/scripts/entities/unit_combat.gd b/scripts/entities/unit_combat.gd
+index 23ff1ff..0bc147b 100644
+--- a/scripts/entities/unit_combat.gd
++++ b/scripts/entities/unit_combat.gd
+@@ -168,9 +168,14 @@ static func heal_ally(unit, delta: float) -> void:
+ static func finish_conversion(unit) -> void:
+ 	if unit.carried_relic == null: return
+ 	var converted := 0
++	var previous_owners: Dictionary = {}
++	var selected_changed := false
++	unit.game.session.changes.begin_transaction()
+ 	for candidate in unit.game.units:
+ 		if not is_instance_valid(candidate) or candidate.is_queued_for_deletion() or not unit.game.is_enemy(unit.owner_id, candidate.owner_id) or candidate.garrisoned_in != null: continue
+ 		if candidate.position.distance_to(unit.position) > 130.0 or candidate.stats.get("tags", []).has("siege"): continue
++		previous_owners[candidate.owner_id] = true
++		selected_changed = selected_changed or unit.game.selected.has(candidate)
+ 		candidate.owner_id = unit.owner_id
+ 		candidate.order_stop()
+ 		candidate.refresh_stats()
+@@ -179,6 +184,11 @@ static func finish_conversion(unit) -> void:
+ 	if converted > 0:
+ 		unit.game.navigation.invalidate_spatial_index()
+ 		unit.game.fog.update_visibility()
++		for previous_owner in previous_owners:
++			unit.game.session.changes.mark(previous_owner, &"entities")
++		unit.game.session.changes.mark(unit.owner_id, &"entities")
++		if selected_changed: unit.game.session.changes.mark(0, &"selection")
++	unit.game.session.changes.end_transaction()
+ 
+ static func take_damage(unit, damage: float) -> void:
+ 	unit.hp -= damage
+diff --git a/tests/exploration_b15_conversion_hud.gd b/tests/exploration_b15_conversion_hud.gd
+new file mode 100644
+index 0000000..cf4f218
+--- /dev/null
++++ b/tests/exploration_b15_conversion_hud.gd
+@@ -0,0 +1,46 @@
++extends "res://poc/exploration-2026-10-02/explore.gd"
++var checks := 0
++var failures := 0
++func check(ok: bool, label: String) -> void:
++ checks += 1
++ if not ok:
++  failures += 1
++  print("FAIL ", label)
++func has_domain(events: Array, owner: int, domain: StringName) -> bool:
++ for event in events:
++  if event.owner == owner and event.domains.has(domain): return true
++ return false
++func _run() -> void:
++ setup_case()
++ var monk := soldier("monk")
++ carry(monk)
++ var u := soldier("spearman", 1, monk.position + Vector2(30, 0))
++ game.selected.assign([u])
++ game._rebuild_actions()
++ game._update_hud()
++ check(game.command_buttons.is_empty(), "selected_enemy_has_no_commands")
++ var events: Array = []
++ game.session.changes.changed.connect(func(owner: int, domains: Array[StringName]) -> void: events.append({"owner":owner,"domains":domains}))
++ monk._finish_conversion()
++ game._update_hud()
++ check(u.owner_id == 0 and game.selected.has(u) and not game.command_buttons.is_empty(), "conversion_rebuilds_commands_without_reselection")
++ check(has_domain(events, 0, &"selection"), "conversion_publishes_selected_ownership_change")
++ check(has_domain(events, 0, &"entities") and has_domain(events, 1, &"entities"), "both_owner_counts_invalidated")
++ events.clear()
++ monk.position = Vector2(1000, 1300)
++ monk._finish_conversion()
++ check(events.is_empty(), "no_conversion_publishes_no_spurious_change")
++ var other := soldier("spearman", 1, monk.position + Vector2(30, 0))
++ events.clear()
++ monk._finish_conversion()
++ check(other.owner_id == 0 and has_domain(events, 0, &"entities") and not has_domain(events, 0, &"selection"), "unselected_conversion_updates_entities_only")
++ var enemy_monk := soldier("monk", 1, u.position + Vector2(30, 0))
++ carry(enemy_monk)
++ events.clear()
++ enemy_monk._finish_conversion()
++ game._update_hud()
++ check(u.owner_id == 1 and game.command_buttons.is_empty(), "losing_selected_unit_removes_own_commands")
++ game.navigation.shutdown_jobs()
++ game.free()
++ print("B15_TEST_COMPLETE checks=", checks, " failures=", failures)
++ quit(1 if failures else 0)
+diff --git a/tests/unit_components_regression.gd b/tests/unit_components_regression.gd
+index 646090b..6bc8543 100644
+--- a/tests/unit_components_regression.gd
++++ b/tests/unit_components_regression.gd
+@@ -7,7 +7,13 @@ class FogStub extends RefCounted:
+ 	var updates := 0
+ 	func update_visibility() -> void: updates += 1
+ 
++class SessionStub extends RefCounted:
++	var entities: Node2D
++	var changes = preload("res://scripts/match/match_changes.gd").new()
++
+ class ComponentFixture extends Fixture:
++	var session := SessionStub.new()
++	func _init() -> void: session.entities = self
+ 	const HEALTH_BAR_CHANGE_DURATION := 1.5
+ 	var civilizations := ["English", "French"]
+ 	var fog := FogStub.new()

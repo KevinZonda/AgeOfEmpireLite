@@ -1,0 +1,100 @@
+diff --git a/scripts/entities/unit_combat.gd b/scripts/entities/unit_combat.gd
+index c592b6b..9c9c645 100644
+--- a/scripts/entities/unit_combat.gd
++++ b/scripts/entities/unit_combat.gd
+@@ -26,6 +26,11 @@ static func valid_attack_target(unit, candidate) -> bool:
+ 	return candidate.hp > 0.0 and unit.game.is_enemy(unit.owner_id, candidate.owner_id) and (not candidate is RtsUnit or candidate.garrisoned_in == null)
+ 
+ static func process_attack_order(unit, delta: float) -> void:
++	# Mobile targets stop supplying live coordinates when they leave vision.
++	# Complete through the order lifecycle so patrols and queued work resume.
++	if unit.target is RtsUnit and unit.game.fog.active and not unit.game.fog.can_detect_unit(unit.owner_id, unit.target):
++		unit.orders.finish(unit, true)
++		return
+ 	if unit.target is RtsResource and unit.target.appearance == "boar" and unit.target.wildlife_hp <= 0.0:
+ 		unit._advance_command()
+ 		return
+diff --git a/tests/exploration_b07_fog_attack.gd b/tests/exploration_b07_fog_attack.gd
+new file mode 100644
+index 0000000..fc9e8e7
+--- /dev/null
++++ b/tests/exploration_b07_fog_attack.gd
+@@ -0,0 +1,54 @@
++extends "res://poc/exploration-2026-10-02/explore.gd"
++
++var checks := 0
++var failures := 0
++
++func check(ok: bool, label: String) -> void:
++ checks += 1
++ if not ok:
++  failures += 1
++  print("FAIL ", label)
++
++func _run() -> void:
++ setup_case()
++ game.fog.active = true
++ var u := soldier("longbow", 0, Vector2(1000, 650))
++ var enemy := soldier("spearman", 1, u.position + Vector2(100, 0))
++ game.fog.update_visibility()
++ check(game.fog.can_detect_unit(0, enemy), "fixture_enemy_initially_visible")
++ u.order_attack(enemy)
++ u._process_attack_order(0.05)
++ check(u.target == enemy, "visible_enemy_keeps_attack")
++ enemy.position = game.world_map.nearest_walkable_point(Vector2(2000, 1900))
++ game.fog.update_visibility()
++ check(not game.fog.can_detect_unit(0, enemy), "fixture_enemy_hidden")
++ u._process_attack_order(0.05)
++ check(u.order == "idle" and u.target == null, "manual_attack_loses_hidden_target")
++ for previous in ["attack_move", "patrol", "hold"]:
++  game.fog.active = false
++  if previous == "attack_move": u.order_attack_move(Vector2(1200, 700))
++  elif previous == "patrol": u.order_patrol(Vector2(1200, 700))
++  else: u.order_hold()
++  u.orders.engage(u, enemy)
++  game.fog.active = true
++  u._process_attack_order(0.05)
++  check(u.order == previous and u.target == null, "hidden_target_resumes_" + previous)
++ game.fog.active = false
++ u.order_attack(enemy)
++ u.issue_command("move", Vector2(1200, 700), null, true)
++ game.fog.active = true
++ u._process_attack_order(0.05)
++ check(u.order == "move" and u.destination == Vector2(1200, 700), "hidden_target_advances_queue")
++ game.fog.active = false
++ u.order_attack(enemy)
++ u._process_attack_order(0.05)
++ check(u.order == "attack" and u.target == enemy, "disabled_fog_keeps_tracking")
++ game.fog.active = true
++ var b: RtsBuilding = game._player_center(1)
++ u.order_attack(b)
++ u._process_attack_order(0.05)
++ check(u.target == b, "fixed_building_attack_preserved")
++ game.navigation.shutdown_jobs()
++ game.free()
++ print("B07_TEST_COMPLETE checks=", checks, " failures=", failures)
++ quit(1 if failures else 0)
+diff --git a/tests/unit_components_regression.gd b/tests/unit_components_regression.gd
+index c623f9d..646090b 100644
+--- a/tests/unit_components_regression.gd
++++ b/tests/unit_components_regression.gd
+@@ -3,6 +3,7 @@ extends SceneTree
+ const Fixture = preload("res://tests/helpers/navigation_fixture.gd")
+ 
+ class FogStub extends RefCounted:
++	var active := false
+ 	var updates := 0
+ 	func update_visibility() -> void: updates += 1
+ 
+diff --git a/tests/unit_orders_regression.gd b/tests/unit_orders_regression.gd
+index 22f7187..11c6329 100644
+--- a/tests/unit_orders_regression.gd
++++ b/tests/unit_orders_regression.gd
+@@ -3,6 +3,7 @@ extends SceneTree
+ const Fixture = preload("res://tests/helpers/navigation_fixture.gd")
+ 
+ class FogStub extends RefCounted:
++	var active := false
+ 	func update_unit_display(_unit: RtsUnit) -> void: pass
+ 
+ class OrderFixture extends Fixture:

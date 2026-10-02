@@ -1,0 +1,95 @@
+diff --git a/scripts/world/fog_of_war.gd b/scripts/world/fog_of_war.gd
+index f91020c..a493233 100644
+--- a/scripts/world/fog_of_war.gd
++++ b/scripts/world/fog_of_war.gd
+@@ -121,18 +121,19 @@ func can_see(owner_id: int, point: Vector2) -> bool:
+ func can_detect_unit(owner_id: int, enemy: RtsUnit) -> bool:
+ 	if not active: return true
+ 	if not can_see(owner_id, enemy.position): return false
+-	if enemy.owner_id == owner_id or enemy.revealed_timer > 0.0: return true
++	# Detection follows the same shared-team policy as terrain vision.
++	if (enemy.owner_id >= 0 and enemy.owner_id < game.players.size() and not game.is_enemy(owner_id, enemy.owner_id)) or enemy.revealed_timer > 0.0: return true
+ 	var patch_index: int = game.world_map.forest_patch_at(enemy.position)
+ 	if patch_index < 0: return true
+ 	for observer in game.navigation.nearby_units(enemy.position, 210.0):
+-		if not is_instance_valid(observer) or observer.owner_id != owner_id or observer.garrisoned_in != null: continue
++		if not is_instance_valid(observer) or observer.is_queued_for_deletion() or observer.hp <= 0.0 or observer.owner_id < 0 or observer.owner_id >= game.players.size() or game.is_enemy(owner_id, observer.owner_id) or observer.garrisoned_in != null: continue
+ 		if observer.position.distance_to(enemy.position) <= (145.0 if observer.kind == "scout" else 85.0): return true
+ 		if game.world_map.forest_patch_at(observer.position) == patch_index: return true
+ 	return false
+ 
+ func can_show_unit(owner_id: int, unit: RtsUnit) -> bool:
+ 	if not can_detect_unit(owner_id, unit): return false
+-	if not active or unit.owner_id == owner_id: return true
++	if not active or (unit.owner_id >= 0 and unit.owner_id < game.players.size() and not game.is_enemy(owner_id, unit.owner_id)): return true
+ 	# Units render above the fog plane. Hide the figure until its drawn bounds,
+ 	# rather than only its ground anchor, are inside current vision.
+ 	var unit_radius := unit.radius()
+diff --git a/tests/exploration_b16_team_detection.gd b/tests/exploration_b16_team_detection.gd
+new file mode 100644
+index 0000000..85c88de
+--- /dev/null
++++ b/tests/exploration_b16_team_detection.gd
+@@ -0,0 +1,62 @@
++extends SceneTree
++
++func _initialize() -> void:
++	call_deferred("_run")
++
++func _run() -> void:
++	var game: Node2D = load("res://scenes/main.tscn").instantiate()
++	root.add_child(game)
++	await process_frame
++	game.process_mode = Node.PROCESS_MODE_DISABLED
++	game.match_mode = "team2"
++	game.start_game("English", 431, "French")
++	game.ai_controllers.clear()
++	game.view_mode_25d = false
++	for unit in game.units:
++		unit.position = game.spawn_point_for(unit.owner_id)
++		unit.order_stop()
++	var point: Vector2 = game.world_map.stealth_patches[0]["position"]
++	# A small forest makes the near/far scout checks independent of the rule
++	# that an observer inside the same forest can also detect its occupants.
++	game.world_map.stealth_patches.clear()
++	game.world_map.stealth_patches.append({"position": point, "radius": 20.0})
++	var sight: RtsBuilding = game.spawn_building(0, "outpost", point + Vector2(180, 0))
++	var ally: RtsUnit = game.spawn_unit(2, "spearman", point)
++	ally.position = point
++	game.fog.update_visibility()
++	assert(game.fog.can_detect_unit(0, ally) and ally.visible, "allied forest occupants are visible through shared vision")
++	ally.position = game.spawn_point_for(2)
++	var enemy: RtsUnit = game.spawn_unit(1, "spearman", point)
++	enemy.position = point
++	game.fog.update_visibility()
++	assert(game.fog.can_see(0, point), "terrain visibility alone is available")
++	assert(not game.fog.can_detect_unit(0, enemy) and not enemy.visible, "terrain sight alone must not reveal a forest enemy")
++	var scout: RtsUnit = game.spawn_unit(2, "scout", point + Vector2(145, 0))
++	scout.position = point + Vector2(145, 0)
++	game.fog.update_visibility()
++	assert(game.fog.can_detect_unit(0, enemy) and enemy.visible, "an allied scout shares forest detection at the inclusive scout range")
++	scout.position = point + Vector2(146, 0)
++	game.fog.update_visibility()
++	assert(not game.fog.can_detect_unit(0, enemy), "a scout outside detection range supplies terrain sight only")
++	scout.position = point + Vector2(55, 0)
++	scout.garrisoned_in = sight
++	game.fog.update_visibility()
++	assert(not game.fog.can_detect_unit(0, enemy), "garrisoned allies cannot detect concealed enemies")
++	scout.garrisoned_in = null
++	scout.owner_id = 1
++	game.navigation.invalidate_spatial_index()
++	game.fog.update_visibility()
++	assert(not game.fog.can_detect_unit(0, enemy), "an enemy scout cannot grant detection")
++	scout.owner_id = 0
++	game.navigation.invalidate_spatial_index()
++	game.fog.update_visibility()
++	assert(game.fog.can_detect_unit(0, enemy), "the original own-scout behavior is preserved")
++	scout.owner_id = 2
++	game.navigation.invalidate_spatial_index()
++	game.teams.clear()
++	game.teams.append_array([0, 1, 2, 3])
++	game.fog.update_visibility()
++	assert(not game.fog.can_detect_unit(0, enemy), "FFA players do not share forest detection")
++	game.free()
++	print("EXPLORATION_B16_TEAM_DETECTION_OK")
++	quit()

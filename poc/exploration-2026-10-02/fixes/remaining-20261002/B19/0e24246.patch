@@ -1,0 +1,70 @@
+diff --git a/scripts/world/navigation.gd b/scripts/world/navigation.gd
+index 6a094ca..0caa6cf 100644
+--- a/scripts/world/navigation.gd
++++ b/scripts/world/navigation.gd
+@@ -1106,9 +1106,11 @@ func _segment_clear(from: Vector2, to: Vector2, radius: float, self_unit: RtsUni
+ 	# Both halves are pure predicates; checking unit blockers first skips the
+ 	# static sweep whenever a crowded step is already denied, and iterating the
+ 	# buckets inline avoids materializing the neighborhood array per query.
++	# The broad phase must use the rebuilt maximum body radius. A dirty
++	# index can still hold zero or a smaller radius from the previous frame.
++	_ensure_spatial_index()
+ 	var center := (from + to) * 0.5
+ 	var reach := from.distance_to(to) * 0.5 + radius + spatial_index.max_dynamic_radius
+-	_ensure_spatial_index()
+ 	var reach_squared := reach * reach
+ 	var first := _spatial_cell(center - Vector2.ONE * reach)
+ 	var last := _spatial_cell(center + Vector2.ONE * reach)
+diff --git a/tests/exploration_b19_dirty_collision_radius.gd b/tests/exploration_b19_dirty_collision_radius.gd
+new file mode 100644
+index 0000000..8270dd4
+--- /dev/null
++++ b/tests/exploration_b19_dirty_collision_radius.gd
+@@ -0,0 +1,47 @@
++extends SceneTree
++const Fixture = preload("res://tests/helpers/navigation_fixture.gd")
++var checks := 0
++var failures := 0
++func _initialize() -> void: call_deferred("run")
++func check(ok: bool, label: String) -> void:
++ checks += 1
++ if not ok:
++  failures += 1
++  print("FAIL ",label)
++func scenario(dirty: bool) -> void:
++ var game := Fixture.new()
++ root.add_child(game)
++ game.initialize(Vector2(1500,1000))
++ var center := Vector2(625,525)
++ var guard := game.spawn_unit(center)
++ guard.owner_id = 1
++ guard.order = "hold"
++ guard.stance = "hold"
++ if dirty:
++  game.navigation._ensure_spatial_index()
++  check(game.navigation.max_dynamic_radius == 12.0,"fixture_cached_smaller_body")
++  guard.stats["radius"] = 40.0
++  game.navigation.invalidate_spatial_index()
++ var radius := 10.0
++ var normal := Vector2(1,1).normalized()
++ var tangent := normal.orthogonal()
++ var midpoint := center + normal * (radius + guard.radius() - 0.02)
++ var u := game.spawn_unit(midpoint - tangent * radius * 0.25)
++ u.stats["radius"] = radius
++ var goal := midpoint + tangent * radius * 0.25
++ check(u.position.distance_to(center) > radius+guard.radius() and goal.distance_to(center)>radius+guard.radius(),"endpoints_are_clear")
++ check(not game.navigation._motion_clear(u,goal),"dirty_sweep_rejects_body_graze" if dirty else "first_sweep_rejects_body_graze")
++ var next := game.navigation.move_step(u,goal)
++ var nearest := Geometry2D.get_closest_point_to_segment(center,u.position,next)
++ check(nearest.distance_to(center) >= radius+guard.radius()-0.0001,"sidestep_remains_collision_safe")
++ var safe_mid := center + normal * (radius+guard.radius()+0.05)
++ u.position = safe_mid - tangent * radius * 0.25
++ game.navigation.invalidate_spatial_index()
++ check(game.navigation._motion_clear(u,safe_mid+tangent*radius*0.25),"clear_tangent_is_not_overblocked")
++ game.navigation.background_jobs.shutdown()
++ game.free()
++func run() -> void:
++ scenario(false)
++ scenario(true)
++ print("B19_TEST_COMPLETE checks=",checks," failures=",failures)
++ quit(1 if failures else 0)
