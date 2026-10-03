@@ -1,0 +1,2 @@
+# Archived source snapshots and test evidence must not register global classes.
+# Web export exclusions alone do not prevent the editor from scanning them.
