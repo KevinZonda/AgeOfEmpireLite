@@ -45,6 +45,7 @@ body {
 	justify-content: center;
 	align-items: center;
 	visibility: hidden;
+	z-index: 10;
 }
 
 #status-splash {
@@ -90,6 +91,34 @@ body {
 	text-align: center;
 	z-index: 1;
 }
+
+#status-details {
+	margin-top: 1rem;
+	z-index: 1;
+}
+
+#status-details summary {
+	cursor: pointer;
+	text-align: center;
+}
+
+#status-error-log {
+	max-height: 10rem;
+	max-width: min(48rem, 80vw);
+	overflow: auto;
+	white-space: pre-wrap;
+	text-align: left;
+	z-index: 1;
+}
+
+#status-retry {
+	display: none;
+	margin-top: 1rem;
+	padding: 0.7rem 1.2rem;
+	font: inherit;
+	cursor: pointer;
+	z-index: 1;
+}
 		</style>
 		$GODOT_HEAD_INCLUDE
 	</head>
@@ -105,7 +134,12 @@ body {
 		<div id="status">
 			<img id="status-splash" class="$GODOT_SPLASH_CLASSES" src="$GODOT_SPLASH" alt="">
 			<progress id="status-progress"></progress>
-			<div id="status-notice"></div>
+			<div id="status-notice" role="alert"></div>
+			<details id="status-details" hidden>
+				<summary>错误详情</summary>
+				<pre id="status-error-log"></pre>
+			</details>
+			<button id="status-retry" type="button">重新加载最新版</button>
 		</div>
 
 		<script src="$GODOT_URL"></script>
@@ -118,17 +152,21 @@ const engine = new Engine(GODOT_CONFIG);
 	const statusOverlay = document.getElementById('status');
 	const statusProgress = document.getElementById('status-progress');
 	const statusNotice = document.getElementById('status-notice');
+	const statusDetails = document.getElementById('status-details');
+	const errorLog = document.getElementById('status-error-log');
+	const retryButton = document.getElementById('status-retry');
 
-	let initializing = true;
 	let statusMode = '';
+	let failed = false;
+	const errorLines = [];
 
 	function setStatusMode(mode) {
-		if (statusMode === mode || !initializing) {
+		if (statusMode === mode) {
 			return;
 		}
 		if (mode === 'hidden') {
-			statusOverlay.remove();
-			initializing = false;
+			statusOverlay.style.visibility = 'hidden';
+			statusMode = mode;
 			return;
 		}
 		statusOverlay.style.visibility = 'visible';
@@ -148,17 +186,20 @@ const engine = new Engine(GODOT_CONFIG);
 		});
 	}
 
+	function appendError(message) {
+		errorLines.push(message);
+		if (errorLines.length > 20) errorLines.shift();
+		errorLog.textContent = errorLines.join('\n');
+	}
+
 	function displayFailureNotice(err) {
 		console.error(err);
-		if (err instanceof Error) {
-			setStatusNotice(err.message);
-		} else if (typeof err === 'string') {
-			setStatusNotice(err);
-		} else {
-			setStatusNotice('An unknown error occurred.');
-		}
+		failed = true;
+		appendError(err instanceof Error ? err.message : String(err || 'An unknown error occurred.'));
+		statusDetails.hidden = false;
+		setStatusNotice('游戏运行出错。可以重新加载最新版再试一次。');
 		setStatusMode('notice');
-		initializing = false;
+		retryButton.style.display = 'block';
 	}
 
 	// Registration resolves before installation/activation finishes. Wait for an
@@ -176,7 +217,8 @@ const engine = new Engine(GODOT_CONFIG);
 				else resolve();
 			}
 			function check() {
-				if (registration.active && registration.active.state === 'activated') {
+				if (!registration.installing && !registration.waiting
+						&& registration.active && registration.active.state === 'activated') {
 					finish();
 					return;
 				}
@@ -200,6 +242,56 @@ const engine = new Engine(GODOT_CONFIG);
 			check();
 		});
 	}
+
+	retryButton.addEventListener('click', async () => {
+		if (retryButton.disabled) return;
+		retryButton.disabled = true;
+		retryButton.textContent = '正在更新…';
+		setStatusNotice('正在获取最新版，请稍候…');
+		const controller = new AbortController();
+		let timeout;
+		try {
+			await Promise.race([
+				(async () => {
+					if (GODOT_CONFIG.serviceWorker && 'serviceWorker' in navigator) {
+						const registration = await engine.installServiceWorker();
+						if (!registration) throw new Error('浏览器无法注册 service worker。');
+						await registration.update();
+						await waitForActiveWorker(registration);
+					}
+					controller.signal.throwIfAborted();
+					if ('caches' in window) {
+						const keys = await window.caches.keys();
+						controller.signal.throwIfAborted();
+						await Promise.all(keys.filter(key => key.startsWith('Age of Empire Li-sw-cache-'))
+							.map(key => window.caches.delete(key)));
+					}
+					controller.signal.throwIfAborted();
+					// Refresh the HTTP cache too: a normal reload can reuse the old pack.
+					const executable = GODOT_CONFIG.executable;
+					const files = [`${executable}.html`, `${executable}.js`, ...Object.keys(GODOT_CONFIG.fileSizes || {})];
+					await Promise.all(files.map(async file => {
+						const response = await fetch(file, {cache: 'reload', signal: controller.signal});
+						if (!response.ok) throw new Error(`无法下载 ${file}（HTTP ${response.status}）。`);
+						await response.arrayBuffer();
+					}));
+				})(),
+				new Promise((_, reject) => {
+					timeout = setTimeout(() => reject(new Error('更新超时，请检查网络后重试。')), 60000);
+				}),
+			]);
+			sessionStorage.removeItem('aoe-isolation-reload:' + GODOT_CONFIG.serviceWorker);
+			window.location.reload();
+		} catch (err) {
+			displayFailureNotice(err);
+			setStatusNotice('更新未完成。请检查网络后再次点击「重新加载最新版」。');
+		} finally {
+			clearTimeout(timeout);
+			controller.abort();
+			retryButton.disabled = false;
+			retryButton.textContent = '重新加载最新版';
+		}
+	});
 
 	async function prepareIsolation() {
 		setStatusNotice('正在准备游戏运行环境，完成后将自动刷新…');
@@ -242,6 +334,15 @@ const engine = new Engine(GODOT_CONFIG);
 		try { sessionStorage.removeItem('aoe-isolation-reload:' + GODOT_CONFIG.serviceWorker); } catch (_) {}
 		setStatusMode('progress');
 		engine.startGame({
+			'onPrintError': function (...args) {
+				const message = args.map(String).join(' ');
+				if (/SCRIPT ERROR:|^ERROR:/.test(message)) {
+					displayFailureNotice(message);
+				} else {
+					console.error(...args);
+					if (failed) appendError(message);
+				}
+			},
 			'onProgress': function (current, total) {
 				if (current > 0 && total > 0) {
 					statusProgress.value = current;
@@ -252,7 +353,7 @@ const engine = new Engine(GODOT_CONFIG);
 				}
 			},
 		}).then(() => {
-			setStatusMode('hidden');
+			if (!failed) setStatusMode('hidden');
 		}, displayFailureNotice);
 	}
 }());
